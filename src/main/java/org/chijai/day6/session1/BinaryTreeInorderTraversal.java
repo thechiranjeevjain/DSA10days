@@ -483,6 +483,94 @@ public class BinaryTreeInorderTraversal {
      * Correct Iterative Solution (Two-Stack Technique):
      */
 
+    /*
+     * 🔴 WHY POSTORDER ITERATION IS HARD (AND WHY TWO STACKS EXIST)
+     *
+     * Postorder traversal requires the strict order:
+     *     left → right → root
+     *
+     * 🟢 Core Invariant (Postorder):
+     * A node may be processed ONLY AFTER both its left AND right
+     * subtrees are completely processed.
+     *
+     * ------------------------------------------------------------
+     * Why a simple iterative stack fails:
+     *
+     * In inorder:
+     * - Node waits only for LEFT subtree → manageable with one stack
+     *
+     * In postorder:
+     * - Node must wait for LEFT and RIGHT subtrees
+     * - A single stack cannot distinguish:
+     *     "right subtree not started" vs
+     *     "right subtree completed"
+     *
+     * Without extra state (visited flags or parent pointers),
+     * correctness cannot be guaranteed.
+     *
+     * ------------------------------------------------------------
+     * Why the TWO-STACK solution works:
+     *
+     * Instead of trying to directly generate:
+     *     left → right → root
+     *
+     * we deliberately generate its REVERSE:
+     *     root → right → left
+     *
+     * Then reverse it using a second stack.
+     *
+     * ------------------------------------------------------------
+     * Key Insight (Invariant Flip):
+     *
+     * If stack2 contains nodes in:
+     *     root → right → left
+     *
+     * Then popping stack2 yields:
+     *     left → right → root  ✅ postorder
+     *
+     * ------------------------------------------------------------
+     * Why we push LEFT first, then RIGHT:
+     *
+     * stack1 is LIFO (Last-In-First-Out).
+     *
+     * Code:
+     *     if (node.left != null)  stack1.push(node.left);
+     *     if (node.right != null) stack1.push(node.right);
+     *
+     * Effect:
+     * - RIGHT is popped BEFORE LEFT
+     * - stack2 collects: root → right → left
+     * - Final reversal gives correct postorder
+     *
+     * This is intentional and invariant-driven,
+     * not accidental.
+     *
+     * ------------------------------------------------------------
+     * Why there is no "clean" single-stack solution:
+     *
+     * A correct single-stack postorder requires:
+     * - visited flags, OR
+     * - parent pointers, OR
+     * - tracking last processed node
+     *
+     * All of these add implicit state.
+     *
+     * The two-stack solution is preferred because:
+     * - Invariant is explicit
+     * - Reasoning is simple
+     * - No hidden state
+     * - Interview-safe and bug-resistant
+     *
+     * ------------------------------------------------------------
+     * Interview Soundbite:
+     *
+     * "Postorder is hard iteratively because a node must wait for
+     * two subtrees. The two-stack method works by generating reverse
+     * postorder (root-right-left) and then reversing it to enforce
+     * the invariant cleanly."
+     */
+
+
     static class PostorderTraversal {
 
         public java.util.List<Integer> postorderTraversal(TreeNode root) {
