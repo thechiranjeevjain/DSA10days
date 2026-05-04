@@ -284,7 +284,29 @@ public class LongestHappyPrefix {
      *
      * 🟣 Interview Preference:
      * ✅ BEST ANSWER
+     *
+     * 🟢 Intuition:
+     *
+     * len is like a rubber band.
+     *
+     * • Stretches on match:
+     *   if (s[i] == s[len]) → len++
+     *
+     * • Shrinks on mismatch:
+     *   len = lps[len - 1]
+     *
+     * • Never restarts blindly:
+     *   always falls back to the last valid prefix
+     *
+     * 👉 We don’t recompute — we reuse.
+     *
+     * Longest k such that:
+     *
+     * s[0 ... k-1] == s[n-k ... n-1]
+     *
      */
+
+
     static class OptimalKMP {
 
         public String longestPrefix(String s) {
@@ -296,13 +318,13 @@ public class LongestHappyPrefix {
 
             while (i < n) {
                 if (s.charAt(i) == s.charAt(len)) {
-                    len++;
-                    lps[i] = len;
+                    len++; // extend match
+                    lps[i] = len; // store in LPS
                     i++;
                 } else {
                     if (len != 0) {
                         // fallback using invariant
-                        len = lps[len - 1];
+                        len = lps[len - 1]; // try shorter prefix
                     } else {
                         lps[i] = 0;
                         i++;
@@ -312,10 +334,76 @@ public class LongestHappyPrefix {
 
             int longest = lps[n - 1];
             return s.substring(0, longest);
+            //also possible substring(n - longest, n) {n is exclusive in substring method}
+            // (s[0 ... longest-1] == s[n-longest ... n-1])
         }
     }
 
+
 /**
+ * /*
+ * 🧪 DRY RUN (PHOTOGRAPHIC MEMORY TABLE)
+ *
+ * Example:
+ * s = "a b a b c a b a b"
+ *       0 1 2 3 4 5 6 7 8
+ *
+ * Goal:
+ * Build LPS using "extend or fallback"
+ *
+ * ------------------------------------------------------------------
+ * | i | s[i] | len (before) | compare s[i] vs s[len] | action       | len (after) | lps[i] |
+ * ------------------------------------------------------------------
+ * | 0 |  a   |      -       |        -               | base         |     0       |   0    |
+ * | 1 |  b   |      0       |    b vs a ❌           | reset        |     0       |   0    |
+ * | 2 |  a   |      0       |    a vs a ✅           | extend       |     1       |   1    |
+ * | 3 |  b   |      1       |    b vs b ✅           | extend       |     2       |   2    |
+ * | 4 |  c   |      2       |    c vs a ❌           | fallback     |     0       |   0    |
+ * | 5 |  a   |      0       |    a vs a ✅           | extend       |     1       |   1    |
+ * | 6 |  b   |      1       |    b vs b ✅           | extend       |     2       |   2    |
+ * | 7 |  a   |      2       |    a vs a ✅           | extend       |     3       |   3    |
+ * | 8 |  b   |      3       |    b vs b ✅           | extend       |     4       |   4    |
+ * ------------------------------------------------------------------
+ *
+ * Final LPS:
+ * Index:  0 1 2 3 4 5 6 7 8
+ * LPS:    0 0 1 2 0 1 2 3 4
+ *
+ *
+ * 🟢 HOW TO READ THIS TABLE:
+ *
+ * • len = current matched prefix length
+ * • We ONLY compare:
+ *   → s[i] vs s[len]
+ *
+ * • If match → extend (len++)
+ * • If mismatch → fallback:
+ *   len = lps[len - 1] (repeat until match or len = 0)
+ *
+ *
+ * 🔴 CRITICAL MOMENT (i = 4):
+ *
+ * Before:
+ * "ab" matched → len = 2
+ *
+ * Now:
+ * c vs a ❌ mismatch
+ *
+ * Fallback:
+ * len = lps[1] = 0
+ *
+ * 👉 Instead of restarting blindly,
+ * we jump to last known valid prefix
+ *
+ *
+ * 🧠 MEMORY HOOK:
+ *
+ * len is like a rubber band
+ * • stretches on match
+ * • shrinks using lps on mismatch
+ * • never restarts blindly
+ *
+ *
  * ================================================================
  * 🟣 INTERVIEW ARTICULATION (INVARIANT-LED · NO CODE)
  * ================================================================
