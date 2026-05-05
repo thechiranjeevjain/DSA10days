@@ -1,6 +1,4 @@
-package org.chijai.day7.session1;
-
-import java.util.*;
+package org.chijai.day7.session2;
 
 /**
  * ================================================================
