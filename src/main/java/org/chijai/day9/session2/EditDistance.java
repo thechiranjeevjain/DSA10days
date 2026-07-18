@@ -712,6 +712,14 @@ public class EditDistance {
 
                     } else {
 
+                        // Think backwards: What was the LAST operation?
+                        //
+                        // Delete : abcX -> abc  => undo delete  => dp[i-1][j] + 1
+                        // Insert : abc  -> abcX => undo insert  => dp[i][j-1] + 1
+                        // Replace: abcX -> abcY => undo replace => dp[i-1][j-1] + 1
+                        //
+                        // Rewind one edit to reach an already-solved subproblem.
+
                         int delete =
                                 dp[i - 1][j];
 
