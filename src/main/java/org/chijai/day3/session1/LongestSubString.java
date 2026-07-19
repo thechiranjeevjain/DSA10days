@@ -241,7 +241,7 @@ public class LongestSubString {
     }
 
     // 🟡 SEEN-ARRAY VERSION
-// Invariant: seen[c] == true ⇔ c exists in window
+    // Invariant: seen[c] == true ⇔ c exists in window
 
     static class Optimal_SeenArray {
 
@@ -268,8 +268,8 @@ public class LongestSubString {
 
 
     // 🔒 CANONICAL INTERVIEW VERSION
-// Pattern: Sliding Window (uniqueness)
-// Invariant: window [left, right) has NO duplicate characters
+    // Pattern: Sliding Window (uniqueness)
+    // Invariant: window [left, right) has NO duplicate characters
 
     static class Optimal_SetBased {
 

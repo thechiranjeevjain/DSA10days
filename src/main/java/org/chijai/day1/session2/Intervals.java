@@ -116,34 +116,70 @@ public class Intervals {
 
     // ------------------------------------------------------------
     // 🟢 OPTIMAL — ARRAY VERSION (PLATFORM STYLE)
-    // ------------------------------------------------------------
+
     static class MergeIntervalsOptimal {
 
+        /**
+         * ---------------------------------------------------------------------------
+         * Mental Model
+         * ---------------------------------------------------------------------------
+         *
+         * Sort intervals
+         *         ↓
+         * Open the first interval (activeInterval)
+         *         ↓
+         * For every remaining interval:
+         *
+         *     Does it overlap the active interval?
+         *              ↓
+         *        Yes → Extend the active interval.
+         *
+         *        No  → Finalize (store) the active interval.
+         *              Start a new active interval.
+         *
+         * Finish iteration
+         *         ↓
+         * Finalize the last active interval.
+         *
+         * ---------------------------------------------------------------------------
+         * Invariant:
+         * activeInterval always represents the merged interval currently being built.
+         * It is the accumulated merged span of all overlapping intervals processed
+         * so far that has not yet been added to the answer.
+         * ---------------------------------------------------------------------------
+         */
         public int[][] merge(int[][] intervals) {
 
-            if (intervals.length < 2) return intervals;
+            if (intervals.length < 2)
+                return intervals;
 
-            // 🟢 INVARIANT: sorting guarantees local overlap decisions
+            // Sort intervals by start position.
             Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
 
             List<int[]> merged = new ArrayList<>();
 
-            // 🟢 INVARIANT: activeInterval represents merged span so far
+            // Active merged interval currently being built.
             int[] activeInterval = intervals[0];
 
             for (int i = 1; i < intervals.length; i++) {
+
                 int[] current = intervals[i];
 
-                // 🟡 Overlap exists
-                if (current[0] <= activeInterval[1]) {
-                    activeInterval[1] = Math.max(activeInterval[1], current[1]);
-                } else {
+                int currentStart = current[0];
+                int currentEnd = current[1];
+
+                // Overlap → extend the active interval.
+                if (currentStart <= activeInterval[1]) {
+                    activeInterval[1] = Math.max(activeInterval[1], currentEnd);
+                }
+                // Gap → finalize current interval and start a new one.
+                else {
                     merged.add(activeInterval);
                     activeInterval = current;
                 }
             }
 
-            // ❌ COMMON BUG: forgetting to add last interval
+            // Don't forget to finalize the last active interval.
             merged.add(activeInterval);
 
             return merged.toArray(new int[merged.size()][]);

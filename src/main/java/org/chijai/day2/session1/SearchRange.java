@@ -621,7 +621,6 @@ public class SearchRange {
      *     discard the right half entirely → right = mid - 1
      */
 
-
     static class SearchRotatedArray {
         static int search(int[] nums, int target) {
             int left = 0, right = nums.length - 1;
@@ -640,6 +639,58 @@ public class SearchRange {
             return -1;
         }
     }
+
+    /**
+     * ---------------------------------------------------------------------------
+     * Mental Model
+     * ---------------------------------------------------------------------------
+     *
+     * Binary Search
+     *        ↓
+     * Which half is sorted?
+     *        ↓
+     * Can the target exist in that sorted half?
+     *        ↓
+     *      Yes → Search that half.
+     *      No  → Search the other half.
+     *
+     * ---------------------------------------------------------------------------
+     * Decision Tree
+     * ---------------------------------------------------------------------------
+     *
+     *                mid
+     *                 │
+     *      Is left half sorted?
+     *     nums[left] <= nums[mid]
+     *           /                \
+     *        Yes                  No
+     *         │                    │
+     * Is target inside?     Right half is sorted.
+     *         │                    │
+     *      Yes   No         Is target inside?
+     *       │     │              │
+     *    Search  Search       Yes     No
+     *     Left    Right        │       │
+     *                        Search  Search
+     *                         Right    Left
+     *
+     * ---------------------------------------------------------------------------
+     * Why This Works
+     * ---------------------------------------------------------------------------
+     *
+     * A rotated sorted array has exactly one discontinuity (the pivot).
+     *
+     * Therefore, at every binary search step, at least one half must still be
+     * completely sorted. Both halves can never be unsorted simultaneously.
+     *
+     * The algorithm simply identifies the sorted half and asks:
+     *
+     *     "Can the target lie within this sorted range?"
+     *
+     * If yes, continue searching there.
+     * Otherwise, discard it and search the other half.
+     * ---------------------------------------------------------------------------
+     */
 
     /*
      * 81. Search in Rotated Sorted Array II

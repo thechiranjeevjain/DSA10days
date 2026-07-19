@@ -344,6 +344,18 @@ public class KokoBananas {
                      * • explicit double conversion
                      * • cast to long avoids overflow
                      */
+                    /*
+                     * Hours needed for one pile:
+                     *
+                     *      pile = 11
+                     *      speed = 6
+                     *
+                     *      11 / 6 = 1.83
+                     *      → ceil(...) = 2 hours
+                     *
+                     * We round UP because any remaining bananas require
+                     * another full hour to finish.
+                     */
                     requiredHours += (long) Math.ceil((double) pile / midSpeed);
                 }
 

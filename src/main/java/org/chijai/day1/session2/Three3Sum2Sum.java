@@ -213,6 +213,37 @@ public class Three3Sum2Sum {
         }
     }
 
+    class Solution {
+        public List < List < Integer >> threeSum(int[] nums) {
+
+            Set < List < Integer >> res = new HashSet < > ();
+            int n = nums.length;
+            if (n == 0 || n < 3)
+                return new ArrayList < > (res);
+            Arrays.sort(nums);
+            for (int i = 0; i < n - 2; i++) {
+                if (nums[i] > 0)
+                    break;
+                int j = i + 1;
+                int k = n - 1;
+                while (j < k) {
+                    int sum = nums[i] + nums[j] + nums[k];
+                    if (sum == 0) {
+                        res.add(Arrays.asList(nums[i], nums[j], nums[k]));
+                        j++;
+                        k--;
+                    }
+                    else if (sum > 0)
+                        k--;
+                    else
+                        j++;
+                }
+            }
+            return new ArrayList < > (res);
+        }
+    }
+
+
     // ============================================================
     // 📊 APPROACH COMPARISON SUMMARY
     // ============================================================
@@ -269,7 +300,7 @@ public class Three3Sum2Sum {
         /*
          🔵 Problem:
             Given sorted array, find two numbers summing to target.
-
+Sorted array (e.g., LeetCode 167 – Two Sum II): ✅ Two Pointers — O(n) time, O(1) space (optimal).
          ⚫ Mapping:
             Same two-pointer invariant, no fixed anchor.
 
@@ -287,6 +318,20 @@ public class Three3Sum2Sum {
                 else right--;
             }
             return new int[]{};
+        }
+    }
+
+    // Unsorted array (e.g., LeetCode 1 – Two Sum): ✅ HashMap — O(n) time, O(n) space (optimal).
+    class TwoSumSolution {
+        public int[] twoSum(int[] nums, int target) {
+            Map<Integer, Integer> numToIndex = new HashMap<>();
+
+            for (int i = 0; i < nums.length; ++i) {
+                if (numToIndex.containsKey(target - nums[i]))
+                    return new int[] {numToIndex.get(target - nums[i]), i};
+                numToIndex.put(nums[i], i);
+            }
+            throw new IllegalArgumentException();
         }
     }
 

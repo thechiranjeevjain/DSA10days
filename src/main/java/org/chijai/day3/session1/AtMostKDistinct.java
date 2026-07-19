@@ -263,6 +263,110 @@ public class AtMostKDistinct {
         }
     }
 
+    static class Optimal_AtMostKDistinct {
+
+    /*
+    ---------------------------------------------------------------------------
+    Mental Model
+    ---------------------------------------------------------------------------
+
+    Expand the window by adding one character.
+
+    If the window contains more than K distinct characters,
+    shrink it until the invariant is restored.
+
+    Every valid window is a candidate answer.
+
+            Expand
+               ↓
+       Distinct <= K ?
+          /        \
+        Yes        No
+         |          |
+    Update Answer  Shrink
+                    ↓
+             Restore Invariant
+
+    ---------------------------------------------------------------------------
+    Invariant
+    ---------------------------------------------------------------------------
+
+    frequency[c]
+        Number of occurrences of character c inside the current window.
+
+    distinctCount
+        Number of distinct characters currently inside the window.
+
+    Window is VALID iff
+
+        distinctCount <= k
+
+    ---------------------------------------------------------------------------
+    State Transitions
+    ---------------------------------------------------------------------------
+
+    Character enters:
+
+        frequency[c]++
+
+        If frequency becomes 1,
+        a new distinct character has entered the window.
+
+    Character leaves:
+
+        frequency[c]--
+
+        If frequency becomes 0,
+        one distinct character has completely left the window.
+    ---------------------------------------------------------------------------
+    */
+
+        static int lengthOfLongestSubstringAtMostKDistinct(String s, int k) {
+
+            if (k == 0 || s.isEmpty())
+                return 0;
+
+            int[] frequency = new int[128];
+
+            int left = 0;
+            int right = 0;
+
+            int distinctCount = 0;
+            int maxWindowLength = 0;
+
+            while (right < s.length()) {
+
+                // 🔵 Expand window
+                char enteringChar = s.charAt(right);
+
+                frequency[enteringChar]++;
+
+                if (frequency[enteringChar] == 1)
+                    distinctCount++;
+
+                right++;
+
+                // 🔴 Restore invariant
+                while (distinctCount > k) {
+
+                    char leavingChar = s.charAt(left);
+
+                    frequency[leavingChar]--;
+
+                    if (frequency[leavingChar] == 0)
+                        distinctCount--;
+
+                    left++;
+                }
+
+                // 🟢 Valid window
+                maxWindowLength = Math.max(maxWindowLength, right - left);
+            }
+
+            return maxWindowLength;
+        }
+    }
+
     /*
      * ============================================================
      * 7️⃣ 🟣 INTERVIEW ARTICULATION

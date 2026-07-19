@@ -227,33 +227,6 @@ public class AGGRCOW {
     /** ------------------------------------------------------------
      * 🟢 OPTIMAL (INTERVIEW-PREFERRED)
      * -------------------------------------------------------------
-     * Same as Improved, but with explicit invariants & clarity.
-     */
-    static class Optimal {
-        static int solve(int[] stalls, int cows) {
-            java.util.Arrays.sort(stalls);
-
-            int lowDistance = 1;
-            int highDistance = stalls[stalls.length - 1] - stalls[0];
-            int largestFeasible = 0;
-
-            while (lowDistance <= highDistance) {
-                int candidateDistance =
-                        lowDistance + (highDistance - lowDistance) / 2;
-
-                if (canPlace(stalls, cows, candidateDistance)) {
-                    largestFeasible = candidateDistance;
-                    lowDistance = candidateDistance + 1; // 🟢 expand
-                } else {
-                    highDistance = candidateDistance - 1; // 🔴 shrink
-                }
-            }
-            return largestFeasible;
-        }
-    }
-
-    /*
-     * 🟢 Shared Greedy Feasibility Check
      */
     static boolean canPlace(int[] stalls, int cows, int minDistance) {
         int cowsPlaced = 1; // first cow always placed
@@ -271,6 +244,56 @@ public class AGGRCOW {
         }
         return false;
     }
+    static class Optimal {
+        static int solve(int[] stalls, int cows) {
+            java.util.Arrays.sort(stalls);
+
+            int low = 1;
+            int high = stalls[stalls.length - 1] - stalls[0];
+            int best = 0;
+
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+
+                if (canPlace(stalls, cows, mid)) {
+                    best = mid;          // 🟢 feasible, try bigger
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;     // 🔴 infeasible, shrink
+                }
+            }
+            return best;
+        }
+    }
+    /**
+     * ---------------------------------------------------------------------------
+     * Key Realization
+     * ---------------------------------------------------------------------------
+     *
+     * We are NOT trying to directly construct the best arrangement of cows.
+     *
+     * Instead, we repeatedly ask:
+     *
+     *     "If I require every pair of cows to be at least D units apart,
+     *      is it possible to place all the cows?"
+     *
+     * This is a simple Yes/No (feasibility) question that can be answered
+     * greedily by placing each cow in the earliest valid stall.
+     *
+     * The answers are monotonic:
+     *
+     *      Minimum Distance
+     *
+     *      1   2   3   4   5   6   7   8
+     *      ✅  ✅  ✅  ❌  ❌  ❌  ❌  ❌
+     *
+     * Once a distance becomes impossible, every larger distance is also
+     * impossible.
+     *
+     * Therefore, we binary search over the answer space to find the
+     * largest feasible minimum distance.
+     * ---------------------------------------------------------------------------
+     */
 
     /*
      * ================================================================

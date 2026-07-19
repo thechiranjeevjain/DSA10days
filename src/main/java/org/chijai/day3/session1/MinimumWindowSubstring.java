@@ -320,6 +320,44 @@ public class MinimumWindowSubstring {
         }
     }
 
+    /**
+     * ---------------------------------------------------------------------------
+     * Window Lifecycle
+     * ---------------------------------------------------------------------------
+     *
+     * The window repeatedly alternates between two phases:
+     *
+     *      Expand
+     *         ↓
+     *   Window becomes VALID
+     *         ↓
+     *   Record current answer
+     *         ↓
+     *      Shrink
+     *         ↓
+     *   Still VALID?
+     *      /      \
+     *    Yes       No
+     *     |         |
+     * Keep       Expand
+     * Shrinking   Again
+     *
+     * ---------------------------------------------------------------------------
+     * Key Interview Insight
+     * ---------------------------------------------------------------------------
+     *
+     * A valid window is a candidate answer.
+     *
+     * Therefore, every time the window becomes valid:
+     *
+     *      1. Record the current window.
+     *      2. Try to shrink it.
+     *      3. Continue shrinking while it remains valid.
+     *      4. Stop immediately when it becomes invalid.
+     *
+     * The smallest valid window encountered during this process is the answer.
+     * ---------------------------------------------------------------------------
+     */
         /*
      =====================================================================================
      🟣 INTERVIEW ARTICULATION (PRIMARY PROBLEM)

@@ -218,6 +218,119 @@ public class MajorityElement {
         }
     }
 
+    /**
+     * ---------------------------------------------------------------------------
+     * Why this order is mandatory (Algorithm Invariant)
+     * ---------------------------------------------------------------------------
+     *
+     * Order:
+     *
+     *     Equality
+     *         ↓
+     *     Replacement
+     *         ↓
+     *     Cancellation
+     *
+     * Always ask:
+     *
+     *     1. Is this number already one of my candidates?
+     *              ↓
+     *     2. If not, is there an empty candidate slot?
+     *              ↓
+     *     3. Otherwise, cancel one vote from both candidates.
+     *
+     * ---------------------------------------------------------------------------
+     * Intuition
+     * ---------------------------------------------------------------------------
+     *
+     * Think of each candidate slot as a person.
+     *
+     *     Candidate 1
+     *     Candidate 2
+     *
+     * When a new number arrives, the FIRST question is:
+     *
+     *     "Do I already know you?"
+     *
+     * If YES:
+     *     → Increase that candidate's vote.
+     *
+     * Only if the answer is NO , for both the candidates , do we ask:
+     *
+     *     "Is there an empty seat?"
+     *
+     * If YES:
+     *     → Seat this new candidate.
+     *
+     * If both seats are occupied:
+     *     → Cancel one vote from each candidate.
+     *
+     * ---------------------------------------------------------------------------
+     * Why Equality Must Be Checked Before Replacement
+     * ---------------------------------------------------------------------------
+     *
+     * Suppose:
+     *
+     *     candidate1 = 5, count1 = 0
+     *     candidate2 = 8, count2 = 3
+     *
+     * Incoming number = 8
+     *
+     * Correct:
+     *
+     *     num == candidate2
+     *     → count2++
+     *
+     * Wrong (checking count == 0 first):
+     *
+     *     candidate1 = 8
+     *     count1 = 1
+     *
+     * Now:
+     *
+     *     candidate1 = 8
+     *     candidate2 = 8
+     *
+     * Both candidate slots contain the same value.
+     * The algorithm can no longer track two different potential majority
+     * candidates, so the fundamental Boyer-Moore invariant is broken.
+     * ---------------------------------------------------------------------------
+     */
+
+    /**
+     * ---------------------------------------------------------------------------
+     * Key Insight
+     * ---------------------------------------------------------------------------
+     *
+     * The difference is not the Boyer-Moore algorithm itself—it is the number
+     * of candidate slots being maintained.
+     *
+     * n/2 Majority Vote (One Candidate)
+     * ---------------------------------
+     * There is only one candidate slot.
+     *
+     *     count == 0
+     *
+     * means the only slot is inactive (empty). Since there is no second candidate
+     * to compare against, replacing first or checking equality first both preserve
+     * the algorithm's invariant.
+     *
+     * n/3 Majority Vote (Two Candidates)
+     * ----------------------------------
+     * There are two independent candidate slots.
+     *
+     *     count1 == 0
+     *
+     * only means Candidate 1's slot is available. It does NOT mean the incoming
+     * number isn't already being tracked by Candidate 2.
+     *
+     * Therefore, equality checks must always happen before replacement.
+     * Otherwise, both candidate slots can end up storing the same value,
+     * breaking the invariant that the algorithm tracks up to two distinct
+     * potential majority candidates.
+     * ---------------------------------------------------------------------------
+     */
+
     // ============================================================================
     // 🧠 CORE INTUITION — WHY BOYER–MOORE (n/3) WORKS
     // ============================================================================
