@@ -170,6 +170,108 @@ public class GasStation {
         // Time: O(n), Space: O(1)
     }
 
+    /**
+     * ============================================================================
+     * Gas Station (Greedy)
+     * ============================================================================
+     *
+     * Mental Model
+     * ------------
+     * We maintain ONE candidate starting station.
+     *
+     * As we move forward, we simulate the journey from that candidate.
+     *
+     * If the tank ever becomes negative, the current candidate cannot complete
+     * the journey, and neither can any station between the candidate and the
+     * current station.
+     *
+     * Therefore, we discard that entire range and choose the next station as
+     * the new candidate.
+     *
+     * ---------------------------------------------------------------------------
+     * Key Observation
+     * ---------------------------------------------------------------------------
+     *
+     * net = gas[i] - cost[i]
+     *
+     * Positive net  -> Gain fuel
+     * Negative net  -> Lose fuel
+     *
+     * Instead of separately adding gas and subtracting cost, we only track the
+     * net change in the fuel tank.
+     *
+     * ---------------------------------------------------------------------------
+     * State
+     * ---------------------------------------------------------------------------
+     *
+     * totalNet
+     *      Total net fuel across the entire circle.
+     *
+     * runningTank
+     *      Fuel remaining while simulating from the current candidate.
+     *
+     * startIndex
+     *      Current candidate starting station.
+     *
+     * ---------------------------------------------------------------------------
+     * Invariant
+     * ---------------------------------------------------------------------------
+     *
+     * Before every iteration:
+     *
+     * 1. startIndex is the only remaining candidate.
+     *
+     * 2. runningTank is the fuel remaining if we started from startIndex.
+     *
+     * 3. runningTank is never negative.
+     *
+     * ---------------------------------------------------------------------------
+     * Greedy Insight
+     * ---------------------------------------------------------------------------
+     *
+     * If runningTank becomes negative at station i:
+     *
+     *      startIndex -------------> i
+     *          ❌  ❌  ❌  ❌  ❌
+     *
+     * Every station in this interval is impossible.
+     *
+     * Therefore:
+     *
+     *      startIndex = i + 1
+     *      runningTank = 0
+     *
+     * ---------------------------------------------------------------------------
+     * Why totalNet?
+     * ---------------------------------------------------------------------------
+     *
+     * runningTank answers:
+     *
+     *      "Can my current candidate survive?"
+     *
+     * totalNet answers:
+     *
+     *      "Does any solution exist?"
+     *
+     * If totalNet < 0
+     *
+     *      Total Gas < Total Cost
+     *
+     *      ⇒ Impossible to complete the circuit.
+     *
+     * Otherwise, the greedy proof guarantees that the final startIndex is the
+     * unique valid starting station.
+     *
+     * ---------------------------------------------------------------------------
+     * Complexity
+     * ---------------------------------------------------------------------------
+     *
+     * Time  : O(n)
+     * Space : O(1)
+     *
+     * ============================================================================
+     */
+
     // ===============================================================
     // 🟣 INTERVIEW ARTICULATION
     // ===============================================================
