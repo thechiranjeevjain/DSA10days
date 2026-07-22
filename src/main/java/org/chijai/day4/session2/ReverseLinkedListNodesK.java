@@ -435,6 +435,34 @@ public class ReverseLinkedListNodesK {
         }
     }
 
+    /**
+     * Reverse Nodes in k-Group (LeetCode 25)
+     *
+     * Process one complete k-group at a time:
+     *
+     * Find kth
+     * → Save groupNext
+     * → Reverse until groupNext
+     * → Reconnect
+     * → Advance
+     * → Repeat
+     *
+     * Movie:
+     * dummy → [1 2 3] → 4 5 6
+     *           ↓
+     * dummy → [3 2 1] → 4 5 6
+     *
+     * Invariant:
+     * groupPrev always points to the node BEFORE the next unreversed group.
+     *
+     * Reconnection:
+     * Previous → New Head → ... → New Tail → Next Group
+     * oldGroupHead = New Tail
+     * kth          = New Head
+     *
+     * Time : O(n)
+     * Space: O(1)
+     */
 
 // =====================================================================================
 // 📘 REVERSE NODES IN K-GROUP — INVARIANT-FIRST ALGORITHM CHAPTER
