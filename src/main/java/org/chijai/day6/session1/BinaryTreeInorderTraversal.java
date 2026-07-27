@@ -599,6 +599,86 @@ public class BinaryTreeInorderTraversal {
     }
 
     /*
+ * =============================================================================
+ * ITERATIVE TREE TRAVERSALS — ONE MENTAL MODEL
+ * =============================================================================
+ *
+ * PREORDER (Root → Left → Right)
+ *
+ *      Recursive
+ *
+ *          print(root);
+ *          pre(left);
+ *          pre(right);
+ *
+ *
+ *      Iterative
+ *
+ *             pop
+ *               │
+ *               ▼
+ *          PRINT NOW
+ *               │
+ *               ▼
+ *     push(right), push(left)
+ *               │
+ *               ▼
+ *      Root → Left → Right
+ *
+ *
+ * =============================================================================
+ * TWO-STACK POSTORDER (Left → Right → Root)
+ * =============================================================================
+ *
+ * Instead of printing immediately,
+ * save every visited node into Stack2.
+ *
+ * Stack2 will reverse the entire traversal later.
+ *
+ *
+ *             pop
+ *               │
+ *               ▼
+ *        SAVE IN STACK2
+ *               │
+ *               ▼
+ *     push(left), push(right)
+ *               │
+ *               ▼
+ *      Root → Right → Left
+ *               │
+ *               ▼
+ *     Pop Stack2 (Automatic Reverse)
+ *               │
+ *               ▼
+ *      Left → Right → Root
+ *
+ *
+ * =============================================================================
+ * WHY DOES THIS WORK?
+ * =============================================================================
+ *
+ * Preorder:
+ *
+ *      print immediately
+ *
+ *      Root → Left → Right
+ *
+ *
+ * Postorder:
+ *
+ *      don't print
+ *      remember every node
+ *
+ *      Root → Right → Left
+ *
+ *      then reverse everything once
+ *
+ *      Left → Right → Root
+ *
+ *
+ * =============================================================================
+    /*
      * Edge Cases:
      * - Skewed trees
      * - Single child nodes

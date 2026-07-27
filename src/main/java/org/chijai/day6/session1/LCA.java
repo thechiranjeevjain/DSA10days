@@ -438,6 +438,27 @@ public class LCA {
         }
     }
 
+    /*
+     * MENTAL MODEL
+     *
+     * 1. Build parent pointers (reverse roads).
+     * 2. Walk from P to the root and paint every ancestor.
+     * 3. Walk from Q to the root.
+     * 4. First painted ancestor = Lowest Common Ancestor.
+     *
+     * Picture:
+     *
+     *             Root 🔵
+     *            /     \
+     *         B 🔵      C
+     *        /   \
+     *      D      E 🔵
+     *            /   \
+     *           P      Q
+     *
+     * P paints its path home.
+     * Q walks home until it steps on blue paint.
+     */
 
 /****************************************************************************************
  * 7️⃣ 🟣 INTERVIEW ARTICULATION (INVARIANT-LED · NO CODE)

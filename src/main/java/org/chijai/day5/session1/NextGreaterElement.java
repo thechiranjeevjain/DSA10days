@@ -227,40 +227,97 @@ public class NextGreaterElement {
     // 🟢 OPTIMAL (MONOTONIC STACK · INTERVIEW-PREFERRED)
     // -------------------------------------------------------------------------
     static class Optimal {
-        /*
-         * Core Idea:
-         * Use monotonic decreasing stack over 2n traversal.
+        /**
+         * ============================================================================
+         * DEFERRED RESOLUTION PATTERN (Monotonic Stack)
+         * ============================================================================
          *
-         * Enforced Invariant:
-         * Stack holds unresolved indices in decreasing value order.
+         * Mental Model
+         * ------------
+         * Stack = Waiting Room of unresolved elements.
          *
-         * Time: O(n)
-         * Space: O(n)
-         * Interview Preference: ✅
+         * Every incoming element follows the same lifecycle:
+         *
+         *                      Incoming Element
+         *                             │
+         *                             ▼
+         *                 Can I resolve someone?
+         *                       /         \
+         *                     Yes          No
+         *                      │            │
+         *             Resolve & Remove      │
+         *                      │            │
+         *                Keep checking      │
+         *                      │            │
+         *                 No one left? ◄────┘
+         *                      │
+         *                      ▼
+         *             Join the Waiting Room
+         *
+         * Generic Template
+         * ----------------
+         *
+         * Stack<Element> waiting = new Stack<>();
+         *
+         * for (each incomingElement) {
+         *
+         *     while (!waiting.isEmpty()
+         *             && canResolve(incomingElement, waiting.peek())) {
+         *
+         *         resolve(incomingElement, waiting.pop());
+         *     }
+         *
+         *     waiting.push(incomingElement);
+         * }
+         *
+         * Customize Only
+         * --------------
+         * 1. Who enters the waiting room?
+         * 2. What are they waiting for?
+         * 3. When can the current element resolve them?
+         * 4. How is the resolution recorded?
+         *
+         * ============================================================================
+         * THIS PROBLEM
+         * ============================================================================
+         *
+         * Waiting Room  : Indices whose Next Greater Element is unknown.
+         * Waiting For   : First greater element to their right (circular).
+         * Resolve When  : nums[current] > nums[waiting.peek()]
+         * Record Answer : answer[unresolved] = nums[current]
+         *
+         * Time  : O(n)
+         * Space : O(n)
+         * ============================================================================
          */
         static int[] nextGreaterElements(int[] nums) {
+
             int n = nums.length;
-            int[] result = new int[n];
-            Arrays.fill(result, -1);
 
-            Stack<Integer> stack = new Stack<>(); // stores indices
+            int[] answer = new int[n];
+            Arrays.fill(answer, -1);
 
-            // Traverse twice to simulate circular array
-            for (int i = 0; i < 2 * n; i++) {
+            // Waiting Room of unresolved indices.
+            Stack<Integer> waiting = new Stack<>();
 
-                int circularIndex = i % n;
+            // Traverse twice to simulate a circular array.
+            for (int visit = 0; visit < 2 * n; visit++) {
 
-                while (!stack.isEmpty()
-                        && nums[circularIndex] > nums[stack.peek()]) {
+                int current = visit % n;
 
-                    int unresolvedIndex = stack.pop();
-                    result[unresolvedIndex] = nums[circularIndex];
+                // Current element resolves everyone it can.
+                while (!waiting.isEmpty()
+                        && nums[current] > nums[waiting.peek()]) {
+
+                    int unresolved = waiting.pop();
+                    answer[unresolved] = nums[current];
                 }
 
-                stack.push(circularIndex);
+                // Current element joins the waiting room.
+                waiting.push(current);
             }
 
-            return result;
+            return answer;
         }
     }
 

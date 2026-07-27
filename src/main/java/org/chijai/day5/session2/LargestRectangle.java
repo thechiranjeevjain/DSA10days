@@ -506,6 +506,10 @@ public class LargestRectangle {
             long maxArea = 0; // long for safe intermediate multiplication
 
             // Stack stores indices of bars with increasing heights
+            // Modern Java Stack:
+            // Deque + ArrayDeque provides stack (LIFO) operations.
+            // Use push(), pop(), peek().
+            // Preferred over the legacy synchronized Stack class.
             Deque<Integer> increasingStack = new ArrayDeque<>();
 
             /*
@@ -514,6 +518,24 @@ public class LargestRectangle {
              * Purpose:
              * - Force all remaining bars in the stack to be popped
              * - This finalizes rectangles that extend till the end
+             */
+            /*
+             * Every bar eventually needs a "closing event"
+             * that tells it:
+             *
+             * "You cannot extend any further."
+             *
+             * Smaller bars naturally close taller bars.
+             *
+             * But bars that survive until the end never
+             * receive such an event.
+             *
+             * So we create one final imaginary bar
+             * of height 0.
+             *
+             * It is smaller than every real bar,
+             * forcing every remaining rectangle
+             * to be finalized.
              */
             for (int i = 0; i <= n; i++) {
 
