@@ -678,405 +678,451 @@ public class CoinChange {
         }
     }
 
-    /**
-     * =========================================================================
-     * OPTIMAL (INTERVIEW-PREFERRED)
-     * =========================================================================
+    /*
+     * 0/1 KNAPSACK
      *
-     * Core Idea
-     * ---------
-     * Bottom-up Dynamic Programming.
+     * One physical item.
+     * Use it at most ONCE.
      *
-     * Build answers from smaller amounts toward larger amounts.
+     * Decision:
+     * Skip -> dp[cap]
+     * Take -> value + dp[cap - weight]
      *
-     * -------------------------------------------------------------------------
-     * 🟢 Invariant
-     * -------------------------------------------------------------------------
+     * dp[cap] = max(skip, take)
      *
-     * dp[x]
+     * IMPORTANT:
+     * Iterate capacity BACKWARD.
      *
-     * always equals:
+     * Why?
+     * dp[cap - weight] must represent ONLY previous items.
+     * Backward prevents the current item from reading its own update,
+     * so the same item cannot be used twice.
      *
-     * minimum coins required to construct amount x.
+     * Memory:
      *
-     * If impossible:
+     * One Item
+     *    │
+     *    ▼
+     * Bag5 -> reads old Bag3
+     * Bag4 -> reads old Bag2
+     * Bag3 -> reads old Bag1
+     * Bag2 -> updated LAST
      *
-     * dp[x] = INF.
-     *
-     * -------------------------------------------------------------------------
-     * Limitation Fixed
-     * -------------------------------------------------------------------------
-     *
-     * Removes:
-     *
-     * - exponential recursion
-     * - repeated work
-     * - stack growth
-     *
-     * -------------------------------------------------------------------------
-     * Time Complexity
-     * -------------------------------------------------------------------------
-     *
-     * O(amount * coins.length)
-     *
-     * -------------------------------------------------------------------------
-     * Space Complexity
-     * -------------------------------------------------------------------------
-     *
-     * O(amount)
-     *
-     * -------------------------------------------------------------------------
-     * Interview Preference
-     * -------------------------------------------------------------------------
-     *
-     * Preferred solution.
-     *
-     * Easy to derive.
-     * Easy to verify.
-     * Easy to debug.
+     * Current item never clones itself.
      */
+
+    static int knapsack01(int[] weights, int[] values, int capacity) {
+
+        int[] dp = new int[capacity + 1];
+
+        // Process one item at a time.
+        for (int item = 0; item < weights.length; item++) {
+
+            // Backward => current item cannot reuse itself.
+            for (int cap = capacity; cap >= weights[item]; cap--) {
+
+                int skip = dp[cap];
+
+                int take = values[item] + dp[cap - weights[item]];
+
+                dp[cap] = Math.max(skip, take);
+            }
+        }
+
+        return dp[capacity];
+    }
+
+    /*
+     * =========================================================================
+     * COIN CHANGE (Minimum Coins)
+     * =========================================================================
+     *
+     * State:
+     * dp[x] = minimum coins needed to make amount x.
+     *
+     * Transition:
+     *
+     * dp[amount] =
+     * min(dp[amount],
+     *     dp[amount - coin] + 1)
+     *
+     * -------------------------------------------------------------------------
+     * APPROACH 1 — Solve One Amount DP ⭐
+     * -------------------------------------------------------------------------
+     *
+     * Think:
+     *
+     * "I need THIS amount.
+     * Which coin should I pick LAST?"
+     *
+     * Need Amount = 7
+     *        │
+     *        ▼
+     *   Try ₹1
+     *   Try ₹2
+     *   Try ₹5
+     *        │
+     *        ▼
+     *    Take Minimum
+     *
+     * for(amount)
+     *     for(coin)
+     *
+     * Mirrors the recursive decision tree.
+     * Easiest approach to invent during interviews.
+     *
+     * -------------------------------------------------------------------------
+     * Why it works
+     * -------------------------------------------------------------------------
+     *
+     * Every amount asks the same question:
+     *
+     * "Which previous amount + one coin
+     * gives the minimum answer?"
+     */
+
     static class OptimalSolution {
 
-        public int coinChange(int[] coins, int amount) {
+            public int coinChange(int[] coins, int target) {
 
-            // Handle empty target immediately.
-            if (amount == 0) {
-                return 0;
+                int INF = target + 1;
+
+                int[] dp = new int[target + 1];
+                Arrays.fill(dp, INF);
+
+                dp[0] = 0;
+
+                // Solve ONE amount.
+                for (int amount = 1; amount <= target; amount++) {
+
+                    // Try EVERY coin.
+                    for (int coin : coins) {
+
+                        if (coin <= amount) {
+
+                            dp[amount] = Math.min(
+                                    dp[amount],
+                                    dp[amount - coin] + 1
+                            );
+                        }
+                    }
+                }
+
+                return dp[target] == INF ? -1 : dp[target];
             }
+    }
 
-            // Safe impossible value.
-            int INF = amount + 1;
+    /*
+     * =========================================================================
+     * COIN CHANGE (Minimum Coins)
+     * =========================================================================
+     *
+     * State:
+     * dp[x] = minimum coins needed to make amount x.
+     *
+     * Transition:
+     *
+     * dp[amount] =
+     * min(dp[amount],
+     *     dp[amount - coin] + 1)
+     *
+     * -------------------------------------------------------------------------
+     * APPROACH 2 — Process One Coin DP
+     * -------------------------------------------------------------------------
+     *
+     * Think:
+     *
+     * "I'm holding THIS coin.
+     * Which amounts can it improve?"
+     *
+     * Holding Coin ₹2
+     *        │
+     *        ▼
+     * Improve Amount2
+     *        ▼
+     * Improve Amount3
+     *        ▼
+     * Improve Amount4
+     *        ▼
+     * Improve Amount5
+     *
+     * for(coin)
+     *     for(amount)
+     *
+     * The current coin relaxes every reachable amount.
+     *
+     * -------------------------------------------------------------------------
+     * Why it works
+     * -------------------------------------------------------------------------
+     *
+     * Every coin propagates improvements to all
+     * reachable amounts.
+     *
+     * Since this problem asks for MINIMUM,
+     * every (amount, coin) transition is eventually
+     * evaluated, so both traversal orders converge
+     * to the same optimal answer.
+     *
+     * NOTE:
+     * This flexibility is UNIQUE to Coin Change (minimum).
+     * Coin Change II cannot freely swap loop order.
+     */
 
-            int[] dp = new int[amount + 1];
+    static class ProcessOneCoinDP {
 
+        public int coinChange(int[] coins, int target) {
+
+            int INF = target + 1;
+
+            int[] dp = new int[target + 1];
             Arrays.fill(dp, INF);
 
-            // Invariant anchor:
-            // zero amount requires zero coins.
             dp[0] = 0;
 
-            for (int currAmount = 1;
-                 currAmount <= amount;
-                 currAmount++) {
+            // Process ONE coin.
+            for (int coin : coins) {
 
-                for (int coin : coins) {
+                // Let THIS coin improve every reachable amount.
+                for (int amount = coin; amount <= target; amount++) {
 
-                    if (currAmount >= coin) {
-
-                        // Invariant:
-                        // dp[currAmount - coin]
-                        // already represents an optimal
-                        // smaller subproblem.
-
-                        dp[currAmount] =
-                                Math.min(
-                                        dp[currAmount],
-                                        dp[currAmount - coin] + 1
-                                );
-                    }
+                    dp[amount] = Math.min(
+                            dp[amount],
+                            dp[amount - coin] + 1
+                    );
                 }
             }
 
-            // Unreachable amount.
-            if (dp[amount] == INF) {
-                return -1;
+            return dp[target] == INF ? -1 : dp[target];
+        }
+    }
+    /*
+     * =========================================================================
+     * COIN CHANGE PERMUTATIONS (Order Matters)
+     * =========================================================================
+     *
+     * State:
+     * dp[x] = number of sequences to make amount x.
+     *
+     * Transition:
+     *
+     * dp[amount] += dp[amount - coin]
+     *
+     * -------------------------------------------------------------------------
+     * THINK
+     * -------------------------------------------------------------------------
+     *
+     * "I need THIS amount.
+     * Which coin can I place LAST?"
+     *
+     * Need Amount = 3
+     *        │
+     *        ▼
+     *   Try LAST coin = ₹1
+     *   Try LAST coin = ₹2
+     *        │
+     *        ▼
+     * Count ALL sequences.
+     *
+     * -------------------------------------------------------------------------
+     * Loop Order
+     * -------------------------------------------------------------------------
+     *
+     * for(amount)
+     *     for(coin)
+     *
+     * Every amount tries every possible LAST coin.
+     *
+     * -------------------------------------------------------------------------
+     * Example
+     * -------------------------------------------------------------------------
+     *
+     * coins = [1,2]
+     * amount = 3
+     *
+     * Sequences:
+     *
+     * 111
+     * 12
+     * 21
+     *
+     * Answer = 3
+     *
+     * NOTE:
+     * 12 and 21 are DIFFERENT because order matters.
+     *
+     * This naturally generates permutations.
+     */
+
+    static class CoinChangePermutations {
+
+        public int countPermutations(int amount, int[] coins) {
+
+            int[] dp = new int[amount + 1];
+
+            // One way to make amount 0:
+            // choose nothing.
+            dp[0] = 1;
+
+            // Solve ONE amount.
+            for (int curr = 1; curr <= amount; curr++) {
+
+                // Try EVERY possible last coin.
+                for (int coin : coins) {
+
+                    if (coin <= curr) {
+
+                        dp[curr] += dp[curr - coin];
+                    }
+                }
             }
 
             return dp[amount];
         }
     }
 
-/**
- * =========================================================================
- * 🟣 INTERVIEW ARTICULATION (NO CODE)
- * =========================================================================
- *
- * What Is The Invariant?
- * ----------------------
- *
- * dp[x]
- *
- * always stores the minimum number of coins
- * needed to construct amount x.
- *
- * -------------------------------------------------------------------------
- * Why Is Discard Logic Valid?
- * -------------------------------------------------------------------------
- *
- * There is no explicit discard as in Binary Search.
- *
- * Instead:
- *
- * every amount is solved by considering all valid
- * final coin choices.
- *
- * Therefore no candidate solution is missed.
- *
- * -------------------------------------------------------------------------
- * Correctness Guarantee
- * -------------------------------------------------------------------------
- *
- * Every solution ending at amount x
- * must have some final coin.
- *
- * Trying all coins as the final coin
- * guarantees exploration of every valid structure.
- *
- * Optimal substructure ensures:
- *
- * optimal smaller answer
- * +
- * one final coin
- *
- * yields optimal larger answer.
- *
- * -------------------------------------------------------------------------
- * What Breaks If We Change State Meaning?
- * -------------------------------------------------------------------------
- *
- * If dp[x] no longer means
- * minimum coins for x,
- * transitions become invalid.
- *
- * DP correctness collapses.
- *
- * -------------------------------------------------------------------------
- * In-Place Feasibility
- * -------------------------------------------------------------------------
- *
- * Already in-place relative to DP state.
- *
- * Single array used.
- *
- * -------------------------------------------------------------------------
- * Streaming Feasibility
- * -------------------------------------------------------------------------
- *
- * No.
- *
- * Future amounts depend on many earlier amounts.
- *
- * Entire DP history is needed.
- *
- * -------------------------------------------------------------------------
- * When NOT To Use This Pattern
- * -------------------------------------------------------------------------
- *
- * If:
- *
- * - greedy is mathematically proven
- * - target size is extremely large
- * - graph shortest-path formulation is better
- * - state space is multidimensional
- */
-
-    /**
+    /*
      * =========================================================================
-     * 🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
+     * COIN CHANGE II (Count Combinations)
      * =========================================================================
      *
-     * Pattern Trigger
-     * ---------------
-     * Infinite supply.
-     * Minimum pieces.
-     * Target amount.
+     * State:
+     * dp[x] = number of UNIQUE combinations to make amount x.
+     *
+     * Transition:
+     *
+     * dp[amount] += dp[amount - coin]
      *
      * -------------------------------------------------------------------------
-     * Core Invariant
+     * THINK
      * -------------------------------------------------------------------------
      *
-     * dp[x]
+     * We NO longer count every sequence.
      *
-     * =
+     * We count UNIQUE combinations.
      *
-     * minimum coins needed for amount x.
+     * Example:
      *
-     * -------------------------------------------------------------------------
-     * Search Target
-     * -------------------------------------------------------------------------
+     * coins = [1,2]
+     * amount = 3
      *
-     * dp[amount]
+     * Permutations
+     * ------------
+     * 111
+     * 12
+     * 21      ❌ duplicate combination
      *
-     * -------------------------------------------------------------------------
-     * Transition Rule
-     * -------------------------------------------------------------------------
+     * Combinations
+     * ------------
+     * 111
+     * 12
      *
-     * dp[x]
-     * =
-     * min(
-     *      dp[x],
-     *      dp[x - coin] + 1
-     * )
-     *
-     * -------------------------------------------------------------------------
-     * Common Trap
-     * -------------------------------------------------------------------------
-     *
-     * Greedy largest coin first.
-     *
-     * Not always optimal.
+     * Answer = 2
      *
      * -------------------------------------------------------------------------
-     * Edge Cases
+     * HOW DO WE PREVENT DUPLICATES?
      * -------------------------------------------------------------------------
      *
-     * amount = 0
-     * impossible construction
-     * single coin
-     * huge coin values
+     * Process coins in a FIXED order.
+     *
+     * Finish Coin1
+     *      │
+     *      ▼
+     * Freeze
+     *      │
+     *      ▼
+     * Introduce Coin2
+     *      │
+     *      ▼
+     * Extend existing combinations ONLY
+     *      │
+     *      ▼
+     * Freeze
+     *      │
+     *      ▼
+     * Introduce Coin5
+     *
+     * Once a coin is finished,
+     * we NEVER go back to earlier coins.
+     *
+     * Therefore:
+     *
+     * 1 + 2
+     *
+     * is generated,
+     *
+     * but
+     *
+     * 2 + 1
+     *
+     * is never generated.
      *
      * -------------------------------------------------------------------------
-     * Interview One-Liner
+     * Loop Order
      * -------------------------------------------------------------------------
      *
-     * "I define dp[x] as the minimum coins needed
-     * for amount x and try every coin as the last
-     * coin used."
-     *
-     * -------------------------------------------------------------------------
-     * Re-Derivation Cue
-     * -------------------------------------------------------------------------
+     * for(coin)
+     *     for(amount)
      *
      * Think:
      *
-     * "What was the final coin?"
-     *
-     * =========================================================================
-     * 🔄 VARIATIONS & TWEAKS
-     * =========================================================================
-     *
-     * Variation 1
-     * -----------
-     * Count combinations instead of minimum coins.
-     *
-     * Result:
-     *
-     * State meaning changes.
-     *
-     * dp[x]
-     *
-     * becomes:
-     *
-     * number of ways to create x.
-     *
-     * Same pattern family.
-     *
-     * Different invariant.
+     * "I'm holding THIS coin.
+     * Which combinations can I extend?"
      *
      * -------------------------------------------------------------------------
-     *
-     * Variation 2
-     * -----------
-     * Limited quantity of each coin.
-     *
-     * Result:
-     *
-     * No longer unbounded knapsack.
-     *
-     * Transition rules change.
-     *
+     * Memory
      * -------------------------------------------------------------------------
      *
-     * Variation 3
-     * -----------
-     * Return actual coin list.
+     * Coin1
+     *   │
+     *   ▼
+     * Build ALL combinations
      *
-     * Result:
+     *      ▼
+     * Freeze
      *
-     * Maintain parent reconstruction array.
+     * Coin2
+     *   │
+     *   ▼
+     * Extend previous combinations
      *
-     * Invariant still preserved.
+     *      ▼
+     * Freeze
+     *
+     * Coin5
+     *   │
+     *   ▼
+     * Extend again
      *
      * -------------------------------------------------------------------------
-     *
-     * Variation 4
-     * -----------
-     * Maximize value instead of minimizing count.
-     *
-     * Result:
-     *
-     * Objective changes.
-     *
-     * State interpretation changes.
-     *
+     * Compare
      * -------------------------------------------------------------------------
      *
-     * Pattern-Break Signal
-     * --------------------
+     * Coin Change (Minimum)
      *
-     * If future states are needed
-     * to define current state,
-     * this DP formulation breaks.
+     * Need Amount X
+     * → Try every coin
      *
-     * =========================================================================
-     * ⚫ REINFORCEMENT PROBLEM #1
-     * =========================================================================
-     *
-     * LeetCode 518
      * Coin Change II
      *
-     * -------------------------------------------------------------------------
-     * Problem Summary
-     * -------------------------------------------------------------------------
-     *
-     * Return number of combinations
-     * that form target amount.
-     *
-     * Unlimited coin reuse allowed.
-     *
-     * -------------------------------------------------------------------------
-     * Example
-     * -------------------------------------------------------------------------
-     *
-     * coins=[1,2,5]
-     * amount=5
-     *
-     * Answer:
-     *
-     * 4
-     *
-     * -------------------------------------------------------------------------
-     * Invariant Mapping
-     * -------------------------------------------------------------------------
-     *
-     * Original:
-     *
-     * dp[x]
-     * =
-     * minimum coins.
-     *
-     * New:
-     *
-     * dp[x]
-     * =
-     * number of combinations.
-     *
-     * -------------------------------------------------------------------------
-     * Edge Cases
-     * -------------------------------------------------------------------------
-     *
-     * amount=0 => 1 way
-     *
-     * -------------------------------------------------------------------------
-     * Interview Trap
-     * -------------------------------------------------------------------------
-     *
-     * Wrong loop ordering
-     * accidentally counts permutations.
+     * Holding Coin X
+     * → Extend every amount
      */
+
     static class CoinChangeII {
 
         public int change(int amount, int[] coins) {
 
             int[] dp = new int[amount + 1];
 
+            // One way to make amount 0:
+            // choose nothing.
             dp[0] = 1;
 
+            // Process ONE coin.
             for (int coin : coins) {
 
-                for (int curr = coin;
-                     curr <= amount;
-                     curr++) {
+                // Let THIS coin extend every reachable amount.
+                for (int curr = coin; curr <= amount; curr++) {
 
                     dp[curr] += dp[curr - coin];
                 }
@@ -1085,6 +1131,83 @@ public class CoinChange {
             return dp[amount];
         }
     }
+
+    /*
+==============================================================================================================
+                                       DP FAMILY CHEAT SHEET
+==============================================================================================================
+
++----------------------+------------------+------------------+------------------+----------------------+
+|                      | 0/1 Knapsack     | Coin Change      | Coin Permutation | Coin Change II       |
++----------------------+------------------+------------------+------------------+----------------------+
+| Goal                 | Max Value        | Min Coins        | Count Sequences  | Count Combinations   |
++----------------------+------------------+------------------+------------------+----------------------+
+| Reuse?               | NO               | YES              | YES              | YES                  |
++----------------------+------------------+------------------+------------------+----------------------+
+| Human Question       | Take / Skip?     | Need Amount X    | Need Amount X    | Holding Coin X       |
+|                      |                  | Try every coin   | Last coin?       | Extend combinations  |
++----------------------+------------------+------------------+------------------+----------------------+
+| DP State             | dp[c]=Max Value  | dp[a]=Min Coins  | dp[a]=Sequences  | dp[a]=Combinations   |
++----------------------+------------------+------------------+------------------+----------------------+
+| Transition           | max()            | min()            | +=               | +=                   |
++----------------------+------------------+------------------+------------------+----------------------+
+| Outer Loop           | Item             | Amount ⭐         | Amount           | Coin ⭐              |
+| Why?                 | Decide one item  | Solve one amount | Solve one amount | Finish one coin      |
+|                      | at a time        | at a time        | at a time        | before next coin     |
++----------------------+------------------+------------------+------------------+----------------------+
+| Inner Loop           | Capacity         | Coin             | Coin             | Amount               |
+| Why?                 | Try every bag    | Try every coin   | Try LAST coin    | Extend every amount  |
+|                      | for this item    | for this amount  | for this amount  | using THIS coin      |
++----------------------+------------------+------------------+------------------+----------------------+
+| Direction            | Backward ↓       | Forward ↑        | Forward ↑        | Forward ↑            |
+| Why?                 | Prevent current  | Reuse current    | Reuse current    | Reuse current coin   |
+|                      | item reuse       | coin immediately | coin immediately | while fixing order   |
++----------------------+------------------+------------------+------------------+----------------------+
+| Duplicate Control    | N/A              | N/A              | Order Matters    | Freeze Coin Order    |
+|                      |                  |                  | (12 != 21)       | (12 == 21)           |
++----------------------+------------------+------------------+------------------+----------------------+
+| Mental Movie         | Hold Item        | Need Amount      | Need Amount      | Hold Coin            |
+|                      | Try every bag    | Try every coin   | Try LAST coin    | Build→Freeze→Extend  |
++----------------------+------------------+------------------+------------------+----------------------+
+
+==============================================================================================================
+INTERVIEW DECISION TREE
+==============================================================================================================
+
+Can I reuse the current object?
+        |
+   +----+----+
+   |         |
+  NO        YES
+   |         |
+Backward    Forward
+
+Then ask...
+
+What is driving the DP?
+        |
+   +----+----+
+   |         |
+Need Amount  Holding Coin
+   |             |
+Amount→Coin   Coin→Amount
+
+Then ask...
+
+Optimization?
+        |
+   +---------+----------------+
+   |                          |
+Minimum                   Count Ways
+                              |
+                      +-------+-------+
+                      |               |
+                  Order Matters?   Order Doesn't Matter?
+                      |               |
+               Coin Permutation   Coin Change II
+               Amount→Coin        Coin→Amount
+
+==============================================================================================================
 
     /**
      * =========================================================================

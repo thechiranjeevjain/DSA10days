@@ -1,4 +1,4 @@
-package org.chijai.day4.session2;
+package org.chijai.day4.LinkedList.session2;
 
 // =====================================================================================
 // 📘 REVERSE NODES IN K-GROUP — INVARIANT-FIRST ALGORITHM CHAPTER

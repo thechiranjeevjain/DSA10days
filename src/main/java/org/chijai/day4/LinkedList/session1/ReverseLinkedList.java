@@ -1,4 +1,4 @@
-package org.chijai.day4.session1;
+package org.chijai.day4.LinkedList.session1;
 
 
 /**

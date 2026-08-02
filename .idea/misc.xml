@@ -6,7 +6,13 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/../Grind100/pom.xml" />
+        <option value="$PROJECT_DIR$/../Booking/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/../Grind100/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_25" default="true" project-jdk-name="openjdk-25" project-jdk-type="JavaSDK">

@@ -641,40 +641,179 @@ public class EditDistance {
     }
 
     /**
-     * ------------------------------------------------------------------------
-     * Optimal Solution (Interview Preferred)
-     * ------------------------------------------------------------------------
+     * =========================================================================
+     * EDIT DISTANCE (Levenshtein Distance)
+     * =========================================================================
      *
-     * Core Idea:
+     * State
+     * -----
      *
-     * Bottom-up DP.
+     * dp[i][j]
      *
-     * Build answers for smaller prefixes first.
+     * = Minimum operations needed to convert
      *
-     * Invariant:
+     * word1[0 .. i-1]
      *
-     * Before computing dp[i][j]:
+     * into
      *
-     * dp[i-1][j]
-     * dp[i][j-1]
-     * dp[i-1][j-1]
+     * word2[0 .. j-1]
      *
-     * are already correct.
+     * ---------------------------------------------------------
      *
-     * Time:
-     * O(m * n)
+     * Meaning of i and j
      *
-     * Space:
-     * O(m * n)
+     *           word2 (columns)
      *
-     * Interview Preference:
+     *            ""  h  o  r  s  e
+     *          +--------------------
+     *      ""  |
+     *      r   |
+     *      o   |
+     *      s   |
      *
-     * Preferred.
+     * word1 (rows)
      *
-     * Easy to reason about.
-     * Easy to debug.
-     * Easy to derive.
+     * i = length of prefix from word1
+     * j = length of prefix from word2
+     *
+     * Example:
+     *
+     * dp[3][4]
+     *
+     * means
+     *
+     * Convert
+     *
+     * "ros"
+     *
+     * →
+     *
+     * "hors"
+     *
+     * ---------------------------------------------------------
+     *
+     * Base Cases
+     *
+     * dp[i][0]
+     *
+     * word1 prefix -> ""
+     *
+     * Delete every character.
+     *
+     * dp[i][0] = i
+     *
+     * -----------------------------
+     *
+     * dp[0][j]
+     *
+     * "" -> word2 prefix
+     *
+     * Insert every character.
+     *
+     * dp[0][j] = j
+     *
+     * ---------------------------------------------------------
+     *
+     * Dependency Graph
+     *
+     *              Delete
+     *           dp[i-1][j]
+     *                 ▲
+     *                 │
+     *                 │
+     * Replace ◄── dp[i][j] ──► Insert
+     * dp[i-1][j-1]         dp[i][j-1]
+     *
+     * Before computing dp[i][j],
+     * all three neighbors are already solved.
+     *
+     * ---------------------------------------------------------
+     *
+     * Characters Match?
+     *
+     * YES
+     *
+     * word1[i-1] == word2[j-1]
+     *
+     * Reuse diagonal.
+     *
+     * dp[i][j] = dp[i-1][j-1]
+     *
+     * ---------------------------------------------------------
+     *
+     * Characters Different?
+     *
+     * Think backwards:
+     *
+     * What was the LAST edit?
+     *
+     * Delete
+     * Insert
+     * Replace
+     *
+     * Undo that edit
+     *
+     * ↓
+     *
+     * Reach an already solved subproblem.
+     *
+     * dp[i][j]
+     *
+     * =
+     *
+     * 1 +
+     *
+     * min(
+     *     dp[i-1][j],      // Delete
+     *     dp[i][j-1],      // Insert
+     *     dp[i-1][j-1]     // Replace
+     * )
+     *
+     * ---------------------------------------------------------
+     *
+     * Fill Order
+     *
+     *          j →
+     *
+     *      ┌────────────────┐
+     * i ↓  │ ↘ ↘ ↘ ↘ ↘ ↘ ↘  │
+     *      │ ↘ ↘ ↘ ↘ ↘ ↘ ↘  │
+     *      │ ↘ ↘ ↘ ↘ ↘ ↘ ↘  │
+     *      │ ↘ ↘ ↘ ↘ ↘ ↘ ↘  │
+     *      └────────────────┘
+     *
+     * Left
+     * Up
+     * Diagonal
+     *
+     * are always ready before current cell.
+     *
+     * ---------------------------------------------------------
+     *
+     * Mental Movie
+     *
+     * Standing at dp[i][j]
+     *
+     * Ask:
+     *
+     * "If these prefixes differ,
+     * what was the LAST operation?"
+     *
+     * Delete
+     * ↑
+     *
+     * Insert
+     * ←
+     *
+     * Replace
+     * ↖
+     *
+     * Take the cheapest previous state
+     * and pay one operation.
+     *
+     * =========================================================================
      */
+
     static class OptimalSolution {
 
         public int minDistance(String word1, String word2) {
