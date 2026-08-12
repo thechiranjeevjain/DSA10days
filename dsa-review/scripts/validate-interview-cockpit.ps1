@@ -1,0 +1,194 @@
+$ErrorActionPreference = "Stop"
+
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$reviewRoot = Split-Path -Parent $scriptRoot
+$repoRoot = Split-Path -Parent $reviewRoot
+$interviewRoot = Join-Path $reviewRoot "interview"
+
+function Fail {
+    param([string] $Message)
+    throw "Interview cockpit validation failed: $Message"
+}
+
+$requiredFiles = @(
+    "README.md",
+    "00_PATTERN_RECOGNITION_80_20.md",
+    "01_ZERO_TO_HERO_RANKED_TABLE.md",
+    "02_ONE_LINE_RECALL_ALL_PROBLEMS.md",
+    "03_CRISP_INTERVIEW_ANSWERS.md",
+    "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md"
+)
+
+foreach ($name in $requiredFiles) {
+    $path = Join-Path $interviewRoot $name
+    if (-not (Test-Path -LiteralPath $path)) {
+        Fail "missing $path"
+    }
+}
+
+$rankedPath = Join-Path $interviewRoot "01_ZERO_TO_HERO_RANKED_TABLE.md"
+$rankedText = Get-Content -LiteralPath $rankedPath -Raw
+$rankLines = @(Select-String -LiteralPath $rankedPath -Pattern '^\| (?<rank>\d+) \|' | ForEach-Object { $_.Line })
+
+if ($rankLines.Count -lt 150) {
+    Fail "expected at least 150 ranked rows, found $($rankLines.Count)"
+}
+
+$ranks = @($rankLines | ForEach-Object {
+    if ($_ -match '^\| (?<rank>\d+) \|') { [int] $Matches.rank }
+})
+
+if ($ranks.Count -ne $rankLines.Count) {
+    Fail "could not parse all ranks"
+}
+
+$rankSet = @{}
+foreach ($rank in $ranks) {
+    if ($rankSet.ContainsKey($rank)) {
+        Fail "duplicate rank $rank"
+    }
+    $rankSet[$rank] = $true
+}
+
+for ($i = 1; $i -le $ranks.Count; $i++) {
+    if (-not $rankSet.ContainsKey($i)) {
+        Fail "missing rank $i"
+    }
+}
+
+$javaMatches = @(Select-String -LiteralPath $rankedPath -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
+$javaLinkCount = 0
+$missingJavaLinks = @()
+foreach ($line in $javaMatches) {
+    foreach ($match in $line.Matches) {
+        $javaLinkCount++
+        $target = $match.Groups[1].Value
+        $fullPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $rankedPath) $target))
+        if (-not (Test-Path -LiteralPath $fullPath)) {
+            $missingJavaLinks += $target
+        }
+    }
+}
+
+if ($javaLinkCount -ne $rankLines.Count) {
+    Fail "expected one Java link per ranked row, found $javaLinkCount links for $($rankLines.Count) rows"
+}
+
+if ($missingJavaLinks.Count -gt 0) {
+    Fail "missing Java links: $($missingJavaLinks -join ', ')"
+}
+
+$leetcodeLinkCount = ([regex]::Matches($rankedText, 'https://leetcode\.com/problems/')).Count
+$localOnlyCount = $rankLines.Count - $leetcodeLinkCount
+if ($leetcodeLinkCount -lt 100) {
+    Fail "expected substantial LeetCode coverage, found $leetcodeLinkCount links"
+}
+
+if ($rankedText -notmatch 'Count magazine chars, then spend counts for ransom') {
+    Fail "top problem-specific recall hook is not present"
+}
+
+$patternText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_PATTERN_RECOGNITION_80_20.md") -Raw
+if ($patternText -notmatch 'brute force -> bottleneck -> pattern -> invariant -> code -> dry run') {
+    Fail "pattern recognition rhythm is missing"
+}
+
+$crispText = Get-Content -LiteralPath (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -Raw
+if ($crispText -notmatch '## 1\. Ransom Note') {
+    Fail "crisp answer deck is missing the rank 1 answer"
+}
+
+$readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -Raw
+if ($readmeText -notmatch 'patterns/README\.md') {
+    Fail "main README does not link to pattern files"
+}
+
+$patternDir = Join-Path $interviewRoot "patterns"
+if (-not (Test-Path -LiteralPath $patternDir)) {
+    Fail "missing pattern directory: $patternDir"
+}
+
+$patternIndexPath = Join-Path $patternDir "README.md"
+if (-not (Test-Path -LiteralPath $patternIndexPath)) {
+    Fail "missing pattern index: $patternIndexPath"
+}
+
+$patternFiles = @(Get-ChildItem -LiteralPath $patternDir -File -Filter "*.md" | Where-Object { $_.Name -ne "README.md" } | Sort-Object Name)
+if ($patternFiles.Count -lt 10) {
+    Fail "expected at least 10 pattern files, found $($patternFiles.Count)"
+}
+
+$patternIndexText = Get-Content -LiteralPath $patternIndexPath -Raw
+if ($patternIndexText -notmatch 'HashMap/HashSet') {
+    Fail "pattern index is missing HashMap/HashSet"
+}
+
+$patternProblemRows = 0
+$patternRankSet = @{}
+$missingPatternJavaLinks = @()
+foreach ($patternFile in $patternFiles) {
+    $problemLines = @(Select-String -LiteralPath $patternFile.FullName -Pattern '^\| (?<rank>\d+) \|')
+    if ($problemLines.Count -eq 0) {
+        Fail "pattern file has no problem rows: $($patternFile.FullName)"
+    }
+
+    foreach ($line in $problemLines) {
+        $patternProblemRows++
+        $rank = [int] $line.Matches[0].Groups["rank"].Value
+        if ($patternRankSet.ContainsKey($rank)) {
+            Fail "duplicate rank $rank across pattern files"
+        }
+        $patternRankSet[$rank] = $true
+    }
+
+    $patternJavaMatches = @(Select-String -LiteralPath $patternFile.FullName -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
+    foreach ($line in $patternJavaMatches) {
+        foreach ($match in $line.Matches) {
+            $target = $match.Groups[1].Value
+            $fullPath = [System.IO.Path]::GetFullPath((Join-Path $patternFile.DirectoryName $target))
+            if (-not (Test-Path -LiteralPath $fullPath)) {
+                $missingPatternJavaLinks += "$($patternFile.Name):$target"
+            }
+        }
+    }
+}
+
+if ($patternProblemRows -ne $rankLines.Count) {
+    Fail "expected pattern files to contain $($rankLines.Count) problem rows, found $patternProblemRows"
+}
+
+for ($i = 1; $i -le $rankLines.Count; $i++) {
+    if (-not $patternRankSet.ContainsKey($i)) {
+        Fail "pattern files are missing rank $i"
+    }
+}
+
+if ($missingPatternJavaLinks.Count -gt 0) {
+    Fail "missing pattern Java links: $($missingPatternJavaLinks -join ', ')"
+}
+
+$asciiFiles = @(Get-ChildItem -LiteralPath $interviewRoot -Recurse -File)
+$nonAsciiFiles = @()
+foreach ($file in $asciiFiles) {
+    $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+    if ($bytes | Where-Object { $_ -gt 127 } | Select-Object -First 1) {
+        $nonAsciiFiles += $file.FullName
+    }
+}
+
+if ($nonAsciiFiles.Count -gt 0) {
+    Fail "non-ASCII generated files: $($nonAsciiFiles -join ', ')"
+}
+
+[pscustomobject]@{
+    repoRoot = $repoRoot
+    interviewRoot = $interviewRoot
+    rankedRows = $rankLines.Count
+    javaLinks = $javaLinkCount
+    missingJavaLinks = $missingJavaLinks.Count
+    leetcodeLinks = $leetcodeLinkCount
+    localOnlyEntries = $localOnlyCount
+    patternFiles = $patternFiles.Count
+    patternRows = $patternProblemRows
+    nonAsciiFiles = $nonAsciiFiles.Count
+}
