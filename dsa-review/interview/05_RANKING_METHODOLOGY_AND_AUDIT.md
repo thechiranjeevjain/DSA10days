@@ -23,19 +23,20 @@ Use phase bands more than exact rank numbers:
 | LeetCode-linked rows | 156 | Rows that open LeetCode directly. |
 | Local-only rows | 14 | Repo-only or design rows without direct LeetCode source link. |
 | Pattern files generated | 22 | One focused view per generated category. |
+| Pattern rows covered | 170 | Should match ranked rows so no problem disappears from pattern files. |
 
 These are objective repository checks. They do not prove the ranking is globally correct.
 
 ## Scoring Model
 
-The generator sorts rows by priority first, then by a per-problem interview-ROI weight, then by category weight as a tie-breaker:
+The generator sorts rows by a per-problem interview-ROI weight first. Category ROI, source priority, and match confidence are tie-breakers only:
 
 ~~~text
-SortKey = PriorityWeight + ImportanceWeight + CategoryWeight
+SortKey = ImportanceWeight, then CategoryWeight, then PriorityWeight
 then MatchScore, File, Title
 ~~~
 
-ImportanceWeight is hand-tuned in the generator for individual problems. That is the main answer to 'rank by individual problem ROI, not only by pattern.'
+ImportanceWeight is hand-tuned in the generator for individual problems. That is the main answer to 'rank by individual problem ROI, not only by pattern or source chapter.'
 
 | Input | Weight | Meaning |
 |---|---:|---|
@@ -52,6 +53,31 @@ Problem ROI tiers currently used:
 | 35 | Strong secondary problems once the core is stable. |
 | 55 | Useful breadth, but not first-pass mandatory. |
 | 80+ | Low-priority or role-specific for general DSA prep. |
+
+## Top-Band Policy
+
+The first pass is designed to reduce interviewer red flags, not to teach algorithms in textbook order.
+
+| Band | Purpose | Examples |
+|---|---|---|
+| Ranks 1-20 | No-red-flag staples and high-signal patterns | Binary Search, Anagram, Sliding Window, Linked List Cycle, Tree BFS/DFS, Islands, Course Schedule |
+| Ranks 21-40 | Common follow-ups and must-know implementation drills | Rotated Search, LRU, Copy Random List, Rotting Oranges, Heap, DP baseline, Backtracking baseline |
+| Ranks 41-70 | Strong second pass after the core is stable | Monotonic Stack, more Sliding Window, List variants, Tree variants, Binary Search on answer |
+| Ranks 71+ | Breadth, variants, and role/company-specific extras | Advanced DP, Trie variants, Union-Find, design-style local rows |
+
+## Ranking QA Gates
+
+These checks make the ranking less scammy by catching obvious placement mistakes.
+
+| Gate | Result | Why it matters |
+|---|---|---|
+| Problem ROI sorts before category/source | PASS | Individual problem importance is the first ranking signal. |
+| Java links resolve | PASS | A review row must open its real Java source. |
+| Pattern files cover ranked rows | PASS | Pattern-specific review must not drop problems. |
+| Phase 1 avoids role-specific/design rows | PASS | The first 30 should remove broad DSA red flags, not niche extras. |
+| Top 40 has broad pattern coverage | PASS: 16 categories | Early prep should not be trapped inside one pattern family. |
+| Top 40 contains core anchor problems | PASS | The obvious high-ROI anchors should not drift late. |
+| Design rows deferred from top 70 | PASS | Design-flavored rows are useful, but not first-pass DSA ROI. |
 
 Category weights currently used:
 
@@ -73,7 +99,7 @@ Category weights currently used:
 
 ## Why It Can Feel Off
 
-- A Java chapter can contain many LeetCode links; all rows still inherit the same Priority A/B/C from that chapter.
+- A Java chapter can contain many LeetCode links; source priority is only a tie-breaker after problem ROI and category ROI.
 - Importance weights are curated heuristics, not measured company frequency data.
 - Exact rank inside one phase is weaker than the phase itself.
 - The ranking is not trained on company-specific interview data.

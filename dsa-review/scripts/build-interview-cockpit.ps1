@@ -719,17 +719,17 @@ function Get-ProblemImportanceWeight {
     $key = Get-NormalizedKey $Title
 
     switch ($key) {
-        "binarysearch" { return 1 }
-        "validanagram" { return 2 }
+        "2sum3sum4sum" { return 1 }
+        "binarysearch" { return 2 }
         "longestsubstringwithoutrepeatingcharacters" { return 3 }
-        "minimumwindowsubstring" { return 4 }
-        "productofarrayexceptself" { return 5 }
-        "linkedlistcycle" { return 6 }
-        "reverselinkedlist" { return 7 }
+        "productofarrayexceptself" { return 4 }
+        "minimumwindowsubstring" { return 5 }
+        "reverselinkedlist" { return 6 }
+        "linkedlistcycle" { return 7 }
         "mergetwosortedlists" { return 8 }
-        "mergeksortedlists" { return 9 }
+        "validanagram" { return 9 }
         "validpalindrome" { return 10 }
-        "2sum3sum4sum" { return 11 }
+        "mergeksortedlists" { return 11 }
         "containerwithmostwater" { return 12 }
         "trappingrainwater" { return 13 }
         "binarytreelevelordertraversal" { return 14 }
@@ -737,52 +737,68 @@ function Get-ProblemImportanceWeight {
         "lowestcommonancestorofabinarytree" { return 16 }
         "numberofislands" { return 17 }
         "courseschedule" { return 18 }
-        "wordladder" { return 19 }
-        "kokoeatingbananas" { return 20 }
-        "searchinrotatedsortedarray" { return 21 }
-        "findfirstandlastpositionofelementinsortedarray" { return 22 }
-        "lrucache" { return 23 }
-        "copylistwithrandompointer" { return 24 }
-        "kthsmallestelementinabst" { return 25 }
-        "balancedbinarytree" { return 26 }
-        "diameterofbinarytree" { return 27 }
-        "pathsumiii" { return 28 }
-        "rottingoranges" { return 29 }
-        "01matrix" { return 30 }
-        "meetingroomsii" { return 31 }
-        "dailytemperatures" { return 32 }
-        "validparentheses" { return 33 }
-        "largestrectangleinhistogram" { return 34 }
-        "findallanagramsinastring" { return 35 }
-        "longestrepeatingcharacterreplacement" { return 36 }
-        "longestsubstringwithatmostkdistinctcharacters" { return 37 }
-        "permutationinstring" { return 38 }
-        "binarysubarrayswithsum" { return 39 }
-        "majorityelement" { return 40 }
-        "ransomnote" { return 41 }
-        "intersectionoftwolinkedlists" { return 42 }
-        "lowestcommonancestorofabinarysearchtree" { return 46 }
-        "linkedlistcycleii" { return 44 }
-        "reversenodesinkgroup" { return 45 }
-        "binarytreerightsideview" { return 47 }
-        "binarytreeinordertraversal" { return 48 }
-        "serializeanddeserializebinarytree" { return 49 }
-        "maximumdepthofbinarytree" { return 50 }
-        "numberofprovinces" { return 51 }
-        "clonegraph" { return 52 }
-        "searchinsertposition" { return 53 }
-        "findpeakelement" { return 54 }
-        "firstbadversion" { return 55 }
-        "splitarraylargestsum" { return 56 }
-        "capacitytoshippackageswithinddays" { return 57 }
-        "minimumnumberofdaystomakembouquets" { return 58 }
-        "middleofthelinkedlist" { return 59 }
-        "meetingrooms" { return 60 }
-        "slidingwindowmaximum" { return 61 }
-        "topkfrequentelements" { return 62 }
-        "constructbinarytreefrominorderandpostordertraversal" { return 63 }
-        "constructbinarytreefrompreorderandinordertraversal" { return 64 }
-        "binarytreemaximumpathsum" { return 65 }
+        "coursescheduleii" { return 19 }
+        "wordladder" { return 20 }
+        "kokoeatingbananas" { return 21 }
+        "searchinrotatedsortedarray" { return 22 }
+        "findfirstandlastpositionofelementinsortedarray" { return 23 }
+        "lrucache" { return 24 }
+        "copylistwithrandompointer" { return 25 }
+        "kthsmallestelementinabst" { return 26 }
+        "balancedbinarytree" { return 27 }
+        "diameterofbinarytree" { return 28 }
+        "pathsumiii" { return 29 }
+        "rottingoranges" { return 30 }
+        "01matrix" { return 31 }
+        "meetingroomsii" { return 32 }
+        "dailytemperatures" { return 33 }
+        "validparentheses" { return 34 }
+        "topkfrequentelements" { return 35 }
+        "houserobber" { return 36 }
+        "coinchange" { return 37 }
+        "subsets" { return 38 }
+        "combinationsum" { return 39 }
+        "wordsearch" { return 40 }
+        "findmedianfromdatastream" { return 41 }
+        "largestrectangleinhistogram" { return 42 }
+        "findallanagramsinastring" { return 43 }
+        "longestrepeatingcharacterreplacement" { return 44 }
+        "longestsubstringwithatmostkdistinctcharacters" { return 45 }
+        "permutationinstring" { return 46 }
+        "binarysubarrayswithsum" { return 47 }
+        "majorityelement" { return 48 }
+        "ransomnote" { return 49 }
+        "intersectionoftwolinkedlists" { return 50 }
+        "linkedlistcycleii" { return 51 }
+        "reversenodesinkgroup" { return 52 }
+        "lowestcommonancestorofabinarysearchtree" { return 53 }
+        "binarytreerightsideview" { return 54 }
+        "binarytreeinordertraversal" { return 55 }
+        "serializeanddeserializebinarytree" { return 56 }
+        "maximumdepthofbinarytree" { return 57 }
+        "numberofprovinces" { return 58 }
+        "clonegraph" { return 59 }
+        "searchinsertposition" { return 60 }
+        "findpeakelement" { return 61 }
+        "firstbadversion" { return 62 }
+        "splitarraylargestsum" { return 63 }
+        "capacitytoshippackageswithinddays" { return 64 }
+        "minimumnumberofdaystomakembouquets" { return 65 }
+        "middleofthelinkedlist" { return 66 }
+        "meetingrooms" { return 67 }
+        "slidingwindowmaximum" { return 68 }
+        "constructbinarytreefrominorderandpostordertraversal" { return 69 }
+        "constructbinarytreefrompreorderandinordertraversal" { return 70 }
+        "binarytreemaximumpathsum" { return 71 }
+        "taskscheduler" { return 72 }
+        "kthlargestelementinanarray" { return 73 }
+        "kthlargestelementinastream" { return 74 }
+        "timebasedkeyvaluestore" { return 75 }
+        "timedbasedkeyvaluestore" { return 75 }
+        "nextgreaterelementii" { return 76 }
+        "sumofsubarrayminimums" { return 77 }
+        "evaluatereversepolishnotation" { return 78 }
+        "basiccalculator" { return 79 }
     }
 
     $tier0 = @()
@@ -857,7 +873,7 @@ function Get-ProblemImportanceWeight {
 
     switch ($key) {
         "searchinrotatedsortedarrayii" { return 56 }
-        "binarysearchtreeiterator" { return 38 }
+        "binarysearchtreeiterator" { return 80 }
         "maximumxoroftwonumbersinanarray" { return 84 }
         "countuniquecharactersofallsubstringsofagivenstring" { return 88 }
         "findtheindexofthefirstoccurrenceinastring" { return 78 }
@@ -1082,7 +1098,7 @@ function Get-IndexRows {
                 PriorityWeight = $priorityWeight
                 ImportanceWeight = $importanceWeight
                 CategoryWeight = $categoryWeight
-                SortKey = $priorityWeight + $importanceWeight + $categoryWeight
+                SortKey = ($importanceWeight * 10000000) + ($categoryWeight * 1000) + $priorityWeight
             })
             continue
         }
@@ -1107,14 +1123,14 @@ function Get-IndexRows {
                 PriorityWeight = $priorityWeight
                 ImportanceWeight = $importanceWeight
                 CategoryWeight = $categoryWeight
-                SortKey = $priorityWeight + $importanceWeight + $categoryWeight
+                SortKey = ($importanceWeight * 10000000) + ($categoryWeight * 1000) + $priorityWeight
             })
         }
     }
 
     $deduped = New-Object System.Collections.Generic.List[object]
     $seen = @{}
-    foreach ($row in ($rows | Sort-Object SortKey, MatchScore, File, Title)) {
+    foreach ($row in ($rows | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, MatchScore, File, Title)) {
         $key = if ($row.Slug) { "LC:" + $row.Slug } else { "LOCAL:" + $row.File }
         if ($seen.ContainsKey($key)) { continue }
         $seen[$key] = $true
@@ -1122,7 +1138,7 @@ function Get-IndexRows {
     }
 
     $rank = 1
-    foreach ($row in ($deduped | Sort-Object PriorityWeight, ImportanceWeight, CategoryWeight, MatchScore, File, Title | Select-Object -First $MaxRows)) {
+    foreach ($row in ($deduped | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, MatchScore, File, Title | Select-Object -First $MaxRows)) {
         Add-Member -InputObject $row -NotePropertyName Rank -NotePropertyValue $rank
         Add-Member -InputObject $row -NotePropertyName MustLevel -NotePropertyValue (Get-MustLevel -Rank $rank -Priority $row.Priority)
         $override = Get-ProblemOverride -Title $row.Title
@@ -1469,6 +1485,39 @@ function Build-RankingAudit {
     $leetcodeCount = @($Rows | Where-Object { $_.LeetCodeLink }).Count
     $localOnlyCount = @($Rows | Where-Object { -not $_.LeetCodeLink }).Count
     $missingSourceCount = @($Rows | Where-Object { -not $_.SourceExists }).Count
+    $patternRowCount = ($Groups | Measure-Object -Property Count -Sum).Sum
+    $phase1 = @($Rows | Where-Object { $_.Rank -le 30 })
+    $top40 = @($Rows | Where-Object { $_.Rank -le 40 })
+    $top70 = @($Rows | Where-Object { $_.Rank -le 70 })
+    $phase1RoleSpecificCount = @($phase1 | Where-Object { $_.Category -in @("Design/LLD", "Math/Bit/String", "Core Basics") }).Count
+    $top70DesignCount = @($top70 | Where-Object { $_.Category -eq "Design/LLD" }).Count
+    $top40CategoryCount = @($top40 | Select-Object -ExpandProperty Category -Unique).Count
+    $anchorTitles = @(
+        "2Sum / 3Sum / 4Sum",
+        "Binary Search",
+        "Longest Substring Without Repeating Characters",
+        "Minimum Window Substring",
+        "Product Of Array Except Self",
+        "Reverse Linked List",
+        "Linked List Cycle",
+        "Binary Tree Level Order Traversal",
+        "Validate Binary Search Tree",
+        "Number Of Islands",
+        "Course Schedule Ii",
+        "Word Ladder",
+        "LRU Cache",
+        "Top K Frequent Elements",
+        "House Robber",
+        "Coin Change",
+        "Subsets"
+    )
+    $missingTop40Anchors = @()
+    foreach ($anchorTitle in $anchorTitles) {
+        $anchorRow = $Rows | Where-Object { $_.Title -eq $anchorTitle } | Select-Object -First 1
+        if ($null -eq $anchorRow -or $anchorRow.Rank -gt 40) {
+            $missingTop40Anchors += $anchorTitle
+        }
+    }
 
     $lines.Add("# Ranking Methodology And Audit")
     $lines.Add("")
@@ -1495,19 +1544,20 @@ function Build-RankingAudit {
     $lines.Add("| LeetCode-linked rows | $leetcodeCount | Rows that open LeetCode directly. |")
     $lines.Add("| Local-only rows | $localOnlyCount | Repo-only or design rows without direct LeetCode source link. |")
     $lines.Add("| Pattern files generated | $($Groups.Count) | One focused view per generated category. |")
+    $lines.Add("| Pattern rows covered | $patternRowCount | Should match ranked rows so no problem disappears from pattern files. |")
     $lines.Add("")
     $lines.Add("These are objective repository checks. They do not prove the ranking is globally correct.")
     $lines.Add("")
     $lines.Add("## Scoring Model")
     $lines.Add("")
-    $lines.Add("The generator sorts rows by priority first, then by a per-problem interview-ROI weight, then by category weight as a tie-breaker:")
+    $lines.Add("The generator sorts rows by a per-problem interview-ROI weight first. Category ROI, source priority, and match confidence are tie-breakers only:")
     $lines.Add("")
     $lines.Add("~~~text")
-    $lines.Add("SortKey = PriorityWeight + ImportanceWeight + CategoryWeight")
+    $lines.Add("SortKey = ImportanceWeight, then CategoryWeight, then PriorityWeight")
     $lines.Add("then MatchScore, File, Title")
     $lines.Add("~~~")
     $lines.Add("")
-    $lines.Add("ImportanceWeight is hand-tuned in the generator for individual problems. That is the main answer to 'rank by individual problem ROI, not only by pattern.'")
+    $lines.Add("ImportanceWeight is hand-tuned in the generator for individual problems. That is the main answer to 'rank by individual problem ROI, not only by pattern or source chapter.'")
     $lines.Add("")
     $lines.Add("| Input | Weight | Meaning |")
     $lines.Add("|---|---:|---|")
@@ -1524,6 +1574,31 @@ function Build-RankingAudit {
     $lines.Add("| 35 | Strong secondary problems once the core is stable. |")
     $lines.Add("| 55 | Useful breadth, but not first-pass mandatory. |")
     $lines.Add("| 80+ | Low-priority or role-specific for general DSA prep. |")
+    $lines.Add("")
+    $lines.Add("## Top-Band Policy")
+    $lines.Add("")
+    $lines.Add("The first pass is designed to reduce interviewer red flags, not to teach algorithms in textbook order.")
+    $lines.Add("")
+    $lines.Add("| Band | Purpose | Examples |")
+    $lines.Add("|---|---|---|")
+    $lines.Add("| Ranks 1-20 | No-red-flag staples and high-signal patterns | Binary Search, Anagram, Sliding Window, Linked List Cycle, Tree BFS/DFS, Islands, Course Schedule |")
+    $lines.Add("| Ranks 21-40 | Common follow-ups and must-know implementation drills | Rotated Search, LRU, Copy Random List, Rotting Oranges, Heap, DP baseline, Backtracking baseline |")
+    $lines.Add("| Ranks 41-70 | Strong second pass after the core is stable | Monotonic Stack, more Sliding Window, List variants, Tree variants, Binary Search on answer |")
+    $lines.Add("| Ranks 71+ | Breadth, variants, and role/company-specific extras | Advanced DP, Trie variants, Union-Find, design-style local rows |")
+    $lines.Add("")
+    $lines.Add("## Ranking QA Gates")
+    $lines.Add("")
+    $lines.Add("These checks make the ranking less scammy by catching obvious placement mistakes.")
+    $lines.Add("")
+    $lines.Add("| Gate | Result | Why it matters |")
+    $lines.Add("|---|---|---|")
+    $lines.Add("| Problem ROI sorts before category/source | PASS | Individual problem importance is the first ranking signal. |")
+    $lines.Add("| Java links resolve | $(if ($missingSourceCount -eq 0) { "PASS" } else { "FAIL: $missingSourceCount missing" }) | A review row must open its real Java source. |")
+    $lines.Add("| Pattern files cover ranked rows | $(if ($patternRowCount -eq $Rows.Count) { "PASS" } else { "FAIL: $patternRowCount of $($Rows.Count)" }) | Pattern-specific review must not drop problems. |")
+    $lines.Add("| Phase 1 avoids role-specific/design rows | $(if ($phase1RoleSpecificCount -eq 0) { "PASS" } else { "CHECK: $phase1RoleSpecificCount rows" }) | The first 30 should remove broad DSA red flags, not niche extras. |")
+    $lines.Add("| Top 40 has broad pattern coverage | $(if ($top40CategoryCount -ge 12) { "PASS: $top40CategoryCount categories" } else { "CHECK: $top40CategoryCount categories" }) | Early prep should not be trapped inside one pattern family. |")
+    $lines.Add("| Top 40 contains core anchor problems | $(if ($missingTop40Anchors.Count -eq 0) { "PASS" } else { "CHECK missing: $($missingTop40Anchors -join ", ")" }) | The obvious high-ROI anchors should not drift late. |")
+    $lines.Add("| Design rows deferred from top 70 | $(if ($top70DesignCount -eq 0) { "PASS" } else { "CHECK: $top70DesignCount rows" }) | Design-flavored rows are useful, but not first-pass DSA ROI. |")
     $lines.Add("")
     $lines.Add("Category weights currently used:")
     $lines.Add("")
@@ -1545,7 +1620,7 @@ function Build-RankingAudit {
     $lines.Add("")
     $lines.Add("## Why It Can Feel Off")
     $lines.Add("")
-    $lines.Add("- A Java chapter can contain many LeetCode links; all rows still inherit the same Priority A/B/C from that chapter.")
+    $lines.Add("- A Java chapter can contain many LeetCode links; source priority is only a tie-breaker after problem ROI and category ROI.")
     $lines.Add("- Importance weights are curated heuristics, not measured company frequency data.")
     $lines.Add("- Exact rank inside one phase is weaker than the phase itself.")
     $lines.Add("- The ranking is not trained on company-specific interview data.")

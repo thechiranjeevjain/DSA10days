@@ -14,8 +14,8 @@ Use brute force to expose repeated work, then choose the invariant and data stru
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 146 | Phase 4 - Secondary | Spiral Matrix | Matrix boundary traversal | [Java](../../../src/main/java/org/chijai/day1/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/) | Start from brute force, find repeated work, and state the invariant before coding. | Code the invariant directly, then dry-run edge cases. |
-| 147 | Phase 4 - Secondary | String To Integer Atoi | Parsing / edge cases | [Java](../../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | Start from brute force, find repeated work, and state the invariant before coding. | Code the invariant directly, then dry-run edge cases. |
+| 143 | Phase 4 - Secondary | Spiral Matrix | Matrix boundary traversal | [Java](../../../src/main/java/org/chijai/day1/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/) | Start from brute force, find repeated work, and state the invariant before coding. | Code the invariant directly, then dry-run edge cases. |
+| 144 | Phase 4 - Secondary | String To Integer Atoi | Parsing / edge cases | [Java](../../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | Start from brute force, find repeated work, and state the invariant before coding. | Code the invariant directly, then dry-run edge cases. |
 
 ## Drill
 

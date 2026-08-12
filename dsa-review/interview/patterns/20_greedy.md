@@ -14,7 +14,7 @@ DP/search may be possible, but a proven safe local choice collapses the state sp
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 145 | Phase 4 - Secondary | Gas Station | Greedy | [Java](../../../src/main/java/org/chijai/day3/session2/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | Take the local choice only after proving it cannot hurt the future optimum. | Sort or scan to make the safe local choice repeatedly. |
+| 142 | Phase 4 - Secondary | Gas Station | Greedy | [Java](../../../src/main/java/org/chijai/day3/session2/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | Take the local choice only after proving it cannot hurt the future optimum. | Sort or scan to make the safe local choice repeatedly. |
 
 ## Drill
 

@@ -1,0 +1,30 @@
+# Math / Bit / String
+
+Focused pattern pass. Keep the global rank order inside this file; lower rank means a higher score in the current interview-ROI heuristic.
+
+## Recognition Signal
+
+Use the algebra, bit, or string invariant instead of simulating blindly.
+
+## Interview Move
+
+Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits.
+
+## Problems
+
+| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
+|---:|---|---|---|---|---|---|---|
+| 109 | Phase 3 - Important | Find The Index Of The First Occurrence In A String | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/) | KMP reuses the longest proper prefix that is also a suffix after a mismatch. | Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch. |
+| 145 | Phase 5 - If Time | Repeated Substring Pattern | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/) | A repeated pattern exists when the final LPS leaves a block length that divides n. | Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0. |
+| 149 | Phase 5 - If Time | Longest Happy Prefix | KMP / rolling hash | [Java](../../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/) | The answer is the final LPS value: longest proper prefix that is also suffix. | Build LPS over the string and return substring(0, lps[n - 1]). |
+| 152 | Phase 5 - If Time | Add Binary | Bit/string addition | [Java](../../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/) | Use the algebra, bit, or string invariant instead of simulating blindly. | Track the exact numeric/string invariant and update it in constant or linear time. |
+| 153 | Phase 5 - If Time | Count Primes | Math / sieve | [Java](../../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LC](https://leetcode.com/problems/count-primes/) | Use the algebra, bit, or string invariant instead of simulating blindly. | Track the exact numeric/string invariant and update it in constant or linear time. |
+| 154 | Phase 5 - If Time | Count Unique Characters Of All Substrings Of A Given String | Contribution counting | [Java](../../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LC](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/) | Each character occurrence contributes by distance to the previous same char times distance to the next one. | Record previous and next positions for each occurrence, sum leftGap * rightGap contributions. |
+| 157 | Phase 5 - If Time | Shortest Palindrome | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/shortest-palindrome/) | Find the longest palindromic prefix, then prepend the reverse of the remaining suffix. | Compute LPS on combined string, reverse suffix from lps length, prepend it to s. |
+
+## Drill
+
+1. Read only the problem title.
+2. Say brute force, bottleneck, pattern, invariant, code idea, dry run.
+3. Open Java only after the spoken answer is complete.
+4. Code one missed problem from blank before moving to another pattern.
