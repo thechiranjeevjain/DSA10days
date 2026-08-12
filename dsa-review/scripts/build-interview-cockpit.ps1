@@ -126,6 +126,16 @@ function Get-ProblemOverride {
             hook = "Brute force tries all tuples; sorting makes duplicate skipping and pair elimination possible."
             code = "Sort when indices are not required, loop fixed values, move left/right by sum comparison, skip duplicates."
         }
+        "binarysearch" = @{
+            recall = "Sorted order plus mid comparison proves which half cannot contain the target."
+            hook = "Linear scan is O(n); sorted order gives monotonic elimination in O(log n)."
+            code = "While left <= right, compare nums[mid] to target; move left/right, return index or -1."
+        }
+        "firstbadversion" = @{
+            recall = "Find the first true in a false...false,true...true version predicate."
+            hook = "Checking versions one by one wastes the monotonic bad suffix."
+            code = "If isBadVersion(mid), save mid and search left; otherwise search right."
+        }
         "validpalindrome" = @{
             recall = "Skip non-alphanumeric chars and compare normalized ends while pointers move inward."
             hook = "Building a cleaned string is extra space; two pointers validate in place."
@@ -551,6 +561,371 @@ function Get-ProblemOverride {
             hook = "Contribution counting avoids enumerating all substrings."
             code = "Record previous and next positions for each occurrence, sum leftGap * rightGap contributions."
         }
+        "searchinrotatedsortedarray" = @{
+            recall = "At every step one half is sorted; keep it only if target lies inside its bounds."
+            hook = "A normal sorted-array binary search fails because the pivot breaks global ordering."
+            code = "Compare nums[left] and nums[mid] to identify sorted half, then discard the half that cannot contain target."
+        }
+        "searchinrotatedsortedarrayii" = @{
+            recall = "With duplicates, shrink both ends only when left, mid, and right are equal and ordering is ambiguous."
+            hook = "Duplicates can destroy the sorted-half signal, so worst-case time can degrade to O(n)."
+            code = "If nums[left]==nums[mid]==nums[right], left++ and right--; otherwise reuse sorted-half logic."
+        }
+        "findfirstandlastpositionofelementinsortedarray" = @{
+            recall = "Run boundary binary search twice: first index >= target, and last index <= target."
+            hook = "Finding one target then expanding can become O(n) when all elements equal target."
+            code = "findFirst moves left on nums[mid] >= target; findLast moves right on nums[mid] <= target."
+        }
+        "searchinsertposition" = @{
+            recall = "Find the first index whose value is >= target; if none, insert at n."
+            hook = "Equality is a boundary candidate, not a reason to abandon the left side."
+            code = "Binary search with answer initialized to n; when nums[mid] >= target save mid and move right left."
+        }
+        "findpeakelement" = @{
+            recall = "Compare mid with mid+1; the rising side must contain a peak."
+            hook = "Binary search does not require sorted data, only a safe half-discard rule."
+            code = "If nums[mid] > nums[mid+1], move right to mid; else move left to mid+1 until left == right."
+        }
+        "sqrtx" = @{
+            recall = "Find the largest integer mid whose square is <= x."
+            hook = "Linear testing is slow and mid*mid can overflow without long arithmetic."
+            code = "Binary search 0..x, cast mid*mid to long, save mid when square <= x."
+        }
+        "kokoeatingbananas" = @{
+            recall = "Binary search the minimum speed; if speed k works, every higher speed also works."
+            hook = "Trying every speed up to maxPile is too slow; feasibility is monotonic."
+            code = "Search speed 1..maxPile, compute total ceil(pile/speed) hours, keep smaller working speed."
+        }
+        "capacitytoshippackageswithinddays" = @{
+            recall = "Binary search minimum capacity; capacity works if one pass ships within D days."
+            hook = "Capacity must be at least max weight, and larger capacity never requires more days."
+            code = "Search maxWeight..sumWeight, count days by accumulating load until capacity would overflow."
+        }
+        "splitarraylargestsum" = @{
+            recall = "Binary search the smallest allowed subarray sum that can split into at most m pieces."
+            hook = "The feasibility check is monotonic: larger max sum never needs more pieces."
+            code = "Search max(nums)..sum(nums), greedily count pieces when current sum would exceed mid."
+        }
+        "minimumnumberofdaystomakembouquets" = @{
+            recall = "Binary search days; by a given day, consecutive bloomed flowers form bouquets greedily."
+            hook = "Day feasibility is monotonic, but adjacency resets the current flower streak."
+            code = "Reject if m*k > n; for each day mid, count adjacent bloomed streaks of length k."
+        }
+        "minimumheighttrees" = @{
+            recall = "Peel all current leaves together until one or two centroid roots remain."
+            hook = "Trying every root is O(n^2); leaves can never be optimal centers after each layer."
+            code = "Build graph/degrees, queue degree-1 leaves, remove layers while remainingNodes > 2."
+        }
+        "courseschedule" = @{
+            recall = "A course is unlocked only when its indegree becomes zero."
+            hook = "Plain traversal can process a course before prerequisites; indegree is the remaining-lock count."
+            code = "Build prerequisite->course graph, queue indegree-zero courses, decrement neighbors, compare processed count."
+        }
+        "coursescheduleii" = @{
+            recall = "A course enters the order only when its indegree drops to zero."
+            hook = "Plain traversal can violate prerequisites; indegree tracks the remaining unmet prerequisites."
+            code = "Build prerequisite->course graph, queue indegree-zero courses, append order, fail if processed < n."
+        }
+        "minimumnumberofarrowstoburstballoons" = @{
+            recall = "Sort balloons by end; shoot at current end and start a new arrow only after it is missed."
+            hook = "This is greedy endpoint selection, not overlap counting like meeting rooms."
+            code = "Sort by end, keep currentArrowEnd, increment arrows when next.start > currentArrowEnd."
+        }
+        "carpooling" = @{
+            recall = "Treat each pickup/dropoff as passenger-count delta and ensure capacity is never exceeded."
+            hook = "Checking every trip pair misses the global passenger load over the route."
+            code = "Use difference array or sorted events: add passengers at start, subtract at end, track running load."
+        }
+        "minimumplatforms" = @{
+            recall = "Sort arrivals and departures separately; active trains are arrivals minus departures processed."
+            hook = "Train identity is irrelevant; the answer is maximum simultaneous presence on the timeline."
+            code = "If next arrival <= next departure, increment active/max; else process departure and decrement active."
+        }
+        "dailytemperatures" = @{
+            recall = "Keep indices of days waiting for a warmer temperature; current day resolves colder previous days."
+            hook = "Scanning forward from every day is O(n^2); a decreasing stack resolves each day once."
+            code = "While current temp is warmer than stack top, pop index and set answer to current - popped."
+        }
+        "validparentheses" = @{
+            recall = "Every closing bracket must match the most recent unmatched opening bracket."
+            hook = "Counting brackets is not enough because nesting order matters."
+            code = "Push opening brackets; on closing, fail if stack empty or top is not its matching opener."
+        }
+        "largestrectangleinhistogram" = @{
+            recall = "When a shorter bar arrives, popped bars know their maximal rectangle width."
+            hook = "Trying every left/right boundary is O(n^2); monotonic stack finds nearest smaller bars."
+            code = "Append sentinel zero, keep increasing indices, pop and compute height * width when current is smaller."
+        }
+        "nextgreaterelementii" = @{
+            recall = "Loop twice over the circular array while a decreasing stack waits for next greater values."
+            hook = "Naive circular scans repeat work; stack resolves each index when the next greater appears."
+            code = "For i in 0..2n-1, resolve stack with nums[i % n], push i only during first pass."
+        }
+        "nextgreaterelementi" = @{
+            recall = "Precompute next greater for nums2 with a decreasing stack, then answer nums1 by map lookup."
+            hook = "Searching nums2 for every nums1 value repeats the same next-greater work."
+            code = "Scan nums2, pop smaller values and map them to current, then lookup each nums1 value."
+        }
+        "sumofsubarrayminimums" = @{
+            recall = "Each element contributes as minimum for leftChoices times rightChoices subarrays."
+            hook = "Enumerating subarrays is O(n^2); monotonic stacks count ownership ranges in O(n)."
+            code = "Find previous less and next less-or-equal distances, sum arr[i] * left * right modulo M."
+        }
+        "evaluatereversepolishnotation" = @{
+            recall = "Postfix expression evaluates when each operator consumes the latest two operands from a stack."
+            hook = "Parentheses/precedence disappear in RPN; the only state needed is operand stack."
+            code = "Push numbers; on operator pop b then a, compute a op b, push result."
+        }
+        "basiccalculator" = @{
+            recall = "Use sign and stack to preserve the expression value before each parenthesis."
+            hook = "Direct left-to-right evaluation breaks when parentheses change the active sign context."
+            code = "Track result, sign, number; on '(' push result/sign and reset; on ')' fold into previous context."
+        }
+        "maximalrectangle" = @{
+            recall = "Treat every matrix row as histogram heights and run largest-rectangle on each row."
+            hook = "Checking every rectangle is too slow; row heights reuse vertical continuity."
+            code = "Update heights per row, then compute largest histogram area with monotonic stack."
+        }
+        "minstack" = @{
+            recall = "Store the current minimum with each push, or keep a second stack of minimums."
+            hook = "Scanning stack on getMin makes the required O(1) operation impossible."
+            code = "Push value and min(value,currentMin); pop both together; getMin reads min top."
+        }
+        "maxstack" = @{
+            recall = "Maintain stack order plus a way to locate/remove the current maximum."
+            hook = "A plain stack gives pop order but cannot remove max efficiently."
+            code = "Use stack plus max tracking, or doubly linked list plus TreeMap for O(log n) popMax."
+        }
+        "implementqueueusingstacks" = @{
+            recall = "Use input stack for pushes and output stack for pops; transfer only when output is empty."
+            hook = "Moving elements on every operation repeats work; lazy transfer amortizes the reversal."
+            code = "push -> in.push; pop/peek -> if out empty move all in to out, then read out."
+        }
+        "implementstackusingqueues" = @{
+            recall = "After each push, rotate the queue so the newest element is at the front."
+            hook = "Queue order is FIFO; rotation restores LIFO behavior."
+            code = "Offer x, then rotate size-1 older elements behind it; pop removes queue front."
+        }
+        "designastackwithincrementoperation" = @{
+            recall = "Lazy increment stores pending additions at the boundary index instead of touching k items."
+            hook = "Incrementing bottom k elements directly makes increment O(k)."
+            code = "Keep stack plus inc array; on pop carry inc[i] to inc[i-1] and return value + inc[i]."
+        }
+        "designcircularqueue" = @{
+            recall = "Circular queue uses head, size, and modulo arithmetic to reuse fixed array slots."
+            hook = "Shifting array elements on enqueue/dequeue is unnecessary and slow."
+            code = "enQueue writes at (head + size) % capacity; deQueue advances head and decrements size."
+        }
+        "houserobber" = @{
+            recall = "At each house choose max(skip current, rob current plus best before previous)."
+            hook = "Naive recursion repeats suffix decisions; two rolling states capture all history needed."
+            code = "For each money, next = max(prev1, prev2 + money); shift prev2=prev1, prev1=next."
+        }
+        "coinchange" = @{
+            recall = "dp[amount] is the fewest coins needed; each coin relaxes reachable amounts."
+            hook = "Recursive choice tree repeats the same remaining amounts."
+            code = "Initialize dp[0]=0 and others INF; for amount 1..target, try every coin."
+        }
+        "uniquepaths" = @{
+            recall = "Ways to a cell equal ways from top plus ways from left."
+            hook = "Naive recursion recomputes the same grid cells exponentially."
+            code = "Initialize first row/column to 1, fill dp[r][c] = dp[r-1][c] + dp[r][c-1]."
+        }
+        "partitionequalsubsetsum" = @{
+            recall = "Partition is possible only if some subset reaches total/2."
+            hook = "Trying all subsets repeats sums; 0/1 knapsack tracks reachable sums once."
+            code = "If total odd return false; update boolean dp from target down to num for each num."
+        }
+        "longestincreasingsubsequence" = @{
+            recall = "tails[len] stores the smallest possible tail for an increasing subsequence of that length."
+            hook = "O(n^2) DP works, but binary-search tails gives faster length tracking."
+            code = "For each x, lower_bound in tails and replace; answer is tails size."
+        }
+        "kadanemaxsubarray" = @{
+            recall = "Best subarray ending here is either current alone or previous best ending here plus current."
+            hook = "Checking all subarrays is O(n^2); local ending-best captures the only needed history."
+            code = "cur = max(x, cur + x); best = max(best, cur) for every element."
+        }
+        "besttimetobuyandsellstock" = @{
+            recall = "Track the lowest price so far; today's profit is price minus that minimum."
+            hook = "Trying all buy/sell pairs repeats the same prefix minimum search."
+            code = "For each price, update minPrice, then best = max(best, price - minPrice)."
+        }
+        "climbingstairsfib" = @{
+            recall = "Ways to step n equals ways to n-1 plus ways to n-2."
+            hook = "Recursive Fibonacci repeats the same smaller step counts."
+            code = "Iterate two rolling values for ways to previous one and two steps."
+        }
+        "editdistance" = @{
+            recall = "dp[i][j] is edits to convert first i chars of word1 to first j chars of word2."
+            hook = "Naive recursion branches into insert/delete/replace repeatedly for same prefixes."
+            code = "Initialize empty-string row/column; if chars equal copy diagonal else 1 + min(insert, delete, replace)."
+        }
+        "stockseries2" = @{
+            recall = "For unlimited transactions, add every positive day-to-day price difference."
+            hook = "Enumerating buy/sell sequences repeats work; every rising edge can be taken independently."
+            code = "Scan prices and add max(0, prices[i] - prices[i-1])."
+        }
+        "numberofislands" = @{
+            recall = "Every time you find unvisited land, sink its whole connected component and count one island."
+            hook = "Without visited marking, the same land cells get counted repeatedly."
+            code = "Scan grid; on '1', increment count and DFS/BFS four directions marking visited/water."
+        }
+        "floodfill" = @{
+            recall = "Recolor only the connected component matching the starting color."
+            hook = "Blind DFS can recolor wrong regions or loop when new color equals old color."
+            code = "If oldColor == newColor return; DFS/BFS neighbors with oldColor and recolor them."
+        }
+        "isgraphbipartite" = @{
+            recall = "A graph is bipartite if every edge connects opposite colors."
+            hook = "Visited alone is insufficient; conflicts appear when an edge sees same-color endpoints."
+            code = "For each uncolored node, BFS/DFS assign colors and fail on same-color neighbor."
+        }
+        "pacificatlanticwaterflow" = @{
+            recall = "Reverse the flow: start from both oceans and move to equal-or-higher neighboring cells."
+            hook = "DFS from every cell to both oceans repeats huge overlap."
+            code = "Mark cells reachable from Pacific border and Atlantic border; answer intersection."
+        }
+        "surroundedregions" = @{
+            recall = "Only O-regions connected to the border survive; all other O cells are captured."
+            hook = "Flipping every O before knowing border reachability captures safe regions incorrectly."
+            code = "DFS/BFS border O cells as safe, flip remaining O to X, restore safe marks."
+        }
+        "clonegraph" = @{
+            recall = "Map original node to cloned node before cloning neighbors to handle cycles."
+            hook = "Naive recursive copy loops on cycles and duplicates shared nodes."
+            code = "DFS/BFS: create clone if absent, then connect cloned neighbors from the map."
+        }
+        "numberofclosedislands" = @{
+            recall = "A closed island is a land component that never touches the grid boundary."
+            hook = "Counting components alone overcounts islands connected to the border."
+            code = "DFS each land component, return false if any cell touches border, mark visited."
+        }
+        "maxareaofisland" = @{
+            recall = "DFS each land component and return its cell count; keep the maximum."
+            hook = "Counting land globally ignores component boundaries."
+            code = "On each unvisited land cell, DFS four directions accumulating area."
+        }
+        "coloringaborder" = @{
+            recall = "Only cells on the component boundary get recolored; interior cells keep original color."
+            hook = "Flood filling the whole component changes interior cells incorrectly."
+            code = "DFS component, mark a cell as border if it touches outside grid or different color."
+        }
+        "wordladder" = @{
+            recall = "BFS words level by level; first time reaching endWord is the shortest transformation length."
+            hook = "DFS may find a longer path first; all transformations cost one step."
+            code = "Queue begin word, generate one-letter mutations, visit dictionary words once per level."
+        }
+        "rottingoranges" = @{
+            recall = "All initially rotten oranges start a multi-source BFS; each level is one minute."
+            hook = "Starting BFS separately repeats infection work and gives wrong simultaneous timing."
+            code = "Queue all rotten cells, count fresh, process BFS levels, decrement fresh on infection."
+        }
+        "01matrix" = @{
+            recall = "Start BFS from all zero cells; first visit gives nearest-zero distance."
+            hook = "Running BFS from every one repeats work; multi-source BFS expands all shortest distances together."
+            code = "Queue every zero with distance 0, then relax unvisited neighbors to dist+1."
+        }
+        "numberofprovinces" = @{
+            recall = "Each DFS/BFS from an unvisited city marks one connected province."
+            hook = "Checking pairs repeatedly is unnecessary once a city's component is visited."
+            code = "Scan cities; when unvisited, count province and traverse connected cities from adjacency matrix."
+        }
+        "khighestrankeditemswithinapricerange" = @{
+            recall = "BFS by distance, collecting valid items and sorting tie-breaks by price,row,col."
+            hook = "DFS does not preserve shortest distance order in the grid."
+            code = "BFS from start through passable cells; collect price-in-range items with distance and sort ranking."
+        }
+        "topkfrequentelements" = @{
+            recall = "Count frequencies, then keep only the k highest-frequency entries."
+            hook = "Sorting all unique values works but costs more than keeping a size-k heap or buckets."
+            code = "Build frequency map, then use bucket lists by frequency or a min-heap of size k."
+        }
+        "findmedianfromdatastream" = @{
+            recall = "Two heaps split lower and upper halves; median comes from heap tops."
+            hook = "Sorting the stream after every insert is too slow."
+            code = "Push into maxHeap/minHeap, rebalance sizes, median is top or average of tops."
+        }
+        "taskscheduler" = @{
+            recall = "CPU idles only when the most frequent tasks cannot be spaced by cooldown gaps."
+            hook = "Simulating every schedule is unnecessary; max frequency defines the minimum frame."
+            code = "Use maxFreq and countMax: max(tasks.length, (maxFreq-1)*(n+1)+countMax)."
+        }
+        "kthlargestelementinanarray" = @{
+            recall = "A size-k min-heap keeps the k largest seen so far; top is kth largest."
+            hook = "Full sorting is O(n log n) when only one order statistic is needed."
+            code = "Push each number, pop when heap size > k, return heap top."
+        }
+        "kthlargestelementinastream" = @{
+            recall = "Maintain a size-k min-heap after every add; top is the kth largest in the stream."
+            hook = "Resorting all stream values after every add is too slow."
+            code = "On add, push value, trim heap to k, return heap.peek()."
+        }
+        "kclosestpointstoorigin" = @{
+            recall = "Keep the k smallest squared distances; compare without taking square roots."
+            hook = "Sorting all points is unnecessary when only k closest are needed."
+            code = "Use max-heap of size k by distance, or quickselect by squared distance."
+        }
+        "awardtopkhotels" = @{
+            recall = "Score each hotel by keyword hits, then rank by score and tie-breaker."
+            hook = "Repeated text scans and full sorting can be avoided with maps and top-k selection."
+            code = "Build keyword set, count matches per hotel review, then sort or heap by score/id."
+        }
+        "sortcharactersbyfrequency" = @{
+            recall = "Frequency map plus bucket/heap outputs characters from highest count to lowest."
+            hook = "Comparator sorting every character occurrence is wasteful; sort unique chars by counts."
+            code = "Count chars, bucket by frequency or heap entries, append char repeated count times."
+        }
+        "addbinary" = @{
+            recall = "Add bits from right to left with carry, exactly like decimal addition."
+            hook = "Converting to integer can overflow and hides the carry invariant."
+            code = "Use i,j,carry; append (sum % 2), update carry=sum/2, reverse result."
+        }
+        "countprimes" = @{
+            recall = "Sieve marks multiples of each discovered prime starting at p*p."
+            hook = "Testing every number by trial division repeats divisibility work."
+            code = "Boolean isComposite; for p*p < n, mark multiples p*p, p*p+p, ...; count unmarked."
+        }
+        "encodeanddecodetinyurl" = @{
+            recall = "Encode creates a stable short key mapped to the original URL; decode is a map lookup."
+            hook = "The core invariant is key uniqueness and persistence, not string shortening alone."
+            code = "Generate/increment key, store key->longUrl, return domain/key; decode extracts key and reads map."
+        }
+        "designfraudpatterndetection" = @{
+            recall = "Define which transaction events are retained and which rule/window makes a pattern fraudulent."
+            hook = "Without explicit time-window and identity keys, the detector becomes vague and untestable."
+            code = "Index recent events by account/card/merchant, evict expired entries, evaluate rules on insert."
+        }
+        "apiintegrationexample" = @{
+            recall = "Model request, response, retry, timeout, and idempotency boundaries explicitly."
+            hook = "Integration code fails interviews when error handling and contracts are implicit."
+            code = "Wrap client call with typed DTOs, timeout/retry policy, status handling, and clear failure result."
+        }
+        "designredis" = @{
+            recall = "Key-value operations need storage, expiry metadata, and eviction/cleanup policy."
+            hook = "A map alone misses TTL semantics and memory-pressure behavior."
+            code = "Store value plus expireAt, check expiry on get/set, and maintain cleanup or eviction structure."
+        }
+        "designtokenbucketratelimiter" = @{
+            recall = "A bucket refills by elapsed time and each request consumes one token if available."
+            hook = "Fixed counters burst badly at window boundaries; token bucket smooths rate with bounded burst."
+            code = "Per key, compute tokens = min(capacity, tokens + elapsed*rate), allow if tokens >= cost."
+        }
+        "hotelreviews" = @{
+            recall = "Use trie or keyword set to count good words per review, then rank hotels by score."
+            hook = "Repeated string matching for every keyword wastes prefix/lookup work."
+            code = "Normalize review words, count keyword hits, aggregate per hotel, sort by score and id."
+        }
+        "spiralmatrix" = @{
+            recall = "Shrink top, bottom, left, and right boundaries after traversing each side."
+            hook = "Visited simulation is more state than needed; boundaries define the remaining ring."
+            code = "Traverse top row, right col, bottom row if valid, left col if valid; move boundaries inward."
+        }
+        "stringtointegeratoi" = @{
+            recall = "Parse sign and digits once, clamping before overflow."
+            hook = "Using built-in parse or wider assumptions misses whitespace, sign, and overflow rules."
+            code = "Skip spaces, read optional sign, accumulate digit while checking against INT_MAX limits."
+        }
     }
 
     if ($overrides.ContainsKey($key)) {
@@ -937,24 +1312,24 @@ function Get-Recall {
         "Two Pointers" { return "Shrink the search space by moving the pointer that can still improve the answer." }
         "Sliding Window" { return "Expand right, shrink left to restore validity, then update the answer at the right time." }
         "Prefix/Suffix" { return "Precompute cumulative left/right state so each range or exclusion is answered cheaply." }
-        "Binary Search" { return "Maintain a monotonic search space and discard the half that cannot contain the answer." }
+        "Binary Search" { return "Ask the comparison or yes/no question that makes one side impossible, then preserve the boundary/index invariant." }
         "Linked List" { return "Name every pointer, save next before rewiring, and return the real new head." }
         "Tree BFS" { return "Use a queue by levels; capture level size before pushing children." }
         "Tree DFS" { return "Define exactly what the helper returns, combine left/right, and update global answer separately if needed." }
-        "Graph BFS" { return "For unweighted minimum steps, mark when enqueuing because first discovery is shortest." }
-        "Graph DFS" { return "Mark visited before recursion and explore one component/path completely." }
-        "Stack" { return "Stack stores unresolved candidates; current item resolves or validates the top." }
-        "Heap" { return "Heap top is the next best candidate; keep only the frontier or top K when possible." }
+        "Graph BFS" { return "Use queue layers when first discovery is the shortest or minimum-step answer." }
+        "Graph DFS" { return "Own each component or path with visited state so one traversal fully accounts for it." }
+        "Stack" { return "Keep pending openings, operands, or monotonic candidates until the current item resolves them." }
+        "Heap" { return "Keep only the frontier, top K, or two balanced halves instead of fully sorting each step." }
         "Intervals/Greedy" { return "Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints." }
         "Backtracking" { return "Choose, recurse, undo; the path is exactly the current decision state." }
-        "Trie" { return "Each node is a prefix; branch only when wildcard or board search requires it." }
-        "Dynamic Programming" { return "Fix dp state meaning, base cases, transition, and iteration order before coding." }
+        "Trie" { return "Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words." }
+        "Dynamic Programming" { return "Name the state, base case, transition, and iteration order before writing loops." }
         "Union Find" { return "Represent components with parent links; union merges and failed union detects cycles." }
         "Topological Sort" { return "Use indegree or DFS states to process dependencies before dependents." }
         "Greedy" { return "Take the local choice only after proving it cannot hurt the future optimum." }
-        "Math/Bit/String" { return "Use the algebra, bit, or string invariant instead of simulating blindly." }
-        "Design/LLD" { return "State API contract, data structures, invariants, and complexity per operation." }
-        default { return "Start from brute force, find repeated work, and state the invariant before coding." }
+        "Math/Bit/String" { return "Expose the arithmetic, bit, carry, border, or contribution invariant before simulating." }
+        "Design/LLD" { return "Define operations, consistency guarantees, stored state, and per-operation complexity." }
+        default { return "Derive the direct approach, name the wasted work, then choose the invariant that removes it." }
     }
 }
 
@@ -988,6 +1363,92 @@ function Get-InterviewHook {
         "Math/Bit/String" { return "Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits." }
         "Design/LLD" { return "Start from operations and constraints, then pick data structures that preserve per-operation invariants." }
         default { return "Use brute force to expose repeated work, then choose the invariant and data structure." }
+    }
+}
+
+function Get-BruteForceLine {
+    param(
+        [string] $Category,
+        [string] $Title
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "binarysearch" { return "Linearly scan the sorted array for the target." }
+        "firstbadversion" { return "Call isBadVersion from version 1 upward until the first bad version appears." }
+        "findfirstandlastpositionofelementinsortedarray" { return "Scan the array once and record the first and last target positions." }
+        "searchinsertposition" { return "Scan from left until finding the first value greater than or equal to target." }
+        "findpeakelement" { return "Check every index and compare it with neighbors to find a peak." }
+        "sqrtx" { return "Try integers one by one until square exceeds x." }
+        "searchinrotatedsortedarray" { return "Scan every index because the pivot breaks global sorted order." }
+        "searchinrotatedsortedarrayii" { return "Scan every index, especially when duplicates hide sorted-half information." }
+        "kokoeatingbananas" { return "Try every speed from 1 to max pile and simulate total eating hours." }
+        "capacitytoshippackageswithinddays" { return "Try every capacity from max weight to total weight and simulate shipping days." }
+        "splitarraylargestsum" { return "Try possible max sums or enumerate contiguous partitions directly." }
+        "minimumnumberofdaystomakembouquets" { return "Try days linearly and count how many adjacent bouquets can be made." }
+        "minimumheighttrees" { return "Root the tree at every node and compute its height." }
+        "courseschedule" { return "Repeatedly scan all courses to find one whose prerequisites are already completed." }
+        "coursescheduleii" { return "Repeatedly scan all courses to append one whose prerequisites are already completed." }
+        "minimumnumberofarrowstoburstballoons" { return "Try arrow positions or compare balloon overlaps pair by pair." }
+        "carpooling" { return "For every route point, recompute passenger load by checking all trips." }
+        "minimumplatforms" { return "For each train, count how many other trains overlap its time interval." }
+    }
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "Scan repeatedly or compare every candidate pair/count directly." }
+        "Two Pointers" { return "Try all pairs, all boundaries, or build an auxiliary cleaned structure." }
+        "Sliding Window" { return "Enumerate every substring/subarray and recompute validity from scratch." }
+        "Prefix/Suffix" { return "For every index or query, recompute the needed range/product/sum directly." }
+        "Binary Search" { return "Linearly test candidates or scan the full sorted/search range." }
+        "Linked List" { return "Copy nodes into an array/set, or make extra passes to recover positions." }
+        "Tree BFS" { return "Traverse without preserving levels, then reconstruct level/view information afterward." }
+        "Tree DFS" { return "Restart traversal from many nodes or compute subtree facts repeatedly." }
+        "Graph BFS" { return "Run a separate search from each source or use DFS and then compare path lengths." }
+        "Graph DFS" { return "Start a fresh traversal for every cell/node without reusable visited/component state." }
+        "Stack" { return "For each element, scan left/right or simulate operations without remembering unresolved state." }
+        "Heap" { return "Sort all candidates every time a top, kth, median, or next-best item is needed." }
+        "Intervals/Greedy" { return "Compare every interval with every other interval before deciding conflicts/order." }
+        "Backtracking" { return "Generate all possible candidates first, then filter invalid answers at the end." }
+        "Trie" { return "Compare each word/prefix character-by-character against every dictionary entry." }
+        "Dynamic Programming" { return "Use plain recursion or enumerate choices without caching repeated states." }
+        "Union Find" { return "Run DFS/BFS connectivity checks after every merge/query." }
+        "Topological Sort" { return "Repeatedly scan all dependencies to find what can be processed next." }
+        "Greedy" { return "Explore all choices with search/DP before noticing a local choice is safe." }
+        "Math/Bit/String" { return "Simulate the process directly or compare every possible candidate/string." }
+        "Design/LLD" { return "Implement only the happy-path operation with one map and no invariant for edge cases." }
+        default { return "Try the direct simulation or enumeration first." }
+    }
+}
+
+function Get-BottleneckLine {
+    param(
+        [string] $Category,
+        [string] $Title
+    )
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "The repeated lookup/counting work is the bottleneck." }
+        "Two Pointers" { return "The O(n^2) pair/boundary search repeats comparisons that order can eliminate." }
+        "Sliding Window" { return "Adjacent substrings share almost all state, but brute force discards it." }
+        "Prefix/Suffix" { return "The same prefix/range aggregate is recomputed many times." }
+        "Binary Search" { return "A monotonic property exists, so linear search wastes rejected half-ranges." }
+        "Linked List" { return "Extra storage/passes hide the pointer invariant and add avoidable complexity." }
+        "Tree BFS" { return "Level boundaries are lost unless queue processing is grouped by current level size." }
+        "Tree DFS" { return "Subtree answers are recomputed unless the helper return contract carries them upward." }
+        "Graph BFS" { return "Minimum-step answers require first-discovery order across layers." }
+        "Graph DFS" { return "The same component/path states are revisited without marking and component ownership." }
+        "Stack" { return "Each element's next/previous unresolved relation should be settled once, not rescanned." }
+        "Heap" { return "Full ordering is more work than maintaining only the frontier or top k." }
+        "Intervals/Greedy" { return "Without sorting, conflicts are global; sorting makes the next decision local." }
+        "Backtracking" { return "Invalid branches can be pruned before they become complete candidates." }
+        "Trie" { return "Dictionary words share prefixes, but brute force scans those prefixes repeatedly." }
+        "Dynamic Programming" { return "The same state is reached by multiple choice paths." }
+        "Union Find" { return "Connectivity changes incrementally, but repeated graph searches start over." }
+        "Topological Sort" { return "Dependency scans loop unless indegree/state records what is already unlocked." }
+        "Greedy" { return "Search is unnecessary only after proving the local choice preserves optimality." }
+        "Math/Bit/String" { return "The hidden numeric/string invariant is cheaper than direct simulation." }
+        "Design/LLD" { return "Unclear invariants make edge cases, complexity, and failure modes ambiguous." }
+        default { return "The repeated work must be named before selecting the data structure." }
     }
 }
 
@@ -1410,8 +1871,8 @@ function Build-CrispAnswers {
         $lines.Add("### $($row.Rank). $(Escape-Md $row.Title)")
         $lines.Add("")
         $lines.Add("- Links: $java$lc")
-        $lines.Add("- Brute force: Try all candidate states or combinations directly.")
-        $lines.Add("- Bottleneck: Repeated work appears as rescanning, recomputing, or revisiting state.")
+        $lines.Add("- Brute force: $(Get-BruteForceLine -Category $row.Category -Title $row.Title)")
+        $lines.Add("- Bottleneck: $($row.InterviewHook)")
         $lines.Add("- Pattern: $(Get-DisplayCategory $row.Category), using $($row.Pattern).")
         $lines.Add("- Invariant/state: $($row.Recall)")
         $lines.Add("- Code idea: $($row.CodeIdea)")

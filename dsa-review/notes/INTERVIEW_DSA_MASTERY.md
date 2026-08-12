@@ -282,7 +282,7 @@ Recognition:
 - Top K, kth largest, merge K, streaming median, scheduling next available.
 
 Invariant:
-- Heap top is the next best candidate under the chosen ordering.
+- The heap stores only the priority frontier you need; its top is valid under the comparator you chose.
 
 Template:
 1. Choose min-heap or max-heap.

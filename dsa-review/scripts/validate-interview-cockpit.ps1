@@ -131,6 +131,31 @@ if ($crispText -notmatch "### 1\. $topRankTitle") {
 Assert-PhaseHeaders -Path (Join-Path $interviewRoot "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -ExpectedHeaders $expectedPhaseHeaders
 Assert-PhaseHeaders -Path (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -ExpectedHeaders $expectedPhaseHeaders
 
+$interviewText = (Get-ChildItem -LiteralPath $interviewRoot -Recurse -Filter "*.md" |
+    Sort-Object FullName |
+    ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
+$badGeneratedPhrases = @(
+    "Stack stores unresolved candidates",
+    "Fix dp state meaning",
+    "State API contract",
+    "Use the algebra, bit, or string invariant",
+    "Mark visited before recursion and explore one component/path completely",
+    "For unweighted minimum steps, mark when enqueuing",
+    "Heap top is the next best candidate",
+    "Each node is a prefix; branch only",
+    "Start from brute force",
+    "Try all candidate states or combinations directly",
+    "Repeated work appears as rescanning, recomputing, or revisiting state",
+    "Maintain a monotonic search space and discard the half that cannot contain the answer"
+)
+
+foreach ($phrase in $badGeneratedPhrases) {
+    $escapedPhrase = [regex]::Escape($phrase)
+    if ($interviewText -match $escapedPhrase) {
+        Fail "generated interview docs still contain generic fallback phrase: $phrase"
+    }
+}
+
 $readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -Raw
 if ($readmeText -notmatch 'patterns/README\.md') {
     Fail "main README does not link to pattern files"
