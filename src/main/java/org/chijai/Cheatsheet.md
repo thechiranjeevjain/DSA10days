@@ -67,81 +67,81 @@
 
 # Dynamic Programming
 
--   Climbing Stairs → f(n)=f(n−1)+f(n−2)
--   Coin Change → Memoization / Bottom-up
--   LIS → DP ending at each index
--   LCS → 2D DP
--   Word Break → Prefix + Memoization
--   Combination Sum → Backtracking
--   House Robber → Take / Skip
--   House Robber II → Exclude first / Exclude last
--   Decode Ways → One-digit vs Two-digit transitions
--   Unique Paths → Grid DP
--   Jump Game → Greedy (move goal backwards)
+-   Climbing Stairs -> f(n)=f(n-1)+f(n-2)
+-   Coin Change -> Memoization / Bottom-up
+-   LIS -> DP ending at each index
+-   LCS -> 2D DP
+-   Word Break -> Prefix + Memoization
+-   Combination Sum -> Backtracking
+-   House Robber -> Take / Skip
+-   House Robber II -> Exclude first / Exclude last
+-   Decode Ways -> One-digit vs Two-digit transitions
+-   Unique Paths -> Grid DP
+-   Jump Game -> Greedy (move goal backwards)
 
 ------------------------------------------------------------------------
 
 # Graphs
 
--   Clone Graph → DFS + HashMap
--   Course Schedule → DFS Cycle Detection
--   Pacific Atlantic → Reverse DFS
--   Number of Islands → Flood Fill
--   Longest Consecutive → HashSet
--   Alien Dictionary → Topological Sort
--   Graph Valid Tree → Union Find / DFS
--   Connected Components → DFS
+-   Clone Graph -> DFS + HashMap
+-   Course Schedule -> DFS Cycle Detection
+-   Pacific Atlantic -> Reverse DFS
+-   Number of Islands -> Flood Fill
+-   Longest Consecutive -> HashSet
+-   Alien Dictionary -> Topological Sort
+-   Graph Valid Tree -> Union Find / DFS
+-   Connected Components -> DFS
 
 ------------------------------------------------------------------------
 
 # Linked List
 
--   Reverse List → Reverse pointers
--   Cycle Detection → Fast & Slow
--   Merge Two Lists → Dummy Node
--   Merge K Lists → Heap / Divide & Conquer
--   Remove Nth → Two Pointers
--   Reorder List → Middle + Reverse + Merge
+-   Reverse List -> Reverse pointers
+-   Cycle Detection -> Fast & Slow
+-   Merge Two Lists -> Dummy Node
+-   Merge K Lists -> Heap / Divide & Conquer
+-   Remove Nth -> Two Pointers
+-   Reorder List -> Middle + Reverse + Merge
 
 ------------------------------------------------------------------------
 
 # Matrix
 
--   Set Matrix Zeroes → First row/column markers
--   Spiral Matrix → Boundary traversal
--   Rotate Image → Layer rotation
--   Word Search → DFS + Backtracking
+-   Set Matrix Zeroes -> First row/column markers
+-   Spiral Matrix -> Boundary traversal
+-   Rotate Image -> Layer rotation
+-   Word Search -> DFS + Backtracking
 
 ------------------------------------------------------------------------
 
 # Strings
 
--   Longest Substring → Sliding Window
--   Character Replacement → Sliding Window
--   Minimum Window → Need / Have
--   Valid Anagram → Count
--   Group Anagrams → Frequency key
--   Valid Parentheses → Stack
--   Valid Palindrome → Two Pointers
--   Longest Palindrome → Expand Around Center
--   Palindromic Substrings → Expand Around Center
--   Encode / Decode Strings → Length + Delimiter
+-   Longest Substring -> Sliding Window
+-   Character Replacement -> Sliding Window
+-   Minimum Window -> Need / Have
+-   Valid Anagram -> Count
+-   Group Anagrams -> Frequency key
+-   Valid Parentheses -> Stack
+-   Valid Palindrome -> Two Pointers
+-   Longest Palindrome -> Expand Around Center
+-   Palindromic Substrings -> Expand Around Center
+-   Encode / Decode Strings -> Length + Delimiter
 
 ------------------------------------------------------------------------
 
 # Trees
 
--   Max Depth → DFS / BFS
--   Same Tree → DFS
--   Invert Tree → DFS
--   Max Path Sum → Tree DP
--   Level Order → BFS
--   Serialize Tree → BFS
--   Subtree → DFS Compare
--   Build Tree → Preorder + Inorder
--   Validate BST → Min / Max Range
--   Kth Smallest → Inorder
--   LCA BST → BST Property
+-   Max Depth -> DFS / BFS
+-   Same Tree -> DFS
+-   Invert Tree -> DFS
+-   Max Path Sum -> Tree DP
+-   Level Order -> BFS
+-   Serialize Tree -> BFS
+-   Subtree -> DFS Compare
+-   Build Tree -> Preorder + Inorder
+-   Validate BST -> Min / Max Range
+-   Kth Smallest -> Inorder
+-   LCA BST -> BST Property
 
 ------------------------------------------------------------------------
 
@@ -149,22 +149,22 @@
 
 -   Implement Trie
 -   Add & Search Word
--   Word Search II → Trie + DFS
+-   Word Search II -> Trie + DFS
 
 ------------------------------------------------------------------------
 
 # Heap
 
--   Top K Frequent → Heap
--   Median Stream → Two Heaps
+-   Top K Frequent -> Heap
+-   Median Stream -> Two Heaps
 
 ------------------------------------------------------------------------
 
 # Toolbox
 
-HashMap • HashSet • Stack • Queue • Deque • PriorityQueue • DFS • BFS •
-Union Find • Trie • Binary Search • Sliding Window • Prefix Sum • DP •
-Greedy • Backtracking • Bit Manipulation
+HashMap / HashSet / Stack / Queue / Deque / PriorityQueue / DFS / BFS /
+Union Find / Trie / Binary Search / Sliding Window / Prefix Sum / DP /
+Greedy / Backtracking / Bit Manipulation
 
 ------------------------------------------------------------------------
 

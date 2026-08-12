@@ -16,14 +16,16 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
-| Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ranked by ROI. |
+| Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
+| Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
 
 ## Current Coverage
 
-- Ranked entries: 171
+- Ranked entries: 170
 - Pattern files: 22
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
-- Ranking philosophy: frequency + ROI + no-red-flag risk + ease to refresh quickly.
+- Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
+- Ranking audit: `05_RANKING_METHODOLOGY_AND_AUDIT.md`.
 
 ## Interview Rule
 

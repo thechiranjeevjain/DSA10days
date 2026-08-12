@@ -29,6 +29,7 @@ foreach ($name in $requiredFiles) {
 $rankedPath = Join-Path $interviewRoot "01_ZERO_TO_HERO_RANKED_TABLE.md"
 $rankedText = Get-Content -LiteralPath $rankedPath -Raw
 $rankLines = @(Select-String -LiteralPath $rankedPath -Pattern '^\| (?<rank>\d+) \|' | ForEach-Object { $_.Line })
+$topRankMatch = [regex]::Match($rankedText, '^\| 1 \| (?<title>[^|]+?) \|' , [System.Text.RegularExpressions.RegexOptions]::Multiline)
 
 if ($rankLines.Count -lt 150) {
     Fail "expected at least 150 ranked rows, found $($rankLines.Count)"
@@ -84,8 +85,8 @@ if ($leetcodeLinkCount -lt 100) {
     Fail "expected substantial LeetCode coverage, found $leetcodeLinkCount links"
 }
 
-if ($rankedText -notmatch 'Count magazine chars, then spend counts for ransom') {
-    Fail "top problem-specific recall hook is not present"
+if (-not $topRankMatch.Success) {
+    Fail "could not parse the current rank 1 title"
 }
 
 $patternText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_PATTERN_RECOGNITION_80_20.md") -Raw
@@ -94,8 +95,9 @@ if ($patternText -notmatch 'brute force -> bottleneck -> pattern -> invariant ->
 }
 
 $crispText = Get-Content -LiteralPath (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -Raw
-if ($crispText -notmatch '### 1\. Ransom Note') {
-    Fail "crisp answer deck is missing the rank 1 answer"
+$topRankTitle = [regex]::Escape($topRankMatch.Groups["title"].Value.Trim())
+if ($crispText -notmatch "### 1\. $topRankTitle") {
+    Fail "crisp answer deck is missing the current rank 1 answer"
 }
 
 $readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -Raw

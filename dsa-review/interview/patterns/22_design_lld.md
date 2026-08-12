@@ -1,6 +1,6 @@
 # Design Data Structures
 
-Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.
+Focused pattern pass. Keep the global rank order inside this file; lower rank means a higher score in the current interview-ROI heuristic.
 
 ## Recognition Signal
 
@@ -14,11 +14,11 @@ Start from operations and constraints, then pick data structures that preserve p
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 167 | Phase 5 - If Time | Api Integration Example | LLD/API integration | [Java](../../../src/main/java/org/chijai/design/lld/ApiIntegrationExample.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
-| 168 | Phase 5 - If Time | Design Redis | LLD / data structures | [Java](../../../src/main/java/org/chijai/design/lld/DesignRedis.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
-| 169 | Phase 5 - If Time | Design Token Bucket Rate Limiter | LLD / rate limiting | [Java](../../../src/main/java/org/chijai/design/lld/DesignTokenBucketRateLimiter.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
-| 170 | Phase 5 - If Time | Encode And Decode Tinyurl | LLD / URL shortener | [Java](../../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LC](https://leetcode.com/problems/encode-and-decode-tinyurl/) | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
-| 171 | Phase 5 - If Time | Two Sum | LLD / URL shortener | [Java](../../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LC](https://leetcode.com/problems/two-sum/) | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
+| 165 | Phase 5 - If Time | Encode And Decode Tinyurl | LLD / URL shortener | [Java](../../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LC](https://leetcode.com/problems/encode-and-decode-tinyurl/) | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
+| 167 | Phase 5 - If Time | Design Fraud Pattern Detection | LLD / domain modeling | [Java](../../../src/main/java/org/chijai/design/lld/DesignFraudPatternDetection.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
+| 168 | Phase 5 - If Time | Api Integration Example | LLD/API integration | [Java](../../../src/main/java/org/chijai/design/lld/ApiIntegrationExample.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
+| 169 | Phase 5 - If Time | Design Redis | LLD / data structures | [Java](../../../src/main/java/org/chijai/design/lld/DesignRedis.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
+| 170 | Phase 5 - If Time | Design Token Bucket Rate Limiter | LLD / rate limiting | [Java](../../../src/main/java/org/chijai/design/lld/DesignTokenBucketRateLimiter.java) | - | State API contract, data structures, invariants, and complexity per operation. | Implement operations around maps, lists, queues, heaps, or tries with clear invariants. |
 
 ## Drill
 

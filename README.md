@@ -13,6 +13,7 @@ The Java files under `src/main/java/org/chijai` are the source of truth. The `ds
 | Need one-line memory refresh | `dsa-review/interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md` |
 | Need spoken interview answers | `dsa-review/interview/03_CRISP_INTERVIEW_ANSWERS.md` |
 | Need pattern-focused revision | `dsa-review/interview/patterns/README.md` |
+| Need to audit the ranking | `dsa-review/interview/05_RANKING_METHODOLOGY_AND_AUDIT.md` |
 | Need a random active-recall drill | `dsa-review\scripts\drill.cmd -Priority A -Count 3` |
 
 ## Interview Solve Rhythm

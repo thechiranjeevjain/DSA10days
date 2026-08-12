@@ -446,10 +446,100 @@ function Get-ProblemOverride {
             hook = "BST validity is an inorder ordering invariant, not a local parent-child check."
             code = "Track prev, first, second during inorder; after traversal swap first.val and second.val."
         }
+        "longestpalindrome" = @{
+            recall = "At most one character may have an odd count; pairs from all counts build the longest palindrome."
+            hook = "Order does not matter here; frequency parity decides how many chars can be used."
+            code = "Count chars, add count / 2 * 2, and allow one odd center if any count is odd."
+        }
         "longestpalindromicsubstring" = @{
             recall = "Expand around every odd and even center and keep the longest span."
             hook = "Every palindrome is defined by its center, which is cheaper than checking all substrings."
             code = "For each index, expand(i,i) and expand(i,i+1), update best start/length."
+        }
+        "sortcolors" = @{
+            recall = "Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers."
+            hook = "Sorting is overkill for three values; partitioning maintains regions in one pass."
+            code = "Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1."
+        }
+        "meetingrooms" = @{
+            recall = "After sorting intervals by start, any overlap with the previous end means a conflict."
+            hook = "Unsorted pair checks are noisy; sorting makes the only dangerous interval the previous one."
+            code = "Sort by start, scan adjacent intervals, return false if current.start < previous.end."
+        }
+        "meetingroomsii" = @{
+            recall = "Sort meetings by start; a min-heap of end times counts active rooms."
+            hook = "Need the earliest finishing active meeting to decide whether a room can be reused."
+            code = "Sort intervals, pop heap while end <= start, push current end, track max heap size."
+        }
+        "slidingwindowmaximum" = @{
+            recall = "A decreasing deque stores candidate indices; front is always the current window maximum."
+            hook = "Recomputing max for each window is O(nk); the deque removes dominated elements once."
+            code = "Drop out-of-window front, pop smaller/equal from back, push index, read front after first window."
+        }
+        "online stock span" = @{
+            recall = "A decreasing stack of price/span pairs merges all previous prices <= current price."
+            hook = "Scanning backward repeats work; collapsed spans let each price enter and leave once."
+            code = "Start span=1, while stack top price <= current add its span and pop, then push current/span."
+        }
+        "onlinestockspan" = @{
+            recall = "A decreasing stack of price/span pairs merges all previous prices <= current price."
+            hook = "Scanning backward repeats work; collapsed spans let each price enter and leave once."
+            code = "Start span=1, while stack top price <= current add its span and pop, then push current/span."
+        }
+        "implementtrieprefixtree" = @{
+            recall = "Each trie node represents one prefix; terminal marks distinguish full words from prefixes."
+            hook = "HashSet handles exact lookup, but prefix queries need shared character paths."
+            code = "For insert/search/startsWith, walk chars through children; create on insert, fail on missing child."
+        }
+        "designaddandsearchwordsdatastructure" = @{
+            recall = "Trie search branches only on '.', otherwise it follows exactly one child."
+            hook = "Wildcard lookup cannot be solved by one HashSet lookup; branching is limited by trie prefixes."
+            code = "DFS over trie and word index; on '.', try every child, otherwise follow the matching child."
+        }
+        "wordsearchii" = @{
+            recall = "Trie prunes dictionary prefixes while board DFS chooses, marks, explores, and unmarks cells."
+            hook = "Running Word Search for every word repeats prefix work; trie shares the dictionary search."
+            code = "Build trie, DFS board paths, stop when prefix missing, collect terminal words, mark cells in-place."
+        }
+        "maximumxoroftwonumbersinanarray" = @{
+            recall = "Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low."
+            hook = "Checking all pairs is O(n^2); bitwise trie preserves candidate prefixes cheaply."
+            code = "Insert numbers by bits, then for each number walk preferred opposite bits and update max."
+        }
+        "networkdelaytime" = @{
+            recall = "Dijkstra keeps the next shortest unsettled node in a min-heap."
+            hook = "Unweighted BFS is not valid with weighted edges; heap order settles shortest distances."
+            code = "Build adjacency, push source distance 0, relax neighbors when a smaller distance is found."
+        }
+        "maximumprofitinjobscheduling" = @{
+            recall = "Sort jobs by end time; dp[i] is best profit up to i, with binary search for compatible previous job."
+            hook = "Trying all subsets repeats compatibility checks; DP plus sorted end times reuses optimal prefixes."
+            code = "Sort by end, for each job compute max(skip, profit + dp[lastNonOverlapping])."
+        }
+        "timebasedkeyvaluestore" = @{
+            recall = "Map each key to timestamped values in order; binary search finds latest timestamp <= query."
+            hook = "Scanning history on every get is slow; timestamps are monotonic per key."
+            code = "Append on set; on get binary search the key's list for rightmost timestamp <= target."
+        }
+        "findtheindexofthefirstoccurrenceinastring" = @{
+            recall = "KMP reuses the longest proper prefix that is also a suffix after a mismatch."
+            hook = "Naive matching restarts too far; LPS tells how much matched work remains valid."
+            code = "Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch."
+        }
+        "longesthappyprefix" = @{
+            recall = "The answer is the final LPS value: longest proper prefix that is also suffix."
+            hook = "Trying every prefix repeats comparisons; KMP prefix table stores reusable border lengths."
+            code = "Build LPS over the string and return substring(0, lps[n - 1])."
+        }
+        "repeatedsubstringpattern" = @{
+            recall = "A repeated pattern exists when the final LPS leaves a block length that divides n."
+            hook = "Testing every divisor naively repeats string comparisons; KMP exposes the repeated border."
+            code = "Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0."
+        }
+        "shortestpalindrome" = @{
+            recall = "Find the longest palindromic prefix, then prepend the reverse of the remaining suffix."
+            hook = "Expanding every prefix is expensive; KMP on s + # + reverse(s) finds the prefix length."
+            code = "Compute LPS on combined string, reverse suffix from lps length, prepend it to s."
         }
         "burnbinarytree" = @{
             recall = "Treat the tree as an undirected graph from the target node and BFS by minutes."
@@ -500,6 +590,16 @@ function Get-Category {
 
     $text = (($Pattern + " " + $File + " " + $Title).ToLowerInvariant())
     $titleText = $Title.ToLowerInvariant()
+
+    if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
+    if ($titleText -match "implement trie prefix tree|design add and search words|word search ii|maximum xor|hotel reviews") { return "Trie" }
+    if ($titleText -match "sliding window maximum|online stock span") { return "Stack" }
+    if ($titleText -match "^meeting rooms$") { return "Intervals/Greedy" }
+    if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
+    if ($titleText -match "network delay time") { return "Graph BFS" }
+    if ($titleText -match "^longest palindrome$") { return "HashMap/HashSet" }
+    if ($titleText -match "sort colors") { return "Two Pointers" }
+    if ($titleText -match "find the index of the first occurrence|longest happy prefix|repeated substring pattern|shortest palindrome") { return "Math/Bit/String" }
 
     if ($titleText -match "sum of subarray minimums|daily temperatures|next greater|largest rectangle|valid parentheses|calculator|reverse polish|stack") { return "Stack" }
     if ($titleText -match "longest palindromic substring") { return "Two Pointers" }
@@ -606,6 +706,170 @@ function Get-CategoryWeight {
         "Math/Bit/String" { return 200 }
         "Design/LLD" { return 300 }
         default { return 250 }
+    }
+}
+
+function Get-ProblemImportanceWeight {
+    param(
+        [string] $Title,
+        [string] $Category,
+        [string] $Pattern
+    )
+
+    $key = Get-NormalizedKey $Title
+
+    switch ($key) {
+        "binarysearch" { return 1 }
+        "validanagram" { return 2 }
+        "longestsubstringwithoutrepeatingcharacters" { return 3 }
+        "minimumwindowsubstring" { return 4 }
+        "productofarrayexceptself" { return 5 }
+        "linkedlistcycle" { return 6 }
+        "reverselinkedlist" { return 7 }
+        "mergetwosortedlists" { return 8 }
+        "mergeksortedlists" { return 9 }
+        "validpalindrome" { return 10 }
+        "2sum3sum4sum" { return 11 }
+        "containerwithmostwater" { return 12 }
+        "trappingrainwater" { return 13 }
+        "binarytreelevelordertraversal" { return 14 }
+        "validatebinarysearchtree" { return 15 }
+        "lowestcommonancestorofabinarytree" { return 16 }
+        "numberofislands" { return 17 }
+        "courseschedule" { return 18 }
+        "wordladder" { return 19 }
+        "kokoeatingbananas" { return 20 }
+        "searchinrotatedsortedarray" { return 21 }
+        "findfirstandlastpositionofelementinsortedarray" { return 22 }
+        "lrucache" { return 23 }
+        "copylistwithrandompointer" { return 24 }
+        "kthsmallestelementinabst" { return 25 }
+        "balancedbinarytree" { return 26 }
+        "diameterofbinarytree" { return 27 }
+        "pathsumiii" { return 28 }
+        "rottingoranges" { return 29 }
+        "01matrix" { return 30 }
+        "meetingroomsii" { return 31 }
+        "dailytemperatures" { return 32 }
+        "validparentheses" { return 33 }
+        "largestrectangleinhistogram" { return 34 }
+        "findallanagramsinastring" { return 35 }
+        "longestrepeatingcharacterreplacement" { return 36 }
+        "longestsubstringwithatmostkdistinctcharacters" { return 37 }
+        "permutationinstring" { return 38 }
+        "binarysubarrayswithsum" { return 39 }
+        "majorityelement" { return 40 }
+        "ransomnote" { return 41 }
+        "intersectionoftwolinkedlists" { return 42 }
+        "lowestcommonancestorofabinarysearchtree" { return 46 }
+        "linkedlistcycleii" { return 44 }
+        "reversenodesinkgroup" { return 45 }
+        "binarytreerightsideview" { return 47 }
+        "binarytreeinordertraversal" { return 48 }
+        "serializeanddeserializebinarytree" { return 49 }
+        "maximumdepthofbinarytree" { return 50 }
+        "numberofprovinces" { return 51 }
+        "clonegraph" { return 52 }
+        "searchinsertposition" { return 53 }
+        "findpeakelement" { return 54 }
+        "firstbadversion" { return 55 }
+        "splitarraylargestsum" { return 56 }
+        "capacitytoshippackageswithinddays" { return 57 }
+        "minimumnumberofdaystomakembouquets" { return 58 }
+        "middleofthelinkedlist" { return 59 }
+        "meetingrooms" { return 60 }
+        "slidingwindowmaximum" { return 61 }
+        "topkfrequentelements" { return 62 }
+        "constructbinarytreefrominorderandpostordertraversal" { return 63 }
+        "constructbinarytreefrompreorderandinordertraversal" { return 64 }
+        "binarytreemaximumpathsum" { return 65 }
+    }
+
+    $tier0 = @()
+    $tier1 = @(
+        "timedbasedkeyvaluestore",
+        "timebasedkeyvaluestore",
+        "binarytreerightsideview",
+        "binarytreeinordertraversal",
+        "maximumdepthofbinarytree",
+        "reversenodesinkgroup",
+        "constructbinarytreefrompreorderandinordertraversal",
+        "constructbinarytreefrominorderandpostordertraversal",
+        "binarytreemaximumpathsum"
+    )
+    $tier2 = @(
+        "floodfill",
+        "isgraphbipartite",
+        "nextgreaterelementii",
+        "sumofsubarrayminimums",
+        "basiccalculator",
+        "evaluatereversepolishnotation",
+        "findmedianfromdatastream",
+        "topkfrequentelements",
+        "taskscheduler",
+        "minimumnumberofarrows toburstballoons".Replace(" ",""),
+        "combinationsum",
+        "wordsearch",
+        "implementtrieprefixtree",
+        "houserobber",
+        "uniquepaths",
+        "coinchange",
+        "longestincreasingsubsequence",
+        "partitionequalsubsetsum"
+    )
+    $tier3 = @(
+        "substringwithconcatenationofallwords",
+        "oddevenlinkedlist",
+        "rotatelist",
+        "swapnodesinpairs",
+        "designbrowserhistory",
+        "firstuniquenumber",
+        "movingaveragefromdatastream",
+        "constructbinarysearchtreefrompreordertraversal",
+        "verifypreorderserializationofabinarytree",
+        "invertbinarytree",
+        "sumroottoleafnumbers",
+        "surroundedregions",
+        "pacificatlanticwaterflow",
+        "networkdelaytime",
+        "burnbinarytree",
+        "slidingwindowmaximum",
+        "designaddandsearchwordsdatastructure",
+        "wordsearchii",
+        "maximumprofitinjobscheduling",
+        "kad anemaxsubarray".Replace(" ",""),
+        "sortcolors",
+        "besttimetobuyandsellstock",
+        "accountsmerge",
+        "minimumheighttrees"
+    )
+
+    $weight = 80
+    if ($key -in $tier0) { $weight = 0 }
+    elseif ($key -in $tier1) { $weight = 15 }
+    elseif ($key -in $tier2) { $weight = 35 }
+    elseif ($key -in $tier3) { $weight = 55 }
+
+    if ($key -match "(ii|iii|iv)$") { $weight += 12 }
+    if ($key -match "design|iterator|serialization|deserialize|stream") { $weight += 6 }
+    if ($Category -in @("Dynamic Programming", "Trie", "Math/Bit/String", "Design/LLD")) { $weight += 8 }
+    if ($Pattern.ToLowerInvariant() -match "variant|ranking|fundamentals") { $weight += 10 }
+
+    switch ($key) {
+        "searchinrotatedsortedarrayii" { return 56 }
+        "binarysearchtreeiterator" { return 38 }
+        "maximumxoroftwonumbersinanarray" { return 84 }
+        "countuniquecharactersofallsubstringsofagivenstring" { return 88 }
+        "findtheindexofthefirstoccurrenceinastring" { return 78 }
+        "longesthappyprefix" { return 86 }
+        "repeatedsubstringpattern" { return 82 }
+        "shortestpalindrome" { return 90 }
+        "designfraudpatterndetection" { return 98 }
+        "apiintegrationexample" { return 99 }
+        "designredis" { return 99 }
+        "designtokenbucketratelimiter" { return 99 }
+        "encodeanddecodetinyurl" { return 92 }
+        default { return $weight }
     }
 }
 
@@ -766,6 +1030,16 @@ function Get-LeetCodeSlugs {
     return @($matches | ForEach-Object { $_.Groups[1].Value.Trim().ToLowerInvariant() } | Where-Object { $_ } | Select-Object -Unique)
 }
 
+function Get-ExcludedSlugsForFile {
+    param([string] $RelativeFile)
+
+    $fileKey = $RelativeFile.Replace("\", "/").ToLowerInvariant()
+    switch ($fileKey) {
+        "design/lld/designurlshortner.java" { return @("two-sum") }
+        default { return @() }
+    }
+}
+
 function Get-IndexRows {
     param(
         [string] $RepoRoot,
@@ -787,9 +1061,13 @@ function Get-IndexRows {
         $patternName = $match.Groups[2].Value.Trim()
         $priority = $match.Groups[3].Value.Trim()
         $category = Get-Category -Pattern $patternName -File $relativeFile -Title $fileTitle
-        $slugs = @(Get-LeetCodeSlugs -SourcePath $sourcePath)
+        $excludedSlugs = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
+        $slugs = @(Get-LeetCodeSlugs -SourcePath $sourcePath | Where-Object { $_ -notin $excludedSlugs })
 
         if ($slugs.Count -eq 0) {
+            $importanceWeight = Get-ProblemImportanceWeight -Title $fileTitle -Category $category -Pattern $patternName
+            $priorityWeight = Get-PriorityWeight $priority
+            $categoryWeight = Get-CategoryWeight $category
             $rows.Add([pscustomobject]@{
                 Title = $fileTitle
                 Slug = ""
@@ -801,25 +1079,35 @@ function Get-IndexRows {
                 LeetCodeLink = ""
                 SourceExists = Test-Path -LiteralPath $sourcePath
                 MatchScore = 0
-                SortKey = (Get-PriorityWeight $priority) + (Get-CategoryWeight $category)
+                PriorityWeight = $priorityWeight
+                ImportanceWeight = $importanceWeight
+                CategoryWeight = $categoryWeight
+                SortKey = $priorityWeight + $importanceWeight + $categoryWeight
             })
             continue
         }
 
         foreach ($slug in $slugs) {
             $title = ConvertTo-TitleFromSlug $slug
+            $rowCategory = Get-Category -Pattern $patternName -File $relativeFile -Title $title
+            $importanceWeight = Get-ProblemImportanceWeight -Title $title -Category $rowCategory -Pattern $patternName
+            $priorityWeight = Get-PriorityWeight $priority
+            $categoryWeight = Get-CategoryWeight $rowCategory
             $rows.Add([pscustomobject]@{
                 Title = $title
                 Slug = $slug
                 File = $relativeFile
                 Pattern = $patternName
-                Category = (Get-Category -Pattern $patternName -File $relativeFile -Title $title)
+                Category = $rowCategory
                 Priority = $priority
                 JavaLink = "../../src/main/java/org/chijai/" + $relativeFile.Replace("\", "/")
                 LeetCodeLink = "https://leetcode.com/problems/$slug/"
                 SourceExists = Test-Path -LiteralPath $sourcePath
                 MatchScore = Get-LinkMatchScore -RelativeFile $relativeFile -Title $title -Slug $slug
-                SortKey = (Get-PriorityWeight $priority) + (Get-CategoryWeight (Get-Category -Pattern $patternName -File $relativeFile -Title $title))
+                PriorityWeight = $priorityWeight
+                ImportanceWeight = $importanceWeight
+                CategoryWeight = $categoryWeight
+                SortKey = $priorityWeight + $importanceWeight + $categoryWeight
             })
         }
     }
@@ -834,7 +1122,7 @@ function Get-IndexRows {
     }
 
     $rank = 1
-    foreach ($row in ($deduped | Sort-Object SortKey, File, Title | Select-Object -First $MaxRows)) {
+    foreach ($row in ($deduped | Sort-Object PriorityWeight, ImportanceWeight, CategoryWeight, MatchScore, File, Title | Select-Object -First $MaxRows)) {
         Add-Member -InputObject $row -NotePropertyName Rank -NotePropertyValue $rank
         Add-Member -InputObject $row -NotePropertyName MustLevel -NotePropertyValue (Get-MustLevel -Rank $rank -Priority $row.Priority)
         $override = Get-ProblemOverride -Title $row.Title
@@ -929,14 +1217,16 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
-| Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ranked by ROI. |
+| Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
+| Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
 
 ## Current Coverage
 
 - Ranked entries: __TOTAL__
 - Pattern files: __PATTERN_COUNT__
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
-- Ranking philosophy: frequency + ROI + no-red-flag risk + ease to refresh quickly.
+- Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
+- Ranking audit: `05_RANKING_METHODOLOGY_AND_AUDIT.md`.
 
 ## Interview Rule
 
@@ -1028,6 +1318,8 @@ function Build-RankedTable {
     $lines.Add("Use this as the crunch-time order. Start at rank 1 and go down until time runs out.")
     $lines.Add("")
     $lines.Add("This is an interview-ROI order, not a universal algorithm curriculum order.")
+    $lines.Add("")
+    $lines.Add("For the scoring model and limitations, read [Ranking Methodology And Audit](05_RANKING_METHODOLOGY_AND_AUDIT.md).")
     $lines.Add("")
     $currentPhase = ""
     foreach ($row in $Rows) {
@@ -1165,6 +1457,117 @@ function Build-Plans {
     return ($lines -join "`r`n")
 }
 
+function Build-RankingAudit {
+    param(
+        [object[]] $Rows,
+        [object[]] $Groups
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $ranked = New-Link "Zero To Hero Ranked Table" "01_ZERO_TO_HERO_RANKED_TABLE.md"
+    $index = New-Link "Problem Pattern Index" "../notes/PROBLEM_PATTERN_INDEX.md"
+    $leetcodeCount = @($Rows | Where-Object { $_.LeetCodeLink }).Count
+    $localOnlyCount = @($Rows | Where-Object { -not $_.LeetCodeLink }).Count
+    $missingSourceCount = @($Rows | Where-Object { -not $_.SourceExists }).Count
+
+    $lines.Add("# Ranking Methodology And Audit")
+    $lines.Add("")
+    $lines.Add("Read this before treating $ranked as truth.")
+    $lines.Add("")
+    $lines.Add("## Verdict")
+    $lines.Add("")
+    $lines.Add("This ranking is not objectively correct in the mathematical sense. It is a transparent interview-ROI heuristic generated from the local repo.")
+    $lines.Add("")
+    $lines.Add("It is useful for crunch-time triage. It would be a scam if presented as a universal proof that rank 42 is objectively more important than rank 57.")
+    $lines.Add("")
+    $lines.Add("Use phase bands more than exact rank numbers:")
+    $lines.Add("")
+    $lines.Add("- Phase 1 beats Phase 2.")
+    $lines.Add("- Phase 2 beats Phase 3.")
+    $lines.Add("- Inside the same phase, your weak pattern or target company signal can override the exact rank.")
+    $lines.Add("")
+    $lines.Add("## What Is Objective")
+    $lines.Add("")
+    $lines.Add("| Check | Current result | Meaning |")
+    $lines.Add("|---|---:|---|")
+    $lines.Add("| Ranked rows generated | $($Rows.Count) | Rows came from $index and Java LeetCode links. |")
+    $lines.Add("| Java source missing | $missingSourceCount | Should stay 0. |")
+    $lines.Add("| LeetCode-linked rows | $leetcodeCount | Rows that open LeetCode directly. |")
+    $lines.Add("| Local-only rows | $localOnlyCount | Repo-only or design rows without direct LeetCode source link. |")
+    $lines.Add("| Pattern files generated | $($Groups.Count) | One focused view per generated category. |")
+    $lines.Add("")
+    $lines.Add("These are objective repository checks. They do not prove the ranking is globally correct.")
+    $lines.Add("")
+    $lines.Add("## Scoring Model")
+    $lines.Add("")
+    $lines.Add("The generator sorts rows by priority first, then by a per-problem interview-ROI weight, then by category weight as a tie-breaker:")
+    $lines.Add("")
+    $lines.Add("~~~text")
+    $lines.Add("SortKey = PriorityWeight + ImportanceWeight + CategoryWeight")
+    $lines.Add("then MatchScore, File, Title")
+    $lines.Add("~~~")
+    $lines.Add("")
+    $lines.Add("ImportanceWeight is hand-tuned in the generator for individual problems. That is the main answer to 'rank by individual problem ROI, not only by pattern.'")
+    $lines.Add("")
+    $lines.Add("| Input | Weight | Meaning |")
+    $lines.Add("|---|---:|---|")
+    $lines.Add("| Priority A | 0 | Master first from the source index. |")
+    $lines.Add("| Priority B | 1000 | Stabilize after Priority A. |")
+    $lines.Add("| Priority C | 2000 | Review after core is stable. |")
+    $lines.Add("")
+    $lines.Add("Problem ROI tiers currently used:")
+    $lines.Add("")
+    $lines.Add("| Importance weight | Meaning |")
+    $lines.Add("|---:|---|")
+    $lines.Add("| 0 | Core no-red-flag interview staples. |")
+    $lines.Add("| 15 | Very common and still high-value. |")
+    $lines.Add("| 35 | Strong secondary problems once the core is stable. |")
+    $lines.Add("| 55 | Useful breadth, but not first-pass mandatory. |")
+    $lines.Add("| 80+ | Low-priority or role-specific for general DSA prep. |")
+    $lines.Add("")
+    $lines.Add("Category weights currently used:")
+    $lines.Add("")
+    $lines.Add("| Weight | Category | Rationale |")
+    $lines.Add("|---:|---|---|")
+    $lines.Add("| 10 | HashMap / Frequency / Set | Low implementation cost, high red-flag risk if missed. |")
+    $lines.Add("| 20 | Two Pointers | Common pair/string/array interview pattern. |")
+    $lines.Add("| 30 | Sliding Window | High ROI for contiguous array/string problems. |")
+    $lines.Add("| 40 | Prefix Sum / Prefix-Suffix | Frequent repeated-range optimization. |")
+    $lines.Add("| 50 | Linked List Pointers | Low theory, high bug-risk in interviews. |")
+    $lines.Add("| 60 | Tree BFS / Level Order | Core tree traversal and level logic. |")
+    $lines.Add("| 70 | Tree DFS / Recursion | Core recursive return contracts and tree invariants. |")
+    $lines.Add("| 80 | Graph BFS / Shortest Path | Minimum-step and level-expansion problems. |")
+    $lines.Add("| 90 | Graph DFS / Components | Components, visited state, path exploration. |")
+    $lines.Add("| 100 | Binary Search / Answer Search | Important, but usually easier to recover once invariant is known. |")
+    $lines.Add("| 110 | Stack / Monotonic Stack | Parentheses, monotonic stack, deque-like candidate maintenance. |")
+    $lines.Add("| 120 | Heap / Priority Queue | Top-K, stream, and frontier problems. |")
+    $lines.Add("| 130+ | Remaining categories | Useful breadth after the core signal is reliable. |")
+    $lines.Add("")
+    $lines.Add("## Why It Can Feel Off")
+    $lines.Add("")
+    $lines.Add("- A Java chapter can contain many LeetCode links; all rows still inherit the same Priority A/B/C from that chapter.")
+    $lines.Add("- Importance weights are curated heuristics, not measured company frequency data.")
+    $lines.Add("- Exact rank inside one phase is weaker than the phase itself.")
+    $lines.Add("- The ranking is not trained on company-specific interview data.")
+    $lines.Add("- Some rows need problem-specific hooks; generic pattern text is only a fallback.")
+    $lines.Add("- If the target company emphasizes DP, graphs, or tries, manually promote that pattern for that week.")
+    $lines.Add("")
+    $lines.Add("## Current Anti-Scam Rule")
+    $lines.Add("")
+    $lines.Add("Say this: 'This is my local interview triage order based on repo priorities, pattern ROI, and no-red-flag risk.'")
+    $lines.Add("")
+    $lines.Add("Do not say this: 'This is the objectively correct global ranking of DSA problems.'")
+    $lines.Add("")
+    $lines.Add("## Practical Use")
+    $lines.Add("")
+    $lines.Add("For a 2-hour or 1-day crunch, follow Phase 1 in order.")
+    $lines.Add("")
+    $lines.Add("For a 2-day crunch, follow Phase 1, then Phase 2, but swap in your weakest pattern if it is already known.")
+    $lines.Add("")
+    $lines.Add("For a 1-week prep, use the rank order for coverage and the pattern files for targeted repair.")
+    return ($lines -join "`r`n")
+}
+
 function Build-PatternIndex {
     param(
         [object[]] $Rows,
@@ -1174,7 +1577,7 @@ function Build-PatternIndex {
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# Pattern Files")
     $lines.Add("")
-    $lines.Add("Use these when you know the weak pattern and want a focused pass without losing the global ROI order.")
+    $lines.Add("Use these when you know the weak pattern and want a focused pass without losing the current global order.")
     $lines.Add("")
     $lines.Add("Recommended flow: read the pattern signal, speak the top rows without code, then implement one missed problem from blank.")
     $lines.Add("")
@@ -1199,7 +1602,7 @@ function Build-PatternFile {
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# $($Group.DisplayCategory)")
     $lines.Add("")
-    $lines.Add("Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.")
+    $lines.Add("Focused pattern pass. Keep the global rank order inside this file; lower rank means a higher score in the current interview-ROI heuristic.")
     $lines.Add("")
     $lines.Add("## Recognition Signal")
     $lines.Add("")
@@ -1252,8 +1655,13 @@ Write-TextFile -Path (Join-Path $outDir "01_ZERO_TO_HERO_RANKED_TABLE.md") -Cont
 Write-TextFile -Path (Join-Path $outDir "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -Content (Build-OneLineRecall -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "03_CRISP_INTERVIEW_ANSWERS.md") -Content (Build-CrispAnswers -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md") -Content (Build-Plans -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "05_RANKING_METHODOLOGY_AND_AUDIT.md") -Content (Build-RankingAudit -Rows $rows -Groups $patternGroups)
 
 $patternDir = Join-Path $outDir "patterns"
+if (-not (Test-Path -LiteralPath $patternDir)) {
+    New-Item -ItemType Directory -Path $patternDir | Out-Null
+}
+Get-ChildItem -LiteralPath $patternDir -File -Filter "*.md" | Remove-Item -Force
 Write-TextFile -Path (Join-Path $patternDir "README.md") -Content (Build-PatternIndex -Rows $rows -Groups $patternGroups)
 foreach ($group in $patternGroups) {
     Write-TextFile -Path (Join-Path $patternDir $group.FileName) -Content (Build-PatternFile -Group $group)

@@ -9,7 +9,7 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 | Path | Role |
 |---|---|
 | `interview/` | Before-company-call cockpit. Start here when an interview is near. |
-| `interview/patterns/` | One generated Markdown file per pattern/category, still ordered by global ROI rank. |
+| `interview/patterns/` | One generated Markdown file per pattern/category, still ordered by the current ranking heuristic. |
 | `notes/` | Strategy docs, pre-Zoom checklist, drill system, and the problem-pattern index. |
 | `scripts/` | Commands for generating docs, validating links, random drills, and spaced-review actions. |
 | `solutions/` | Intentionally reserved. Java source stays in `../src/main/java/org/chijai`; this folder is not the source of truth. |
@@ -22,7 +22,8 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 4. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
 5. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
 6. For weak-topic focus, open `interview/patterns/README.md`.
-7. After a miss, run the review command and mark the item honestly.
+7. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+8. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 
