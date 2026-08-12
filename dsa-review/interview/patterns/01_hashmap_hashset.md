@@ -1,4 +1,4 @@
-# HashMap/HashSet
+# HashMap / Frequency / Set
 
 Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.
 
@@ -12,11 +12,11 @@ Brute force scans for matches; bottleneck is repeated lookup; use a map/set to p
 
 ## Problems
 
-| Global Rank | Must Level | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
+| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 1 | Must Must Must | Ransom Note | HashMap/frequency | [Java](../../../src/main/java/org/chijai/day1/session1/RansomNote.java) | [LC](https://leetcode.com/problems/ransom-note/) | Count magazine chars, then spend counts for ransom; fail when a needed char is missing. | Build int[26] or map from magazine, decrement while scanning ransomNote, return false below zero. |
-| 2 | Must Must Must | Majority Element | Boyer-Moore / frequency | [Java](../../../src/main/java/org/chijai/day1/session2/MajorityElement.java) | - | Boyer-Moore cancels different values; surviving candidate is majority after optional verification. | Track candidate and count; reset at zero, increment on match, decrement otherwise. |
-| 3 | Must Must Must | Valid Anagram | Frequency count | [Java](../../../src/main/java/org/chijai/day3/session3/ValidAnagram.java) | [LC](https://leetcode.com/problems/valid-anagram/) | Two strings are anagrams when every character count nets to zero. | Reject different lengths, increment for s and decrement for t, then verify all counts zero. |
+| 1 | Phase 1 - No Red Flags | Ransom Note | HashMap/frequency | [Java](../../../src/main/java/org/chijai/day1/session1/RansomNote.java) | [LC](https://leetcode.com/problems/ransom-note/) | Count magazine chars, then spend counts for ransom; fail when a needed char is missing. | Build int[26] or map from magazine, decrement while scanning ransomNote, return false below zero. |
+| 2 | Phase 1 - No Red Flags | Majority Element | Boyer-Moore / frequency | [Java](../../../src/main/java/org/chijai/day1/session2/MajorityElement.java) | - | Boyer-Moore cancels different values; surviving candidate is majority after optional verification. | Track candidate and count; reset at zero, increment on match, decrement otherwise. |
+| 3 | Phase 1 - No Red Flags | Valid Anagram | Frequency count | [Java](../../../src/main/java/org/chijai/day3/session3/ValidAnagram.java) | [LC](https://leetcode.com/problems/valid-anagram/) | Two strings are anagrams when every character count nets to zero. | Reject different lengths, increment for s and decrement for t, then verify all counts zero. |
 
 ## Drill
 

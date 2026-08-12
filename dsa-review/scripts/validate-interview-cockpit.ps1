@@ -94,7 +94,7 @@ if ($patternText -notmatch 'brute force -> bottleneck -> pattern -> invariant ->
 }
 
 $crispText = Get-Content -LiteralPath (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -Raw
-if ($crispText -notmatch '## 1\. Ransom Note') {
+if ($crispText -notmatch '### 1\. Ransom Note') {
     Fail "crisp answer deck is missing the rank 1 answer"
 }
 
@@ -119,8 +119,8 @@ if ($patternFiles.Count -lt 10) {
 }
 
 $patternIndexText = Get-Content -LiteralPath $patternIndexPath -Raw
-if ($patternIndexText -notmatch 'HashMap/HashSet') {
-    Fail "pattern index is missing HashMap/HashSet"
+if ($patternIndexText -notmatch 'HashMap / Frequency / Set') {
+    Fail "pattern index is missing the expected display category"
 }
 
 $patternProblemRows = 0
@@ -169,15 +169,23 @@ if ($missingPatternJavaLinks.Count -gt 0) {
 
 $asciiFiles = @(Get-ChildItem -LiteralPath $interviewRoot -Recurse -File)
 $nonAsciiFiles = @()
+$controlByteFiles = @()
 foreach ($file in $asciiFiles) {
     $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
     if ($bytes | Where-Object { $_ -gt 127 } | Select-Object -First 1) {
         $nonAsciiFiles += $file.FullName
     }
+    if ($bytes | Where-Object { ($_ -lt 32) -and ($_ -notin @(9, 10, 13)) } | Select-Object -First 1) {
+        $controlByteFiles += $file.FullName
+    }
 }
 
 if ($nonAsciiFiles.Count -gt 0) {
     Fail "non-ASCII generated files: $($nonAsciiFiles -join ', ')"
+}
+
+if ($controlByteFiles.Count -gt 0) {
+    Fail "control bytes in generated files: $($controlByteFiles -join ', ')"
 }
 
 [pscustomobject]@{
@@ -191,4 +199,5 @@ if ($nonAsciiFiles.Count -gt 0) {
     patternFiles = $patternFiles.Count
     patternRows = $patternProblemRows
     nonAsciiFiles = $nonAsciiFiles.Count
+    controlByteFiles = $controlByteFiles.Count
 }

@@ -416,6 +416,51 @@ function Get-ProblemOverride {
             hook = "The state is the path value, not the full path list."
             code = "DFS with value = value * 10 + node.val; return value at leaves, sum children otherwise."
         }
+        "insertintoabinarysearchtree" = @{
+            recall = "Use BST ordering to walk one branch until a null child is found, then insert there."
+            hook = "BST property removes the need to search both sides."
+            code = "Iterate or recurse: if val < node.val go left, else go right; attach new node at null."
+        }
+        "lowestcommonancestorofabinarysearchtree" = @{
+            recall = "If both targets are smaller go left, if both are larger go right, else current node is the split."
+            hook = "BST ordering turns LCA into one directed walk instead of full DFS."
+            code = "Loop from root; compare p and q to node.val and move left/right until they diverge."
+        }
+        "searchinabinarysearchtree" = @{
+            recall = "Compare target with node value and move only to the branch that can still contain it."
+            hook = "BST ordering prunes half the tree at every step."
+            code = "While node != null and node.val != val, move left if val < node.val else right."
+        }
+        "binarysearchtreeiterator" = @{
+            recall = "Maintain a stack of the current left spine so next() returns the next inorder value lazily."
+            hook = "Need sorted iteration without flattening the whole tree up front."
+            code = "pushLeft(root); next() pops, then pushLeft(node.right); hasNext() checks stack."
+        }
+        "convertbsttogreatertree" = @{
+            recall = "Reverse inorder visits larger values first, so a running sum can rewrite each node."
+            hook = "BST sorted order makes right-node-left the natural accumulation order."
+            code = "Traverse right, add node.val into running sum, rewrite node.val, then traverse left."
+        }
+        "recoverbinarysearchtree" = @{
+            recall = "Inorder traversal should be sorted; the two broken nodes appear at one or two inversions."
+            hook = "BST validity is an inorder ordering invariant, not a local parent-child check."
+            code = "Track prev, first, second during inorder; after traversal swap first.val and second.val."
+        }
+        "longestpalindromicsubstring" = @{
+            recall = "Expand around every odd and even center and keep the longest span."
+            hook = "Every palindrome is defined by its center, which is cheaper than checking all substrings."
+            code = "For each index, expand(i,i) and expand(i,i+1), update best start/length."
+        }
+        "burnbinarytree" = @{
+            recall = "Treat the tree as an undirected graph from the target node and BFS by minutes."
+            hook = "The question is minimum time layers, so BFS is the natural model."
+            code = "Build parent links, start BFS from target, expand left/right/parent, count levels."
+        }
+        "countuniquecharactersofallsubstringsofagivenstring" = @{
+            recall = "Each character occurrence contributes by distance to the previous same char times distance to the next one."
+            hook = "Contribution counting avoids enumerating all substrings."
+            code = "Record previous and next positions for each occurrence, sum leftGap * rightGap contributions."
+        }
     }
 
     if ($overrides.ContainsKey($key)) {
@@ -457,7 +502,10 @@ function Get-Category {
     $titleText = $Title.ToLowerInvariant()
 
     if ($titleText -match "sum of subarray minimums|daily temperatures|next greater|largest rectangle|valid parentheses|calculator|reverse polish|stack") { return "Stack" }
-    if ($titleText -match "range sum of bst") { return "Tree DFS" }
+    if ($titleText -match "longest palindromic substring") { return "Two Pointers" }
+    if ($titleText -match "count unique characters of all substrings") { return "Math/Bit/String" }
+    if ($titleText -match "burn binary tree") { return "Graph BFS" }
+    if ($titleText -match "range sum of bst|binary search tree") { return "Tree DFS" }
     if ($titleText -match "maximum subarray|best time to buy|stock") { return "Dynamic Programming" }
     if ($titleText -match "subarray sum equals k|binary subarrays with sum") { return "Prefix/Suffix" }
     if ($titleText -match "valid anagram|ransom note|majority element") { return "HashMap/HashSet" }
@@ -471,7 +519,7 @@ function Get-Category {
         return "Graph DFS"
     }
     if ($titleText -match "level order|right side view|binary tree side view") { return "Tree BFS" }
-    if ($titleText -match "binary tree|bst|lca|path sum|diameter|depth|invert|validate|kth smallest|serialize|deserialize|inorder|preorder|postorder") { return "Tree DFS" }
+    if ($titleText -match "binary tree|bst|lca|path sum|diameter|depth|invert|validate|kth smallest|serialize|deserialize|inorder|preorder|postorder|binary search tree") { return "Tree DFS" }
     if ($titleText -match "daily temperatures|next greater|largest rectangle|valid parentheses|calculator|reverse polish|stack") { return "Stack" }
     if ($titleText -match "top k|kth largest|median|task scheduler|closest points|heap") { return "Heap" }
     if ($titleText -match "coin change|edit distance|house robber|unique paths|climbing stairs|partition equal|longest increasing|stock") { return "Dynamic Programming" }
@@ -481,6 +529,7 @@ function Get-Category {
     if ($text -match "sliding|window|substring|anagram") { return "Sliding Window" }
     if ($text -match "two pointer|3sum|2sum|container|palindrome|valid palindrome") { return "Two Pointers" }
     if ($text -match "prefix|product of array|subarray sum|nice sub") { return "Prefix/Suffix" }
+    if ($text -match "binary tree|bst|lca_bst|recoverbst|binarysearchtree") { return "Tree DFS" }
     if ($text -match "binary search|koko|aggrcow|search range|rotated sorted|time based") { return "Binary Search" }
     if ($text -match "linkedlist|linked list|cycle|merge2|mergek|middle|reverse linked|copy list|lru") { return "Linked List" }
     if ($text -match "tree|bst|lca|serialize|deserialize|inorder|preorder|postorder") {
@@ -505,6 +554,30 @@ function Get-Category {
     if ($text -match "hash|map|set|frequency|majority|ransom") { return "HashMap/HashSet" }
 
     return "Core Basics"
+}
+
+function Get-DisplayCategory {
+    param([string] $Category)
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "HashMap / Frequency / Set" }
+        "Prefix/Suffix" { return "Prefix Sum / Prefix-Suffix" }
+        "Linked List" { return "Linked List Pointers" }
+        "Tree BFS" { return "Tree BFS / Level Order" }
+        "Tree DFS" { return "Tree DFS / Recursion" }
+        "Graph BFS" { return "Graph BFS / Shortest Path" }
+        "Graph DFS" { return "Graph DFS / Components" }
+        "Binary Search" { return "Binary Search / Answer Search" }
+        "Stack" { return "Stack / Monotonic Stack" }
+        "Heap" { return "Heap / Priority Queue" }
+        "Intervals/Greedy" { return "Intervals / Sorting Greedy" }
+        "Backtracking" { return "Backtracking / Combinatorial DFS" }
+        "Union Find" { return "Union Find / DSU" }
+        "Math/Bit/String" { return "Math / Bit / String" }
+        "Design/LLD" { return "Design Data Structures" }
+        "Core Basics" { return "Basics / Implementation" }
+        default { return $Category }
+    }
 }
 
 function Get-CategoryWeight {
@@ -553,11 +626,24 @@ function Get-MustLevel {
         [string] $Priority
     )
 
-    if ($Rank -le 30) { return "Must Must Must" }
-    if ($Rank -le 70) { return "Must Must" }
-    if ($Rank -le 110) { return "Must" }
-    if ($Priority -eq "C") { return "If Time" }
-    return "Should"
+    if ($Rank -le 30) { return "Phase 1 - No Red Flags" }
+    if ($Rank -le 70) { return "Phase 2 - Strong Core" }
+    if ($Rank -le 110) { return "Phase 3 - Important" }
+    if ($Priority -eq "C") { return "Phase 5 - If Time" }
+    return "Phase 4 - Secondary"
+}
+
+function Get-PhaseSummary {
+    param([string] $Phase)
+
+    switch ($Phase) {
+        "Phase 1 - No Red Flags" { return "Ranks 1-30. Remove common interview red flags first." }
+        "Phase 2 - Strong Core" { return "Ranks 31-70. High-frequency core patterns after the first pass is stable." }
+        "Phase 3 - Important" { return "Ranks 71-110. Important breadth once the core signal is reliable." }
+        "Phase 4 - Secondary" { return "Ranks 111-150. Good coverage after the main interview patterns are under control." }
+        "Phase 5 - If Time" { return "Ranks 151+. Cover only if time remains or a target interviewer leans this way." }
+        default { return "" }
+    }
 }
 
 function Get-Recall {
@@ -799,11 +885,13 @@ function Get-PatternGroups {
         $items = @($_.Group | Sort-Object Rank)
         [pscustomobject]@{
             Category = $_.Name
+            DisplayCategory = Get-DisplayCategory $_.Name
             Count = $items.Count
             FirstRank = ($items | Select-Object -First 1).Rank
-            MustMustMust = @($items | Where-Object { $_.MustLevel -eq "Must Must Must" }).Count
-            MustMust = @($items | Where-Object { $_.MustLevel -eq "Must Must" }).Count
-            Must = @($items | Where-Object { $_.MustLevel -eq "Must" }).Count
+            Phase1 = @($items | Where-Object { $_.MustLevel -eq "Phase 1 - No Red Flags" }).Count
+            Phase2 = @($items | Where-Object { $_.MustLevel -eq "Phase 2 - Strong Core" }).Count
+            Phase3 = @($items | Where-Object { $_.MustLevel -eq "Phase 3 - Important" }).Count
+            Later = @($items | Where-Object { $_.MustLevel -in @("Phase 4 - Secondary", "Phase 5 - If Time") }).Count
             Items = $items
         }
     } | Sort-Object FirstRank, Category)
@@ -892,17 +980,17 @@ brute force -> bottleneck -> pattern -> invariant -> code -> dry run
 |---|---|---|
 | Contiguous array/string | Sliding Window | Fixed or variable contiguous region with maintainable condition. |
 | Pair, ends, sorted, palindrome | Two Pointers | Search space can shrink from one or both ends. |
-| Repeated range/subarray aggregate | Prefix Sum | Precompute cumulative information. |
-| Monotonic search space | Binary Search | If X works, all larger or smaller X also work. |
+| Repeated range/subarray aggregate | Prefix Sum / Prefix-Suffix | Precompute cumulative information. |
+| Monotonic search space | Binary Search / Answer Search | If X works, all larger or smaller X also work. |
 | Tree/graph path/component exploration | DFS | Explore deeply and define recursive state. |
 | Minimum steps or levels | BFS | Unweighted shortest path or layer expansion. |
-| Connectivity/component merging | Union Find | Maintain dynamic components cheaply. |
+| Connectivity/component merging | Union Find / DSU | Maintain dynamic components cheaply. |
 | Dependencies/order | Topological Sort | Process prerequisites before dependents. |
 | Repeated states plus choices | Dynamic Programming | State, transition, base case. |
-| Locally best safe choice | Greedy | Only valid when local choice is globally safe. |
+| Locally best safe choice | Greedy / Proof-Based Choice | Only valid when local choice is globally safe. |
 | Generate/try/undo | Backtracking | Decision tree with constraints and pruning. |
-| Top K, next best, stream priority | Heap | Priority-based frontier. |
-| Fast lookup, frequency, complement | HashMap/HashSet | O(1) lookup, counting, caching. |
+| Top K, next best, stream priority | Heap / Priority Queue | Priority-based frontier. |
+| Fast lookup, frequency, complement | HashMap / Frequency / Set | O(1) lookup, counting, caching. |
 | Prefix/dictionary search | Trie | Shared prefixes. |
 | Range query plus updates | Segment Tree | Fast range aggregation with mutation. |
 
@@ -939,13 +1027,26 @@ function Build-RankedTable {
     $lines.Add("")
     $lines.Add("Use this as the crunch-time order. Start at rank 1 and go down until time runs out.")
     $lines.Add("")
-    $lines.Add("| Rank | Must Level | Category | Problem | Pattern | Java | LeetCode | One-line recall | Interview hook |")
-    $lines.Add("|---:|---|---|---|---|---|---|---|---|")
+    $lines.Add("This is an interview-ROI order, not a universal algorithm curriculum order.")
+    $lines.Add("")
+    $currentPhase = ""
     foreach ($row in $Rows) {
+        if ($row.MustLevel -ne $currentPhase) {
+            if ($currentPhase) {
+                $lines.Add("")
+            }
+            $currentPhase = $row.MustLevel
+            $lines.Add("## $currentPhase")
+            $lines.Add("")
+            $lines.Add((Get-PhaseSummary -Phase $currentPhase))
+            $lines.Add("")
+            $lines.Add("| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |")
+            $lines.Add("|---:|---|---|---|---|---|")
+        }
         $java = New-Link "Java" $row.JavaLink
         $lc = if ($row.LeetCodeLink) { New-Link "LC" $row.LeetCodeLink } else { "-" }
         $problem = Escape-Md $row.Title
-        $line = "| $($row.Rank) | $($row.MustLevel) | $(Escape-Md $row.Category) | $problem | $(Escape-Md $row.Pattern) | $java | $lc | $(Escape-Md $row.Recall) | $(Escape-Md $row.InterviewHook) |"
+        $line = "| $($row.Rank) | $problem | $java | $lc | $(Escape-Md $row.Recall) | $(Escape-Md $row.InterviewHook) |"
         $lines.Add($line)
     }
     return ($lines -join "`r`n")
@@ -966,6 +1067,8 @@ function Build-OneLineRecall {
             $lines.Add("")
             $lines.Add("## $current")
             $lines.Add("")
+            $lines.Add((Get-PhaseSummary -Phase $current))
+            $lines.Add("")
         }
         $lc = if ($row.LeetCodeLink) { " | " + (New-Link "LC" $row.LeetCodeLink) } else { "" }
         $java = New-Link "Java" $row.JavaLink
@@ -985,16 +1088,24 @@ function Build-CrispAnswers {
     $lines.Add("~~~text")
     $lines.Add("brute force -> bottleneck -> pattern -> invariant -> code -> dry run")
     $lines.Add("~~~")
+    $currentPhase = ""
     foreach ($row in $Rows) {
+        if ($row.MustLevel -ne $currentPhase) {
+            $currentPhase = $row.MustLevel
+            $lines.Add("")
+            $lines.Add("## $currentPhase")
+            $lines.Add("")
+            $lines.Add((Get-PhaseSummary -Phase $currentPhase))
+        }
         $java = New-Link "Java" $row.JavaLink
         $lc = if ($row.LeetCodeLink) { " | " + (New-Link "LeetCode" $row.LeetCodeLink) } else { "" }
         $lines.Add("")
-        $lines.Add("## $($row.Rank). $(Escape-Md $row.Title)")
+        $lines.Add("### $($row.Rank). $(Escape-Md $row.Title)")
         $lines.Add("")
         $lines.Add("- Links: $java$lc")
         $lines.Add("- Brute force: Try all candidate states or combinations directly.")
         $lines.Add("- Bottleneck: Repeated work appears as rescanning, recomputing, or revisiting state.")
-        $lines.Add("- Pattern: $($row.Category), using $($row.Pattern).")
+        $lines.Add("- Pattern: $(Get-DisplayCategory $row.Category), using $($row.Pattern).")
         $lines.Add("- Invariant/state: $($row.Recall)")
         $lines.Add("- Code idea: $($row.CodeIdea)")
         $lines.Add("- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.")
@@ -1005,61 +1116,52 @@ function Build-CrispAnswers {
 function Build-Plans {
     param([object[]] $Rows)
 
-    $top20 = @($Rows | Where-Object { $_.Rank -le 20 })
-    $top40 = @($Rows | Where-Object { $_.Rank -le 40 })
-    $top60 = @($Rows | Where-Object { $_.Rank -le 60 })
-    $top100 = @($Rows | Where-Object { $_.Rank -le 100 })
-
-    function Add-ProblemList {
-        param(
-            [System.Collections.Generic.List[string]] $Lines,
-            [object[]] $Items
-        )
-        foreach ($row in $Items) {
-            $lc = if ($row.LeetCodeLink) { " | " + (New-Link "LC" $row.LeetCodeLink) } else { "" }
-            $Lines.Add("$($row.Rank). **$(Escape-Md $row.Title)** - $($row.Category) - $(New-Link "Java" $row.JavaLink)$lc")
-        }
-    }
-
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# Two-Day And Seven-Day Plans")
     $lines.Add("")
-    $lines.Add("The goal is to remove red flags first. Cover ranks in order; do not cherry-pick hard topics before the core is stable.")
+    $ranked = New-Link "Zero To Hero Ranked Table" "01_ZERO_TO_HERO_RANKED_TABLE.md"
+    $recall = New-Link "One-Line Recall" "02_ONE_LINE_RECALL_ALL_PROBLEMS.md"
+    $answers = New-Link "Crisp Interview Answers" "03_CRISP_INTERVIEW_ANSWERS.md"
+    $patterns = New-Link "Pattern Files" "patterns/README.md"
+    $preZoom = New-Link "Pre-Zoom RAM Cache" "../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md"
+    $lines.Add("Use this when a company asks for a DSA round soon. The goal is interview triage: remove red flags first, then expand coverage by rank.")
+    $lines.Add("")
+    $lines.Add("Core files: $ranked, $recall, $answers, $patterns, $preZoom.")
     $lines.Add("")
     $lines.Add("## If You Have 2 Hours")
     $lines.Add("")
-    $lines.Add("- Read `00_PATTERN_RECOGNITION_80_20.md` once.")
-    $lines.Add("- Read top 20 one-line recall.")
-    $lines.Add("- Implement 2 problems from ranks 1-20 from blank.")
-    $lines.Add("- Read `../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md` before the call.")
-    $lines.Add("")
-    Add-ProblemList -Lines $lines -Items $top20
+    $lines.Add('- Read `00_PATTERN_RECOGNITION_80_20.md` once.')
+    $lines.Add("- Speak ranks 1-20 from $recall without opening Java.")
+    $lines.Add("- Code 2 problems from blank: one HashMap/Two Pointers/Sliding Window, one Linked List/Tree.")
+    $lines.Add("- Read $preZoom in the last 10 minutes.")
     $lines.Add("")
     $lines.Add("## If You Have 1 Day")
     $lines.Add("")
-    $lines.Add("- Cover ranks 1-40.")
+    $lines.Add("- Cover Phase 1 from ${ranked}: ranks 1-30.")
+    $lines.Add("- Skim ranks 31-40 if Phase 1 recall is stable.")
     $lines.Add("- Implement 4 problems from blank: one HashMap/Two Pointers, one Sliding Window, one Linked List, one Tree/Graph.")
     $lines.Add("- For each unsolved problem, speak the crisp answer instead of rereading code.")
     $lines.Add("")
-    Add-ProblemList -Lines $lines -Items $top40
-    $lines.Add("")
     $lines.Add("## If You Have 2 Days")
     $lines.Add("")
-    $lines.Add("- Day 1: ranks 1-40, code 4 problems from blank.")
-    $lines.Add("- Day 2: ranks 41-60, code 3 problems from blank, then review all one-line recalls.")
+    $lines.Add("- Day 1: Phase 1, ranks 1-30. Code 4 problems from blank.")
+    $lines.Add("- Day 2: Phase 2, ranks 31-70. Code 3 problems from blank, then review all one-line recalls.")
     $lines.Add("- Mark every miss as again or hard in the review system.")
-    $lines.Add("")
-    Add-ProblemList -Lines $lines -Items $top60
     $lines.Add("")
     $lines.Add("## If You Have 1 Week")
     $lines.Add("")
-    $lines.Add("- Days 1-2: ranks 1-40.")
-    $lines.Add("- Days 3-4: ranks 41-80.")
-    $lines.Add("- Day 5: ranks 81-100 plus weakest patterns.")
+    $lines.Add("- Days 1-2: Phase 1, then code weak items from blank.")
+    $lines.Add("- Days 3-4: Phase 2, then code weak items from blank.")
+    $lines.Add("- Day 5: Phase 3 plus weakest pattern file.")
     $lines.Add("- Day 6: mock interview, two random Priority A/B drills.")
     $lines.Add("- Day 7: pre-Zoom cache, one-line recall, and no-blunder review.")
     $lines.Add("")
-    Add-ProblemList -Lines $lines -Items $top100
+    $lines.Add("## What Not To Do")
+    $lines.Add("")
+    $lines.Add("- Do not reread Java first. Speak the approach before opening code.")
+    $lines.Add("- Do not jump to DP/Trie/Union-Find before Phase 1 and Phase 2 are stable.")
+    $lines.Add("- Do not treat the ranking as universal truth. It is an interview-ROI order for fast prep.")
+    $lines.Add('- Do not keep a miss invisible. Mark it `again` or `hard` and revisit it.')
     return ($lines -join "`r`n")
 }
 
@@ -1076,13 +1178,13 @@ function Build-PatternIndex {
     $lines.Add("")
     $lines.Add("Recommended flow: read the pattern signal, speak the top rows without code, then implement one missed problem from blank.")
     $lines.Add("")
-    $lines.Add("| Order | Pattern | Problems | First rank | Must Must Must | Must Must | Must | File |")
-    $lines.Add("|---:|---|---:|---:|---:|---:|---:|---|")
+    $lines.Add("| Order | Pattern | Problems | First rank | Phase 1 | Phase 2 | Phase 3 | Later | File |")
+    $lines.Add("|---:|---|---:|---:|---:|---:|---:|---:|---|")
 
     $order = 1
     foreach ($group in $Groups) {
         $file = New-Link $group.FileName $group.FileName
-        $lines.Add("| $order | $(Escape-Md $group.Category) | $($group.Count) | $($group.FirstRank) | $($group.MustMustMust) | $($group.MustMust) | $($group.Must) | $file |")
+        $lines.Add("| $order | $(Escape-Md $group.DisplayCategory) | $($group.Count) | $($group.FirstRank) | $($group.Phase1) | $($group.Phase2) | $($group.Phase3) | $($group.Later) | $file |")
         $order++
     }
 
@@ -1095,7 +1197,7 @@ function Build-PatternFile {
     param([object] $Group)
 
     $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add("# $($Group.Category)")
+    $lines.Add("# $($Group.DisplayCategory)")
     $lines.Add("")
     $lines.Add("Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.")
     $lines.Add("")
@@ -1109,7 +1211,7 @@ function Build-PatternFile {
     $lines.Add("")
     $lines.Add("## Problems")
     $lines.Add("")
-    $lines.Add("| Global Rank | Must Level | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |")
+    $lines.Add("| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |")
     $lines.Add("|---:|---|---|---|---|---|---|---|")
 
     foreach ($row in $Group.Items) {

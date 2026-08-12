@@ -24,17 +24,17 @@ brute force -> bottleneck -> pattern -> invariant -> code -> dry run
 |---|---|---|
 | Contiguous array/string | Sliding Window | Fixed or variable contiguous region with maintainable condition. |
 | Pair, ends, sorted, palindrome | Two Pointers | Search space can shrink from one or both ends. |
-| Repeated range/subarray aggregate | Prefix Sum | Precompute cumulative information. |
-| Monotonic search space | Binary Search | If X works, all larger or smaller X also work. |
+| Repeated range/subarray aggregate | Prefix Sum / Prefix-Suffix | Precompute cumulative information. |
+| Monotonic search space | Binary Search / Answer Search | If X works, all larger or smaller X also work. |
 | Tree/graph path/component exploration | DFS | Explore deeply and define recursive state. |
 | Minimum steps or levels | BFS | Unweighted shortest path or layer expansion. |
-| Connectivity/component merging | Union Find | Maintain dynamic components cheaply. |
+| Connectivity/component merging | Union Find / DSU | Maintain dynamic components cheaply. |
 | Dependencies/order | Topological Sort | Process prerequisites before dependents. |
 | Repeated states plus choices | Dynamic Programming | State, transition, base case. |
-| Locally best safe choice | Greedy | Only valid when local choice is globally safe. |
+| Locally best safe choice | Greedy / Proof-Based Choice | Only valid when local choice is globally safe. |
 | Generate/try/undo | Backtracking | Decision tree with constraints and pruning. |
-| Top K, next best, stream priority | Heap | Priority-based frontier. |
-| Fast lookup, frequency, complement | HashMap/HashSet | O(1) lookup, counting, caching. |
+| Top K, next best, stream priority | Heap / Priority Queue | Priority-based frontier. |
+| Fast lookup, frequency, complement | HashMap / Frequency / Set | O(1) lookup, counting, caching. |
 | Prefix/dictionary search | Trie | Shared prefixes. |
 | Range query plus updates | Segment Tree | Fast range aggregation with mutation. |
 

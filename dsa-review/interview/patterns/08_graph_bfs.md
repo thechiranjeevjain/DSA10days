@@ -1,4 +1,4 @@
-# Graph BFS
+# Graph BFS / Shortest Path
 
 Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.
 
@@ -12,13 +12,14 @@ DFS finds a path, but BFS gives shortest path when every edge has equal cost.
 
 ## Problems
 
-| Global Rank | Must Level | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
+| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 63 | Must Must | Number Of Provinces | Matrix DFS/BFS components | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LC](https://leetcode.com/problems/number-of-provinces/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
-| 64 | Must Must | 01 Matrix | Multi-source BFS | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | [LC](https://leetcode.com/problems/01-matrix/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
-| 65 | Must Must | Rotting Oranges | Multi-source BFS | [Java](../../../src/main/java/org/chijai/day8/graph/session1/RottenOranges.java) | [LC](https://leetcode.com/problems/rotting-oranges/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
-| 66 | Must Must | Word Ladder | BFS shortest path | [Java](../../../src/main/java/org/chijai/day8/graph/session3/WordLadder.java) | [LC](https://leetcode.com/problems/word-ladder/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
-| 107 | Must | K Highest Ranked Items Within A Price Range | BFS + sorting | [Java](../../../src/main/java/org/chijai/day8/graph/session3/KHighestRankedItemsWithinAPriceRange.java) | [LC](https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
+| 66 | Phase 2 - Strong Core | Number Of Provinces | Matrix DFS/BFS components | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LC](https://leetcode.com/problems/number-of-provinces/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
+| 67 | Phase 2 - Strong Core | 01 Matrix | Multi-source BFS | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | [LC](https://leetcode.com/problems/01-matrix/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
+| 68 | Phase 2 - Strong Core | Rotting Oranges | Multi-source BFS | [Java](../../../src/main/java/org/chijai/day8/graph/session1/RottenOranges.java) | [LC](https://leetcode.com/problems/rotting-oranges/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
+| 69 | Phase 2 - Strong Core | Word Ladder | BFS shortest path | [Java](../../../src/main/java/org/chijai/day8/graph/session3/WordLadder.java) | [LC](https://leetcode.com/problems/word-ladder/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
+| 108 | Phase 3 - Important | Burn Binary Tree | Tree + graph BFS | [Java](../../../src/main/java/org/chijai/day6/trees/session2/BurnBinaryTree.java) | - | Treat the tree as an undirected graph from the target node and BFS by minutes. | Build parent links, start BFS from target, expand left/right/parent, count levels. |
+| 109 | Phase 3 - Important | K Highest Ranked Items Within A Price Range | BFS + sorting | [Java](../../../src/main/java/org/chijai/day8/graph/session3/KHighestRankedItemsWithinAPriceRange.java) | [LC](https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/) | For unweighted minimum steps, mark when enqueuing because first discovery is shortest. | Queue start states, mark visited immediately, expand valid neighbors by level. |
 
 ## Drill
 

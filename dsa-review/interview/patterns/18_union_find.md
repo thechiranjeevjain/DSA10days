@@ -1,4 +1,4 @@
-# Union Find
+# Union Find / DSU
 
 Focused pattern pass. Keep the global rank order inside this file; lower rank means higher interview ROI.
 
@@ -12,9 +12,9 @@ Repeated graph searches are expensive; union-find maintains components increment
 
 ## Problems
 
-| Global Rank | Must Level | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
+| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 152 | Should | Accounts Merge | Union Find / graph | [Java](../../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | [LC](https://leetcode.com/problems/accounts-merge/) | Represent components with parent links; union merges and failed union detects cycles. | Initialize parent/rank, find with compression, union by rank/size. |
+| 152 | Phase 4 - Secondary | Accounts Merge | Union Find / graph | [Java](../../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | [LC](https://leetcode.com/problems/accounts-merge/) | Represent components with parent links; union merges and failed union detects cycles. | Initialize parent/rank, find with compression, union by rank/size. |
 
 ## Drill
 
