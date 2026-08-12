@@ -902,15 +902,14 @@ function Get-PriorityWeight {
 
 function Get-MustLevel {
     param(
-        [int] $Rank,
-        [string] $Priority
+        [int] $Rank
     )
 
     if ($Rank -le 30) { return "Phase 1 - No Red Flags" }
     if ($Rank -le 70) { return "Phase 2 - Strong Core" }
     if ($Rank -le 110) { return "Phase 3 - Important" }
-    if ($Priority -eq "C") { return "Phase 5 - If Time" }
-    return "Phase 4 - Secondary"
+    if ($Rank -le 150) { return "Phase 4 - Secondary" }
+    return "Phase 5 - If Time"
 }
 
 function Get-PhaseSummary {
@@ -1140,7 +1139,7 @@ function Get-IndexRows {
     $rank = 1
     foreach ($row in ($deduped | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, MatchScore, File, Title | Select-Object -First $MaxRows)) {
         Add-Member -InputObject $row -NotePropertyName Rank -NotePropertyValue $rank
-        Add-Member -InputObject $row -NotePropertyName MustLevel -NotePropertyValue (Get-MustLevel -Rank $rank -Priority $row.Priority)
+        Add-Member -InputObject $row -NotePropertyName MustLevel -NotePropertyValue (Get-MustLevel -Rank $rank)
         $override = Get-ProblemOverride -Title $row.Title
         if ($null -ne $override) {
             Add-Member -InputObject $row -NotePropertyName Recall -NotePropertyValue $override.recall

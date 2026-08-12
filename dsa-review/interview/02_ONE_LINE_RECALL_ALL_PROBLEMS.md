@@ -166,83 +166,33 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 142. **Gas Station** - Take the local choice only after proving it cannot hurt the future optimum. ([Java](../../src/main/java/org/chijai/day3/session2/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/))
 143. **Spiral Matrix** - Start from brute force, find repeated work, and state the invariant before coding. ([Java](../../src/main/java/org/chijai/day1/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/))
 144. **String To Integer Atoi** - Start from brute force, find repeated work, and state the invariant before coding. ([Java](../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/))
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 145. **Repeated Substring Pattern** - A repeated pattern exists when the final LPS leaves a block length that divides n. ([Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/))
 146. **Maximum XOR Of Two Numbers In An Array** - Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low. ([Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/))
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 147. **Design A Stack With Increment Operation** - Stack stores unresolved candidates; current item resolves or validates the top. ([Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LC](https://leetcode.com/problems/design-a-stack-with-increment-operation/))
 148. **Design Circular Queue** - Stack stores unresolved candidates; current item resolves or validates the top. ([Java](../../src/main/java/org/chijai/day5/stack/session3/StackQueue.java) | [LC](https://leetcode.com/problems/design-circular-queue/))
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 149. **Longest Happy Prefix** - The answer is the final LPS value: longest proper prefix that is also suffix. ([Java](../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/))
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 150. **Climbing Stairs Fib** - Fix dp state meaning, base cases, transition, and iteration order before coding. ([Java](../../src/main/java/org/chijai/day9/dp/session1/ClimbingStairsFib.java))
-151. **Edit Distance** - Fix dp state meaning, base cases, transition, and iteration order before coding. ([Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LC](https://leetcode.com/problems/edit-distance/))
 
 ## Phase 5 - If Time
 
 Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
+151. **Edit Distance** - Fix dp state meaning, base cases, transition, and iteration order before coding. ([Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LC](https://leetcode.com/problems/edit-distance/))
 152. **Add Binary** - Use the algebra, bit, or string invariant instead of simulating blindly. ([Java](../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/))
 153. **Count Primes** - Use the algebra, bit, or string invariant instead of simulating blindly. ([Java](../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LC](https://leetcode.com/problems/count-primes/))
 154. **Count Unique Characters Of All Substrings Of A Given String** - Each character occurrence contributes by distance to the previous same char times distance to the next one. ([Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LC](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/))
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 155. **Award Top K Hotels** - Heap top is the next best candidate; keep only the frontier or top K when possible. ([Java](../../src/main/java/org/chijai/day7/session1/heap/AwardTopKHotels.java))
 156. **Sort Characters By Frequency** - Heap top is the next best candidate; keep only the frontier or top K when possible. ([Java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java) | [LC](https://leetcode.com/problems/sort-characters-by-frequency/))
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 157. **Shortest Palindrome** - Find the longest palindromic prefix, then prepend the reverse of the remaining suffix. ([Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/shortest-palindrome/))
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 158. **Reverse Linked List Ii** - Use a dummy and reverse exactly the sublist between left and right. ([Java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-linked-list-ii/))
 159. **Path Sum Ii** - Backtrack the current root-to-leaf path and copy it when the target is hit. ([Java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | [LC](https://leetcode.com/problems/path-sum-ii/))
 160. **Lowest Common Ancestor Of A Binary Tree Ii** - Same split-point idea, but verify both targets actually exist. ([Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-ii/))
 161. **Lowest Common Ancestor Of A Binary Tree Iii** - With parent pointers, walk ancestors or switch pointers like linked-list intersection. ([Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iii/))
 162. **Lowest Common Ancestor Of A Binary Tree Iv** - For many target nodes, current node is answer when multiple target paths meet. ([Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iv/))
 163. **Permutations Ii** - Choose, recurse, undo; the path is exactly the current decision state. ([Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LC](https://leetcode.com/problems/permutations-ii/))
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 164. **Encode And Decode Tinyurl** - State API contract, data structures, invariants, and complexity per operation. ([Java](../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LC](https://leetcode.com/problems/encode-and-decode-tinyurl/))
 165. **Hotel Reviews** - Each node is a prefix; branch only when wildcard or board search requires it. ([Java](../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java))
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 166. **Stock Series2** - Fix dp state meaning, base cases, transition, and iteration order before coding. ([Java](../../src/main/java/org/chijai/day1/session3/StockSeries2.java))
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 167. **Design Fraud Pattern Detection** - State API contract, data structures, invariants, and complexity per operation. ([Java](../../src/main/java/org/chijai/design/lld/DesignFraudPatternDetection.java))
 168. **Api Integration Example** - State API contract, data structures, invariants, and complexity per operation. ([Java](../../src/main/java/org/chijai/design/lld/ApiIntegrationExample.java))
 169. **Design Redis** - State API contract, data structures, invariants, and complexity per operation. ([Java](../../src/main/java/org/chijai/design/lld/DesignRedis.java))

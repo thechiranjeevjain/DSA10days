@@ -1462,10 +1462,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Code the invariant directly, then dry-run edge cases.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 ### 145. Repeated Substring Pattern
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LeetCode](https://leetcode.com/problems/repeated-substring-pattern/)
@@ -1485,10 +1481,6 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Invariant/state: Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low.
 - Code idea: Insert numbers by bits, then for each number walk preferred opposite bits and update max.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
 
 ### 147. Design A Stack With Increment Operation
 
@@ -1510,10 +1502,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: While top is resolved by current value, pop and compute; then push current.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 ### 149. Longest Happy Prefix
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LeetCode](https://leetcode.com/problems/longest-happy-prefix/)
@@ -1523,10 +1511,6 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Invariant/state: The answer is the final LPS value: longest proper prefix that is also suffix.
 - Code idea: Build LPS over the string and return substring(0, lps[n - 1]).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
 
 ### 150. Climbing Stairs Fib
 
@@ -1538,6 +1522,10 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Initialize base states, fill states in dependency order, return target state.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
+## Phase 5 - If Time
+
+Ranks 151+. Cover only if time remains or a target interviewer leans this way.
+
 ### 151. Edit Distance
 
 - Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/edit-distance/)
@@ -1547,10 +1535,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Invariant/state: Fix dp state meaning, base cases, transition, and iteration order before coding.
 - Code idea: Initialize base states, fill states in dependency order, return target state.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 ### 152. Add Binary
 
@@ -1582,10 +1566,6 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Record previous and next positions for each occurrence, sum leftGap * rightGap contributions.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 ### 155. Award Top K Hotels
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/AwardTopKHotels.java)
@@ -1606,10 +1586,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Push candidates with comparator; poll when size or frontier rules require it.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 ### 157. Shortest Palindrome
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LeetCode](https://leetcode.com/problems/shortest-palindrome/)
@@ -1619,10 +1595,6 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Invariant/state: Find the longest palindromic prefix, then prepend the reverse of the remaining suffix.
 - Code idea: Compute LPS on combined string, reverse suffix from lps length, prepend it to s.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
 
 ### 158. Reverse Linked List Ii
 
@@ -1684,10 +1656,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
 ### 164. Encode And Decode Tinyurl
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LeetCode](https://leetcode.com/problems/encode-and-decode-tinyurl/)
@@ -1708,10 +1676,6 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
 ### 166. Stock Series2
 
 - Links: [Java](../../src/main/java/org/chijai/day1/session3/StockSeries2.java)
@@ -1721,10 +1685,6 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Invariant/state: Fix dp state meaning, base cases, transition, and iteration order before coding.
 - Code idea: Initialize base states, fill states in dependency order, return target state.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 ### 167. Design Fraud Pattern Detection
 

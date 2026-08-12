@@ -43,6 +43,34 @@ if ($ranks.Count -ne $rankLines.Count) {
     Fail "could not parse all ranks"
 }
 
+$expectedPhaseHeaders = @(
+    "## Phase 1 - No Red Flags",
+    "## Phase 2 - Strong Core",
+    "## Phase 3 - Important",
+    "## Phase 4 - Secondary",
+    "## Phase 5 - If Time"
+)
+
+function Assert-PhaseHeaders {
+    param(
+        [string] $Path,
+        [string[]] $ExpectedHeaders
+    )
+
+    $actualHeaders = @(Select-String -LiteralPath $Path -Pattern '^## Phase ' | ForEach-Object { $_.Line.Trim() })
+    if ($actualHeaders.Count -ne $ExpectedHeaders.Count) {
+        Fail "expected $($ExpectedHeaders.Count) phase headers in $Path, found $($actualHeaders.Count): $($actualHeaders -join ', ')"
+    }
+
+    for ($i = 0; $i -lt $ExpectedHeaders.Count; $i++) {
+        if ($actualHeaders[$i] -ne $ExpectedHeaders[$i]) {
+            Fail "phase header mismatch in $Path at position $($i + 1): expected '$($ExpectedHeaders[$i])', found '$($actualHeaders[$i])'"
+        }
+    }
+}
+
+Assert-PhaseHeaders -Path $rankedPath -ExpectedHeaders $expectedPhaseHeaders
+
 $rankSet = @{}
 foreach ($rank in $ranks) {
     if ($rankSet.ContainsKey($rank)) {
@@ -99,6 +127,9 @@ $topRankTitle = [regex]::Escape($topRankMatch.Groups["title"].Value.Trim())
 if ($crispText -notmatch "### 1\. $topRankTitle") {
     Fail "crisp answer deck is missing the current rank 1 answer"
 }
+
+Assert-PhaseHeaders -Path (Join-Path $interviewRoot "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -ExpectedHeaders $expectedPhaseHeaders
+Assert-PhaseHeaders -Path (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -ExpectedHeaders $expectedPhaseHeaders
 
 $readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -Raw
 if ($readmeText -notmatch 'patterns/README\.md') {

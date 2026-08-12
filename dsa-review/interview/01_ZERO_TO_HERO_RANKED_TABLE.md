@@ -177,41 +177,12 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 | 142 | Gas Station | [Java](../../src/main/java/org/chijai/day3/session2/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | Take the local choice only after proving it cannot hurt the future optimum. | DP/search may be possible, but a proven safe local choice collapses the state space. |
 | 143 | Spiral Matrix | [Java](../../src/main/java/org/chijai/day1/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/) | Start from brute force, find repeated work, and state the invariant before coding. | Use brute force to expose repeated work, then choose the invariant and data structure. |
 | 144 | String To Integer Atoi | [Java](../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | Start from brute force, find repeated work, and state the invariant before coding. | Use brute force to expose repeated work, then choose the invariant and data structure. |
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 145 | Repeated Substring Pattern | [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/) | A repeated pattern exists when the final LPS leaves a block length that divides n. | Testing every divisor naively repeats string comparisons; KMP exposes the repeated border. |
 | 146 | Maximum XOR Of Two Numbers In An Array | [Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/) | Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low. | Checking all pairs is O(n^2); bitwise trie preserves candidate prefixes cheaply. |
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 147 | Design A Stack With Increment Operation | [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LC](https://leetcode.com/problems/design-a-stack-with-increment-operation/) | Stack stores unresolved candidates; current item resolves or validates the top. | Brute force searches previous/next matches; stack keeps unresolved candidates in useful order. |
 | 148 | Design Circular Queue | [Java](../../src/main/java/org/chijai/day5/stack/session3/StackQueue.java) | [LC](https://leetcode.com/problems/design-circular-queue/) | Stack stores unresolved candidates; current item resolves or validates the top. | Brute force searches previous/next matches; stack keeps unresolved candidates in useful order. |
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 149 | Longest Happy Prefix | [Java](../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/) | The answer is the final LPS value: longest proper prefix that is also suffix. | Trying every prefix repeats comparisons; KMP prefix table stores reusable border lengths. |
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 150 | Climbing Stairs Fib | [Java](../../src/main/java/org/chijai/day9/dp/session1/ClimbingStairsFib.java) | - | Fix dp state meaning, base cases, transition, and iteration order before coding. | Naive recursion repeats states; DP caches each state and reuses transitions. |
-| 151 | Edit Distance | [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LC](https://leetcode.com/problems/edit-distance/) | Fix dp state meaning, base cases, transition, and iteration order before coding. | Naive recursion repeats states; DP caches each state and reuses transitions. |
 
 ## Phase 5 - If Time
 
@@ -219,63 +190,22 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 | Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
 |---:|---|---|---|---|---|
+| 151 | Edit Distance | [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LC](https://leetcode.com/problems/edit-distance/) | Fix dp state meaning, base cases, transition, and iteration order before coding. | Naive recursion repeats states; DP caches each state and reuses transitions. |
 | 152 | Add Binary | [Java](../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/) | Use the algebra, bit, or string invariant instead of simulating blindly. | Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits. |
 | 153 | Count Primes | [Java](../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LC](https://leetcode.com/problems/count-primes/) | Use the algebra, bit, or string invariant instead of simulating blindly. | Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits. |
 | 154 | Count Unique Characters Of All Substrings Of A Given String | [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LC](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/) | Each character occurrence contributes by distance to the previous same char times distance to the next one. | Contribution counting avoids enumerating all substrings. |
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 155 | Award Top K Hotels | [Java](../../src/main/java/org/chijai/day7/session1/heap/AwardTopKHotels.java) | - | Heap top is the next best candidate; keep only the frontier or top K when possible. | Sorting everything is wasteful; a heap keeps only the next best or top K frontier. |
 | 156 | Sort Characters By Frequency | [Java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java) | [LC](https://leetcode.com/problems/sort-characters-by-frequency/) | Heap top is the next best candidate; keep only the frontier or top K when possible. | Sorting everything is wasteful; a heap keeps only the next best or top K frontier. |
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 157 | Shortest Palindrome | [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/shortest-palindrome/) | Find the longest palindromic prefix, then prepend the reverse of the remaining suffix. | Expanding every prefix is expensive; KMP on s + # + reverse(s) finds the prefix length. |
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 158 | Reverse Linked List Ii | [Java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-linked-list-ii/) | Use a dummy and reverse exactly the sublist between left and right. | Head can change; dummy plus sublist predecessor prevents edge-case bugs. |
 | 159 | Path Sum Ii | [Java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | [LC](https://leetcode.com/problems/path-sum-ii/) | Backtrack the current root-to-leaf path and copy it when the target is hit. | Path list is mutable, so choose/explore/undo is required. |
 | 160 | Lowest Common Ancestor Of A Binary Tree Ii | [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-ii/) | Same split-point idea, but verify both targets actually exist. | Returning one found node is wrong when the other target is absent. |
 | 161 | Lowest Common Ancestor Of A Binary Tree Iii | [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iii/) | With parent pointers, walk ancestors or switch pointers like linked-list intersection. | No root traversal is needed when each node can move upward. |
 | 162 | Lowest Common Ancestor Of A Binary Tree Iv | [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LC](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iv/) | For many target nodes, current node is answer when multiple target paths meet. | Pairwise LCA repeats work; a target set lets DFS aggregate matches. |
 | 163 | Permutations Ii | [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LC](https://leetcode.com/problems/permutations-ii/) | Choose, recurse, undo; the path is exactly the current decision state. | Brute force generates blindly; backtracking prunes invalid decision paths early. |
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 164 | Encode And Decode Tinyurl | [Java](../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LC](https://leetcode.com/problems/encode-and-decode-tinyurl/) | State API contract, data structures, invariants, and complexity per operation. | Start from operations and constraints, then pick data structures that preserve per-operation invariants. |
 | 165 | Hotel Reviews | [Java](../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java) | - | Each node is a prefix; branch only when wildcard or board search requires it. | Repeated string scans waste prefix work; trie shares prefixes across words. |
-
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 166 | Stock Series2 | [Java](../../src/main/java/org/chijai/day1/session3/StockSeries2.java) | - | Fix dp state meaning, base cases, transition, and iteration order before coding. | Naive recursion repeats states; DP caches each state and reuses transitions. |
-
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-| Rank | Problem | Java | LeetCode | One-line recall | Interview hook |
-|---:|---|---|---|---|---|
 | 167 | Design Fraud Pattern Detection | [Java](../../src/main/java/org/chijai/design/lld/DesignFraudPatternDetection.java) | - | State API contract, data structures, invariants, and complexity per operation. | Start from operations and constraints, then pick data structures that preserve per-operation invariants. |
 | 168 | Api Integration Example | [Java](../../src/main/java/org/chijai/design/lld/ApiIntegrationExample.java) | - | State API contract, data structures, invariants, and complexity per operation. | Start from operations and constraints, then pick data structures that preserve per-operation invariants. |
 | 169 | Design Redis | [Java](../../src/main/java/org/chijai/design/lld/DesignRedis.java) | - | State API contract, data structures, invariants, and complexity per operation. | Start from operations and constraints, then pick data structures that preserve per-operation invariants. |
