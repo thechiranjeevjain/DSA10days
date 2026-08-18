@@ -1,0 +1,703 @@
+# DSA 170 — Brain Map + Java Skeletons
+
+> **Mug-up target:** `signal → pattern → invariant/key move → 1-line skeleton`
+>
+> **★ Anchor** = know cold. **○ Variation** = map back to anchor.  
+> Numbers in `[ ]` preserve the original crunch-time rank.
+
+## 0. Master Retrieval Tree
+
+```text
+UNKNOWN PROBLEM
+│
+├─ contiguous? ─────────────→ Sliding Window / Prefix
+├─ sorted / monotonic? ─────→ Binary Search / Two Pointers
+├─ pair / opposite ends? ───→ Two Pointers
+├─ overlap / scheduling? ───→ Intervals / Greedy / Heap
+├─ linked nodes? ────────────→ Pointer Patterns
+├─ next greater/smaller? ───→ Monotonic Stack
+├─ top-k / streaming best? ─→ Heap
+├─ hierarchy? ───────────────→ Tree / BST
+├─ connectivity / paths? ───→ Graph
+├─ choose possibilities? ───→ Backtracking
+├─ repeated optimal state? ─→ DP
+├─ prefix words/bits? ───────→ Trie
+└─ string border/matching? ─→ KMP
+```
+
+# 0.1 Pattern Selection — Confusion Pairs
+
+```text
+Sliding Window ↔ Prefix/Hash
+→ moving window when constraint changes monotonically; prefix/hash for arbitrary range counts/sums
+
+BFS ↔ DFS
+→ shortest unweighted / levels = BFS; reachability/components = either
+
+Heap ↔ Sort
+→ dynamic/top-k/extreme = heap; complete global order = sort
+
+Greedy ↔ DP
+→ irreversible local choice provably safe = greedy; otherwise preserve optimal states
+
+Backtracking ↔ DP
+→ enumerate choices = backtracking; optimize/count repeated states = DP
+
+Union Find ↔ DFS/BFS
+→ repeated merge/connectivity queries = UF; traverse static components = DFS/BFS
+
+Binary Search ↔ BS-on-Answer
+→ search ordered stored values vs search monotonic feasible answer space
+```
+
+# 0.2 Pattern Guardrails — When NOT To Use
+
+```text
+SLIDING WINDOW
+SIGNAL    → contiguous + maintainable window constraint
+DON'T     → arbitrary negatives/non-monotonic movement breaks shrink/expand logic
+
+TWO POINTERS
+SIGNAL    → ordered ends / pair elimination
+DON'T     → pointer movement cannot safely eliminate candidates
+
+BINARY SEARCH
+SIGNAL    → ordered/monotonic discard rule
+DON'T     → no proof that one half can be discarded
+
+BS ON ANSWER
+SIGNAL    → feasible(x) changes only once
+DON'T     → feasibility can flip true↔false repeatedly
+
+BFS
+SIGNAL    → unweighted shortest path / equal-cost levels
+DON'T     → weighted edges → usually Dijkstra
+
+DIJKSTRA
+SIGNAL    → non-negative weighted shortest path
+DON'T     → negative edges
+
+GREEDY
+SIGNAL    → local choice has a safety proof
+DON'T     → choice merely looks best locally
+
+DP
+SIGNAL    → overlapping states + optimal/counting recurrence
+DON'T     → no reusable state / simple greedy or traversal suffices
+
+BACKTRACKING
+SIGNAL    → enumerate/search decision tree
+DON'T     → only optimal value needed with heavy repeated states → consider DP
+
+UNION FIND
+SIGNAL    → component merges / connectivity
+DON'T     → need actual shortest paths or traversal order
+```
+
+# 0.3 Harder OA Composition Map
+
+```text
+Tree + Prefix Sum          → Path Sum III
+Grid + Backtracking       → Word Search
+Trie + Backtracking       → Word Search II
+Intervals + Heap          → Meeting Rooms II
+Linked List + Heap        → Merge K Lists
+DP + Binary Search        → Job Scheduling / LIS
+Matrix + Monotonic Stack  → Maximal Rectangle
+Window + Monotonic Deque  → Sliding Window Maximum
+Tree → Graph + BFS        → Burn Binary Tree
+Graph + Reverse Search    → Pacific Atlantic
+Identity Graph + UF       → Accounts Merge
+Greedy Bits + Trie        → Maximum XOR
+```
+
+# 1. Arrays / Hashing / Basic Scans
+
+## Sum family
+`Skeleton → map.put(x,i); / sort; for(fix) while(l<r){...}`
+- ★ **[1] 2Sum / 3Sum / 4Sum** → `2Sum=hash | 3/4Sum=sort+fix+2ptr | skip duplicates`
+
+## Prefix / product / contribution
+`Skeleton → build/roll cumulative state; answer from leftState + rightState / contribution`
+- ★ **[4] Product Except Self** → `prefix × suffix | no division`
+- ○ **[89] Kadane Max Subarray** → `bestEnd=max(x,bestEnd+x)`
+- ○ **[91] Best Time Stock I** → `minSoFar | profit=price-min`
+- ○ **[154] Count Unique Chars All Substrings** → `contribution=(i-prev)*(next-i)`
+
+## Counting / frequency
+`Skeleton → for(x: data) freq[x]++;`
+- ★ **[9] Valid Anagram** → `frequency net zero`
+- ○ **[55] Ransom Note** → `count supply → spend demand`
+- ○ **[111] Longest Palindrome** → `use pairs + at most one odd`
+- ○ **[54] Majority Element** → `Boyer-Moore cancel opposites`
+
+## Array partition / simulation
+`Skeleton → maintain explicit regions/bounds; move boundary after consuming a region`
+- ★ **[61] Sort Colors** → `Dutch flag: low | unknown | high`
+- ○ **[143] Spiral Matrix** → `shrink top/bottom/left/right`
+- ○ **[152] Add Binary** → `right→left + carry`
+- ○ **[153] Count Primes** → `sieve | mark from p²`
+
+# 2. Two Pointers
+`SIGNAL → opposite ends / ordered pair elimination`
+`INVARIANT → each pointer move safely removes impossible candidates`
+`DON'T → movement cannot be justified as eliminating candidates`
+`Skeleton → while(l<r){ if(valid) ...; else move the pointer that can improve state; }`
+
+- ★ **[10] Valid Palindrome** → `skip junk | compare normalized ends`
+- ★ **[12] Container Most Water** → `area=min(hL,hR)*width | move shorter`
+- ★ **[13] Trapping Rain Water** → `smaller boundary decides water | track Lmax/Rmax`
+
+# 3. Sliding Window
+
+## Variable window
+`Skeleton → for(r=0;r<n;r++){ add(r); while(invalid()) remove(l++); update(); }`
+- ★ **[3] Longest Substring No Repeat** → `unique window | duplicate→shrink`
+- ★ **[5] Minimum Window Substring** → `cover need → shrink while valid`
+- ○ **[50] Character Replacement** → `valid iff window-maxFreq ≤ k`
+- ○ **[51] At Most K Distinct** → `freq map | distinct>k→shrink`
+- ○ **[114] Minimum Size Subarray Sum** → `positive sum≥target → shrink/minimize`
+
+## Fixed window
+`Skeleton → add(r); if(r-l+1>k) remove(l++); if(size==k) check/update;`
+- ★ **[45] Find All Anagrams** → `window size=|p| | frequency match`
+- ○ **[52] Permutation In String** → `fixed window | counts match`
+- ○ **[62] Concatenation All Words** → `word-sized aligned windows + bounded counts`
+
+## Exact-K via atMost
+`Skeleton → exact(k) = atMost(k) - atMost(k-1);`
+- ★ **[53] Binary Subarrays With Sum** → `exact(goal)=atMost(goal)-atMost(goal-1)`
+- ○ **[113] Nice Subarrays** → `exact k odds = atMost(k)-atMost(k-1)`
+
+# 4. Binary Search
+
+## Classic / boundaries
+`Skeleton → while(lo<=hi){ mid=...; if(goLeft) hi=mid-1; else lo=mid+1; }`
+- ★ **[2] Binary Search** → `sorted + mid → discard impossible half`
+- ★ **[22] First/Last Position** → `boundary BS twice`
+- ○ **[82] Search Insert** → `first value ≥ target`
+- ○ **[87] First Bad Version** → `first TRUE`
+- ○ **[129] Sqrt(x)** → `largest mid with mid²≤x`
+
+## Modified search
+`Skeleton → use structure around mid to prove one side impossible; discard it`
+- ★ **[21] Rotated Sorted Array** → `one half sorted | target in it?`
+- ○ **[78] Rotated II** → `L=M=R ambiguous → shrink ends`
+- ○ **[86] Find Peak** → `mid<mid+1 → peak exists right`
+
+## Binary search on answer
+`Skeleton → while(lo<hi){ mid=...; if(works(mid)) hi=mid; else lo=mid+1; }`
+- ★ **[20] Koko Bananas** → `minimum feasible speed | works(k) monotonic`
+- ○ **[88] Split Array Largest Sum** → `min feasible maxSum`
+- ○ **[92] Ship Packages D Days** → `min feasible capacity`
+- ○ **[93] Bouquets** → `min feasible day | consecutive blooms`
+
+## Binary search inside structure
+`Skeleton → preprocess sorted state; lower/upper_bound the compatible boundary`
+- ○ **[104] Time Based KV** → `per-key sorted timestamps | latest ≤ query`
+- ○ **[90] Job Scheduling** → `sort end + DP + BS previous compatible`
+- ○ **[49] LIS** → `tails[len]=smallest tail | lower_bound`
+
+# 5. Intervals / Sweep / Greedy Scheduling
+`SIGNAL → overlapping time/ranges, rooms, schedules, coverage`
+`INVARIANT → sorting makes the next conflict/choice local`
+`DON'T → interval order has no useful relation to the decision`
+`Skeleton → Arrays.sort(intervals,...); then merge / heap active ends / choose earliest end`
+
+- ★ **[95] Meeting Rooms** → `sort start | overlap previous end?`
+- ★ **[31] Meeting Rooms II** → `sort start | min-heap active end times`
+- ★ **[37] Min Arrows Balloons** → `sort end | shoot at earliest end`
+- ○ **[138] Intervals** → `sort → overlap becomes local`
+- ○ **[139] Car Pooling** → `pickup +passengers | drop -passengers | prefix load`
+
+# 6. Linked Lists
+
+## Reverse / local rewiring
+`Skeleton → next=cur.next; cur.next=prev; prev=cur; cur=next;`
+- ★ **[6] Reverse Linked List** → `save next → reverse edge → advance`
+- ○ **[158] Reverse Linked List II** → `dummy + reverse bounded sublist`
+- ○ **[58] Reverse K Group** → `confirm k first → reverse group`
+- ○ **[65] Swap Pairs** → `dummy + rewire adjacent pair`
+
+## Fast / slow
+`Skeleton → slow=slow.next; fast=fast.next.next;`
+- ★ **[7] Linked List Cycle** → `slow1 fast2 → meet iff cycle`
+- ○ **[57] Cycle II** → `after meet: head+meet move1 → entry`
+- ○ **[94] Middle Linked List** → `slow1 fast2 → slow=middle`
+
+## Alignment / merge
+`Skeleton → dummy/tail; compare current heads; append smaller; advance chosen pointer`
+- ★ **[8] Merge Two Sorted Lists** → `dummy tail takes smaller node`
+- ○ **[56] Intersection Lists** → `switch heads at null → distances align`
+- ○ **[11] Merge K Lists** → `min-heap current heads`
+
+## Structural manipulation
+`Skeleton → use dummy/boundary pointers; rewire locally; reconnect preserved segments`
+- ○ **[63] Odd Even List** → `build odd/even chains → join`
+- ○ **[64] Rotate List** → `circle → break at n-k%n`
+- ○ **[24] Copy Random Pointer** → `old→clone map / interleave clones`
+
+## Linked structure design
+`Skeleton → map for O(1) identity + linked/queue order for O(1) recency/sequence`
+- ★ **[23] LRU Cache** → `HashMap + DLL | lookup + recency O(1)`
+- ○ **[66] First Unique Number** → `counts + ordered candidates`
+- ○ **[83] Browser History** → `visit drops forward | back/forward move state`
+- ○ **[84] Moving Average** → `queue + running sum`
+
+# 7. Stack / Monotonic Stack / Deque
+
+## Matching / evaluation
+`Skeleton → for(token){ push operand/open; on operator/close pop required state; }`
+- ★ **[33] Valid Parentheses** → `closing matches latest unmatched opening`
+- ○ **[108] Evaluate RPN** → `operator pops b,a → push a op b`
+- ○ **[110] Basic Calculator** → `running result/sign | stack parenthesis context`
+
+## Monotonic stack
+`Skeleton → while(!st.empty() && current resolves st.peek()) pop+answer; st.push(i);`
+- ★ **[32] Daily Temperatures** → `decreasing indices | warmer resolves stack`
+- ★ **[44] Largest Rectangle Histogram** → `shorter bar pops | popped bar gets max width`
+- ○ **[106] Next Greater II** → `decreasing stack | traverse 2n circularly`
+- ○ **[107] Sum Subarray Minimums** → `each x owns leftChoices×rightChoices`
+- ○ **[135] Next Greater I** → `precompute NGE with decreasing stack`
+- ○ **[136] Stock Span** → `pop ≤ current | merge spans`
+- ○ **[130] Maximal Rectangle** → `each row→histogram → largest rectangle`
+
+## Monotonic deque
+`Skeleton → drop expired front; pop dominated back; push index; answer=dq.front`
+- ★ **[96] Sliding Window Maximum** → `decreasing deque indices | front=max`
+
+## Stack/queue design
+`Skeleton → preserve required order with auxiliary stack/queue + lazy transfer/metadata`
+- ○ **[131] Min Stack** → `store min with each push / second min stack`
+- ○ **[132] Max Stack** → `stack order + efficient max locate/remove`
+- ○ **[133] Queue Using Stacks** → `in/out stacks | transfer only if out empty`
+- ○ **[134] Stack Using Queues** → `push then rotate queue`
+- ○ **[147] Stack Increment** → `lazy increment at boundary`
+- ○ **[148] Circular Queue** → `head + size + modulo`
+
+# 8. Heap / Top-K / Streaming
+`SIGNAL → top-k, kth, continuously smallest/largest, streaming extreme`
+`INVARIANT → heap root is the next/current relevant extreme`
+`DON'T → need complete global ordering once → sorting may be simpler`
+`Skeleton → pq.offer(x); if(pq.size()>k) pq.poll();`
+
+- ★ **[36] Top K Frequent** → `frequency map → size-k heap / buckets`
+- ★ **[43] Median Stream** → `maxHeap lower | minHeap upper | balance`
+- ○ **[102] Kth Largest Array** → `size-k minHeap | top=kth`
+- ○ **[103] Kth Largest Stream** → `maintain size-k minHeap per add`
+- ○ **[137] K Closest Points** → `keep k smallest squared distances`
+- ○ **[101] Task Scheduler** → `max frequency defines cooldown frame`
+- ○ **[155] Award Top K Hotels** → `score map → rank/top-k`
+- ○ **[156] Sort Chars Frequency** → `count → bucket/heap descending`
+
+# 9. Trees — Generic
+
+## Traversal
+`Skeleton → DFS: visit(node) in required order | BFS: process queue by level`
+- ★ **[67] Inorder** → `left → node → right`
+- ○ **[117] Preorder** → `node → left → right`
+- ○ **[116] Postorder** → `left → right → node`
+- ★ **[14] Level Order** → `BFS | snapshot queue size per level`
+- ○ **[60] Right Side View** → `last node each BFS level`
+
+## Bottom-up DFS
+`Skeleton → left=dfs(node.left); right=dfs(node.right); updateGlobal(...); return summary;`
+- ★ **[26] Balanced Tree** → `postorder height | -1 propagates imbalance`
+- ★ **[27] Diameter** → `global=max(Lheight+Rheight) | return height`
+- ○ **[79] Maximum Depth** → `1+max(left,right)`
+- ★ **[100] Maximum Path Sum** → `return one-side gain | global may split`
+
+## Path state
+`Skeleton → update pathState → dfs(children) → rollback if mutable`
+- ★ **[115] Path Sum** → `remaining -= node | leaf checks zero`
+- ○ **[159] Path Sum II** → `path choose→DFS→undo | copy at valid leaf`
+- ★ **[28] Path Sum III** → `root-path prefix | count prefix-currentTarget`
+- ○ **[70] Sum Root-to-Leaf Numbers** → `value=value*10+node | add at leaf`
+
+## LCA
+`Skeleton → if(node==null/target) return node; L=dfs(left); R=dfs(right); return L&&R?node:(L!=null?L:R);`
+- ★ **[16] LCA Binary Tree** → `left+right both find target → current split`
+- ○ **[160] LCA II** → `same + verify both exist`
+- ○ **[161] LCA III** → `parent pointers → ancestor/switch alignment`
+- ○ **[162] LCA IV** → `target set | merge target paths`
+
+## Construction / representation
+`Skeleton → choose root from traversal; split remaining range; recurse left/right`
+- ★ **[99] Preorder + Inorder Build** → `pre root | inorder splits subtrees`
+- ○ **[97] Inorder + Postorder Build** → `post last=root | inorder splits`
+- ○ **[77] Serialize/Deserialize** → `traversal + null markers preserve shape`
+- ○ **[85] Verify Preorder Serialization** → `slots: start1 | node consumes1 | nonnull +2`
+- ○ **[68] Invert Tree** → `swap children at every node`
+- ○ **[71] Burn Tree** → `parent links → tree becomes graph → BFS from target`
+
+# 10. BST
+`SIGNAL → tree + ordered left<node<right property`
+`INVARIANT → ordering proves one branch cannot contain the answer`
+`DON'T → generic binary tree has no BST ordering`
+`Skeleton → if(target<node.val) left; else if(target>node.val) right; else hit/split`
+
+- ★ **[15] Validate BST** → `strict ancestor bounds (min,node,max)`
+- ★ **[25] Kth Smallest BST** → `inorder sorted → kth visit`
+- ★ **[59] LCA BST** → `both smaller→L | both larger→R | else split`
+- ○ **[69] BST From Preorder** → `consume preorder under value bounds`
+- ○ **[118] Insert BST** → `ordering → walk one branch to null`
+- ○ **[119] Min Absolute Difference** → `inorder sorted → adjacent diff`
+- ○ **[120] Range Sum BST** → `prune branches outside [low,high]`
+- ○ **[121] Search BST** → `compare → only possible branch`
+- ○ **[122] Recover BST** → `inorder inversions reveal swapped nodes`
+- ○ **[123] BST Iterator** → `stack current left spine | lazy inorder`
+- ○ **[124] Greater Tree** → `reverse inorder + running sum`
+
+# 11. Graph / Grid
+
+## Components / flood fill
+`Skeleton → if(unvisited valid cell/node){ count++; dfs/bfs entire component; }`
+- ★ **[17] Number of Islands** → `unvisited land → DFS/BFS whole component → count++`
+- ○ **[34] Flood Fill** → `traverse only start-color component`
+- ○ **[80] Number of Provinces** → `unvisited node starts one component`
+- ○ **[127] Max Area Island** → `DFS component → return size`
+- ○ **[126] Closed Islands** → `component valid iff never touches border`
+- ○ **[128] Coloring Border** → `traverse component | recolor boundary only`
+
+## Reverse / boundary reachability
+`Skeleton → start from boundary/targets and traverse reverse-valid edges`
+- ★ **[74] Surrounded Regions** → `border-connected O survive | flip rest`
+- ○ **[73] Pacific Atlantic** → `reverse from oceans → move uphill`
+
+## BFS shortest / multi-source
+`Skeleton → seed all sources; BFS levels; first visit fixes shortest unweighted distance`
+- ★ **[19] Word Ladder** → `unweighted transformations → BFS | first hit shortest`
+- ★ **[29] Rotting Oranges** → `all rotten sources → BFS levels=minutes`
+- ○ **[30] 01 Matrix** → `all zeros sources → BFS nearest distance`
+- ○ **[125] K Highest Ranked Items** → `BFS distance first | tie sort`
+- ○ **[76] Minimum Height Trees** → `peel leaves layerwise → 1/2 centroids`
+
+## Coloring
+`Skeleton → color[start]=0; for(neighbor) assign 1-color[cur]; same-color edge => fail`
+- ★ **[35] Bipartite** → `neighbors must opposite colors | conflict→false`
+
+## Topological
+`Skeleton → enqueue indegree0; pop; for(v) if(--indegree[v]==0) enqueue(v);`
+- ★ **[18] Course Schedule II** → `indegree0 queue → remove edges → order`
+
+## Weighted shortest path
+`Skeleton → pq by dist; pop min; relax edges; push improved distances`
+- ★ **[72] Network Delay** → `Dijkstra | minHeap next shortest unsettled`
+
+## Clone / identity
+`Skeleton → map old→clone before recursing neighbors`
+- ○ **[81] Clone Graph** → `old→clone map BEFORE neighbors`
+
+## Union Find
+`Skeleton → root=find(x); union(a,b); path-compress + rank/size`
+- ★ **[75] Accounts Merge** → `shared identity → union components → group by root`
+
+# 12. Backtracking
+
+## Include / exclude
+`Skeleton → choose; dfs(next); undo; then explore alternative`
+- ★ **[40] Subsets** → `choose/include → recurse → undo / exclude`
+- ★ **[41] Combination Sum** → `choose candidate → recurse remaining → undo | reuse allowed`
+
+## Permutations
+`Skeleton → for(each unused choice){ mark; path.add; dfs; path.remove; unmark; }`
+- ★ **[141] Permutations** → `choose unused → recurse → undo`
+- ○ **[163] Permutations II** → `sort + skip duplicate choice at same depth`
+
+## Path search
+`Skeleton → choose cell/state; mark; dfs; unmark`
+- ★ **[42] Word Search** → `choose cell → mark → DFS → unmark`
+- ○ **[140] Phone Letters** → `one choice per digit → recurse → undo`
+
+# 13. Dynamic Programming
+
+## 1D recurrence
+`Skeleton → for(i...) dp[i]=best(dp previous states);`
+- ★ **[38] House Robber** → `dp[i]=max(skip, rob+dp[i-2])`
+- ○ **[150] Climbing Stairs** → `dp[n]=dp[n-1]+dp[n-2]`
+
+## Grid DP
+`Skeleton → for(r) for(c) dp[r][c]=combine(top,left/other predecessors);`
+- ★ **[47] Unique Paths** → `dp[r][c]=top+left`
+
+## Knapsack / amount
+`Skeleton → initialize dp; iterate items/amount in correct direction; relax state`
+- ★ **[39] Coin Change** → `dp[a]=min(dp[a],1+dp[a-coin])`
+- ★ **[48] Partition Equal Subset** → `target=sum/2 | 0/1 reachable sums`
+
+## Sequence / string DP
+`Skeleton → dp[i][j] = relation between prefixes i,j`
+- ★ **[151] Edit Distance** → `dp[i][j] prefixes | match diagonal else 1+min(ins,del,replace)`
+
+## Weighted interval DP
+`Skeleton → sort; compatible=BS(...); dp[i]=max(skip, take+dp[compatible]);`
+- ★ **[90] Job Scheduling** → `sort end | take=profit+dp[compatible] | skip=dp[i-1]`
+
+# 14. Greedy
+`SIGNAL → local irreversible choice may collapse future state`
+`INVARIANT → chosen action can be proven not to hurt an optimum`
+`DON'T → no exchange/safety argument → consider DP/search`
+`Skeleton → prove local choice safe; commit once; reset/start new segment only when invariant breaks`
+
+- ★ **[142] Gas Station** → `total≥0 required | tank<0 → next index candidate`
+- ★ **[166] Stock Series II** → `take every positive adjacent rise`
+- ○ **[37] Balloons** → `earliest end is safe irreversible choice`
+- ○ **[101] Task Scheduler** → `most frequent task constrains frame`
+
+# 15. Trie
+`SIGNAL → shared string/bit prefixes, prefix lookup, wildcard prefix search`
+`INVARIANT → each node represents one prefix`
+`DON'T → only exact lookup needed → hash set/map may be simpler`
+`Skeleton → for(ch : key) node=node.child[ch]; create if absent;`
+
+- ★ **[46] Implement Trie** → `node=prefix | terminal marks full word`
+- ○ **[98] Add/Search Words** → `normal char one edge | '.' branches`
+- ★ **[105] Word Search II** → `board DFS + trie prefix pruning`
+- ○ **[146] Maximum XOR** → `bit trie | greedily choose opposite bit`
+- ○ **[165] Hotel Reviews** → `keyword lookup/trie → score reviews`
+
+# 16. KMP / String Structure
+`SIGNAL → substring matching / reusable prefix=suffix structure`
+`INVARIANT → LPS preserves the longest already-valid border after mismatch`
+`DON'T → tiny/simple matching where naive scan is sufficient`
+`Skeleton → while(j>0 && s[i]!=p[j]) j=lps[j-1]; if(match) j++;`
+
+- ★ **[109] First Occurrence / KMP** → `mismatch → fallback using LPS, don't restart`
+- ○ **[149] Longest Happy Prefix** → `answer=LPS[n-1]`
+- ○ **[145] Repeated Substring Pattern** → `period=n-LPSlast | n%period==0`
+- ○ **[157] Shortest Palindrome** → `longest palindromic prefix via s#reverse(s)`
+- ○ **[112] Longest Palindromic Substring** → `expand around odd/even centers`
+- ○ **[144] Atoi** → `skip spaces → sign → digits → clamp overflow`
+
+# 17. Design / Stateful Structures
+`Skeleton → define state + invariant + O(1)/O(log n) operations + failure/expiry semantics`
+
+- ★ **[164] TinyURL** → `short unique key ↔ long URL mapping`
+- ★ **[167] Fraud Pattern Detection** → `identity key + retained events + time-window rule`
+- ○ **[168] API Integration** → `contract + timeout + retry + idempotency`
+- ★ **[169] Redis** → `KV + TTL metadata + expiry/eviction`
+- ★ **[170] Token Bucket** → `refill by elapsed time | request consumes token`
+- ○ **[148] Circular Queue** → `fixed array + head/size/modulo`
+
+# 18. Cross-Pattern Problems — Remember These Links
+
+These are valuable because an unseen OA may hide one pattern inside another.
+
+```text
+Path Sum III             → Tree DFS + Prefix Sum
+Word Search              → Grid DFS + Backtracking
+Word Search II           → Trie + Grid Backtracking
+Maximal Rectangle        → Matrix + Histogram + Monotonic Stack
+Job Scheduling           → Interval Sorting + DP + Binary Search
+Merge K Lists            → Linked List + Heap
+Meeting Rooms II         → Intervals + Heap
+Sliding Window Maximum   → Sliding Window + Monotonic Deque
+Burn Binary Tree         → Tree → Graph + BFS
+Pacific Atlantic         → Grid Graph + Reverse Reachability
+Accounts Merge           → Identity Graph + Union Find
+Maximum XOR              → Greedy Bits + Trie
+```
+
+# 19. The 20 Invariants to Mug Up
+
+```text
+1. Hashing          → store what future lookup needs.
+2. Two pointers     → each move safely eliminates candidates.
+3. Sliding window   → expand; when invalid, shrink until valid.
+4. Prefix           → reuse cumulative state instead of recomputing ranges.
+5. Binary search    → predicate/order proves one half impossible.
+6. BS on answer     → feasible(x) is monotonic.
+7. Intervals        → sort first; overlap/choice becomes local.
+8. Linked reversal  → save next before destroying current edge.
+9. Fast/slow        → relative speed reveals cycle/middle.
+10. Monotonic stack → unresolved candidates remain ordered.
+11. Heap            → retain only currently relevant extremes.
+12. Tree DFS        → define exactly what recursive call returns.
+13. Tree BFS        → queue level = equal distance/depth.
+14. BST             → ordering lets you prune one side.
+15. Graph DFS/BFS   → mark state when claimed, not repeatedly.
+16. Topological     → indegree = unmet dependencies.
+17. Dijkstra        → settle smallest known distance next.
+18. Backtracking    → choose → explore → undo.
+19. DP              → state → transition → base → computation order.
+20. Trie/KMP        → reuse shared prefix information.
+```
+
+# 20. Anchor Set — Highest Memory ROI
+
+If you want the **smallest set to know cold**, start here:
+
+```text
+01  2Sum / 3Sum
+02  Binary Search
+03  Longest Substring No Repeat
+04  Minimum Window Substring
+05  Container Most Water
+06  Reverse Linked List
+07  Linked List Cycle
+08  Merge Two Lists
+09  LRU Cache
+10  Largest Rectangle Histogram
+11  Daily Temperatures
+12  Meeting Rooms II
+13  Koko Bananas
+14  Validate BST
+15  LCA Binary Tree
+16  Diameter Binary Tree
+17  Path Sum III
+18  Number of Islands
+19  Course Schedule II
+20  Word Ladder
+21  Rotting Oranges
+22  Network Delay / Dijkstra
+23  Top K Frequent
+24  Median Stream
+25  Subsets
+26  Combination Sum
+27  Word Search
+28  House Robber
+29  Coin Change
+30  Partition Equal Subset
+31  Unique Paths
+32  Trie
+33  Word Search II
+34  KMP
+35  Gas Station
+```
+
+Everything else should increasingly feel like a **variation or composition of these mental structures**.
+
+# 21. 10-Second Recall Protocol
+
+For every problem, retrieve only:
+
+```text
+SIGNAL?
+→ PATTERN?
+
+INVARIANT?
+→ what must always remain true?
+
+MOVE?
+→ what changes each iteration/recursion?
+
+DONE.
+```
+
+Example:
+
+```text
+Minimum Window
+→ minimum contiguous cover
+→ sliding window
+→ window contains all required counts
+→ expand until valid; shrink while valid
+```
+
+Do **not** mug up paragraphs.
+
+Do **not** mug up full code.
+
+Do **not** try to visualize 170 disconnected solutions.
+
+Mug up the **tree + anchors + invariants**, then use the individual problem lines as retrieval hooks.
+
+
+# 22. Blank-Brain Reconstruction Test
+
+Do this **without looking**. Fill every `?` from memory.
+
+```text
+DSA
+│
+├─ Arrays / Strings
+│  ├─ ?
+│  ├─ ?
+│  ├─ ?
+│  └─ ?
+│
+├─ Binary Search
+│  ├─ ?
+│  └─ ?
+│
+├─ Linked List
+│  ├─ ?
+│  ├─ ?
+│  └─ ?
+│
+├─ Stack / Deque
+│  ├─ ?
+│  └─ ?
+│
+├─ Heap
+│  └─ ?
+│
+├─ Tree
+│  ├─ ?
+│  ├─ ?
+│  └─ ?
+│
+├─ BST
+│  └─ ?
+│
+├─ Graph
+│  ├─ ?
+│  ├─ ?
+│  ├─ ?
+│  └─ ?
+│
+├─ Backtracking
+│  └─ ?
+│
+├─ DP
+│  └─ ?
+│
+├─ Greedy
+│  └─ ?
+│
+├─ Trie
+│  └─ ?
+│
+└─ KMP
+   └─ ?
+```
+
+## Reconstruction Standard
+
+```text
+For each branch recall:
+
+SIGNAL
+→ INVARIANT
+→ DON'T-USE discriminator
+→ 1-line skeleton
+→ ★ anchor problem
+→ 2–5 variations
+```
+
+If a branch cannot be reconstructed, review **that branch only**.
+
+# 23. Final Retrieval Architecture
+
+```text
+UNKNOWN OA
+    ↓
+SIGNAL
+    ↓
+PATTERN FAMILY
+    ↓
+SUBPATTERN
+    ↓
+┌───────────────┬───────────────┐
+INVARIANT       DON'T-USE CHECK
+    ↓
+1-LINE JAVA-ISH SKELETON
+    ↓
+★ ANCHOR
+    ↓
+○ VARIATIONS / COMPOSITIONS
+    ↓
+RECONSTRUCT CODE
+```
+
+> **Stop adding notes here.** From this point, improvement should come primarily from blind recall, timed implementation, mixed unseen problems, and failure analysis.
