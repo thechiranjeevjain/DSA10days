@@ -334,15 +334,23 @@ for ($i = 1; $i -le 150; $i++) {
 
 $dashboardPath = Join-Path $interviewRoot "06_REVIEW_DASHBOARD.md"
 $dashboardText = Get-Content -LiteralPath $dashboardPath -Raw
-foreach ($requiredSection in @("## Due Today", "## RED Repair Queue", "## YELLOW Stabilization Queue", "## Repeated Failure Pattern Heatmap", "## Master Review Ledger")) {
+foreach ($requiredSection in @("## Due Today", "## RED Repair Queue", "## YELLOW Stabilization Queue", "## Mastered Queue", "## Untracked Ranked Rows", "## Repeated Failure Pattern Heatmap", "## Master Review Ledger")) {
     if ($dashboardText -notmatch [regex]::Escape($requiredSection)) {
         Fail "review dashboard is missing section: $requiredSection"
     }
 }
 
-$dashboardRows = @(Select-String -LiteralPath $dashboardPath -Pattern '^\| (?<rank>\d+) \|')
+$ledgerMatch = [regex]::Match($dashboardText, '(?s)## Master Review Ledger\s+(.+)$')
+if (-not $ledgerMatch.Success) {
+    Fail "review dashboard ledger section could not be parsed"
+}
+$dashboardRows = @([regex]::Matches($ledgerMatch.Groups[1].Value, '(?m)^\| (?<rank>\d+) \|'))
 if ($dashboardRows.Count -ne $rankLines.Count) {
     Fail "expected review dashboard ledger to contain $($rankLines.Count) rows, found $($dashboardRows.Count)"
+}
+
+if ($dashboardText -notmatch 'Review-state matches') {
+    Fail "review dashboard is missing dynamic review-state summary"
 }
 
 $generatedAsciiFiles = @(

@@ -20,7 +20,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
 | Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
-| Need review control panel | `06_REVIEW_DASHBOARD.md` | Due queue, red/yellow queues, and full review ledger. |
+| Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
 ## Current Coverage
 

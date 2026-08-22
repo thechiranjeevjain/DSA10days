@@ -25,7 +25,7 @@ Use phase bands more than exact rank numbers:
 | Pattern files generated | 22 | One focused view per generated category. |
 | Pattern rows covered | 170 | Should match ranked rows so no problem disappears from pattern files. |
 | Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |
-| Review dashboard rows | 170 | Dashboard ledger covers every ranked row. |
+| Review dashboard rows | 170 | Dashboard ledger covers every ranked row and merges local review state. |
 
 These are objective repository checks. They do not prove the ranking is globally correct.
 
@@ -81,7 +81,7 @@ These checks make the ranking less scammy by catching obvious placement mistakes
 | Top 40 contains core anchor problems | PASS | The obvious high-ROI anchors should not drift late. |
 | Design rows deferred from top 70 | PASS | Design-flavored rows are useful, but not first-pass DSA ROI. |
 | Weekly sprint generated from canonical rows | PASS | Sprint titles, patterns, and signals must match ranked/pattern data. |
-| Review dashboard covers ranked rows | PASS | Review state has a place without polluting the ranked table. |
+| Review dashboard covers ranked rows | PASS | Review state is merged into due/red/yellow/mastered queues without polluting the ranked table. |
 
 Category weights currently used:
 

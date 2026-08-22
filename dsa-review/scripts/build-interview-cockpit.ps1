@@ -1697,7 +1697,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
 | Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
-| Need review control panel | `06_REVIEW_DASHBOARD.md` | Due queue, red/yellow queues, and full review ledger. |
+| Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
 ## Current Coverage
 
@@ -2121,17 +2121,275 @@ function Build-WeeklySprint {
     return ($lines -join "`r`n")
 }
 
+function Normalize-ReviewKey {
+    param([string] $Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) { return "" }
+    return ([regex]::Replace($Value.ToLowerInvariant(), '[^a-z0-9]', ''))
+}
+
+function Get-ObjectPropertyValue {
+    param(
+        [object] $Object,
+        [string] $Name,
+        [object] $Default = ""
+    )
+
+    if ($null -eq $Object) { return $Default }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property -or $null -eq $property.Value) { return $Default }
+    return $property.Value
+}
+
+function Get-ReviewState {
+    $reviewPath = Join-Path $RepoRoot "review\review.json"
+    $byCodePath = @{}
+    $byTitle = @{}
+    $problems = @()
+    $generatedAt = ""
+
+    if (Test-Path -LiteralPath $reviewPath) {
+        $json = Get-Content -LiteralPath $reviewPath -Raw | ConvertFrom-Json
+        $generatedAt = [string] (Get-ObjectPropertyValue -Object $json -Name "generatedAt")
+        $problems = @(Get-ObjectPropertyValue -Object $json -Name "problems" -Default @())
+        foreach ($problem in $problems) {
+            $codePath = [string] (Get-ObjectPropertyValue -Object $problem -Name "codePath")
+            if (-not [string]::IsNullOrWhiteSpace($codePath)) {
+                $byCodePath[$codePath.Replace("\", "/").ToLowerInvariant()] = $problem
+            }
+
+            $titleKey = Normalize-ReviewKey ([string] (Get-ObjectPropertyValue -Object $problem -Name "title"))
+            if (-not [string]::IsNullOrWhiteSpace($titleKey)) {
+                $byTitle[$titleKey] = $problem
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        Path = $reviewPath
+        Exists = Test-Path -LiteralPath $reviewPath
+        GeneratedAt = $generatedAt
+        Problems = $problems
+        ByCodePath = $byCodePath
+        ByTitle = $byTitle
+    }
+}
+
+function Find-ReviewProblemForRow {
+    param(
+        [object] $Row,
+        [object] $ReviewState
+    )
+
+    if ($null -eq $ReviewState -or -not $ReviewState.Exists) { return $null }
+
+    $codePath = ("src/main/java/org/chijai/" + $Row.File.Replace("\", "/")).ToLowerInvariant()
+    if ($ReviewState.ByCodePath.ContainsKey($codePath)) {
+        return $ReviewState.ByCodePath[$codePath]
+    }
+
+    $titleKey = Normalize-ReviewKey $Row.Title
+    if ($ReviewState.ByTitle.ContainsKey($titleKey)) {
+        return $ReviewState.ByTitle[$titleKey]
+    }
+
+    return $null
+}
+
+function Get-ReviewMistakeCodes {
+    param([object] $Problem)
+
+    if ($null -eq $Problem) { return @() }
+    $codes = New-Object System.Collections.Generic.List[string]
+    $mistakes = @(Get-ObjectPropertyValue -Object $Problem -Name "mistakes" -Default @())
+
+    foreach ($mistake in $mistakes) {
+        if ($null -eq $mistake) { continue }
+        $candidate = ""
+        if ($mistake -is [string]) {
+            $candidate = $mistake
+        } else {
+            foreach ($field in @("code", "failure", "type", "category")) {
+                $value = [string] (Get-ObjectPropertyValue -Object $mistake -Name $field)
+                if (-not [string]::IsNullOrWhiteSpace($value)) {
+                    $candidate = $value
+                    break
+                }
+            }
+        }
+
+        foreach ($match in [regex]::Matches($candidate.ToUpperInvariant(), '[PIDJECBM]')) {
+            if (-not $codes.Contains($match.Value)) {
+                $codes.Add($match.Value)
+            }
+        }
+    }
+
+    $compileFailures = [int] (Get-ObjectPropertyValue -Object $Problem -Name "compileFailures" -Default 0)
+    if ($compileFailures -gt 0 -and -not $codes.Contains("J")) {
+        $codes.Add("J")
+    }
+
+    return @($codes)
+}
+
+function Get-ReviewScore {
+    param([object] $Problem)
+
+    if ($null -eq $Problem) { return "UNTRACKED" }
+
+    $attempts = [int] (Get-ObjectPropertyValue -Object $Problem -Name "attempts" -Default 0)
+    $state = ([string] (Get-ObjectPropertyValue -Object $Problem -Name "fsrsState")).ToUpperInvariant()
+    $mistakeCount = @(Get-ObjectPropertyValue -Object $Problem -Name "mistakes" -Default @()).Count
+    $hintUsedCount = [int] (Get-ObjectPropertyValue -Object $Problem -Name "hintUsedCount" -Default 0)
+    $compileFailures = [int] (Get-ObjectPropertyValue -Object $Problem -Name "compileFailures" -Default 0)
+    $repetitions = [int] (Get-ObjectPropertyValue -Object $Problem -Name "repetitions" -Default 0)
+
+    if ($attempts -eq 0) { return "NEW" }
+    if ($state -eq "RELEARNING" -or $compileFailures -gt 0 -or $mistakeCount -ge 2) { return "RED" }
+    if ($state -eq "LEARNING" -or $hintUsedCount -gt 0 -or $mistakeCount -gt 0) { return "YELLOW" }
+    if ($state -eq "REVIEW" -and $repetitions -ge 2) { return "GREEN" }
+    if ($state -eq "REVIEW") { return "GREEN" }
+    return "YELLOW"
+}
+
+function Test-ReviewDue {
+    param([object] $Problem)
+
+    if ($null -eq $Problem) { return $false }
+    $nextReview = [string] (Get-ObjectPropertyValue -Object $Problem -Name "nextReview")
+    if ([string]::IsNullOrWhiteSpace($nextReview)) { return $false }
+
+    $parsed = [datetime]::MinValue
+    if ([datetime]::TryParse($nextReview, [ref] $parsed)) {
+        return $parsed.Date -le (Get-Date).Date
+    }
+    return $false
+}
+
+function Test-ReviewMastered {
+    param([object] $Problem)
+
+    if ($null -eq $Problem) { return $false }
+    $score = Get-ReviewScore -Problem $Problem
+    $repetitions = [int] (Get-ObjectPropertyValue -Object $Problem -Name "repetitions" -Default 0)
+    $hintUsedCount = [int] (Get-ObjectPropertyValue -Object $Problem -Name "hintUsedCount" -Default 0)
+    $compileFailures = [int] (Get-ObjectPropertyValue -Object $Problem -Name "compileFailures" -Default 0)
+    $mistakeCount = @(Get-ObjectPropertyValue -Object $Problem -Name "mistakes" -Default @()).Count
+
+    return ($score -eq "GREEN" -and $repetitions -ge 3 -and $hintUsedCount -eq 0 -and $compileFailures -eq 0 -and $mistakeCount -eq 0)
+}
+
+function Get-ReviewAction {
+    param(
+        [object] $Entry,
+        [string] $Mode = "due"
+    )
+
+    if ($Entry.Score -eq "UNTRACKED") { return "Run `dsa-review\scripts\import-review.cmd`, then rebuild dashboard." }
+    if ($Entry.Score -eq "NEW") { return "Attempt closed-book, then mark again/hard/good/easy." }
+    if ($Entry.Score -eq "RED") { return "Rebuild from brute force -> bottleneck -> invariant, then code from blank." }
+    if ($Entry.Score -eq "YELLOW") { return "Redo closed-book; focus the recorded weak step before opening Java." }
+    if ($Mode -eq "mastered") { return "Keep only in random timed mocks." }
+    return "Keep spaced review; use random drill for retention."
+}
+
+function New-ReviewEntry {
+    param(
+        [object] $Row,
+        [object] $Problem
+    )
+
+    $score = Get-ReviewScore -Problem $Problem
+    $codes = @(Get-ReviewMistakeCodes -Problem $Problem)
+    $failure = if ($codes.Count -gt 0) { $codes -join "," } else { "" }
+    $attempts = if ($null -eq $Problem) { 0 } else { [int] (Get-ObjectPropertyValue -Object $Problem -Name "attempts" -Default 0) }
+    $lastReview = ""
+    if ($null -ne $Problem) {
+        $lastReview = [string] (Get-ObjectPropertyValue -Object $Problem -Name "lastReview")
+        if ([string]::IsNullOrWhiteSpace($lastReview)) {
+            $lastReview = [string] (Get-ObjectPropertyValue -Object $Problem -Name "lastReviewed")
+        }
+    }
+    $nextReview = if ($null -eq $Problem) { "" } else { [string] (Get-ObjectPropertyValue -Object $Problem -Name "nextReview") }
+
+    return [pscustomobject]@{
+        Row = $Row
+        Problem = $Problem
+        Score = $score
+        Failure = $failure
+        Attempts = $attempts
+        LastReview = $lastReview
+        NextReview = $nextReview
+        IsDue = Test-ReviewDue -Problem $Problem
+        Mastered = Test-ReviewMastered -Problem $Problem
+    }
+}
+
+function Add-EmptyOrLimitedRows {
+    param(
+        [System.Collections.Generic.List[string]] $Lines,
+        [object[]] $Entries,
+        [int] $Limit,
+        [scriptblock] $Renderer,
+        [string] $EmptyMessage
+    )
+
+    $shown = @($Entries | Select-Object -First $Limit)
+    if ($shown.Count -eq 0) {
+        $Lines.Add($EmptyMessage)
+        return
+    }
+
+    foreach ($entry in $shown) {
+        $Lines.Add((& $Renderer $entry))
+    }
+
+    if ($Entries.Count -gt $shown.Count) {
+        $Lines.Add("")
+        $Lines.Add("_Showing first $($shown.Count) of $($Entries.Count). Continue in rank order from the Master Review Ledger._")
+    }
+}
+
 function Build-ReviewDashboard {
     param([object[]] $Rows)
+
+    $reviewState = Get-ReviewState
+    $entries = @($Rows | ForEach-Object {
+        $problem = Find-ReviewProblemForRow -Row $_ -ReviewState $reviewState
+        New-ReviewEntry -Row $_ -Problem $problem
+    })
+
+    $trackedCount = @($entries | Where-Object { $null -ne $_.Problem }).Count
+    $dueEntries = @($entries | Where-Object { $_.IsDue -and -not $_.Mastered } | Sort-Object @{ Expression = { $_.Row.Rank }; Ascending = $true })
+    $redEntries = @($entries | Where-Object { $_.Score -eq "RED" } | Sort-Object @{ Expression = { $_.Row.Rank }; Ascending = $true })
+    $yellowEntries = @($entries | Where-Object { $_.Score -eq "YELLOW" } | Sort-Object @{ Expression = { $_.Row.Rank }; Ascending = $true })
+    $masteredEntries = @($entries | Where-Object { $_.Mastered } | Sort-Object @{ Expression = { $_.Row.Rank }; Ascending = $true })
+    $untrackedEntries = @($entries | Where-Object { $_.Score -eq "UNTRACKED" } | Sort-Object @{ Expression = { $_.Row.Rank }; Ascending = $true })
 
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# DSA Review Dashboard")
     $lines.Add("")
     $lines.Add("Use this as the control panel for spaced repetition. Keep ranking files clean; put volatile review state here or in the review scripts.")
     $lines.Add("")
+    $stateStamp = if ([string]::IsNullOrWhiteSpace($reviewState.GeneratedAt)) { "unknown" } else { $reviewState.GeneratedAt }
+    $lines.Add('Generated from `../../review/review.json`. Review state timestamp: ' + $stateStamp + '.')
+    $lines.Add("")
+    $lines.Add("| Metric | Count |")
+    $lines.Add("|---|---:|")
+    $lines.Add("| Ranked problems | $($Rows.Count) |")
+    $lines.Add("| Review-state matches | $trackedCount |")
+    $lines.Add("| Due now | $($dueEntries.Count) |")
+    $lines.Add("| RED repair | $($redEntries.Count) |")
+    $lines.Add("| YELLOW stabilization | $($yellowEntries.Count) |")
+    $lines.Add("| Mastered | $($masteredEntries.Count) |")
+    $lines.Add("| Untracked ranked rows | $($untrackedEntries.Count) |")
+    $lines.Add("")
     $lines.Add("Review status columns:")
     $lines.Add("")
     $lines.Add("- Score: GREEN, YELLOW, RED.")
+    $lines.Add("- NEW: imported but no closed-book attempt recorded yet.")
+    $lines.Add("- UNTRACKED: ranked row has no matching review-state item yet.")
     $lines.Add("- Failure: P, I, D, J, E, C, B, M.")
     $lines.Add("- Attempts: increment after every closed-book attempt.")
     $lines.Add("- Last Review / Next Review: date in YYYY-MM-DD.")
@@ -2141,35 +2399,91 @@ function Build-ReviewDashboard {
     $lines.Add("")
     $lines.Add("| Rank | Problem | Family | Pattern | Last Score | Failure | Next Action |")
     $lines.Add("|---:|---|---|---|---|---|---|")
-    $lines.Add("|  |  |  |  |  |  |  |")
+    Add-EmptyOrLimitedRows -Lines $lines -Entries $dueEntries -Limit 30 -EmptyMessage "| - | No due review items. | - | - | - | - | Keep random timed mocks. |" -Renderer {
+        param($entry)
+        $row = $entry.Row
+        $family = Get-DisplayCategory $row.Category
+        "| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $family) | $(Escape-Md $row.Pattern) | $($entry.Score) | $(Escape-Md $entry.Failure) | $(Escape-Md (Get-ReviewAction -Entry $entry -Mode 'due')) |"
+    }
     $lines.Add("")
     $lines.Add("## RED Repair Queue")
     $lines.Add("")
     $lines.Add("| Rank | Problem | Failure | Repair action | Next Review |")
     $lines.Add("|---:|---|---|---|---|")
-    $lines.Add("|  |  |  |  |  |")
+    Add-EmptyOrLimitedRows -Lines $lines -Entries $redEntries -Limit 25 -EmptyMessage "| - | No RED items recorded. | - | Keep attempts honest. | - |" -Renderer {
+        param($entry)
+        "| $($entry.Row.Rank) | $(Escape-Md $entry.Row.Title) | $(Escape-Md $entry.Failure) | $(Escape-Md (Get-ReviewAction -Entry $entry -Mode 'red')) | $(Escape-Md $entry.NextReview) |"
+    }
     $lines.Add("")
     $lines.Add("## YELLOW Stabilization Queue")
     $lines.Add("")
     $lines.Add("| Rank | Problem | Weakness | Next repetition |")
     $lines.Add("|---:|---|---|---|")
-    $lines.Add("|  |  |  |  |")
+    Add-EmptyOrLimitedRows -Lines $lines -Entries $yellowEntries -Limit 25 -EmptyMessage "| - | No YELLOW items recorded. | - | - |" -Renderer {
+        param($entry)
+        $weakness = if ([string]::IsNullOrWhiteSpace($entry.Failure)) { "Learning or shaky recall" } else { $entry.Failure }
+        "| $($entry.Row.Rank) | $(Escape-Md $entry.Row.Title) | $(Escape-Md $weakness) | $(Escape-Md $entry.NextReview) |"
+    }
+    $lines.Add("")
+    $lines.Add("## Mastered Queue")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Attempts | Next Review | Action |")
+    $lines.Add("|---:|---|---:|---|---|")
+    Add-EmptyOrLimitedRows -Lines $lines -Entries $masteredEntries -Limit 25 -EmptyMessage "| - | No mastered items yet. | 0 | - | Earn this through repeated GREEN attempts. |" -Renderer {
+        param($entry)
+        "| $($entry.Row.Rank) | $(Escape-Md $entry.Row.Title) | $($entry.Attempts) | $(Escape-Md $entry.NextReview) | $(Escape-Md (Get-ReviewAction -Entry $entry -Mode 'mastered')) |"
+    }
+    $lines.Add("")
+    $lines.Add("## Untracked Ranked Rows")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Action |")
+    $lines.Add("|---:|---|---|")
+    Add-EmptyOrLimitedRows -Lines $lines -Entries $untrackedEntries -Limit 20 -EmptyMessage "| - | All ranked rows have matching review-state coverage. | - |" -Renderer {
+        param($entry)
+        "| $($entry.Row.Rank) | $(Escape-Md $entry.Row.Title) | $(Escape-Md (Get-ReviewAction -Entry $entry -Mode 'untracked')) |"
+    }
     $lines.Add("")
     $lines.Add("## Repeated Failure Pattern Heatmap")
     $lines.Add("")
     $lines.Add("| Family | Pattern | P | I | D | J | E | C | B | M | Action |")
     $lines.Add("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|")
-    $lines.Add("|  |  |  |  |  |  |  |  |  |  |  |")
+    $heatmap = @{}
+    foreach ($entry in $entries) {
+        $codes = @(Get-ReviewMistakeCodes -Problem $entry.Problem)
+        if ($codes.Count -eq 0) { continue }
+        $family = Get-DisplayCategory $entry.Row.Category
+        $key = "$family|$($entry.Row.Pattern)"
+        if (-not $heatmap.ContainsKey($key)) {
+            $heatmap[$key] = [ordered]@{
+                Family = $family
+                Pattern = $entry.Row.Pattern
+                P = 0; I = 0; D = 0; J = 0; E = 0; C = 0; B = 0; M = 0
+            }
+        }
+        foreach ($code in $codes) {
+            $heatmap[$key][$code] = [int] $heatmap[$key][$code] + 1
+        }
+    }
+    $heatmapRows = @($heatmap.Values | Sort-Object @{ Expression = { -1 * (($_.P + $_.I + $_.D + $_.J + $_.E + $_.C + $_.B + $_.M)) } }, Family, Pattern)
+    if ($heatmapRows.Count -eq 0) {
+        $lines.Add("| - | - | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | No repeated failures recorded yet. |")
+    } else {
+        foreach ($item in ($heatmapRows | Select-Object -First 20)) {
+            $lines.Add("| $(Escape-Md $item.Family) | $(Escape-Md $item.Pattern) | $($item.P) | $($item.I) | $($item.D) | $($item.J) | $($item.E) | $($item.C) | $($item.B) | $($item.M) | Repair the highest repeated failure code first. |")
+        }
+    }
     $lines.Add("")
     $lines.Add("## Master Review Ledger")
     $lines.Add("")
     $lines.Add("| Rank | Problem | Links | Family | Pattern | Signal / Invariant | Score | Failure | Attempts | Last Review | Next Review | Mastered? |")
     $lines.Add("|---:|---|---|---|---|---|---|---|---:|---|---|---|")
 
-    foreach ($row in $Rows) {
+    foreach ($entry in $entries) {
+        $row = $entry.Row
         $links = New-ProblemLinks -Row $row
         $family = Get-DisplayCategory $row.Category
-        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $links | $(Escape-Md $family) | $(Escape-Md $row.Pattern) | $(Escape-Md $row.Recall) |  |  | 0 |  |  |  |")
+        $mastered = if ($entry.Mastered) { "yes" } else { "" }
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $links | $(Escape-Md $family) | $(Escape-Md $row.Pattern) | $(Escape-Md $row.Recall) | $($entry.Score) | $(Escape-Md $entry.Failure) | $($entry.Attempts) | $(Escape-Md $entry.LastReview) | $(Escape-Md $entry.NextReview) | $mastered |")
     }
 
     return ($lines -join "`r`n")
@@ -2248,7 +2562,7 @@ function Build-RankingAudit {
     $lines.Add("| Pattern files generated | $($Groups.Count) | One focused view per generated category. |")
     $lines.Add("| Pattern rows covered | $patternRowCount | Should match ranked rows so no problem disappears from pattern files. |")
     $lines.Add("| Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |")
-    $lines.Add("| Review dashboard rows | $($Rows.Count) | Dashboard ledger covers every ranked row. |")
+    $lines.Add("| Review dashboard rows | $($Rows.Count) | Dashboard ledger covers every ranked row and merges local review state. |")
     $lines.Add("")
     $lines.Add("These are objective repository checks. They do not prove the ranking is globally correct.")
     $lines.Add("")
@@ -2304,7 +2618,7 @@ function Build-RankingAudit {
     $lines.Add("| Top 40 contains core anchor problems | $(if ($missingTop40Anchors.Count -eq 0) { "PASS" } else { "CHECK missing: $($missingTop40Anchors -join ", ")" }) | The obvious high-ROI anchors should not drift late. |")
     $lines.Add("| Design rows deferred from top 70 | $(if ($top70DesignCount -eq 0) { "PASS" } else { "CHECK: $top70DesignCount rows" }) | Design-flavored rows are useful, but not first-pass DSA ROI. |")
     $lines.Add("| Weekly sprint generated from canonical rows | PASS | Sprint titles, patterns, and signals must match ranked/pattern data. |")
-    $lines.Add("| Review dashboard covers ranked rows | PASS | Review state has a place without polluting the ranked table. |")
+    $lines.Add("| Review dashboard covers ranked rows | PASS | Review state is merged into due/red/yellow/mastered queues without polluting the ranked table. |")
     $lines.Add("")
     $lines.Add("Category weights currently used:")
     $lines.Add("")
