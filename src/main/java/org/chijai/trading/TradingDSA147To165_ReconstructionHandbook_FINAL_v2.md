@@ -243,71 +243,96 @@ stage before adding another abstraction.
 
 ## Prerequisite Matrix
 
-  -----------------------------------------------------------------------------
-                   Step Problem          New primitive     Reuses
-  --------------------- ---------------- ----------------- --------------------
-                      1 DSA-150          HashSet           ---
-                                         membership /      
-                                         idempotency       
+  ------------------------------------------------------------------------
+                Step Problem        New primitive     Reuses
+  ------------------ -------------- ----------------- --------------------
+                   1 DSA-150        HashSet           ---
+                                    membership /      
+                                    idempotency       
 
-                      2 DSA-161          Business identity HashSet
+                   2 DSA-161        Business identity HashSet
 
-                      3 DSA-160          HashMap           identity/keying
-                                         incremental       
-                                         aggregate         
+                   3 DSA-160        HashMap           identity/keying
+                                    incremental       
+                                    aggregate         
 
-                      4 DSA-153          General keyed     HashMap aggregation
-                                         delta state       
+                   4 DSA-153        General keyed     HashMap aggregation
+                                    delta state       
 
-                      5 DSA-147          TreeMap ordered   map state
-                                         extremes          
+                   5 DSA-147        TreeMap ordered   map state
+                                    extremes          
 
-                      6 DSA-148          Ordered depth     TreeMap
-                                         traversal         
+                   6 DSA-148        Ordered depth     TreeMap
+                                    traversal         
 
-                      7 DSA-149          PriorityQueue +   ordering/tie-break
-                                         comparator        
+                   7 DSA-149        PriorityQueue +   ordering/tie-break
+                                    comparator        
 
-                      8 DSA-155          Deque FIFO expiry streaming state
+                   8 DSA-155        Deque FIFO expiry streaming state
 
-                      9 DSA-156          Rolling           deque + deltas
-                                         aggregate +       
-                                         expiry            
+                   9 DSA-156        Rolling           deque + deltas
+                                    aggregate +       
+                                    expiry            
 
-                     10 DSA-157          Monotonic deque   deque invariant
+                  10 DSA-157        Monotonic deque   deque invariant
 
-                     11 DSA-162          Top-K composition deque + map + heap
+                  11 DSA-162        Top-K composition deque + map + heap
 
-                     12 DSA-151          Sequence          streaming
-                                         invariant         
+                  12 DSA-151        Sequence          streaming
+                                    invariant         
 
-                     13 DSA-152          Sequence          gaps + maps
-                                         buffer/drain      
+                  13 DSA-152        Sequence          gaps + maps
+                                    buffer/drain      
 
-                     14 DSA-154          O(1) keyed        latest-state map
-                                         validation        
+                  14 DSA-154        O(1) keyed        latest-state map
+                                    validation        
 
-                     15 DSA-158          Finite state      keyed event state
-                                         machine           
+                  15 DSA-158        Finite state      keyed event state
+                                    machine           
 
-                     16 DSA-163          K-way merge       heap + ordering
+                  16 DSA-163        K-way merge       heap + ordering
 
-                     17 DSA-164          Snapshot/replay   sequence + state
-                                         recovery          
+                  17 DSA-164        Snapshot/replay   sequence + state
+                                    recovery          
 
-                     18 DSA-159          Matching-engine   ordered book +
-                                         composition       priority + mutable
-                                                           state
+                  18 DSA-159        Matching-engine   ordered book +
+                                    composition       priority + mutable
+                                                      state
 
-                     19 DSA-165          Selection /       complexity
-                                         streaming         trade-offs
-                                         quantiles         
-  -----------------------------------------------------------------------------
+                  19 DSA-165        Selection /       complexity
+                                    streaming         trade-offs
+                                    quantiles         
+  ------------------------------------------------------------------------
 
 > **Rule:** the "Reuses" column should already be retrievable without
 > notes before you start that row.
 
 ------------------------------------------------------------------------
+
+## How to Use the Interview ↔ Production Layer
+
+For every problem, keep three answers separate:
+
+``` text
+1. INTERVIEW CORE
+   Smallest correct structure I can code and explain under time pressure.
+
+2. PRODUCTION MAPPING
+   Which class/field/invariant in the supplied codebase represents the same idea?
+
+3. PRODUCTION GAP
+   Why did the real system choose a different representation?
+   Usually: cancellation needs, deterministic sequencing, fixed memory,
+   object pooling, cache locality, framework guarantees, or zero-GC constraints.
+```
+
+Do not replace the interview answer with production machinery. Start
+with the simple correct algorithm, then add senior-level signal:
+
+> "In our production engine we represent the same invariant differently
+> because ..."
+
+That demonstrates both coding fluency and engineering judgment.
 
 # PART II --- Dependency-Ordered Deep Dives
 
@@ -396,6 +421,63 @@ identity semantics say so.
 Durable idempotency often requires transactionally coupling "execution
 ID processed" with the state mutation.
 
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+``` java
+if (!seenExecutionIds.add(execId)) {
+    return; // duplicate
+}
+applyExecution();
+```
+
+Then update position with signed quantity.
+
+### Production mapping from the supplied codebase notes
+
+The supplied production notes describe two different protection layers:
+
+``` text
+Framework/session sequence number
+→ prevents/reduces transport re-delivery
+
+AbstractRiskCheckGroup.doTransaction()
+→ small fixed transaction-local reference array
+→ cleared on commit()/rollback()
+→ zero-allocation duplicate/reference protection inside the transaction
+```
+
+This is deliberately narrower than an unbounded business-ID HashSet.
+
+### Production gap
+
+The interview HashSet answers:
+
+> Have I processed this execution ID during the lifetime of this
+> in-memory set?
+
+Production may rely on protocol sequencing, transaction boundaries,
+persistence, replay contracts, and fixed-size structures to avoid
+unbounded allocation.
+
+### Important correction: bounded "LRU" dedup
+
+The pasted bounded example used:
+
+``` java
+new LinkedHashMap<>(..., false)
+```
+
+`false` means **insertion order**, not access-order LRU. That structure
+is a bounded FIFO-style remembered set.
+
+Also, any size-bounded remembered set is **not exact dedup forever**:
+once an ID is evicted, the same ID can be accepted again.
+
+If true LRU behavior is intended, use access order deliberately and
+define whether duplicate lookup should refresh recency.
+
 ## Mutation
 
 **Memory capped:** introduce retention/TTL only if the protocol
@@ -473,6 +555,51 @@ not invent dedupe semantics from payload similarity.
 -   Do not confuse duplicate transport message with duplicate business
     order.
 
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+Start by asking:
+
+> What is the authoritative uniqueness rule?
+
+Then use the appropriate set/key:
+
+``` text
+exchange order ID
+client order ID within its defined scope
+explicitly supplied business idempotency key
+```
+
+### Production mapping from the supplied codebase notes
+
+The production notes point to gateway/protocol-level identifiers such as
+client order tokens/IDs, plus separate mechanisms such as self-match
+prevention.
+
+### Production gap
+
+Self-match prevention is **not duplicate-order detection**. It prevents
+prohibited crossing behavior between related orders; it does not prove
+two orders are the same business request.
+
+### Corrections to the pasted three-layer detector
+
+A derived key such as:
+
+``` text
+account + side + price + qty
+```
+
+should only be used if the interviewer explicitly defines that as
+duplicate semantics. Two legitimate orders can be economically
+identical.
+
+Also be careful about mutation order: if you add `orderId` to the seen
+set and later reject because `clientOrderId` is duplicate, you have
+partially committed dedupe state. Decide whether that is intended or
+validate all keys before committing them atomically.
+
 ## Mutation
 
 **Client order IDs unique only per trading day:** identity/retention
@@ -545,6 +672,51 @@ monetary exposure as price changes.
 -   Do not forget side sign.
 -   Do not assume sell means position cannot become negative; short
     positions may be valid.
+
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+``` text
+key = (account, instrument)
+BUY fill  → +qty
+SELL fill → -qty
+
+position[key] += signedQty
+```
+
+Only executions change position.
+
+### Production mapping from the supplied codebase notes
+
+The production exposure/execution object carries richer dimensions such
+as account, tradable, settlement attributes, and reference/match-price
+context. Position may be owned by a history/state component and rolled
+up through risk hierarchy.
+
+### Production gap
+
+The HashMap exercise teaches the core incremental accounting invariant.
+Production separates authoritative position, transient exposure, and
+hierarchical risk consumption.
+
+### Important correction to the pasted code
+
+This formula is **not generally a correct average fill price** after
+both buys and sells:
+
+``` text
+Σ(unsigned price×qty) / abs(net position)
+```
+
+Example: buy 100, sell 90. The denominator becomes 10 while the
+numerator includes both trades, producing nonsense.
+
+Average cost/P&L requires an explicit accounting method (average cost,
+FIFO, etc.) and realized-vs-unrealized handling.
+
+For DSA-160, keep the interview scope to **net position** unless cost
+basis is explicitly requested.
 
 ## Mutation
 
@@ -620,6 +792,56 @@ exposure, and risk exposure are not automatically the same quantity.
 -   Do not use `int` if quantities/notionals can overflow.
 -   Do not remove a zero entry if zero-valued keys carry business
     meaning; otherwise removing is a useful space optimization.
+
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+For an open-order notional-style exposure exercise:
+
+``` text
+contribution[orderId] = price × leavesQty
+total = Σ contributions
+
+NEW    → add contribution
+UPDATE → total += new - old
+CANCEL → subtract old
+```
+
+All expected O(1) with a HashMap.
+
+### Production mapping from the supplied codebase notes
+
+The supplied production flow is richer:
+
+``` text
+AbstractRiskCheckGroup.addExposure()
+→ context.addExposure()
+→ calculator.calculate(context, exposure)
+→ validator.validate(consumption, limit)
+→ status propagation through risk hierarchy
+
+UPDATE
+→ removeExposure + addExposure atomically/logically as one change
+```
+
+Exposure objects are pool-borrowed, and the hot path uses
+fixed/specialized iteration for a small number of checks.
+
+### Production gap
+
+`price × leavesQty` is only an **interview metric example**, not the
+universal definition of exposure. Production exposure may include:
+
+-   metric-specific calculation,
+-   price quantity factors,
+-   FX conversion,
+-   account/market hierarchy,
+-   existing consumption,
+-   settlement dimensions.
+
+Also guard `price × qty` against `long` overflow when constraints permit
+very large values.
 
 ## Mutation
 
@@ -762,6 +984,61 @@ Real books often use price ticks, specialized arrays/trees, intrusive
 queues, or venue-specific bounded price domains to reduce allocations
 and latency.
 
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+``` text
+Two ordered maps:
+bids = price → total quantity, best-first descending
+asks = price → total quantity, natural ascending
+
+NEW         → add quantity
+CANCEL/FILL → subtract quantity; remove level at zero
+
+bestBid = first bid key
+bestAsk = first ask key
+```
+
+This is the **interview abstraction**: optimize for clarity and
+defensible complexity.
+
+### Production mapping from the supplied codebase notes
+
+``` text
+OrderBookCore
+→ BestBidOffer POJO
+→ bestBidOfferChanged dirty flag
+
+PriceList
+→ one pooled PriceListNode per price level
+→ doubly linked
+→ maintained in sorted order on insertion
+```
+
+`setBestPrice()` changes the BBO only when price/quantity actually
+changes; `commit()` clears the dirty flag.
+
+### Production gap --- why no TreeMap?
+
+A `TreeMap` is the clean general-purpose interview choice. A low-latency
+engine may instead choose a custom linked/pool-backed representation
+because it can provide:
+
+-   O(1) access to the already-maintained best node,
+-   predictable object layout,
+-   fewer allocations,
+-   explicit lifecycle/pooling,
+-   good head/tail fast paths.
+
+The price is that finding an insertion point can become **O(L)** in the
+worst case for `L` price levels unless additional indexing/locality
+assumptions exist.
+
+**Lesson:** same invariant, different structure because production
+optimizes latency, allocation behavior, and workload shape---not just
+asymptotic Big-O.
+
 ## Mutation
 
 **Need cancellation by order ID:** price-level aggregation alone is
@@ -881,6 +1158,47 @@ same price collapse into one level.
 -   Do not model each order if the problem only asks for aggregated
     levels.
 
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+Reuse DSA-147:
+
+``` text
+TreeMap per side
+top bids → iterate best-to-worst, take N
+top asks → iterate best-to-worst, take N
+```
+
+No new fundamental structure is required.
+
+### Production mapping from the supplied codebase notes
+
+`PriceList` is already a sorted doubly linked list of price-level nodes.
+Therefore Top-N is naturally:
+
+``` text
+start at best node
+walk next
+stop after N
+```
+
+Nodes are pool-backed.
+
+### Production gap
+
+TreeMap gives convenient `O(log L)` arbitrary level maintenance and
+ordered traversal. The production linked structure trades that
+generality for:
+
+-   direct best-node access,
+-   cheap sequential depth traversal,
+-   reduced allocation/GC pressure,
+-   workload-specific insertion fast paths.
+
+Do not conclude that "linked list is asymptotically better." It is a
+**latency-engineering choice under known access patterns**.
+
 ## Mutation
 
 **N is huge and queries rare:** full ordered traversal may be fine;
@@ -988,6 +1306,60 @@ arrival sequence gives deterministic ordering.
     in the heap; heap order will become invalid.
 -   Do not claim a heap is a complete production order book.
 
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+``` text
+BUY heap:
+price DESC → sequence ASC
+
+SELL heap:
+price ASC → sequence ASC
+
+peek = next eligible
+poll = consume next eligible
+```
+
+### Production mapping from the supplied codebase notes
+
+The production model uses a richer ranking key:
+
+``` text
+RankingTime
+= transactionTimeNs
++ sequenceNumber
+```
+
+Comparison is lexicographic: timestamp first, sequence as deterministic
+tie-break.
+
+Within one price level, `OrderList.insertRanked()` maintains time
+priority in a linked structure, with head/tail fast paths covering the
+common case.
+
+### Production gap --- why no heap?
+
+A heap is ideal when the API is mainly **"give me the next best
+order."**
+
+A real order book also needs:
+
+-   cancellation by ID,
+-   amendment,
+-   explicit price levels,
+-   FIFO/time ordering inside a level,
+-   depth traversal,
+-   stable partially filled resting orders.
+
+`TreeMap<Price, FIFO/Ranked OrderList>` or custom price/order lists
+model those operations more directly.
+
+### Correction to remember
+
+Never mutate `price` or ranking fields while an order is still inside a
+Java `PriorityQueue`. Java will not automatically reheapify it.
+
 ## Mutation
 
 **Need arbitrary cancellation:** heap removal is `O(N)` in Java unless
@@ -1084,6 +1456,54 @@ implementation must match the policy.
     account/key.
 -   Do not describe a local in-memory limiter as a distributed global
     limiter.
+
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+Sliding-log limiter:
+
+``` text
+Deque<timestamp>
+
+evict expired front
+if size < limit:
+    add now
+    ACCEPT
+else:
+    REJECT
+```
+
+Each accepted timestamp enters/leaves once → amortized O(1).
+
+### Production mapping from the supplied codebase notes
+
+The production notes describe `StandardRiskCheckTimeSlots`:
+
+``` text
+fixed circular array of time buckets
+power-of-two slot count
+timestamp → slot index by arithmetic/bitmask
+drop oldest bucket as time advances
+```
+
+### Production gap
+
+The deque stores one timestamp per accepted event: exact, simple, but
+object/state cost grows with the limit.
+
+A circular bucket counter trades exact timestamp precision for:
+
+-   fixed memory,
+-   predictable access,
+-   fewer allocations,
+-   O(1) slot arithmetic.
+
+### Follow-up
+
+Token bucket is a **different policy** used when controlled bursts are
+desired. Do not present it as merely a faster implementation of the same
+exact sliding-window semantics.
 
 ## Mutation
 
@@ -1182,6 +1602,49 @@ VWAP is not ordinary average price.
 -   Do not assume trade timestamps are ordered if the problem does not
     guarantee it.
 
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+``` text
+VWAP = Σ(price×qty) / Σqty
+
+Deque<Trade>
+running totalValue
+running totalQty
+
+add newest contribution
+subtract expired contribution
+```
+
+Query becomes O(1); updates amortized O(1).
+
+### Production mapping from the supplied codebase notes
+
+The production risk code tracks metrics such as:
+
+``` text
+VALUE  = monetary contribution
+VOLUME = quantity contribution
+```
+
+as separate limits/consumptions rather than dividing them into a VWAP.
+
+The supplied notes also mention scaling/PQF and FX conversion in value
+calculation.
+
+### Production gap
+
+The data-structure pattern is the same---**incremental rolling
+aggregates**---but the business metric differs.
+
+### Corrections to remember
+
+-   `price * qty` can overflow `long`.
+-   `totalValue * scale` can also overflow in a scaled integer VWAP.
+-   Time-window deque logic assumes nondecreasing event time unless
+    explicit out-of-order handling is added.
+
 ## Mutation
 
 **Rolling VWAP per symbol:** each symbol gets independent deque +
@@ -1279,6 +1742,48 @@ while their corresponding values decrease.
 -   Do not remove only `< current` without deciding duplicate semantics.
 -   Do not forget expired indices.
 -   Do not use a normal queue; monotonic pruning is the optimization.
+
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+``` text
+decreasing monotonic deque of [value, index]
+
+evict expired front
+pop back while back.value <= current
+append current
+
+front = maximum
+```
+
+Each item enters/leaves once → O(N) total.
+
+### Production mapping from the supplied codebase notes
+
+If the production book already maintains sorted price levels, the
+current extreme can simply be represented by the head/best node. There
+is no reason to add a separate monotonic deque for a quantity the book
+structure already maintains.
+
+### Production gap
+
+Monotonic deque solves:
+
+> maximum over a **moving historical window**.
+
+A sorted live order book solves:
+
+> maximum/minimum over the **current active set**.
+
+These can look similar at query time but are different problem
+semantics.
+
+### Correction to remember
+
+The time-based monotonic deque assumes timestamps are nondecreasing.
+Out-of-order market-data timestamps require a different policy or
+preprocessing.
 
 ## Mutation
 
@@ -1391,6 +1896,47 @@ count, quantity, or notional.
 -   Do not leave zero aggregate entries indefinitely.
 -   Do not call it rolling if old events never expire.
 
+## Interview Core → Production Bridge
+
+### What to write in \~15 minutes
+
+``` text
+Deque of rolling events
+HashMap instrument → running score
+min-heap size K for query
+```
+
+Event ingest is amortized O(1); Top-K query is `O(M log K)`.
+
+### Production mapping from the supplied codebase notes
+
+The supplied production system uses rolling activity primarily for
+**risk/rate limits**, with time-slot structures and hierarchical roll-up
+through exposure/risk nodes, rather than ranking instruments by
+activity.
+
+### Production gap
+
+Same primitive:
+
+``` text
+rolling per-key counters
+```
+
+Different final question:
+
+``` text
+risk system → "did this key exceed a limit?"
+Top-K problem → "which K keys are largest?"
+```
+
+Only the latter needs ranking/heap logic.
+
+### Correction to remember
+
+Define "activity" explicitly: message count, trade count, quantity, or
+notional. The algorithm is identical; the score update is not.
+
 ## Mutation
 
 **Top K requested after every event:** consider maintaining an ordered
@@ -1466,6 +2012,51 @@ A duplicate/out-of-order sequence (`current <= previous`) is not a
     be enormous.
 -   Do not sort if the input contract already guarantees order.
 -   Beware `previous + 1` overflow at `Long.MAX_VALUE`.
+
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+If input is already strictly ordered:
+
+``` text
+current > previous + 1
+→ gap [previous + 1, current - 1]
+```
+
+That is `O(N)` and requires no TreeSet.
+
+If the interviewer explicitly gives an unordered batch,
+sorting/deduplicating first is a separate `O(N log N)` variant.
+
+### Production mapping from the supplied codebase notes
+
+The supplied notes describe:
+
+``` text
+SnapshotLatestSequenceNumberProvider
+→ remembers sequence at snapshot/session mark
+
+ReadOnlySequenceNumberManager / framework sequencing
+→ owns sequence progression
+
+gap recovery
+→ request fresh RDM snapshot / replay from known sequence
+```
+
+### Production gap
+
+Application code may **detect loss but not attempt local gap fill**. In
+a deterministic risk engine, invalidating state and rebuilding from an
+authoritative snapshot can be safer than waiting indefinitely for
+individual missing messages.
+
+### Important distinction
+
+The online "detect and advance beyond the gap" algorithm is a
+**detector**, not a reorderer. Once it advances `nextExpected` past the
+hole, a later missing message is stale. Use DSA-152 when late arrival
+must still be integrated.
 
 ## Mutation
 
@@ -1575,6 +2166,65 @@ from buffering `4` until `3` arrives.
 
 Missing sequence timeout may trigger retransmission or a fresh snapshot.
 
+## Interview Core → Production Bridge
+
+There are **two valid bounded-disorder formulations**. Do not mix their
+invariants.
+
+### Variant A --- exact sequence reconstruction (preferred when sequence continuity matters)
+
+``` text
+nextExpected + buffer
+
+seq < expected → stale
+seq > expected → buffer
+seq = expected → emit and drain contiguous buffered messages
+```
+
+This guarantees contiguous output.
+
+### Variant B --- bounded-lateness heap
+
+``` text
+min-heap by sequence
+highestSeen
+
+emit S only when the contract guarantees:
+no future arrival can have sequence < S
+```
+
+A rule such as:
+
+``` text
+highestSeen >= S + W
+```
+
+is valid **only if W is explicitly defined as a maximum sequence-number
+lateness distance**.
+
+It is not automatically valid when "window W" means merely "at most W
+messages can be reordered."
+
+### Production mapping from the supplied codebase notes
+
+The supplied production notes say DSF/ICore already guarantees in-order
+delivery per session. Therefore the application has no general reorder
+heap:
+
+``` text
+in-order framework delivery
+gap → snapshot/recovery
+Order.reloaded → replay/reload semantics
+```
+
+### Production gap
+
+The heap/reorder buffer belongs more naturally in a
+feed-handler/network-decoding layer when transport can reorder.
+
+**Interview rule:** clarify the disorder contract before choosing
+`nextExpected + map` versus a bounded-lateness heap.
+
 ## Mutation
 
 **Missing sequence never arrives:** add timeout → retransmission →
@@ -1656,6 +2306,54 @@ operationally unsafe.
     policy explicitly says so.
 -   Do not mix percentages and fractions.
 -   Do not ignore reference freshness in a production discussion.
+
+## Interview Core → Production Bridge
+
+### What to write in \~5 minutes
+
+Prefer scaled integer prices / basis points:
+
+``` text
+lower = ref × (10000 - bps) / 10000
+upper = ref × (10000 + bps) / 10000
+
+price < lower → TOO_LOW
+price > upper → TOO_HIGH
+else          → PASS
+```
+
+### Production mapping from the supplied codebase notes
+
+Reference price is associated with the tradable and updated by a
+dedicated reference-price action. Collar/circuit behavior may be
+enforced closer to the matching/execution layer, with explicit
+execution/cancel reasons.
+
+### Production gap
+
+The interview map:
+
+``` text
+tradableId → latest reference price
+```
+
+compresses a larger production concern:
+
+``` text
+source of reference
+freshness
+currency/scaling
+market state
+fallback policy
+reason-code propagation
+```
+
+### Correction to remember
+
+"Integer arithmetic" avoids floating-point comparison drift but does
+**not** eliminate overflow. `ref * (10000 + bps)` can overflow `long`;
+production code needs safe scaling/order of operations or checked
+arithmetic where bounds are not guaranteed.
 
 ## Mutation
 
@@ -1746,6 +2444,57 @@ remaining quantity is canceled.\
     semantics.
 -   Do not ignore event ordering assumptions.
 
+## Interview Core → Production Bridge
+
+### What to write in \~15 minutes
+
+``` text
+Map<orderId, OrderState>
+
+event
+→ validate legal transition
+→ update filled/leaves quantity
+→ enter terminal state when appropriate
+```
+
+### Production mapping from the supplied codebase notes
+
+The supplied production model separates two dimensions:
+
+``` text
+OrderStatus   → where the order currently is
+ExecutionType → why/how the transition occurred
+```
+
+Exposure lifecycle can then be derived from before/after status:
+
+``` text
+NEW / UPDATE / REMOVE
+```
+
+Partial fill need not be a standalone order status if `leavesQuantity`
+carries the remaining quantity.
+
+### Production gap
+
+Interview state machines often flatten "status" and "reason" into one
+enum for simplicity. Production benefits from separating them because
+many execution reasons can map to the same lifecycle state.
+
+### Corrections to the pasted interview skeleton
+
+Do **not** blindly:
+
+``` text
+partialFill: filled += qty; leaves -= qty
+```
+
+without checking `qty > 0` and `qty <= leaves`.
+
+Likewise, silently ignoring invalid transitions is a policy choice. For
+interview correctness, returning an error/result is often clearer than
+quietly accepting malformed event history.
+
 ## Mutation
 
 **Events can arrive out of order:** now lifecycle aggregation must
@@ -1833,6 +2582,46 @@ sequence.
 -   Do not sort the concatenated dataset: `O(N log N)` and
     non-streaming.
 -   Do not advance the wrong feed after polling.
+
+## Interview Core → Production Bridge
+
+### What to write in \~10 minutes
+
+Batch K-way merge:
+
+``` text
+heap contains one head from each feed
+
+poll global minimum
+emit
+advance only that feed
+push its next head
+```
+
+`O(N log K)` time, `O(K)` heap.
+
+### Production mapping from the supplied codebase notes
+
+If DSF/framework delivery already presents one ordered application
+stream, application code does not need to merge K raw venue/network
+feeds. This concern sits upstream in feed handlers or transport/session
+layers.
+
+### Production gap
+
+The interview problem is still valuable because it teaches the general
+primitive used whenever multiple independently ordered sources must be
+merged.
+
+### Corrections to the pasted comparator
+
+If `(timestamp, sequence)` can tie across different feeds, add a
+deterministic final tie-break such as `feedIndex` or feed ID. Java
+`PriorityQueue` can hold comparator-equal elements, but output order
+among them is not deterministic.
+
+The online version also needs an explicit policy for a feed that stalls:
+watermark, timeout, or willingness to block global output.
 
 ## Mutation
 
@@ -1945,6 +2734,81 @@ gap detected
 ```
 
 This composes DSA-151 + DSA-152 + DSA-164.
+
+## Interview Core → Production Bridge
+
+### What to write in \~15--20 minutes
+
+State machine:
+
+``` text
+snapshot not ready?
+→ buffer incrementals
+
+snapshot arrives at S
+→ install state
+→ nextExpected = S + 1
+→ discard buffered <= S
+→ drain contiguous updates
+
+incremental < nextExpected
+→ stale/duplicate
+
+incremental == nextExpected
+→ apply + increment + drain
+
+incremental > nextExpected
+→ buffer gap
+```
+
+### Production mapping from the supplied codebase notes
+
+The supplied configuration flow has an explicit lifecycle such as:
+
+``` text
+NEW → ADDED → STAGED → COMMITTED
+```
+
+and version checks guard against re-applying the same configuration.
+
+### Production gap
+
+The interview snapshot-merger focuses on **data-state reconstruction by
+sequence**. Production configuration systems additionally need
+versioning, staging, atomic publication, validation, and rollback
+semantics.
+
+### Critical correction to the pasted `apply()` logic
+
+This check is insufficient:
+
+``` java
+if (u.seqNo() <= snapshotSeq) return false;
+```
+
+After incrementals have already advanced beyond the snapshot, a replayed
+incremental can satisfy:
+
+``` text
+snapshotSeq < u.seqNo < nextExpected
+```
+
+and be applied **twice**.
+
+The correct stale/duplicate guard after readiness is:
+
+``` java
+if (u.seqNo() < nextExpected) return false;
+```
+
+then:
+
+``` text
+== nextExpected → apply
+>  nextExpected → buffer
+```
+
+This is a high-value interview invariant.
 
 ## Mutation
 
@@ -2102,6 +2966,67 @@ Real engines must define cancellation, amendments, market orders,
 self-trade prevention, tick sizes, session state, deterministic
 sequencing, persistence/recovery, and concurrency ownership.
 
+## Interview Core → Production Bridge
+
+### What to write in \~20 minutes
+
+``` text
+bid PQ: price DESC, time ASC
+ask PQ: price ASC, time ASC
+
+incoming BUY:
+while best ask crosses:
+    trade min(incomingQty, restingQty)
+    execution price = resting price
+    consume quantities
+
+rest incoming remainder
+```
+
+SELL is symmetric.
+
+### Production mapping from the supplied codebase notes
+
+The production structure is closer to:
+
+``` text
+PriceList
+→ sorted price levels
+
+OrderList
+→ ranked/FIFO orders within each level
+
+Execution
+→ matchId, passive/aggressive role, execution metadata
+
+additional rules
+→ self-match prevention
+→ MAQ / venue semantics
+→ leavesQuantity
+```
+
+### Production gap
+
+Two heaps are a **coding-interview simplification**. Custom
+price-level + order-list structures better support:
+
+-   O(1) best-level access once maintained,
+-   cancellation/amendment,
+-   explicit depth,
+-   stable per-level priority,
+-   low allocation.
+
+### Important subtlety: partial fills
+
+In the heap version, polling a partially filled resting order and
+re-adding it with its **original sequence** preserves logical price-time
+priority, but costs another heap operation.
+
+In a real per-level FIFO list, the partially filled resting order
+normally stays at the head; it should not lose time priority.
+
+Never generate a fresh sequence for the partially filled resting order.
+
 ## Mutation
 
 **Add cancellation by order ID:** two heaps alone become awkward;
@@ -2230,6 +3155,55 @@ Different libraries may interpolate percentiles differently.
     additional assumptions.
 -   Do not omit the percentile definition.
 
+## Interview Core → Production Bridge
+
+### What to write in \~15 minutes
+
+First clarify:
+
+``` text
+exact or approximate?
+offline or streaming?
+memory bound?
+latency range known?
+```
+
+Then choose:
+
+``` text
+small/offline exact  → sort
+one exact quantile   → selection
+bounded range        → histogram
+large streaming      → sketch/histogram family
+```
+
+A simple fixed-width histogram is a good interview implementation when
+an approximation bound is acceptable.
+
+### Production mapping from the supplied codebase notes
+
+The production notes reference `HdrHistogram`-style latency measurement
+and emphasize zero-allocation hot paths.
+
+### Production gap / correction
+
+A simple fixed-width `count[]` histogram and **HdrHistogram are in the
+same broad histogram family, but are not architecturally identical**.
+
+HdrHistogram uses a structured bucket/sub-bucket layout to cover a very
+wide dynamic range while maintaining configurable significant-digit
+precision; it is not merely equal-width buckets.
+
+Also, reservoir sampling is usually a weak default for accurate
+extreme-tail p99/p99.9 unless the reservoir is sufficiently large and
+error is acceptable.
+
+### Production lesson
+
+For low-latency systems, asymptotic `O(1)` is only part of the story.
+Allocation, cache locality, synchronization, timer cost, and histogram
+update overhead can dominate a sub-microsecond path.
+
 ## Mutation
 
 **Need p50/p95/p99 continuously for millions of events/minute:** switch
@@ -2244,6 +3218,41 @@ PERCENTILE → ASK EXACT? STREAMING? MEMORY? → SORT / SELECT / SKETCH
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
+
+# Production-Mapping Corrections Worth Memorizing
+
+These are the places where the pasted code/comments needed
+qualification:
+
+1.  **Bounded LinkedHashMap dedup:** `accessOrder=false` is insertion
+    order, not LRU; any bounded remembered set becomes approximate after
+    eviction.
+2.  **DSA-151:** sorting is only needed for unordered batch input; a
+    strictly ordered feed needs only one pass and the previous sequence.
+3.  **DSA-152:** `highestSeen >= S + W` is valid only under a precise
+    sequence-distance lateness guarantee; otherwise prefer
+    `nextExpected + buffer`.
+4.  **DSA-154 / DSA-156:** integer arithmetic avoids floating-point
+    drift but can still overflow.
+5.  **DSA-157:** a time-based monotonic deque assumes nondecreasing
+    timestamps unless reordering is handled elsewhere.
+6.  **DSA-158:** guard against overfills and illegal transitions;
+    silently ignoring malformed history is a business policy, not an
+    algorithmic requirement.
+7.  **DSA-160:** unsigned fill value divided by absolute net position is
+    not a general average-fill-price algorithm.
+8.  **DSA-161:** define authoritative identity before dedupe; identical
+    economics do not automatically mean duplicate order.
+9.  **DSA-163:** use a deterministic final tie-break across feeds if
+    timestamp and sequence can tie.
+10. **DSA-164:** after snapshot readiness, reject every
+    `seq < nextExpected`, not only `seq <= snapshotSeq`, or replayed
+    incrementals can double-apply.
+11. **DSA-165:** a fixed-width histogram is conceptually related to
+    HdrHistogram, not architecturally identical.
+
+These corrections are higher ROI than memorizing extra implementation
+lines.
 
 # PART III --- Cross-Problem Pattern Compression
 
