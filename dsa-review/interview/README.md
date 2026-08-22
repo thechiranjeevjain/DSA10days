@@ -18,6 +18,9 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
+| Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
+| Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
+| Need review control panel | `06_REVIEW_DASHBOARD.md` | Due queue, red/yellow queues, and full review ledger. |
 
 ## Current Coverage
 
@@ -26,6 +29,8 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
 - Ranking audit: `05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+- Canonical mind map: `DSA_170_Brain_Map_FINAL.md`.
+- Older brain-map files are kept as drafts/reference snapshots; use the FINAL file during interview prep.
 
 ## Interview Rule
 

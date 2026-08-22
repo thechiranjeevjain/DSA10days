@@ -16,7 +16,11 @@ $requiredFiles = @(
     "01_ZERO_TO_HERO_RANKED_TABLE.md",
     "02_ONE_LINE_RECALL_ALL_PROBLEMS.md",
     "03_CRISP_INTERVIEW_ANSWERS.md",
-    "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md"
+    "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md",
+    "05_RANKING_METHODOLOGY_AND_AUDIT.md",
+    "06_REVIEW_DASHBOARD.md",
+    "DSA_7-Day_Interview_Performance_Sprint.md",
+    "DSA_170_Brain_Map_FINAL.md"
 )
 
 foreach ($name in $requiredFiles) {
@@ -30,6 +34,18 @@ $rankedPath = Join-Path $interviewRoot "01_ZERO_TO_HERO_RANKED_TABLE.md"
 $rankedText = Get-Content -LiteralPath $rankedPath -Raw
 $rankLines = @(Select-String -LiteralPath $rankedPath -Pattern '^\| (?<rank>\d+) \|' | ForEach-Object { $_.Line })
 $topRankMatch = [regex]::Match($rankedText, '^\| 1 \| (?<title>[^|]+?) \|' , [System.Text.RegularExpressions.RegexOptions]::Multiline)
+$rankedByRank = @{}
+foreach ($line in $rankLines) {
+    $cells = $line.Trim("|").Split("|") | ForEach-Object { $_.Trim() }
+    if ($cells.Count -ge 6 -and $cells[0] -match '^\d+$') {
+        $rankedByRank[[int] $cells[0]] = [pscustomobject]@{
+            Rank = [int] $cells[0]
+            Title = $cells[1].Replace("\|", "|")
+            Recall = $cells[4].Replace("\|", "|")
+            Hook = $cells[5].Replace("\|", "|")
+        }
+    }
+}
 
 if ($rankLines.Count -lt 150) {
     Fail "expected at least 150 ranked rows, found $($rankLines.Count)"
@@ -160,6 +176,15 @@ $readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -R
 if ($readmeText -notmatch 'patterns/README\.md') {
     Fail "main README does not link to pattern files"
 }
+if ($readmeText -notmatch 'DSA_170_Brain_Map_FINAL\.md') {
+    Fail "main README does not link to the canonical brain map"
+}
+if ($readmeText -notmatch 'DSA_7-Day_Interview_Performance_Sprint\.md') {
+    Fail "main README does not link to the weekly sprint"
+}
+if ($readmeText -notmatch '06_REVIEW_DASHBOARD\.md') {
+    Fail "main README does not link to the review dashboard"
+}
 
 $patternDir = Join-Path $interviewRoot "patterns"
 if (-not (Test-Path -LiteralPath $patternDir)) {
@@ -183,6 +208,7 @@ if ($patternIndexText -notmatch 'HashMap / Frequency / Set') {
 
 $patternProblemRows = 0
 $patternRankSet = @{}
+$patternByRank = @{}
 $missingPatternJavaLinks = @()
 foreach ($patternFile in $patternFiles) {
     $problemLines = @(Select-String -LiteralPath $patternFile.FullName -Pattern '^\| (?<rank>\d+) \|')
@@ -197,6 +223,17 @@ foreach ($patternFile in $patternFiles) {
             Fail "duplicate rank $rank across pattern files"
         }
         $patternRankSet[$rank] = $true
+
+        $cells = $line.Line.Trim("|").Split("|") | ForEach-Object { $_.Trim() }
+        if ($cells.Count -ge 8) {
+            $patternByRank[$rank] = [pscustomobject]@{
+                Rank = $rank
+                Phase = $cells[1]
+                Title = $cells[2].Replace("\|", "|")
+                Pattern = $cells[3].Replace("\|", "|")
+                Recall = $cells[6].Replace("\|", "|")
+            }
+        }
     }
 
     $patternJavaMatches = @(Select-String -LiteralPath $patternFile.FullName -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
@@ -225,15 +262,121 @@ if ($missingPatternJavaLinks.Count -gt 0) {
     Fail "missing pattern Java links: $($missingPatternJavaLinks -join ', ')"
 }
 
-$asciiFiles = @(Get-ChildItem -LiteralPath $interviewRoot -Recurse -File)
+$sprintPath = Join-Path $interviewRoot "DSA_7-Day_Interview_Performance_Sprint.md"
+$sprintText = Get-Content -LiteralPath $sprintPath -Raw
+foreach ($requiredColumn in @("Signal / Invariant", "Score", "Failure", "Attempts", "Last Review", "Next Review")) {
+    if ($sprintText -notmatch [regex]::Escape($requiredColumn)) {
+        Fail "weekly sprint is missing review column: $requiredColumn"
+    }
+}
+
+$sprintRows = @()
+foreach ($line in Get-Content -LiteralPath $sprintPath) {
+    if ($line -notmatch '^\|') { continue }
+    $cells = $line.Trim("|").Split("|") | ForEach-Object { $_.Trim() }
+    if ($cells.Count -lt 13) { continue }
+    if ($cells[1] -notmatch '^\d+$' -or $cells[2] -notmatch '^\d+$') { continue }
+    $sprintRows += [pscustomobject]@{
+        SprintRank = [int] $cells[1]
+        SourceRank = [int] $cells[2]
+        Problem = $cells[3].Replace("\|", "|")
+        Family = $cells[5].Replace("\|", "|")
+        Pattern = $cells[6].Replace("\|", "|")
+        Recall = $cells[7].Replace("\|", "|")
+    }
+}
+
+if ($sprintRows.Count -ne 150) {
+    Fail "expected 150 weekly sprint rows, found $($sprintRows.Count)"
+}
+
+$sprintRankSet = @{}
+$sprintSourceRankSet = @{}
+foreach ($row in $sprintRows) {
+    if ($sprintRankSet.ContainsKey($row.SprintRank)) {
+        Fail "duplicate sprint rank $($row.SprintRank)"
+    }
+    $sprintRankSet[$row.SprintRank] = $true
+
+    if ($sprintSourceRankSet.ContainsKey($row.SourceRank)) {
+        Fail "duplicate sprint source rank $($row.SourceRank)"
+    }
+    $sprintSourceRankSet[$row.SourceRank] = $true
+
+    if (-not $rankedByRank.ContainsKey($row.SourceRank)) {
+        Fail "weekly sprint source rank not found in ranked table: $($row.SourceRank)"
+    }
+    if (-not $patternByRank.ContainsKey($row.SourceRank)) {
+        Fail "weekly sprint source rank not found in pattern files: $($row.SourceRank)"
+    }
+
+    $rankedRow = $rankedByRank[$row.SourceRank]
+    $patternRow = $patternByRank[$row.SourceRank]
+    if ($row.Problem -ne $rankedRow.Title) {
+        Fail "weekly sprint title mismatch for source rank $($row.SourceRank): '$($row.Problem)' vs '$($rankedRow.Title)'"
+    }
+    if ($row.Pattern -ne $patternRow.Pattern) {
+        Fail "weekly sprint pattern mismatch for source rank $($row.SourceRank): '$($row.Pattern)' vs '$($patternRow.Pattern)'"
+    }
+    if ($row.Recall -ne $rankedRow.Recall) {
+        Fail "weekly sprint signal mismatch for source rank $($row.SourceRank)"
+    }
+}
+
+for ($i = 1; $i -le 150; $i++) {
+    if (-not $sprintRankSet.ContainsKey($i)) {
+        Fail "weekly sprint is missing sprint rank $i"
+    }
+    if (-not $sprintSourceRankSet.ContainsKey($i)) {
+        Fail "weekly sprint is missing source rank $i"
+    }
+}
+
+$dashboardPath = Join-Path $interviewRoot "06_REVIEW_DASHBOARD.md"
+$dashboardText = Get-Content -LiteralPath $dashboardPath -Raw
+foreach ($requiredSection in @("## Due Today", "## RED Repair Queue", "## YELLOW Stabilization Queue", "## Repeated Failure Pattern Heatmap", "## Master Review Ledger")) {
+    if ($dashboardText -notmatch [regex]::Escape($requiredSection)) {
+        Fail "review dashboard is missing section: $requiredSection"
+    }
+}
+
+$dashboardRows = @(Select-String -LiteralPath $dashboardPath -Pattern '^\| (?<rank>\d+) \|')
+if ($dashboardRows.Count -ne $rankLines.Count) {
+    Fail "expected review dashboard ledger to contain $($rankLines.Count) rows, found $($dashboardRows.Count)"
+}
+
+$generatedAsciiFiles = @(
+    $requiredFiles |
+        Where-Object { $_ -ne "DSA_170_Brain_Map_FINAL.md" } |
+        ForEach-Object { Get-Item -LiteralPath (Join-Path $interviewRoot $_) }
+) + $patternFiles
+$allInterviewFiles = @(Get-ChildItem -LiteralPath $interviewRoot -Recurse -File)
 $nonAsciiFiles = @()
 $controlByteFiles = @()
-foreach ($file in $asciiFiles) {
+foreach ($file in $generatedAsciiFiles) {
     $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
-    if ($bytes | Where-Object { $_ -gt 127 } | Select-Object -First 1) {
+    $hasNonAscii = $false
+    foreach ($byte in $bytes) {
+        if ($byte -gt 127) {
+            $hasNonAscii = $true
+            break
+        }
+    }
+    if ($hasNonAscii) {
         $nonAsciiFiles += $file.FullName
     }
-    if ($bytes | Where-Object { ($_ -lt 32) -and ($_ -notin @(9, 10, 13)) } | Select-Object -First 1) {
+}
+
+foreach ($file in $allInterviewFiles) {
+    $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+    $hasControlByte = $false
+    foreach ($byte in $bytes) {
+        if (($byte -lt 32) -and ($byte -notin @(9, 10, 13))) {
+            $hasControlByte = $true
+            break
+        }
+    }
+    if ($hasControlByte) {
         $controlByteFiles += $file.FullName
     }
 }

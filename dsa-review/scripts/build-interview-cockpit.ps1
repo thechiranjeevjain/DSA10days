@@ -1695,6 +1695,9 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
+| Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
+| Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
+| Need review control panel | `06_REVIEW_DASHBOARD.md` | Due queue, red/yellow queues, and full review ledger. |
 
 ## Current Coverage
 
@@ -1703,6 +1706,8 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
 - Ranking audit: `05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+- Canonical mind map: `DSA_170_Brain_Map_FINAL.md`.
+- Older brain-map files are kept as drafts/reference snapshots; use the FINAL file during interview prep.
 
 ## Interview Rule
 
@@ -1933,6 +1938,243 @@ function Build-Plans {
     return ($lines -join "`r`n")
 }
 
+function Get-SprintSourceRankOrder {
+    return @(
+        1,2,9,10,54,61,89,91,4,12,138,95,31,3,5,50,45,114,53,113,20,
+        21,22,82,86,87,92,93,6,7,8,94,56,57,23,33,131,133,32,96,36,102,103,
+        14,79,67,117,116,15,25,26,27,16,59,68,17,29,30,34,80,35,18,72,
+        75,38,150,39,47,48,49,40,41,42,140,141,43,11,37,142,108,137,101,104,46,
+        98,24,58,60,69,70,73,74,76,77,81,88,90,97,99,100,105,106,107,109,
+        110,111,112,115,118,119,120,121,122,123,124,125,126,127,128,129,130,132,134,135,
+        136,139,143,144,145,146,147,148,149,19,28,44,51,52,55,62,63,64,65,66,
+        71,78,83,84,85,13
+    )
+}
+
+function Get-RowByRank {
+    param([object[]] $Rows)
+
+    $byRank = @{}
+    foreach ($row in $Rows) {
+        $byRank[[int] $row.Rank] = $row
+    }
+    return $byRank
+}
+
+function New-ProblemLinks {
+    param([object] $Row)
+
+    $links = New-Link "Java" $Row.JavaLink
+    if ($Row.LeetCodeLink) {
+        $links += " / " + (New-Link "LC" $Row.LeetCodeLink)
+    }
+    return $links
+}
+
+function Add-SprintRow {
+    param(
+        [System.Collections.Generic.List[string]] $Lines,
+        [int] $SprintRank,
+        [int] $SourceRank,
+        [string] $Time,
+        [object] $Row
+    )
+
+    $timeCell = if ($Time) { $Time } else { "-" }
+    $links = New-ProblemLinks -Row $Row
+    $family = Get-DisplayCategory $Row.Category
+    $Lines.Add("| $timeCell | $SprintRank | $SourceRank | $(Escape-Md $Row.Title) | $links | $(Escape-Md $family) | $(Escape-Md $Row.Pattern) | $(Escape-Md $Row.Recall) |  |  | 0 |  |  |")
+}
+
+function Build-WeeklySprint {
+    param([object[]] $Rows)
+
+    $rankOrder = @(Get-SprintSourceRankOrder)
+    $byRank = Get-RowByRank -Rows $Rows
+    $dayNames = @("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    $timeSlots = @(
+        "09:00","09:20","09:40","10:00","10:20","10:40","11:00","11:20","11:40",
+        "13:00","13:20","13:40","14:00","14:20","14:40","15:00","15:20","15:40","16:00","16:20","16:40"
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# DSA 7-Day Interview Performance Sprint")
+    $lines.Add("")
+    $lines.Add("Goal: eliminate senior-candidate red flags by training closed-book retrieval, reconstruction, debugging, and explanation.")
+    $lines.Add("")
+    $lines.Add('Source of truth: generated from `01_ZERO_TO_HERO_RANKED_TABLE.md` data. The sprint keeps a cognitive training order, while `Source Rank` preserves the canonical ranking.')
+    $lines.Add("")
+    $lines.Add("## North Star")
+    $lines.Add("")
+    $lines.Add("Random problem -> recognize family -> state invariant -> code working Java from a blank editor -> test -> explain complexity/trade-offs.")
+    $lines.Add("")
+    $lines.Add("## Non-Negotiable Rules")
+    $lines.Add("")
+    $lines.Add("- First attempt is closed-book: blank editor, no old Java, no notes, no solution.")
+    $lines.Add("- Each listed slot is a 20-minute diagnostic time-box, not a guarantee of completion.")
+    $lines.Add("- At 20:00, score the attempt and move on. A failure found here is interview data.")
+    $lines.Add("- Do not sacrifice Rank 1-50 repair just to touch Rank 150.")
+    $lines.Add("- Reviews are active retrieval: blank editor + timer + reconstruction, not passive rereading.")
+    $lines.Add("")
+    $lines.Add("## 20-Minute Protocol")
+    $lines.Add("")
+    $lines.Add("| Minute | Stage | Required output | Pass condition |")
+    $lines.Add("|---:|---|---|---|")
+    $lines.Add("| 00-02 | Recognize | Family, pattern, candidate data structure | Plausible approach without notes |")
+    $lines.Add("| 02-05 | Derive | Brute force, bottleneck, invariant, complexity | Can explain why it works |")
+    $lines.Add("| 05-15 | Implement | Java solution from blank editor | Compiles or clearly represents intended algorithm |")
+    $lines.Add("| 15-18 | Test | Normal, boundary, tricky case | Correct or independently debugged |")
+    $lines.Add("| 18-20 | Explain + score | Complexity, trade-off, edge case, result | Clear interview explanation |")
+    $lines.Add("")
+    $lines.Add("## Score And Failure Codes")
+    $lines.Add("")
+    $lines.Add("- GREEN: independent recognition, derivation, implementation, testing, and complexity within the time-box.")
+    $lines.Add("- YELLOW: right family/idea, but hint, implementation trouble, missed edge case, debugging gap, or explanation weakness.")
+    $lines.Add("- RED: no viable derivation, major wrong approach, incomplete implementation, or solution lookup required.")
+    $lines.Add("")
+    $lines.Add("Failure codes: `P` pattern recognition, `I` invariant/reasoning, `D` data structure, `J` Java implementation, `E` edge case, `C` complexity, `B` debugging, `M` memorized/not understood.")
+    $lines.Add("")
+    $lines.Add("## Spaced-Repetition Policy")
+    $lines.Add("")
+    $lines.Add("| Result | Default reviews |")
+    $lines.Add("|---|---|")
+    $lines.Add("| RED | D+1 -> D+3 -> D+7 -> D+14 -> D+30 |")
+    $lines.Add("| YELLOW | D+2 -> D+7 -> D+14 -> D+30 |")
+    $lines.Add("| GREEN | D+7 -> D+30, then random mocks |")
+    $lines.Add("")
+    $lines.Add("On every review, record `Score`, `Failure`, `Attempts`, `Last Review`, and `Next Review`. Repeated RED matters more than a first RED.")
+    $lines.Add("")
+    $lines.Add("## Daily Operating Window")
+    $lines.Add("")
+    $lines.Add('`09:00-12:00` 9 problems -> `12:00-13:00` lunch/walk -> `13:00-17:00` 12 problems. Hard stop at 17:00.')
+    $lines.Add("")
+    $lines.Add("## ROI Tiers")
+    $lines.Add("")
+    $lines.Add("- Sprint ranks 1-50: no-red-flag fundamentals; must become overwhelmingly GREEN.")
+    $lines.Add("- Sprint ranks 51-90: strong senior core; should recognize rapidly and usually implement.")
+    $lines.Add("- Sprint ranks 91-125: interview breadth and transfer.")
+    $lines.Add("- Sprint ranks 126-150: diminishing returns; useful, but never above repair of fundamentals.")
+
+    for ($day = 0; $day -lt 7; $day++) {
+        $lines.Add("")
+        $lines.Add("---")
+        $lines.Add("")
+        $lines.Add("## Day $($day + 1) - $($dayNames[$day])")
+        $lines.Add("")
+        $lines.Add("| Time | Sprint Rank | Source Rank | Problem | Links | Family | Pattern | Signal / Invariant | Score | Failure | Attempts | Last Review | Next Review |")
+        $lines.Add("|---|---:|---:|---|---|---|---|---|---|---|---:|---|---|")
+
+        for ($slot = 0; $slot -lt $timeSlots.Count; $slot++) {
+            $index = ($day * $timeSlots.Count) + $slot
+            if ($index -ge 147) { break }
+            $sourceRank = $rankOrder[$index]
+            if (-not $byRank.ContainsKey($sourceRank)) {
+                throw "Sprint source rank not found: $sourceRank"
+            }
+            Add-SprintRow -Lines $lines -SprintRank ($index + 1) -SourceRank $sourceRank -Time $timeSlots[$slot] -Row $byRank[$sourceRank]
+        }
+
+        $lines.Add("")
+        $lines.Add("Daily scoreboard: Attempted __/21; GREEN __; YELLOW __; RED __; repeated RED __; fundamental RED __.")
+        $lines.Add("")
+        $lines.Add("Top 3 failure lessons: 1. ___  2. ___  3. ___")
+        $lines.Add("")
+        $lines.Add("Tomorrow repair queue: 1. ___  2. ___  3. ___")
+    }
+
+    $lines.Add("")
+    $lines.Add("---")
+    $lines.Add("")
+    $lines.Add("## Overflow / Completion - Sprint Ranks 148-150")
+    $lines.Add("")
+    $lines.Add("These three are deliberately outside the 147 fixed slots. Complete only after higher-priority repair; there is no interview benefit in forcing superficial completion.")
+    $lines.Add("")
+    $lines.Add("| Time | Sprint Rank | Source Rank | Problem | Links | Family | Pattern | Signal / Invariant | Score | Failure | Attempts | Last Review | Next Review |")
+    $lines.Add("|---|---:|---:|---|---|---|---|---|---|---|---:|---|---|")
+    for ($i = 147; $i -lt $rankOrder.Count; $i++) {
+        $sourceRank = $rankOrder[$i]
+        if (-not $byRank.ContainsKey($sourceRank)) {
+            throw "Sprint source rank not found: $sourceRank"
+        }
+        Add-SprintRow -Lines $lines -SprintRank ($i + 1) -SourceRank $sourceRank -Time "-" -Row $byRank[$sourceRank]
+    }
+
+    $lines.Add("")
+    $lines.Add("## Interview-Ready Gate")
+    $lines.Add("")
+    $lines.Add("- [ ] Sprint ranks 1-50 are overwhelmingly GREEN with no recurring fundamental RED.")
+    $lines.Add("- [ ] Random/rephrased problem family is recognized quickly without category hints.")
+    $lines.Add("- [ ] Blank-editor Java implementation is reliable.")
+    $lines.Add("- [ ] Brute force -> optimized transition and invariant can be explained.")
+    $lines.Add("- [ ] Time/space complexity is correct.")
+    $lines.Add("- [ ] Edge cases are generated independently.")
+    $lines.Add("- [ ] Ordinary bugs are diagnosed calmly.")
+    $lines.Add("- [ ] Requirement mutations can be discussed.")
+    $lines.Add("- [ ] Random timed mocks are consistently passing.")
+    $lines.Add("")
+    $lines.Add("## After The Sprint")
+    $lines.Add("")
+    $lines.Add("Stop accumulating sheets. Shift to performance mode: due spaced reviews -> random unseen/rephrased DSA -> timed coding -> requirement mutation/debugging -> LLD mock -> HLD mock.")
+    $lines.Add("")
+    $lines.Add('Execution mantra: `MASTER FUNDAMENTALS -> RETRIEVE -> FAIL FAST -> RECORD -> SPACE -> REPAIR -> RANDOMIZE -> MOCK -> INTERVIEW`')
+
+    return ($lines -join "`r`n")
+}
+
+function Build-ReviewDashboard {
+    param([object[]] $Rows)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# DSA Review Dashboard")
+    $lines.Add("")
+    $lines.Add("Use this as the control panel for spaced repetition. Keep ranking files clean; put volatile review state here or in the review scripts.")
+    $lines.Add("")
+    $lines.Add("Review status columns:")
+    $lines.Add("")
+    $lines.Add("- Score: GREEN, YELLOW, RED.")
+    $lines.Add("- Failure: P, I, D, J, E, C, B, M.")
+    $lines.Add("- Attempts: increment after every closed-book attempt.")
+    $lines.Add("- Last Review / Next Review: date in YYYY-MM-DD.")
+    $lines.Add("- Mastered?: yes only after repeated GREEN attempts under random/timed conditions.")
+    $lines.Add("")
+    $lines.Add("## Due Today")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Family | Pattern | Last Score | Failure | Next Action |")
+    $lines.Add("|---:|---|---|---|---|---|---|")
+    $lines.Add("|  |  |  |  |  |  |  |")
+    $lines.Add("")
+    $lines.Add("## RED Repair Queue")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Failure | Repair action | Next Review |")
+    $lines.Add("|---:|---|---|---|---|")
+    $lines.Add("|  |  |  |  |  |")
+    $lines.Add("")
+    $lines.Add("## YELLOW Stabilization Queue")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Weakness | Next repetition |")
+    $lines.Add("|---:|---|---|---|")
+    $lines.Add("|  |  |  |  |")
+    $lines.Add("")
+    $lines.Add("## Repeated Failure Pattern Heatmap")
+    $lines.Add("")
+    $lines.Add("| Family | Pattern | P | I | D | J | E | C | B | M | Action |")
+    $lines.Add("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|")
+    $lines.Add("|  |  |  |  |  |  |  |  |  |  |  |")
+    $lines.Add("")
+    $lines.Add("## Master Review Ledger")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Links | Family | Pattern | Signal / Invariant | Score | Failure | Attempts | Last Review | Next Review | Mastered? |")
+    $lines.Add("|---:|---|---|---|---|---|---|---|---:|---|---|---|")
+
+    foreach ($row in $Rows) {
+        $links = New-ProblemLinks -Row $row
+        $family = Get-DisplayCategory $row.Category
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $links | $(Escape-Md $family) | $(Escape-Md $row.Pattern) | $(Escape-Md $row.Recall) |  |  | 0 |  |  |  |")
+    }
+
+    return ($lines -join "`r`n")
+}
+
 function Build-RankingAudit {
     param(
         [object[]] $Rows,
@@ -2005,6 +2247,8 @@ function Build-RankingAudit {
     $lines.Add("| Local-only rows | $localOnlyCount | Repo-only or design rows without direct LeetCode source link. |")
     $lines.Add("| Pattern files generated | $($Groups.Count) | One focused view per generated category. |")
     $lines.Add("| Pattern rows covered | $patternRowCount | Should match ranked rows so no problem disappears from pattern files. |")
+    $lines.Add("| Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |")
+    $lines.Add("| Review dashboard rows | $($Rows.Count) | Dashboard ledger covers every ranked row. |")
     $lines.Add("")
     $lines.Add("These are objective repository checks. They do not prove the ranking is globally correct.")
     $lines.Add("")
@@ -2059,6 +2303,8 @@ function Build-RankingAudit {
     $lines.Add("| Top 40 has broad pattern coverage | $(if ($top40CategoryCount -ge 12) { "PASS: $top40CategoryCount categories" } else { "CHECK: $top40CategoryCount categories" }) | Early prep should not be trapped inside one pattern family. |")
     $lines.Add("| Top 40 contains core anchor problems | $(if ($missingTop40Anchors.Count -eq 0) { "PASS" } else { "CHECK missing: $($missingTop40Anchors -join ", ")" }) | The obvious high-ROI anchors should not drift late. |")
     $lines.Add("| Design rows deferred from top 70 | $(if ($top70DesignCount -eq 0) { "PASS" } else { "CHECK: $top70DesignCount rows" }) | Design-flavored rows are useful, but not first-pass DSA ROI. |")
+    $lines.Add("| Weekly sprint generated from canonical rows | PASS | Sprint titles, patterns, and signals must match ranked/pattern data. |")
+    $lines.Add("| Review dashboard covers ranked rows | PASS | Review state has a place without polluting the ranked table. |")
     $lines.Add("")
     $lines.Add("Category weights currently used:")
     $lines.Add("")
@@ -2191,6 +2437,8 @@ Write-TextFile -Path (Join-Path $outDir "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -C
 Write-TextFile -Path (Join-Path $outDir "03_CRISP_INTERVIEW_ANSWERS.md") -Content (Build-CrispAnswers -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md") -Content (Build-Plans -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "05_RANKING_METHODOLOGY_AND_AUDIT.md") -Content (Build-RankingAudit -Rows $rows -Groups $patternGroups)
+Write-TextFile -Path (Join-Path $outDir "06_REVIEW_DASHBOARD.md") -Content (Build-ReviewDashboard -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"
 if (-not (Test-Path -LiteralPath $patternDir)) {
