@@ -31,6 +31,7 @@ Run commands from the repo root unless noted otherwise.
 
 | Need | Command | Notes |
 |---|---|---|
+| Full repo verification | `verify-all.cmd` | Runs Maven tests, rebuilds generated interview docs, then validates the cockpit. |
 | Rebuild cockpit docs | `dsa-review\scripts\build-interview-cockpit.cmd` | Regenerates `interview/` and `interview/patterns/` from `notes/PROBLEM_PATTERN_INDEX.md` plus Java LeetCode links. |
 | Validate cockpit | `dsa-review\scripts\validate-interview-cockpit.cmd` | Checks ranked rows, Java links, LeetCode coverage, pattern files, ASCII output, and core interview text. |
 | Random drill | `dsa-review\scripts\drill.cmd -Priority A -Count 3` | Active-recall prompt from the local problem index. Use `-Priority B`, `-Priority C`, or `-Priority All` when needed. |

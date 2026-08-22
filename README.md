@@ -38,6 +38,7 @@ Run these from the repo root.
 
 | Goal | Command |
 |---|---|
+| Run full repo verification | `verify-all.cmd` |
 | Rebuild interview cockpit docs | `dsa-review\scripts\build-interview-cockpit.cmd` |
 | Validate generated cockpit links/counts | `dsa-review\scripts\validate-interview-cockpit.cmd` |
 | Pick random priority A drills | `dsa-review\scripts\drill.cmd -Priority A -Count 3` |
