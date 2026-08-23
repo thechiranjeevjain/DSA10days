@@ -5,13 +5,29 @@ import java.util.*;
 /**
  * TradingDSA147To165
  *
- * One IntelliJ-ready Java 17+ file containing DSA-147 through DSA-165.
+ * VERSION: 6.0 — Interview Recall / Independent Solutions
+ * Java 17+ interview-practice file for DSA-147 through DSA-165.
  *
- * Design goal:
- *   - interview-simple implementations
- *   - production mapping comments from the supplied codebase notes
- *   - corrected edge cases / invariants
- *   - runnable smoke tests in main()
+ * LEARNING DESIGN RULE
+ * --------------------
+ * 1. Every DSA problem is self-contained.
+ * 2. No DSA problem calls helpers/classes from another DSA problem.
+ * 3. Intentional duplication is preferred over shared abstractions.
+ * 4. Same concept => same name and same visual code grammar.
+ * 5. Keep only the algorithmic state required by the problem.
+ * 6. Production concerns stay in FOLLOW-UP comments unless the problem requires them.
+ * 7. Prefer familiar JDK idioms over custom abstractions/helpers.
+ *
+ * CONSISTENT VOCABULARY
+ * ---------------------
+ * orderId, executionId, instrument
+ * price, quantity, remainingQuantity
+ * sequence, timestampNs
+ * event, order, trade, fill, result
+ * bids, asks, buyOrders, sellOrders
+ * window, buffer, nextExpected
+ *
+ * All monetary prices are represented as long (think fixed-point scaled integer).
  */
 public class TradingDSA147To165 {
 
@@ -19,70 +35,72 @@ public class TradingDSA147To165 {
     // DSA-147 — Best Bid / Best Ask
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Two ordered maps, already ordered best-first:
-     *   bids: price DESC, asks: price ASC.
-     *   price -> aggregate qty.
+     * PROBLEM
+     * Maintain an aggregated order book from NEW, CANCEL and FILL events.
+     * Return best bid, best ask and their quantities.
      *
-     *   NEW         -> add qty
-     *   CANCEL/FILL -> subtract qty, remove level at zero
+     * EXAMPLE
+     * BUY 100x10, BUY 101x5, SELL 103x7, SELL 102x8
+     * -> bestBid=101x5, bestAsk=102x8
      *
-     * PRODUCTION MAPPING (from supplied notes):
-     *   OrderBookCore -> BestBidOffer + dirty flag.
-     *   PriceList -> sorted doubly-linked pooled PriceListNode levels.
+     * IDEA
+     * TreeMap<price, quantity> per side.
+     * BUY/BID = highest price wins. SELL/ASK = lowest price wins.
      *
-     * PRODUCTION GAP:
-     *   TreeMap is the clean general-purpose interview answer.
-     *   Custom price lists can optimize best-node access, allocation, cache locality,
-     *   and known insertion patterns.
+     * COMPLEXITY
+     * update O(log P), best price O(log P) conservatively, space O(P)
+     *
+     * FOLLOW-UP
+     * Need per-order cancel/FIFO? Change value from quantity to PriceLevel containing orders.
      */
     static final class DSA147_BestBidAsk {
 
         enum Side { BUY, SELL }
         enum EventType { NEW, CANCEL, FILL }
 
-        record OrderEvent(EventType type, Side side, long price, long qty) {}
+        record OrderEvent(EventType type, Side side, long price, long quantity) {}
 
-        static final class OrderBook {
-            private final TreeMap<Long, Long> bids =
-                    new TreeMap<>(Comparator.reverseOrder());
-            private final TreeMap<Long, Long> asks = new TreeMap<>();
+        private final TreeMap<Long, Long> bids =
+                new TreeMap<>(Comparator.reverseOrder());
 
-            void process(OrderEvent e) {
-                requirePositive(e.price(), "price");
-                requirePositive(e.qty(), "qty");
+        private final TreeMap<Long, Long> asks =
+                new TreeMap<>();
 
-                TreeMap<Long, Long> book = e.side() == Side.BUY ? bids : asks;
+        void process(OrderEvent event) {
+            TreeMap<Long, Long> levels =
+                    event.side() == Side.BUY ? bids : asks;
 
-                switch (e.type()) {
-                    case NEW -> book.merge(e.price(), e.qty(), Math::addExact);
-                    case CANCEL, FILL -> subtract(book, e.price(), e.qty());
+            switch (event.type()) {
+                case NEW -> levels.merge(
+                        event.price(), event.quantity(), Long::sum);
+
+                case CANCEL, FILL -> {
+                    long remainingQuantity =
+                            levels.get(event.price()) - event.quantity();
+
+                    if (remainingQuantity == 0) {
+                        levels.remove(event.price());
+                    } else {
+                        levels.put(event.price(), remainingQuantity);
+                    }
                 }
             }
+        }
 
-            private static void subtract(TreeMap<Long, Long> book, long price, long qty) {
-                Long old = book.get(price);
-                if (old == null) {
-                    throw new IllegalStateException("No level at price " + price);
-                }
-                if (qty > old) {
-                    throw new IllegalStateException("Cannot subtract " + qty + " from level qty " + old);
-                }
-                long remaining = old - qty;
-                if (remaining == 0) book.remove(price);
-                else book.put(price, remaining);
-            }
+        long bestBid() {
+            return bids.isEmpty() ? -1 : bids.firstKey();
+        }
 
-            long bestBid()    { return bids.isEmpty() ? -1L : bids.firstKey(); }
-            long bestAsk()    { return asks.isEmpty() ? -1L : asks.firstKey(); }
-            long bestBidQty() { return bids.isEmpty() ? 0L : bids.firstEntry().getValue(); }
-            long bestAskQty() { return asks.isEmpty() ? 0L : asks.firstEntry().getValue(); }
+        long bestAsk() {
+            return asks.isEmpty() ? -1 : asks.firstKey();
+        }
 
-            long spread() {
-                return (bids.isEmpty() || asks.isEmpty())
-                        ? Long.MAX_VALUE
-                        : Math.subtractExact(bestAsk(), bestBid());
-            }
+        long bestBidQuantity() {
+            return bids.isEmpty() ? 0 : bids.firstEntry().getValue();
+        }
+
+        long bestAskQuantity() {
+            return asks.isEmpty() ? 0 : asks.firstEntry().getValue();
         }
     }
 
@@ -90,68 +108,81 @@ public class TradingDSA147To165 {
     // DSA-148 — Top N Price Levels
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Same structure as DSA-147.
-     *   Because each side is stored best-first, iterate entrySet() and take N.
+     * PROBLEM
+     * Maintain aggregated bid/ask levels and return the top N levels best-to-worst.
      *
-     * PRODUCTION MAPPING:
-     *   Sorted PriceList -> walk first N nodes.
+     * EXAMPLE
+     * bids = 101x20, 100x10, 99x30
+     * topBids(2) -> [101x20, 100x10]
      *
-     * PRODUCTION GAP:
-     *   TreeMap favors general ordered updates.
-     *   A custom linked/pool-backed level list can favor direct best access,
-     *   sequential depth traversal, and zero/low allocation.
+     * IDEA
+     * Best-first TreeMaps; iterate only the first N entries.
+     *
+     * COMPLEXITY
+     * update O(log P), top N O(N), space O(P)
+     *
+     * FOLLOW-UP
+     * Need individual orders at a level? Store PriceLevel instead of aggregate quantity.
      */
     static final class DSA148_TopNPriceLevels {
 
         enum Side { BUY, SELL }
         enum EventType { NEW, CANCEL, FILL }
 
-        record OrderEvent(EventType type, Side side, long price, long qty) {}
-        record PriceLevel(long price, long qty) {
-            @Override public String toString() { return price + "@" + qty; }
+        record OrderEvent(EventType type, Side side, long price, long quantity) {}
+        record PriceLevel(long price, long quantity) {}
+
+        private final TreeMap<Long, Long> bids =
+                new TreeMap<>(Comparator.reverseOrder());
+
+        private final TreeMap<Long, Long> asks =
+                new TreeMap<>();
+
+        void process(OrderEvent event) {
+            TreeMap<Long, Long> levels =
+                    event.side() == Side.BUY ? bids : asks;
+
+            switch (event.type()) {
+                case NEW -> levels.merge(
+                        event.price(), event.quantity(), Long::sum);
+
+                case CANCEL, FILL -> {
+                    long remainingQuantity =
+                            levels.get(event.price()) - event.quantity();
+
+                    if (remainingQuantity == 0) {
+                        levels.remove(event.price());
+                    } else {
+                        levels.put(event.price(), remainingQuantity);
+                    }
+                }
+            }
         }
 
-        static final class OrderBook {
-            private final TreeMap<Long, Long> bids =
-                    new TreeMap<>(Comparator.reverseOrder());
-            private final TreeMap<Long, Long> asks = new TreeMap<>();
+        List<PriceLevel> topBids(int n) {
+            return topLevels(bids, n);
+        }
 
-            void process(OrderEvent e) {
-                requirePositive(e.price(), "price");
-                requirePositive(e.qty(), "qty");
+        List<PriceLevel> topAsks(int n) {
+            return topLevels(asks, n);
+        }
 
-                TreeMap<Long, Long> book = e.side() == Side.BUY ? bids : asks;
-                switch (e.type()) {
-                    case NEW -> book.merge(e.price(), e.qty(), Math::addExact);
-                    case CANCEL, FILL -> subtract(book, e.price(), e.qty());
+        private List<PriceLevel> topLevels(
+                TreeMap<Long, Long> levels,
+                int n) {
+
+            List<PriceLevel> result = new ArrayList<>();
+
+            for (Map.Entry<Long, Long> entry : levels.entrySet()) {
+                if (result.size() == n) {
+                    break;
                 }
+
+                result.add(new PriceLevel(
+                        entry.getKey(), entry.getValue()));
             }
 
-            List<PriceLevel> topBids(int n) { return snapshot(bids, n); }
-            List<PriceLevel> topAsks(int n) { return snapshot(asks, n); }
-
-            private static List<PriceLevel> snapshot(TreeMap<Long, Long> book, int n) {
-                if (n <= 0) return List.of();
-
-                List<PriceLevel> out = new ArrayList<>(Math.min(n, book.size()));
-                int count = 0;
-                for (Map.Entry<Long, Long> e : book.entrySet()) {
-                    if (count++ >= n) break;
-                    out.add(new PriceLevel(e.getKey(), e.getValue()));
-                }
-                return out;
-            }
-
-            private static void subtract(TreeMap<Long, Long> book, long price, long qty) {
-                Long old = book.get(price);
-                if (old == null || qty > old) {
-                    throw new IllegalStateException("Invalid subtraction at price " + price);
-                }
-                long remaining = old - qty;
-                if (remaining == 0) book.remove(price);
-                else book.put(price, remaining);
-            }
+            return result;
         }
     }
 
@@ -159,51 +190,69 @@ public class TradingDSA147To165 {
     // DSA-149 — Price-Time Priority Queue
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   BUY : higher price first, then earlier sequence.
-     *   SELL: lower price first, then earlier sequence.
+     * PROBLEM
+     * Return the next order using price-time priority.
+     * BUY: higher price first, then earlier sequence.
+     * SELL: lower price first, then earlier sequence.
      *
-     * PRODUCTION MAPPING:
-     *   RankingTime = transactionTimeNs + sequenceNumber.
-     *   Per-level OrderList.insertRanked() with head/tail fast paths.
+     * EXAMPLE
+     * B1=100 seq2, B2=101 seq3, B3=101 seq1 -> B3 wins.
      *
-     * PRODUCTION GAP:
-     *   PriorityQueue is ideal for "give me next best".
-     *   Real books also need cancellation, amendments, explicit levels, and stable FIFO.
+     * IDEA
+     * Two PriorityQueues with side-specific comparators.
+     *
+     * COMPLEXITY
+     * add/poll O(log N), peek O(1), space O(N)
+     *
+     * FOLLOW-UP
+     * Need fast cancel/depth? Use price levels + FIFO order lists instead of only heaps.
      */
     static final class DSA149_PriceTimePriorityQueue {
 
         enum Side { BUY, SELL }
 
-        record Order(String id, Side side, long price, long seq, long qty) {
-            @Override public String toString() {
-                return id + "(price=" + price + ", seq=" + seq + ", qty=" + qty + ")";
+        record Order(
+                String orderId,
+                Side side,
+                long price,
+                long sequence,
+                long quantity) {}
+
+        private final PriorityQueue<Order> buyOrders =
+                new PriorityQueue<>(
+                        Comparator.comparingLong(Order::price)
+                                .reversed()
+                                .thenComparingLong(Order::sequence)
+                );
+
+        private final PriorityQueue<Order> sellOrders =
+                new PriorityQueue<>(
+                        Comparator.comparingLong(Order::price)
+                                .thenComparingLong(Order::sequence)
+                );
+
+        void add(Order order) {
+            if (order.side() == Side.BUY) {
+                buyOrders.add(order);
+            } else {
+                sellOrders.add(order);
             }
         }
 
-        static final class PriceTimeQueue {
-            private final PriorityQueue<Order> buys = new PriorityQueue<>((a, b) -> {
-                int c = Long.compare(b.price(), a.price());
-                return c != 0 ? c : Long.compare(a.seq(), b.seq());
-            });
+        Order peekBuy() {
+            return buyOrders.peek();
+        }
 
-            private final PriorityQueue<Order> sells = new PriorityQueue<>((a, b) -> {
-                int c = Long.compare(a.price(), b.price());
-                return c != 0 ? c : Long.compare(a.seq(), b.seq());
-            });
+        Order peekSell() {
+            return sellOrders.peek();
+        }
 
-            void add(Order o) {
-                requirePositive(o.price(), "price");
-                requirePositive(o.qty(), "qty");
-                (o.side() == Side.BUY ? buys : sells).add(o);
-            }
+        Order pollBuy() {
+            return buyOrders.poll();
+        }
 
-            Order peekBuy()  { return buys.peek(); }
-            Order peekSell() { return sells.peek(); }
-            Order pollBuy()  { return buys.poll(); }
-            Order pollSell() { return sells.poll(); }
-            int buySize()    { return buys.size(); }
-            int sellSize()   { return sells.size(); }
+        Order pollSell() {
+            return sellOrders.poll();
         }
     }
 
@@ -211,78 +260,58 @@ public class TradingDSA147To165 {
     // DSA-150 — Deduplicate Execution Events
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   HashSet<executionId>. Check/add BEFORE state mutation.
+     * PROBLEM
+     * Execution events have unique execution IDs. A replayed execution must affect
+     * position exactly once.
      *
-     * PRODUCTION MAPPING:
-     *   Framework/session sequencing may suppress transport re-delivery.
-     *   Supplied notes also describe small transaction-local fixed reference arrays,
-     *   cleared on commit()/rollback(), to keep hot paths allocation-free.
+     * EXAMPLE
+     * E1 BUY 10 -> +10; replay E1 BUY 10 -> ignored; final position = +10.
      *
-     * CORRECTION:
-     *   A bounded remembered set is approximate after eviction.
-     *   accessOrder=false in LinkedHashMap is insertion order, not LRU.
+     * IDEA
+     * HashSet<executionId>. Add ID before mutating position.
+     *
+     * COMPLEXITY
+     * expected O(1) per event, space O(unique executions)
+     *
+     * FOLLOW-UP
+     * Bounded/durable dedup is a persistence requirement; do not add it unless asked.
      */
     static final class DSA150_DeduplicateExecutionEvents {
 
         enum Side { BUY, SELL }
 
-        record ExecutionEvent(long execId, String account, String tradable,
-                              Side side, long price, long qty) {}
+        record ExecutionEvent(
+                long executionId,
+                String account,
+                String instrument,
+                Side side,
+                long quantity) {}
 
-        static final class ExecutionProcessor {
-            private final Set<Long> seen = new HashSet<>();
-            private final Map<String, Long> positions = new HashMap<>();
-            private int duplicatesDropped;
-            private int accepted;
+        record PositionKey(String account, String instrument) {}
 
-            boolean process(ExecutionEvent e) {
-                requirePositive(e.qty(), "qty");
+        private final Set<Long> seenExecutionIds = new HashSet<>();
+        private final Map<PositionKey, Long> positionByKey = new HashMap<>();
 
-                if (!seen.add(e.execId())) {
-                    duplicatesDropped++;
-                    return false;
-                }
-
-                long delta = e.side() == Side.BUY ? e.qty() : -e.qty();
-                positions.merge(key(e.account(), e.tradable()), delta, Math::addExact);
-                accepted++;
-                return true;
-            }
-
-            long position(String account, String tradable) {
-                return positions.getOrDefault(key(account, tradable), 0L);
-            }
-
-            int duplicatesDropped() { return duplicatesDropped; }
-            int accepted() { return accepted; }
-        }
-
-        /**
-         * Fixed-capacity insertion-order remembered set.
-         * Exact only while the duplicate ID is still retained.
-         */
-        static final class BoundedRememberedSet {
-            private final LinkedHashMap<Long, Boolean> remembered;
-
-            BoundedRememberedSet(int maxSize) {
-                if (maxSize <= 0) throw new IllegalArgumentException("maxSize must be > 0");
-
-                this.remembered = new LinkedHashMap<>(maxSize, 0.75f, false) {
-                    @Override
-                    protected boolean removeEldestEntry(Map.Entry<Long, Boolean> eldest) {
-                        return size() > maxSize;
-                    }
-                };
-            }
-
-            boolean isDuplicate(long id) {
-                if (remembered.containsKey(id)) return true;
-                remembered.put(id, Boolean.TRUE);
+        boolean process(ExecutionEvent event) {
+            if (!seenExecutionIds.add(event.executionId())) {
                 return false;
             }
 
-            int size() { return remembered.size(); }
+            long signedQuantity =
+                    event.side() == Side.BUY
+                            ? event.quantity()
+                            : -event.quantity();
+
+            PositionKey key =
+                    new PositionKey(event.account(), event.instrument());
+
+            positionByKey.merge(key, signedQuantity, Long::sum);
+            return true;
+        }
+
+        long position(String account, String instrument) {
+            return positionByKey.getOrDefault(
+                    new PositionKey(account, instrument), 0L);
         }
     }
 
@@ -290,86 +319,38 @@ public class TradingDSA147To165 {
     // DSA-151 — Detect Sequence Gap
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Ordered stream: compare current with previous + 1 -> O(N), O(1) extra.
+     * PROBLEM
+     * Given strictly increasing sequence numbers, return the missing ranges.
      *
-     *   Unordered batch variant:
-     *   TreeSet sorts + dedups -> O(N log N).
+     * EXAMPLE
+     * [1,2,5,6,10] -> [3..4, 7..9]
      *
-     * PRODUCTION MAPPING:
-     *   Snapshot/session sequence numbers + authoritative snapshot/replay recovery.
+     * IDEA
+     * Compare current sequence with previous + 1.
      *
-     * IMPORTANT:
-     *   Detect-and-advance is a detector, not a reorderer.
+     * COMPLEXITY
+     * O(N) time, O(1) extra space excluding output
+     *
+     * FOLLOW-UP
+     * If input is unordered, sort first before detecting gaps.
      */
     static final class DSA151_DetectSequenceGap {
 
-        record GapRange(long first, long last) {
-            long count() { return Math.addExact(Math.subtractExact(last, first), 1L); }
-            @Override public String toString() {
-                return first == last ? String.valueOf(first) : first + ".." + last;
-            }
-        }
+        record Gap(long from, long to) {}
 
-        static List<GapRange> detectOrdered(long[] seqs) {
-            if (seqs == null || seqs.length < 2) return List.of();
+        static List<Gap> detect(long[] sequences) {
+            List<Gap> result = new ArrayList<>();
 
-            List<GapRange> gaps = new ArrayList<>();
-            long prev = seqs[0];
+            for (int index = 1; index < sequences.length; index++) {
+                long previous = sequences[index - 1];
+                long current = sequences[index];
 
-            for (int i = 1; i < seqs.length; i++) {
-                long cur = seqs[i];
-                if (cur <= prev) {
-                    throw new IllegalArgumentException("Input must be strictly increasing");
+                if (current > previous + 1) {
+                    result.add(new Gap(previous + 1, current - 1));
                 }
-                if (prev != Long.MAX_VALUE && cur > prev + 1) {
-                    gaps.add(new GapRange(prev + 1, cur - 1));
-                }
-                prev = cur;
-            }
-            return gaps;
-        }
-
-        static List<GapRange> detectUnorderedBatch(Collection<Long> received, long expectedMin) {
-            if (received == null || received.isEmpty()) return List.of();
-
-            TreeSet<Long> sorted = new TreeSet<>(received);
-            List<GapRange> gaps = new ArrayList<>();
-            long expected = expectedMin;
-
-            for (long seq : sorted) {
-                if (seq < expected) continue;
-                if (seq > expected) gaps.add(new GapRange(expected, seq - 1));
-                if (seq == Long.MAX_VALUE) break;
-                expected = seq + 1;
-            }
-            return gaps;
-        }
-
-        static final class OnlineGapDetector {
-            private long nextExpected;
-            private final List<GapRange> gaps = new ArrayList<>();
-
-            OnlineGapDetector(long firstExpected) {
-                this.nextExpected = firstExpected;
             }
 
-            GapRange receive(long seqNo) {
-                if (seqNo < nextExpected) return null;
-
-                if (seqNo == nextExpected) {
-                    if (nextExpected != Long.MAX_VALUE) nextExpected++;
-                    return null;
-                }
-
-                GapRange gap = new GapRange(nextExpected, seqNo - 1);
-                gaps.add(gap);
-                nextExpected = seqNo == Long.MAX_VALUE ? Long.MAX_VALUE : seqNo + 1;
-                return gap;
-            }
-
-            long nextExpected() { return nextExpected; }
-            List<GapRange> allGaps() { return Collections.unmodifiableList(gaps); }
+            return result;
         }
     }
 
@@ -377,120 +358,49 @@ public class TradingDSA147To165 {
     // DSA-152 — Reorder Out-of-Order Messages
     // =========================================================================
     /**
-     * INTERVIEW CORE:
+     * PROBLEM
+     * Messages can arrive out of order. Emit them only in exact sequence order.
      *
-     * Preferred exact-sequence formulation:
-     *   nextExpected + buffer.
-     *   seq < expected -> stale/duplicate
-     *   seq > expected -> buffer
-     *   seq = expected -> emit, increment, drain contiguous buffer
+     * EXAMPLE
+     * receive 3 -> []
+     * receive 2 -> []
+     * receive 1 -> [1,2,3]
      *
-     * Alternative bounded-lateness heap:
-     *   valid only when W has a precise guarantee:
-     *   no future message can arrive more than W sequence numbers "late".
+     * IDEA
+     * nextExpected + HashMap<sequence, message> + drain contiguous messages.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes say DSF/ICore delivers in-order per session;
-     *   application reacts to gaps with snapshot/recovery instead of a reorder heap.
+     * COMPLEXITY
+     * expected O(1) per message, space O(buffered messages)
+     *
+     * FOLLOW-UP
+     * Gap timeout/snapshot recovery is separate from in-memory reordering.
      */
     static final class DSA152_ReorderOutOfOrderMessages {
 
-        record Message(long seqNo, String payload) {}
+        record Message(long sequence, String payload) {}
 
-        static final class ExactReorderBuffer {
-            private long nextExpected;
-            private final int maxBuffered;
-            private final Map<Long, Message> buffer = new HashMap<>();
+        private long nextExpected;
+        private final Map<Long, Message> buffer = new HashMap<>();
 
-            ExactReorderBuffer(long firstExpected, int maxBuffered) {
-                if (maxBuffered <= 0) throw new IllegalArgumentException("maxBuffered must be > 0");
-                this.nextExpected = firstExpected;
-                this.maxBuffered = maxBuffered;
+        DSA152_ReorderOutOfOrderMessages(long firstExpected) {
+            nextExpected = firstExpected;
+        }
+
+        List<Message> receive(Message message) {
+            List<Message> result = new ArrayList<>();
+
+            if (message.sequence() < nextExpected) {
+                return result;
             }
 
-            List<Message> receive(Message msg) {
-                List<Message> out = new ArrayList<>();
+            buffer.putIfAbsent(message.sequence(), message);
 
-                if (msg.seqNo() < nextExpected) {
-                    return out; // stale / duplicate
-                }
-
-                if (msg.seqNo() == nextExpected) {
-                    emitAndAdvance(msg, out);
-                    drain(out);
-                    return out;
-                }
-
-                buffer.putIfAbsent(msg.seqNo(), msg);
-                if (buffer.size() > maxBuffered) {
-                    throw new IllegalStateException("Reorder buffer exceeded maxBuffered=" + maxBuffered);
-                }
-                return out;
-            }
-
-            private void emitAndAdvance(Message msg, List<Message> out) {
-                out.add(msg);
-                if (nextExpected == Long.MAX_VALUE) {
-                    throw new IllegalStateException("Sequence overflow");
-                }
+            while (buffer.containsKey(nextExpected)) {
+                result.add(buffer.remove(nextExpected));
                 nextExpected++;
             }
 
-            private void drain(List<Message> out) {
-                while (true) {
-                    Message next = buffer.remove(nextExpected);
-                    if (next == null) return;
-                    emitAndAdvance(next, out);
-                }
-            }
-
-            long nextExpected() { return nextExpected; }
-            int bufferSize() { return buffer.size(); }
-        }
-
-        /**
-         * Bounded-lateness variant.
-         *
-         * Contract:
-         *   Once highestSeen = H, no future arrival may have seq < H - W + 1.
-         *
-         * Therefore a buffered seq S is safe when S <= H - W.
-         */
-        static final class BoundedLatenessHeapBuffer {
-            private final long latenessDistanceW;
-            private final PriorityQueue<Message> heap =
-                    new PriorityQueue<>(Comparator.comparingLong(Message::seqNo));
-            private long highestSeen = Long.MIN_VALUE;
-
-            BoundedLatenessHeapBuffer(long latenessDistanceW) {
-                if (latenessDistanceW < 0) {
-                    throw new IllegalArgumentException("W must be >= 0");
-                }
-                this.latenessDistanceW = latenessDistanceW;
-            }
-
-            List<Message> receive(Message msg) {
-                highestSeen = Math.max(highestSeen, msg.seqNo());
-                heap.add(msg);
-                return flushSafe();
-            }
-
-            private List<Message> flushSafe() {
-                List<Message> out = new ArrayList<>();
-                if (highestSeen == Long.MIN_VALUE) return out;
-
-                long safeThrough = highestSeen - latenessDistanceW;
-                while (!heap.isEmpty() && heap.peek().seqNo() <= safeThrough) {
-                    out.add(heap.poll());
-                }
-                return out;
-            }
-
-            List<Message> endOfStream() {
-                List<Message> out = new ArrayList<>(heap.size());
-                while (!heap.isEmpty()) out.add(heap.poll());
-                return out;
-            }
+            return result;
         }
     }
 
@@ -498,119 +408,110 @@ public class TradingDSA147To165 {
     // DSA-153 — Rolling Exposure
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Example metric: per-open-order contribution = price * leavesQty.
-     *   orderId -> contribution + running total.
+     * PROBLEM
+     * Every open order contributes price * remainingQuantity to exposure.
+     * Process NEW, UPDATE and CANCEL without rescanning all open orders.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe calculator -> validator -> hierarchical risk propagation,
-     *   pool-borrowed exposure objects, and UPDATE as remove-old + add-new.
+     * EXAMPLE
+     * NEW O1 100x100 -> 10,000
+     * UPDATE O1 100x120 -> 12,000
+     * CANCEL O1 -> 0
      *
-     * PRODUCTION GAP:
-     *   price*qty is only one simplified exposure definition.
+     * IDEA
+     * orderId -> current contribution + one running total.
+     * UPDATE = total - oldContribution + newContribution.
+     *
+     * COMPLEXITY
+     * expected O(1) per event, space O(open orders)
+     *
+     * FOLLOW-UP
+     * Real risk may add FX, hierarchy and multiple exposure metrics.
      */
     static final class DSA153_RollingExposure {
 
         enum EventType { NEW, UPDATE, CANCEL }
 
-        static final class ExposureTracker {
-            private final Map<String, Long> contribution = new HashMap<>();
-            private long total;
-            private final long limit;
+        private final Map<String, Long> exposureByOrderId = new HashMap<>();
+        private long totalExposure;
 
-            ExposureTracker(long limit) {
-                if (limit < 0) throw new IllegalArgumentException("limit must be >= 0");
-                this.limit = limit;
-            }
+        long process(
+                EventType type,
+                String orderId,
+                long price,
+                long remainingQuantity) {
 
-            String process(EventType type, String orderId, long price, long leavesQty) {
-                switch (type) {
-                    case NEW -> {
-                        requirePositive(price, "price");
-                        requireNonNegative(leavesQty, "leavesQty");
-                        if (contribution.containsKey(orderId)) {
-                            throw new IllegalStateException("Duplicate NEW " + orderId);
-                        }
-                        long v = Math.multiplyExact(price, leavesQty);
-                        contribution.put(orderId, v);
-                        total = Math.addExact(total, v);
-                    }
-                    case UPDATE -> {
-                        requirePositive(price, "price");
-                        requireNonNegative(leavesQty, "leavesQty");
-                        Long old = contribution.get(orderId);
-                        if (old == null) throw new IllegalStateException("Unknown order " + orderId);
-
-                        long v = Math.multiplyExact(price, leavesQty);
-                        contribution.put(orderId, v);
-                        total = Math.addExact(total, Math.subtractExact(v, old));
-                    }
-                    case CANCEL -> {
-                        Long old = contribution.remove(orderId);
-                        if (old == null) throw new IllegalStateException("Unknown order " + orderId);
-                        total = Math.subtractExact(total, old);
-                    }
+            switch (type) {
+                case NEW -> {
+                    long newExposure = price * remainingQuantity;
+                    exposureByOrderId.put(orderId, newExposure);
+                    totalExposure += newExposure;
                 }
 
-                return total > limit ? "BLOCK" : "OK";
+                case UPDATE -> {
+                    long oldExposure = exposureByOrderId.get(orderId);
+                    long newExposure = price * remainingQuantity;
+
+                    exposureByOrderId.put(orderId, newExposure);
+                    totalExposure += newExposure - oldExposure;
+                }
+
+                case CANCEL -> {
+                    totalExposure -= exposureByOrderId.remove(orderId);
+                }
             }
 
-            long total() { return total; }
-            int openOrders() { return contribution.size(); }
+            return totalExposure;
         }
     }
 
     // =========================================================================
-    // DSA-154 — Sliding Price Deviation Check / Price Collar
+    // DSA-154 — Price Deviation Check
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Integer/scaled price + basis points.
+     * PROBLEM
+     * Maintain a reference price per instrument and reject order prices outside
+     * an allowed deviation expressed in basis points (100 bps = 1%).
      *
-     *   lower = ref * (10000-bps) / 10000
-     *   upper = ref * (10000+bps) / 10000
+     * EXAMPLE
+     * reference=10000, threshold=500 bps -> allowed [9500,10500].
      *
-     * PRODUCTION MAPPING:
-     *   Reference price on Tradable, updated by dedicated action;
-     *   collar/circuit behavior can be enforced closer to matching/execution.
+     * IDEA
+     * lower = reference * (10000-bps) / 10000
+     * upper = reference * (10000+bps) / 10000
      *
-     * CORRECTION:
-     *   Integer arithmetic avoids FP drift but can still overflow.
-     *   Math.multiplyExact makes overflow explicit here.
+     * COMPLEXITY
+     * expected O(1) update/check, space O(instruments)
+     *
+     * FOLLOW-UP
+     * Production: define stale-reference behavior and checked fixed-point arithmetic.
      */
-    static final class DSA154_SlidingPriceDeviationCheck {
+    static final class DSA154_PriceDeviationCheck {
 
-        enum Result { PASS, TOO_LOW, TOO_HIGH, NO_REF }
+        private final long thresholdBps;
+        private final Map<String, Long> referencePriceByInstrument = new HashMap<>();
 
-        static final class PriceCollar {
-            private final Map<String, Long> refPrices = new HashMap<>();
-            private final long thresholdBps;
+        DSA154_PriceDeviationCheck(long thresholdBps) {
+            this.thresholdBps = thresholdBps;
+        }
 
-            PriceCollar(long thresholdBps) {
-                if (thresholdBps < 0 || thresholdBps > 10_000) {
-                    throw new IllegalArgumentException("thresholdBps must be in [0,10000]");
-                }
-                this.thresholdBps = thresholdBps;
+        void updateReferencePrice(String instrument, long price) {
+            referencePriceByInstrument.put(instrument, price);
+        }
+
+        boolean isAllowed(String instrument, long price) {
+            Long referencePrice = referencePriceByInstrument.get(instrument);
+
+            if (referencePrice == null) {
+                return false;
             }
 
-            void updateRef(String tradableId, long price) {
-                requirePositive(price, "reference price");
-                refPrices.put(tradableId, price);
-            }
+            long lower =
+                    referencePrice * (10_000 - thresholdBps) / 10_000;
 
-            Result check(String tradableId, long price) {
-                requirePositive(price, "order price");
+            long upper =
+                    referencePrice * (10_000 + thresholdBps) / 10_000;
 
-                Long ref = refPrices.get(tradableId);
-                if (ref == null || ref <= 0) return Result.NO_REF;
-
-                long lower = Math.multiplyExact(ref, 10_000L - thresholdBps) / 10_000L;
-                long upper = Math.multiplyExact(ref, 10_000L + thresholdBps) / 10_000L;
-
-                if (price < lower) return Result.TOO_LOW;
-                if (price > upper) return Result.TOO_HIGH;
-                return Result.PASS;
-            }
+            return price >= lower && price <= upper;
         }
     }
 
@@ -618,90 +519,47 @@ public class TradingDSA147To165 {
     // DSA-155 — Exchange Throttle
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Exact sliding-log limiter with Deque<accepted timestamps>.
-     *   Evict expired front; accept only if current count < limit.
+     * PROBLEM
+     * Allow at most limit requests during the last windowNs nanoseconds.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe a fixed circular time-slot buffer, power-of-two slots,
-     *   slot-index arithmetic, and fixed memory.
+     * EXAMPLE
+     * limit=2, window=1000
+     * t=1000 ACCEPT, 1100 ACCEPT, 1200 REJECT, 2001 ACCEPT
      *
-     * PRODUCTION GAP:
-     *   Deque is exact/simple. Bucketed slots trade precision for predictable memory.
+     * IDEA
+     * Deque of accepted timestamps. Evict expired timestamps from the front.
+     *
+     * COMPLEXITY
+     * amortized O(1) per request, space O(requests in current window)
+     *
+     * FOLLOW-UP
+     * Token bucket is a different policy; discuss it only if requested.
      */
     static final class DSA155_ExchangeThrottle {
 
-        enum Decision { ACCEPT, REJECT }
+        private final int limit;
+        private final long windowNs;
+        private final Deque<Long> window = new ArrayDeque<>();
 
-        static final class SlidingWindowThrottle {
-            private final int limit;
-            private final long windowNs;
-            private final Deque<Long> accepted = new ArrayDeque<>();
-            private long lastTimestamp = Long.MIN_VALUE;
-
-            SlidingWindowThrottle(int limit, long windowNs) {
-                if (limit <= 0 || windowNs <= 0) {
-                    throw new IllegalArgumentException("limit/windowNs must be > 0");
-                }
-                this.limit = limit;
-                this.windowNs = windowNs;
-            }
-
-            Decision submit(long timestampNs) {
-                if (timestampNs < lastTimestamp) {
-                    throw new IllegalArgumentException("timestamps must be nondecreasing");
-                }
-                lastTimestamp = timestampNs;
-
-                long cutoff = timestampNs - windowNs;
-                while (!accepted.isEmpty() && accepted.peekFirst() <= cutoff) {
-                    accepted.pollFirst();
-                }
-
-                if (accepted.size() >= limit) return Decision.REJECT;
-
-                accepted.addLast(timestampNs);
-                return Decision.ACCEPT;
-            }
-
-            int windowCount() { return accepted.size(); }
+        DSA155_ExchangeThrottle(int limit, long windowNs) {
+            this.limit = limit;
+            this.windowNs = windowNs;
         }
 
-        /**
-         * Different rate-limit policy: burst capacity + continuous refill.
-         */
-        static final class TokenBucket {
-            private final double capacity;
-            private final double ratePerNs;
-            private double tokens;
-            private long lastNs;
-            private boolean initialized;
+        boolean allow(long timestampNs) {
+            long cutoff = timestampNs - windowNs;
 
-            TokenBucket(int capacity, long refillWindowNs) {
-                if (capacity <= 0 || refillWindowNs <= 0) {
-                    throw new IllegalArgumentException("capacity/window must be > 0");
-                }
-                this.capacity = capacity;
-                this.ratePerNs = (double) capacity / refillWindowNs;
-                this.tokens = capacity;
+            while (!window.isEmpty()
+                    && window.peekFirst() <= cutoff) {
+                window.pollFirst();
             }
 
-            Decision submit(long nowNs) {
-                if (!initialized) {
-                    initialized = true;
-                    lastNs = nowNs;
-                } else {
-                    if (nowNs < lastNs) throw new IllegalArgumentException("timestamps must be nondecreasing");
-                    tokens = Math.min(capacity, tokens + (nowNs - lastNs) * ratePerNs);
-                    lastNs = nowNs;
-                }
-
-                if (tokens >= 1.0) {
-                    tokens -= 1.0;
-                    return Decision.ACCEPT;
-                }
-                return Decision.REJECT;
+            if (window.size() >= limit) {
+                return false;
             }
+
+            window.addLast(timestampNs);
+            return true;
         }
     }
 
@@ -709,108 +567,54 @@ public class TradingDSA147To165 {
     // DSA-156 — Rolling VWAP
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   VWAP = Σ(price*qty) / Σqty.
-     *   Maintain running numerator/denominator + deque for expiry.
+     * PROBLEM
+     * Maintain VWAP over the last N trades.
+     * VWAP = sum(price * quantity) / sum(quantity).
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes say VALUE and VOLUME are separate risk metrics,
-     *   potentially including scaling/PQF/FX, rather than being divided into VWAP.
+     * EXAMPLE
+     * 100x10, 110x20 -> VWAP = 3200/30 = 106.666...
      *
-     * CORRECTION:
-     *   Math.multiplyExact/addExact make long overflow explicit.
+     * IDEA
+     * Deque of last N trades + running totalValue + running totalQuantity.
+     *
+     * COMPLEXITY
+     * O(1) per trade, space O(N)
+     *
+     * FOLLOW-UP
+     * Time-window VWAP uses the same deque pattern but expires by timestamp.
      */
     static final class DSA156_RollingVWAP {
 
-        record Trade(long price, long qty, long timestampNs) {}
+        record Trade(long price, long quantity) {}
 
-        static final class CountVWAP {
-            private final int maxTrades;
-            private final Deque<Trade> window = new ArrayDeque<>();
-            private long totalValue;
-            private long totalQty;
+        private final int maxTrades;
+        private final Deque<Trade> window = new ArrayDeque<>();
 
-            CountVWAP(int maxTrades) {
-                if (maxTrades <= 0) throw new IllegalArgumentException("maxTrades must be > 0");
-                this.maxTrades = maxTrades;
-            }
+        private long totalValue;
+        private long totalQuantity;
 
-            void add(Trade t) {
-                validateTrade(t);
+        DSA156_RollingVWAP(int maxTrades) {
+            this.maxTrades = maxTrades;
+        }
 
-                window.addLast(t);
-                totalValue = Math.addExact(totalValue, Math.multiplyExact(t.price(), t.qty()));
-                totalQty = Math.addExact(totalQty, t.qty());
+        void add(Trade trade) {
+            window.addLast(trade);
 
-                if (window.size() > maxTrades) {
-                    remove(window.pollFirst());
-                }
-            }
+            totalValue += trade.price() * trade.quantity();
+            totalQuantity += trade.quantity();
 
-            double vwap() {
-                return totalQty == 0 ? 0.0 : (double) totalValue / totalQty;
-            }
+            if (window.size() > maxTrades) {
+                Trade expired = window.pollFirst();
 
-            long vwapScaled(long scale) {
-                if (scale <= 0) throw new IllegalArgumentException("scale must be > 0");
-                return totalQty == 0
-                        ? 0L
-                        : Math.multiplyExact(totalValue, scale) / totalQty;
-            }
-
-            private void remove(Trade t) {
-                totalValue = Math.subtractExact(totalValue, Math.multiplyExact(t.price(), t.qty()));
-                totalQty = Math.subtractExact(totalQty, t.qty());
+                totalValue -= expired.price() * expired.quantity();
+                totalQuantity -= expired.quantity();
             }
         }
 
-        static final class TimeVWAP {
-            private final long windowNs;
-            private final Deque<Trade> window = new ArrayDeque<>();
-            private long totalValue;
-            private long totalQty;
-            private long lastTimestamp = Long.MIN_VALUE;
-
-            TimeVWAP(long windowNs) {
-                if (windowNs <= 0) throw new IllegalArgumentException("windowNs must be > 0");
-                this.windowNs = windowNs;
-            }
-
-            void add(Trade t) {
-                validateTrade(t);
-                if (t.timestampNs() < lastTimestamp) {
-                    throw new IllegalArgumentException("timestamps must be nondecreasing");
-                }
-                lastTimestamp = t.timestampNs();
-
-                evict(t.timestampNs());
-                window.addLast(t);
-                totalValue = Math.addExact(totalValue, Math.multiplyExact(t.price(), t.qty()));
-                totalQty = Math.addExact(totalQty, t.qty());
-            }
-
-            double vwap(long nowNs) {
-                if (nowNs < lastTimestamp) {
-                    throw new IllegalArgumentException("nowNs cannot move backwards");
-                }
-                lastTimestamp = nowNs;
-                evict(nowNs);
-                return totalQty == 0 ? 0.0 : (double) totalValue / totalQty;
-            }
-
-            private void evict(long nowNs) {
-                long cutoff = nowNs - windowNs;
-                while (!window.isEmpty() && window.peekFirst().timestampNs() <= cutoff) {
-                    Trade t = window.pollFirst();
-                    totalValue = Math.subtractExact(totalValue, Math.multiplyExact(t.price(), t.qty()));
-                    totalQty = Math.subtractExact(totalQty, t.qty());
-                }
-            }
-        }
-
-        private static void validateTrade(Trade t) {
-            requirePositive(t.price(), "price");
-            requirePositive(t.qty(), "qty");
+        double vwap() {
+            return totalQuantity == 0
+                    ? 0.0
+                    : (double) totalValue / totalQuantity;
         }
     }
 
@@ -818,88 +622,52 @@ public class TradingDSA147To165 {
     // DSA-157 — Market Data Sliding Maximum
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Monotonic decreasing deque.
-     *   Each element enters once, leaves once -> O(N) total.
+     * PROBLEM
+     * Given market prices, return the maximum in every window of size windowSize.
      *
-     * PRODUCTION MAPPING:
-     *   If a live book already maintains sorted active prices, best/current extreme
-     *   comes from the book's best node; no historical-window deque is needed.
+     * EXAMPLE
+     * [1,3,-1,-3,5,3,6,7], windowSize=3 -> [3,3,5,5,6,7]
      *
-     * IMPORTANT:
-     *   "max over current active book" != "max over historical sliding window".
+     * IDEA
+     * Monotonic decreasing deque of indices.
+     * Front always points to the maximum of the current window.
+     *
+     * COMPLEXITY
+     * O(N) time, O(windowSize) space
+     *
+     * FOLLOW-UP
+     * For a live stream, keep the same deque and a running index as object state.
      */
     static final class DSA157_MarketDataSlidingMaximum {
 
-        static final class SlidingMax {
-            record Entry(long price, long index) {}
-
-            private final int windowSize;
-            private final Deque<Entry> dq = new ArrayDeque<>();
-            private long nextIndex;
-
-            SlidingMax(int windowSize) {
-                if (windowSize <= 0) throw new IllegalArgumentException("windowSize must be > 0");
-                this.windowSize = windowSize;
+        static long[] maxInWindows(long[] prices, int windowSize) {
+            if (prices.length == 0 || windowSize <= 0 || windowSize > prices.length) {
+                return new long[0];
             }
 
-            void add(long price) {
-                long idx = nextIndex++;
-                while (!dq.isEmpty() && dq.peekFirst().index() <= idx - windowSize) {
-                    dq.pollFirst();
+            Deque<Integer> indices = new ArrayDeque<>();
+            long[] result = new long[prices.length - windowSize + 1];
+
+            for (int index = 0; index < prices.length; index++) {
+                while (!indices.isEmpty()
+                        && indices.peekFirst() <= index - windowSize) {
+                    indices.pollFirst();
                 }
-                while (!dq.isEmpty() && dq.peekLast().price() <= price) {
-                    dq.pollLast();
+
+                while (!indices.isEmpty()
+                        && prices[indices.peekLast()] <= prices[index]) {
+                    indices.pollLast();
                 }
-                dq.addLast(new Entry(price, idx));
-            }
 
-            long max() {
-                if (dq.isEmpty()) throw new NoSuchElementException();
-                return dq.peekFirst().price();
-            }
-        }
+                indices.addLast(index);
 
-        record Tick(long price, long timestampNs) {}
-
-        static final class TimeSlidingMax {
-            private final long windowNs;
-            private final Deque<Tick> dq = new ArrayDeque<>();
-            private long lastTimestamp = Long.MIN_VALUE;
-
-            TimeSlidingMax(long windowNs) {
-                if (windowNs <= 0) throw new IllegalArgumentException("windowNs must be > 0");
-                this.windowNs = windowNs;
-            }
-
-            void add(Tick t) {
-                if (t.timestampNs() < lastTimestamp) {
-                    throw new IllegalArgumentException("timestamps must be nondecreasing");
-                }
-                lastTimestamp = t.timestampNs();
-
-                evict(t.timestampNs());
-                while (!dq.isEmpty() && dq.peekLast().price() <= t.price()) {
-                    dq.pollLast();
-                }
-                dq.addLast(t);
-            }
-
-            long max(long nowNs) {
-                if (nowNs < lastTimestamp) {
-                    throw new IllegalArgumentException("nowNs cannot move backwards");
-                }
-                lastTimestamp = nowNs;
-                evict(nowNs);
-                return dq.isEmpty() ? Long.MIN_VALUE : dq.peekFirst().price();
-            }
-
-            private void evict(long nowNs) {
-                long cutoff = nowNs - windowNs;
-                while (!dq.isEmpty() && dq.peekFirst().timestampNs() <= cutoff) {
-                    dq.pollFirst();
+                if (index >= windowSize - 1) {
+                    result[index - windowSize + 1] =
+                            prices[indices.peekFirst()];
                 }
             }
+
+            return result;
         }
     }
 
@@ -907,15 +675,25 @@ public class TradingDSA147To165 {
     // DSA-158 — Order State Aggregation
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   orderId -> state machine + filled/leaves quantities.
+     * PROBLEM
+     * Maintain order lifecycle and quantities from NEW, ACK, FILL, CANCEL, REJECT.
+     * A FILL may be partial or complete depending on remaining quantity.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes separate OrderStatus ("where") from ExecutionType ("why").
-     *   Partial fill can be represented by leavesQuantity rather than a unique status.
+     * EXAMPLE
+     * NEW O1 qty100 -> ACK -> FILL 40 -> FILL 60
+     * -> FILLED, filledQuantity=100, remainingQuantity=0
      *
-     * CORRECTION:
-     *   Validate positive fills, overfills, and legal transitions.
+     * IDEA
+     * HashMap<orderId, mutable Order>. Each event mutates exactly one order.
+     *
+     * INVARIANT
+     * originalQuantity = filledQuantity + remainingQuantity
+     *
+     * COMPLEXITY
+     * expected O(1) per event, space O(orders)
+     *
+     * FOLLOW-UP
+     * Production OMS usually validates a richer transition matrix.
      */
     static final class DSA158_OrderStateAggregation {
 
@@ -925,112 +703,55 @@ public class TradingDSA147To165 {
             PARTIALLY_FILLED,
             FILLED,
             CANCELLED,
-            REJECTED;
-
-            boolean terminal() {
-                return this == FILLED || this == CANCELLED || this == REJECTED;
-            }
+            REJECTED
         }
 
-        enum Event { NEW, ACK, PARTIAL_FILL, FILL, CANCEL, REJECT }
+        enum EventType { NEW, ACK, FILL, CANCEL, REJECT }
 
         static final class Order {
-            final String id;
-            final long orderQty;
-            long filledQty;
-            long leavesQty;
+            final String orderId;
+            final long originalQuantity;
+
+            long filledQuantity;
+            long remainingQuantity;
             State state;
 
-            Order(String id, long orderQty) {
-                requirePositive(orderQty, "orderQty");
-                this.id = id;
-                this.orderQty = orderQty;
-                this.leavesQty = orderQty;
+            Order(String orderId, long quantity) {
+                this.orderId = orderId;
+                this.originalQuantity = quantity;
+                this.remainingQuantity = quantity;
                 this.state = State.PENDING_NEW;
-            }
-
-            @Override public String toString() {
-                return "Order{id='" + id + "', state=" + state +
-                        ", orderQty=" + orderQty +
-                        ", filledQty=" + filledQty +
-                        ", leavesQty=" + leavesQty + "}";
             }
         }
 
-        static final class OrderBook {
-            private final Map<String, Order> orders = new HashMap<>();
+        private final Map<String, Order> ordersById = new HashMap<>();
 
-            void process(String id, Event event, long qty) {
-                switch (event) {
-                    case NEW -> {
-                        if (orders.containsKey(id)) throw new IllegalStateException("Duplicate NEW " + id);
-                        orders.put(id, new Order(id, qty));
-                    }
-                    case ACK -> requireTransition(id, State.PENDING_NEW, State.ACTIVE);
-                    case REJECT -> requireTransition(id, State.PENDING_NEW, State.REJECTED);
-                    case PARTIAL_FILL -> partialFill(id, qty);
-                    case FILL -> fill(id, qty);
-                    case CANCEL -> cancel(id);
-                }
-            }
+        void process(String orderId, EventType type, long quantity) {
+            switch (type) {
+                case NEW -> ordersById.put(
+                        orderId, new Order(orderId, quantity));
 
-            private void partialFill(String id, long qty) {
-                requirePositive(qty, "fill qty");
-                Order o = requireLiveOrder(id);
+                case ACK -> ordersById.get(orderId).state = State.ACTIVE;
 
-                if (o.state != State.ACTIVE && o.state != State.PARTIALLY_FILLED) {
-                    throw new IllegalStateException("Cannot partial-fill from state " + o.state);
-                }
-                if (qty >= o.leavesQty) {
-                    throw new IllegalStateException("PARTIAL_FILL qty must be < leavesQty");
+                case FILL -> {
+                    Order order = ordersById.get(orderId);
+
+                    order.filledQuantity += quantity;
+                    order.remainingQuantity -= quantity;
+
+                    order.state = order.remainingQuantity == 0
+                            ? State.FILLED
+                            : State.PARTIALLY_FILLED;
                 }
 
-                o.filledQty = Math.addExact(o.filledQty, qty);
-                o.leavesQty -= qty;
-                o.state = State.PARTIALLY_FILLED;
+                case CANCEL -> ordersById.get(orderId).state = State.CANCELLED;
+
+                case REJECT -> ordersById.get(orderId).state = State.REJECTED;
             }
+        }
 
-            private void fill(String id, long qty) {
-                requirePositive(qty, "fill qty");
-                Order o = requireLiveOrder(id);
-
-                if (o.state != State.ACTIVE && o.state != State.PARTIALLY_FILLED) {
-                    throw new IllegalStateException("Cannot fill from state " + o.state);
-                }
-                if (qty != o.leavesQty) {
-                    throw new IllegalStateException("FILL qty must equal leavesQty=" + o.leavesQty);
-                }
-
-                o.filledQty = Math.addExact(o.filledQty, qty);
-                o.leavesQty = 0;
-                o.state = State.FILLED;
-            }
-
-            private void cancel(String id) {
-                Order o = requireLiveOrder(id);
-                o.state = State.CANCELLED;
-            }
-
-            private void requireTransition(String id, State from, State to) {
-                Order o = requireLiveOrder(id);
-                if (o.state != from) {
-                    throw new IllegalStateException("Expected " + from + " but was " + o.state);
-                }
-                o.state = to;
-            }
-
-            private Order requireLiveOrder(String id) {
-                Order o = orders.get(id);
-                if (o == null) throw new IllegalStateException("Unknown order " + id);
-                if (o.state.terminal()) throw new IllegalStateException("Order already terminal: " + o.state);
-                return o;
-            }
-
-            Order get(String id) { return orders.get(id); }
-
-            List<Order> inState(State s) {
-                return orders.values().stream().filter(o -> o.state == s).toList();
-            }
+        Order get(String orderId) {
+            return ordersById.get(orderId);
         }
     }
 
@@ -1038,114 +759,155 @@ public class TradingDSA147To165 {
     // DSA-159 — Match Buy and Sell Orders
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   bid heap: price DESC, seq ASC
-     *   ask heap: price ASC, seq ASC
+     * PROBLEM
+     * Match limit orders using price-time priority.
+     * BUY crosses when buy.price >= best sell.price.
+     * SELL crosses when sell.price <= best buy.price.
+     * Execute at the resting order's price.
      *
-     *   Match at resting order price.
-     *   Partial resting order keeps ORIGINAL sequence/time priority.
+     * EXAMPLE
+     * S1 SELL 101x50, S2 SELL 102x50, B1 BUY 102x70
+     * -> 50@101 with S1, then 20@102 with S2; S2 keeps 30.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe PriceList + OrderList, match metadata,
-     *   passive/aggressive flags, self-match prevention, MAQ, leavesQuantity.
+     * IDEA
+     * Two price-time PriorityQueues + mutable remainingQuantity.
      *
-     * PRODUCTION GAP:
-     *   Two heaps are an interview simplification; explicit price levels/order lists
-     *   are better for cancellation, amendment, depth, and stable FIFO.
+     * COMPLEXITY
+     * each heap add/poll O(log N); consuming M resting orders O(M log N)
+     *
+     * FOLLOW-UP
+     * Need cancel/depth/amend? Move to TreeMap<price, PriceLevel> + FIFO orders.
      */
     static final class DSA159_MatchBuyAndSellOrders {
 
         enum Side { BUY, SELL }
 
-        record Trade(String buyId, String sellId, long execPrice, long execQty) {
-            @Override public String toString() {
-                return "TRADE buy=" + buyId + " sell=" + sellId +
-                        " @" + execPrice + " qty=" + execQty;
+        static final class Order {
+            final String orderId;
+            final Side side;
+            final long price;
+            final long sequence;
+            long remainingQuantity;
+
+            Order(
+                    String orderId,
+                    Side side,
+                    long price,
+                    long sequence,
+                    long quantity) {
+
+                this.orderId = orderId;
+                this.side = side;
+                this.price = price;
+                this.sequence = sequence;
+                this.remainingQuantity = quantity;
             }
+
+            long price() { return price; }
+            long sequence() { return sequence; }
         }
 
-        static final class MatchingEngine {
-            private static final class OrderEntry {
-                final String id;
-                final Side side;
-                final long price;
-                final long seq;
-                long qty;
+        record Trade(
+                String buyOrderId,
+                String sellOrderId,
+                long price,
+                long quantity) {}
 
-                OrderEntry(String id, Side side, long price, long seq, long qty) {
-                    this.id = id;
-                    this.side = side;
-                    this.price = price;
-                    this.seq = seq;
-                    this.qty = qty;
+        private final PriorityQueue<Order> buyOrders =
+                new PriorityQueue<>(
+                        Comparator.comparingLong(Order::price)
+                                .reversed()
+                                .thenComparingLong(Order::sequence)
+                );
+
+        private final PriorityQueue<Order> sellOrders =
+                new PriorityQueue<>(
+                        Comparator.comparingLong(Order::price)
+                                .thenComparingLong(Order::sequence)
+                );
+
+        private long nextSequence;
+
+        List<Trade> submit(
+                String orderId,
+                Side side,
+                long price,
+                long quantity) {
+
+            Order incoming = new Order(
+                    orderId, side, price, nextSequence++, quantity);
+
+            return side == Side.BUY
+                    ? matchBuy(incoming)
+                    : matchSell(incoming);
+        }
+
+        private List<Trade> matchBuy(Order buyOrder) {
+            List<Trade> result = new ArrayList<>();
+
+            while (buyOrder.remainingQuantity > 0
+                    && !sellOrders.isEmpty()
+                    && buyOrder.price >= sellOrders.peek().price) {
+
+                Order sellOrder = sellOrders.poll();
+
+                long executionQuantity = Math.min(
+                        buyOrder.remainingQuantity,
+                        sellOrder.remainingQuantity);
+
+                result.add(new Trade(
+                        buyOrder.orderId,
+                        sellOrder.orderId,
+                        sellOrder.price,
+                        executionQuantity));
+
+                buyOrder.remainingQuantity -= executionQuantity;
+                sellOrder.remainingQuantity -= executionQuantity;
+
+                if (sellOrder.remainingQuantity > 0) {
+                    sellOrders.add(sellOrder);
                 }
             }
 
-            private final PriorityQueue<OrderEntry> bidPQ = new PriorityQueue<>((a, b) -> {
-                int c = Long.compare(b.price, a.price);
-                return c != 0 ? c : Long.compare(a.seq, b.seq);
-            });
-
-            private final PriorityQueue<OrderEntry> askPQ = new PriorityQueue<>((a, b) -> {
-                int c = Long.compare(a.price, b.price);
-                return c != 0 ? c : Long.compare(a.seq, b.seq);
-            });
-
-            private long nextSeq;
-            private final List<Trade> allTrades = new ArrayList<>();
-
-            List<Trade> submit(String id, Side side, long price, long qty) {
-                requirePositive(price, "price");
-                requirePositive(qty, "qty");
-
-                OrderEntry incoming = new OrderEntry(id, side, price, nextSeq++, qty);
-                List<Trade> result = new ArrayList<>();
-
-                if (side == Side.BUY) matchBuy(incoming, result);
-                else matchSell(incoming, result);
-
-                allTrades.addAll(result);
-                return result;
+            if (buyOrder.remainingQuantity > 0) {
+                buyOrders.add(buyOrder);
             }
 
-            private void matchBuy(OrderEntry buy, List<Trade> result) {
-                while (buy.qty > 0 && !askPQ.isEmpty() && buy.price >= askPQ.peek().price) {
-                    OrderEntry ask = askPQ.poll();
-                    long execQty = Math.min(buy.qty, ask.qty);
+            return result;
+        }
 
-                    result.add(new Trade(buy.id, ask.id, ask.price, execQty));
+        private List<Trade> matchSell(Order sellOrder) {
+            List<Trade> result = new ArrayList<>();
 
-                    buy.qty -= execQty;
-                    ask.qty -= execQty;
+            while (sellOrder.remainingQuantity > 0
+                    && !buyOrders.isEmpty()
+                    && sellOrder.price <= buyOrders.peek().price) {
 
-                    // Same original sequence -> same time priority.
-                    if (ask.qty > 0) askPQ.add(ask);
+                Order buyOrder = buyOrders.poll();
+
+                long executionQuantity = Math.min(
+                        sellOrder.remainingQuantity,
+                        buyOrder.remainingQuantity);
+
+                result.add(new Trade(
+                        buyOrder.orderId,
+                        sellOrder.orderId,
+                        buyOrder.price,
+                        executionQuantity));
+
+                sellOrder.remainingQuantity -= executionQuantity;
+                buyOrder.remainingQuantity -= executionQuantity;
+
+                if (buyOrder.remainingQuantity > 0) {
+                    buyOrders.add(buyOrder);
                 }
-
-                if (buy.qty > 0) bidPQ.add(buy);
             }
 
-            private void matchSell(OrderEntry sell, List<Trade> result) {
-                while (sell.qty > 0 && !bidPQ.isEmpty() && sell.price <= bidPQ.peek().price) {
-                    OrderEntry bid = bidPQ.poll();
-                    long execQty = Math.min(sell.qty, bid.qty);
-
-                    result.add(new Trade(bid.id, sell.id, bid.price, execQty));
-
-                    sell.qty -= execQty;
-                    bid.qty -= execQty;
-
-                    if (bid.qty > 0) bidPQ.add(bid);
-                }
-
-                if (sell.qty > 0) askPQ.add(sell);
+            if (sellOrder.remainingQuantity > 0) {
+                sellOrders.add(sellOrder);
             }
 
-            long bestBid() { return bidPQ.isEmpty() ? -1L : bidPQ.peek().price; }
-            long bestAsk() { return askPQ.isEmpty() ? -1L : askPQ.peek().price; }
-            int bidDepth() { return bidPQ.size(); }
-            int askDepth() { return askPQ.size(); }
-            List<Trade> allTrades() { return Collections.unmodifiableList(allTrades); }
+            return result;
         }
     }
 
@@ -1153,57 +915,51 @@ public class TradingDSA147To165 {
     // DSA-160 — Position From Executions
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   BUY fill -> +qty
-     *   SELL fill -> -qty
-     *   key = (account, instrument)
+     * PROBLEM
+     * Maintain net position per (account, instrument) from fills.
+     * BUY adds quantity; SELL subtracts quantity.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe richer execution/exposure objects and hierarchical state.
+     * EXAMPLE
+     * BUY 100 AAPL, SELL 35 AAPL -> net position = +65.
      *
-     * CORRECTION:
-     *   Do NOT derive average fill price as unsigned Σ(price*qty)/abs(netPosition).
-     *   Average cost/P&L needs a defined accounting model.
+     * IDEA
+     * HashMap<PositionKey, netQuantity> + signed delta.
+     *
+     * COMPLEXITY
+     * expected O(1) per fill, space O(account-instrument keys)
+     *
+     * FOLLOW-UP
+     * Average cost / realized P&L needs an explicit accounting model; do not invent one.
      */
     static final class DSA160_PositionFromExecutions {
 
         enum Side { BUY, SELL }
 
-        record Fill(String execId, String account, String tradable,
-                    Side side, long qty, long price) {}
+        record Fill(
+                String account,
+                String instrument,
+                Side side,
+                long quantity) {}
 
-        record AccountInstrument(String account, String tradable) {}
+        record PositionKey(String account, String instrument) {}
 
-        static final class PositionTracker {
-            private final Map<AccountInstrument, Long> positions = new HashMap<>();
-            private final Map<String, Long> instrumentPositions = new HashMap<>();
+        private final Map<PositionKey, Long> positionByKey = new HashMap<>();
 
-            void process(Fill f) {
-                requirePositive(f.qty(), "qty");
-                requirePositive(f.price(), "price");
+        void process(Fill fill) {
+            long signedQuantity =
+                    fill.side() == Side.BUY
+                            ? fill.quantity()
+                            : -fill.quantity();
 
-                long delta = f.side() == Side.BUY ? f.qty() : -f.qty();
-                AccountInstrument key = new AccountInstrument(f.account(), f.tradable());
+            PositionKey key =
+                    new PositionKey(fill.account(), fill.instrument());
 
-                positions.merge(key, delta, Math::addExact);
-                instrumentPositions.merge(f.tradable(), delta, Math::addExact);
-            }
+            positionByKey.merge(key, signedQuantity, Long::sum);
+        }
 
-            long position(String account, String tradable) {
-                return positions.getOrDefault(new AccountInstrument(account, tradable), 0L);
-            }
-
-            long instrumentPosition(String tradable) {
-                return instrumentPositions.getOrDefault(tradable, 0L);
-            }
-
-            List<AccountInstrument> overLimit(long absoluteLimit) {
-                requireNonNegative(absoluteLimit, "absoluteLimit");
-                return positions.entrySet().stream()
-                        .filter(e -> safeAbsExceeds(e.getValue(), absoluteLimit))
-                        .map(Map.Entry::getKey)
-                        .toList();
-            }
+        long position(String account, String instrument) {
+            return positionByKey.getOrDefault(
+                    new PositionKey(account, instrument), 0L);
         }
     }
 
@@ -1211,113 +967,30 @@ public class TradingDSA147To165 {
     // DSA-161 — Detect Duplicate Orders
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   First define authoritative identity.
-     *   Then use exact sets / bounded business-key window as required.
+     * PROBLEM
+     * Every order has a unique orderId. Detect whether an incoming orderId
+     * has already been seen.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes point to gateway/protocol IDs/tokens.
-     *   Self-match prevention is a separate concern, not order dedup.
+     * EXAMPLE
+     * O1 first time -> not duplicate
+     * O1 again -> duplicate
      *
-     * CORRECTION:
-     *   Economically identical orders are NOT automatically duplicates.
-     *   Business-key dedup is optional and must be explicitly specified.
+     * IDEA
+     * HashSet.add(orderId) returns false if the ID already exists.
+     *
+     * COMPLEXITY
+     * expected O(1) per order, space O(unique order IDs)
+     *
+     * FOLLOW-UP
+     * If identity is composite, use a record such as
+     * (account, clientOrderId, instrument) as the HashSet key.
      */
     static final class DSA161_DetectDuplicateOrders {
 
-        enum Side { BUY, SELL }
+        private final Set<String> seenOrderIds = new HashSet<>();
 
-        enum Reason {
-            NONE,
-            DUPLICATE_ORDER_ID,
-            DUPLICATE_CLIENT_ORDER_ID,
-            DUPLICATE_BUSINESS_KEY
-        }
-
-        record Order(String orderId, String clientOrderId, String account, String tradable,
-                     Side side, long price, long qty, long timestampNs) {}
-
-        record DupResult(boolean duplicate, Reason reason) {
-            static DupResult ok() { return new DupResult(false, Reason.NONE); }
-            static DupResult dup(Reason reason) { return new DupResult(true, reason); }
-        }
-
-        static final class DuplicateDetector {
-            private final Set<String> seenOrderIds = new HashSet<>();
-            private final Set<String> seenClientIds = new HashSet<>();
-
-            private final boolean useBusinessKeyRule;
-            private final long businessWindowNs;
-            private final int maxBusinessKeys;
-
-            // insertion-order so oldest timestamps can be purged from the front
-            private final LinkedHashMap<String, Long> businessKeys = new LinkedHashMap<>();
-
-            DuplicateDetector(boolean useBusinessKeyRule,
-                              long businessWindowNs,
-                              int maxBusinessKeys) {
-                if (businessWindowNs < 0 || maxBusinessKeys <= 0) {
-                    throw new IllegalArgumentException();
-                }
-                this.useBusinessKeyRule = useBusinessKeyRule;
-                this.businessWindowNs = businessWindowNs;
-                this.maxBusinessKeys = maxBusinessKeys;
-            }
-
-            DupResult check(Order o) {
-                requirePositive(o.price(), "price");
-                requirePositive(o.qty(), "qty");
-
-                if (seenOrderIds.contains(o.orderId())) {
-                    return DupResult.dup(Reason.DUPLICATE_ORDER_ID);
-                }
-
-                boolean hasClientId = o.clientOrderId() != null && !o.clientOrderId().isBlank();
-                if (hasClientId && seenClientIds.contains(o.clientOrderId())) {
-                    return DupResult.dup(Reason.DUPLICATE_CLIENT_ORDER_ID);
-                }
-
-                String businessKey = null;
-                if (useBusinessKeyRule) {
-                    purgeExpired(o.timestampNs());
-
-                    businessKey = o.account() + "|" + o.tradable() + "|" +
-                            o.side() + "|" + o.price() + "|" + o.qty();
-
-                    Long first = businessKeys.get(businessKey);
-                    if (first != null && o.timestampNs() - first <= businessWindowNs) {
-                        return DupResult.dup(Reason.DUPLICATE_BUSINESS_KEY);
-                    }
-                }
-
-                // Commit dedup state only after all validation passes.
-                seenOrderIds.add(o.orderId());
-                if (hasClientId) seenClientIds.add(o.clientOrderId());
-
-                if (useBusinessKeyRule) {
-                    businessKeys.put(businessKey, o.timestampNs());
-                    trimToCapacity();
-                }
-
-                return DupResult.ok();
-            }
-
-            private void purgeExpired(long nowNs) {
-                Iterator<Map.Entry<String, Long>> it = businessKeys.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, Long> e = it.next();
-                    if (nowNs - e.getValue() > businessWindowNs) it.remove();
-                    else break; // insertion order + nondecreasing timestamps assumption
-                }
-            }
-
-            private void trimToCapacity() {
-                Iterator<String> it = businessKeys.keySet().iterator();
-                while (businessKeys.size() > maxBusinessKeys && it.hasNext()) {
-                    it.next();
-                    it.remove();
-                }
-            }
+        boolean isDuplicate(String orderId) {
+            return !seenOrderIds.add(orderId);
         }
     }
 
@@ -1325,102 +998,94 @@ public class TradingDSA147To165 {
     // DSA-162 — Most Active Instruments
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   rolling deque + instrument -> running score.
-     *   Top-K query uses a min-heap of size K.
+     * PROBLEM
+     * Events arrive in timestamp order. Maintain activity per instrument over the
+     * last windowNs and return the top K instruments by activity quantity.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe rolling activity primarily for rate/risk limits,
-     *   rolled up through a risk hierarchy.
+     * EXAMPLE
+     * AAPL +100, MSFT +300, AAPL +250 -> AAPL=350, MSFT=300.
      *
-     * PRODUCTION GAP:
-     *   Same rolling-counter primitive; ranking is an extra query concern.
+     * IDEA
+     * Deque for expiry + HashMap for running scores + min-heap size K for query.
+     *
+     * COMPLEXITY
+     * add amortized O(1); topK O(M log K), M=active instruments
+     *
+     * FOLLOW-UP
+     * If top-K is queried extremely often, maintain ranking incrementally.
      */
     static final class DSA162_MostActiveInstruments {
 
-        record Event(String tradable, long qty, long timestampNs) {}
-        record Ranked(String tradable, long score) {
-            @Override public String toString() { return tradable + "=" + score; }
+        record Event(
+                String instrument,
+                long quantity,
+                long timestampNs) {}
+
+        record RankedInstrument(
+                String instrument,
+                long quantity) {}
+
+        private final long windowNs;
+        private final Deque<Event> window = new ArrayDeque<>();
+        private final Map<String, Long> activityByInstrument = new HashMap<>();
+
+        DSA162_MostActiveInstruments(long windowNs) {
+            this.windowNs = windowNs;
         }
 
-        static final class ActivityTracker {
-            private final long windowNs;
-            private final Map<String, Deque<Event>> windows = new HashMap<>();
-            private final Map<String, Long> scores = new HashMap<>();
-            private long lastTimestamp = Long.MIN_VALUE;
+        void add(Event event) {
+            evictExpired(event.timestampNs());
 
-            ActivityTracker(long windowNs) {
-                if (windowNs <= 0) throw new IllegalArgumentException("windowNs must be > 0");
-                this.windowNs = windowNs;
-            }
+            window.addLast(event);
+            activityByInstrument.merge(
+                    event.instrument(), event.quantity(), Long::sum);
+        }
 
-            void add(Event e) {
-                requireNonNegative(e.qty(), "qty");
-                requireMonotonic(e.timestampNs());
+        List<RankedInstrument> topK(int k, long nowNs) {
+            evictExpired(nowNs);
 
-                Deque<Event> dq = windows.computeIfAbsent(e.tradable(), k -> new ArrayDeque<>());
-                evict(e.tradable(), e.timestampNs());
+            PriorityQueue<RankedInstrument> minHeap =
+                    new PriorityQueue<>(
+                            Comparator.comparingLong(RankedInstrument::quantity)
+                    );
 
-                dq.addLast(e);
-                scores.merge(e.tradable(), e.qty(), Math::addExact);
-            }
+            for (Map.Entry<String, Long> entry : activityByInstrument.entrySet()) {
+                RankedInstrument instrument =
+                        new RankedInstrument(entry.getKey(), entry.getValue());
 
-            List<Ranked> topK(int k, long nowNs) {
-                if (k <= 0) return List.of();
-                requireMonotonic(nowNs);
+                minHeap.add(instrument);
 
-                for (String id : new ArrayList<>(windows.keySet())) {
-                    evict(id, nowNs);
+                if (minHeap.size() > k) {
+                    minHeap.poll();
                 }
+            }
 
-                PriorityQueue<Ranked> heap =
-                        new PriorityQueue<>(Comparator.comparingLong(Ranked::score));
+            List<RankedInstrument> result = new ArrayList<>(minHeap);
 
-                for (Map.Entry<String, Long> e : scores.entrySet()) {
-                    long score = e.getValue();
-                    if (score <= 0) continue;
+            result.sort(
+                    Comparator.comparingLong(RankedInstrument::quantity)
+                            .reversed()
+                            .thenComparing(RankedInstrument::instrument)
+            );
 
-                    Ranked ranked = new Ranked(e.getKey(), score);
-                    if (heap.size() < k) {
-                        heap.add(ranked);
-                    } else if (score > heap.peek().score()) {
-                        heap.poll();
-                        heap.add(ranked);
-                    }
+            return result;
+        }
+
+        private void evictExpired(long nowNs) {
+            long cutoff = nowNs - windowNs;
+
+            while (!window.isEmpty()
+                    && window.peekFirst().timestampNs() <= cutoff) {
+
+                Event expired = window.pollFirst();
+                long remainingQuantity =
+                        activityByInstrument.get(expired.instrument()) - expired.quantity();
+
+                if (remainingQuantity == 0) {
+                    activityByInstrument.remove(expired.instrument());
+                } else {
+                    activityByInstrument.put(expired.instrument(), remainingQuantity);
                 }
-
-                List<Ranked> out = new ArrayList<>(heap);
-                out.sort((a, b) -> {
-                    int c = Long.compare(b.score(), a.score());
-                    return c != 0 ? c : a.tradable().compareTo(b.tradable());
-                });
-                return out;
-            }
-
-            long score(String tradable, long nowNs) {
-                requireMonotonic(nowNs);
-                evict(tradable, nowNs);
-                return scores.getOrDefault(tradable, 0L);
-            }
-
-            private void evict(String id, long nowNs) {
-                Deque<Event> dq = windows.get(id);
-                if (dq == null) return;
-
-                long cutoff = nowNs - windowNs;
-                while (!dq.isEmpty() && dq.peekFirst().timestampNs() <= cutoff) {
-                    Event old = dq.pollFirst();
-                    long next = Math.subtractExact(scores.getOrDefault(id, 0L), old.qty());
-                    if (next == 0) scores.remove(id);
-                    else scores.put(id, next);
-                }
-
-                if (dq.isEmpty()) windows.remove(id);
-            }
-
-            private void requireMonotonic(long ts) {
-                if (ts < lastTimestamp) throw new IllegalArgumentException("timestamps must be nondecreasing");
-                lastTimestamp = ts;
             }
         }
     }
@@ -1429,71 +1094,78 @@ public class TradingDSA147To165 {
     // DSA-163 — Merge Multiple Ordered Market Feeds
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   Min-heap of K current heads.
-     *   Poll -> emit -> advance only that source -> push next.
-     *   O(N log K), O(K).
+     * PROBLEM
+     * K feeds are individually sorted by (timestamp, sequence).
+     * Merge them into one globally sorted stream.
      *
-     * PRODUCTION MAPPING:
-     *   If framework/session layer already supplies one ordered stream,
-     *   application code does not need raw K-way merge.
+     * EXAMPLE
+     * F1: 1000,1300; F2: 1100,1400 -> 1000,1100,1300,1400.
      *
-     * CORRECTION:
-     *   Comparator includes feed index as deterministic final tie-break.
+     * IDEA
+     * Min-heap containing one current head from each feed.
+     * Poll -> emit -> advance only that feed -> push its next event.
+     *
+     * COMPLEXITY
+     * O(N log K) time, O(K) heap space
+     *
+     * FOLLOW-UP
+     * Feed index is the final tie-break so output is deterministic.
      */
     static final class DSA163_MergeMultipleOrderedMarketFeeds {
 
-        record Event(long ts, long seq, String feed, String data) {
-            @Override public String toString() {
-                return "E{ts=" + ts + ", seq=" + seq + ", feed=" + feed + ", " + data + "}";
-            }
-        }
+        record Event(
+                long timestampNs,
+                long sequence,
+                String feed,
+                String payload) {}
 
-        private record HeapEntry(Event event, int feedIdx, int pos) {}
+        record HeapEntry(
+                Event event,
+                int feedIndex,
+                int position) {}
 
         static List<Event> merge(List<List<Event>> feeds) {
-            Comparator<HeapEntry> cmp = Comparator
-                    .comparingLong((HeapEntry h) -> h.event().ts())
-                    .thenComparingLong(h -> h.event().seq())
-                    .thenComparingInt(HeapEntry::feedIdx);
+            PriorityQueue<HeapEntry> minHeap =
+                    new PriorityQueue<>(
+                            Comparator
+                                    .comparingLong(
+                                            (HeapEntry entry) ->
+                                                    entry.event().timestampNs())
+                                    .thenComparingLong(
+                                            entry -> entry.event().sequence())
+                                    .thenComparingInt(HeapEntry::feedIndex)
+                    );
 
-            PriorityQueue<HeapEntry> heap = new PriorityQueue<>(cmp);
+            for (int feedIndex = 0;
+                 feedIndex < feeds.size();
+                 feedIndex++) {
 
-            for (int i = 0; i < feeds.size(); i++) {
-                List<Event> feed = feeds.get(i);
-                validateFeedSorted(feed);
-                if (!feed.isEmpty()) {
-                    heap.add(new HeapEntry(feed.get(0), i, 0));
+                if (!feeds.get(feedIndex).isEmpty()) {
+                    minHeap.add(new HeapEntry(
+                            feeds.get(feedIndex).get(0),
+                            feedIndex,
+                            0));
                 }
             }
 
-            List<Event> out = new ArrayList<>();
+            List<Event> result = new ArrayList<>();
 
-            while (!heap.isEmpty()) {
-                HeapEntry min = heap.poll();
-                out.add(min.event());
+            while (!minHeap.isEmpty()) {
+                HeapEntry smallest = minHeap.poll();
+                result.add(smallest.event());
 
-                int nextPos = min.pos() + 1;
-                List<Event> feed = feeds.get(min.feedIdx());
+                int nextPosition = smallest.position() + 1;
+                List<Event> feed = feeds.get(smallest.feedIndex());
 
-                if (nextPos < feed.size()) {
-                    heap.add(new HeapEntry(feed.get(nextPos), min.feedIdx(), nextPos));
+                if (nextPosition < feed.size()) {
+                    minHeap.add(new HeapEntry(
+                            feed.get(nextPosition),
+                            smallest.feedIndex(),
+                            nextPosition));
                 }
             }
 
-            return out;
-        }
-
-        private static void validateFeedSorted(List<Event> feed) {
-            for (int i = 1; i < feed.size(); i++) {
-                Event a = feed.get(i - 1);
-                Event b = feed.get(i);
-
-                int c = Long.compare(a.ts(), b.ts());
-                if (c > 0 || (c == 0 && a.seq() > b.seq())) {
-                    throw new IllegalArgumentException("Each feed must already be sorted");
-                }
-            }
+            return result;
         }
     }
 
@@ -1501,110 +1173,84 @@ public class TradingDSA147To165 {
     // DSA-164 — Snapshot + Incremental Merge
     // =========================================================================
     /**
-     * INTERVIEW CORE:
+     * PROBLEM
+     * Incremental updates can arrive before or after a snapshot at sequence S.
+     * After loading snapshot S, apply updates strictly from S+1 onward.
      *
-     * before snapshot:
-     *   buffer incrementals
+     * EXAMPLE
+     * update 12 arrives -> buffer
+     * snapshot 10 loads -> expect 11
+     * update 11 arrives -> apply 11, then drain 12
      *
-     * after snapshot S:
-     *   seq < nextExpected  -> stale/duplicate
-     *   seq = nextExpected  -> apply + increment + drain
-     *   seq > nextExpected  -> buffer gap
+     * IDEA
+     * nextExpected + HashMap<sequence, update> + drain contiguous updates.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes describe staged/committed lifecycle + version guards.
+     * COMPLEXITY
+     * expected O(1) per incremental; snapshot install scans buffered updates once
      *
-     * CRITICAL CORRECTION:
-     *   stale check is seq < nextExpected, not merely seq <= snapshotSeq.
-     *   Otherwise a replayed post-snapshot incremental can be double-applied.
+     * FOLLOW-UP
+     * Ignore every sequence < nextExpected to prevent replay/double-apply.
      */
     static final class DSA164_SnapshotIncrementalMerge {
 
-        enum Op { UPSERT, DELETE }
+        enum Operation { UPSERT, DELETE }
 
-        record Update(long seqNo, Op op, String key, String value) {
-            Update(long seqNo, Op op, String key) {
-                this(seqNo, op, key, null);
+        record Update(
+                long sequence,
+                Operation operation,
+                String key,
+                String value) {}
+
+        private Map<String, String> state = new HashMap<>();
+        private final Map<Long, Update> buffer = new HashMap<>();
+
+        private boolean snapshotLoaded;
+        private long nextExpected;
+
+        void apply(Update update) {
+            if (!snapshotLoaded) {
+                buffer.putIfAbsent(update.sequence(), update);
+                return;
+            }
+
+            if (update.sequence() < nextExpected) {
+                return;
+            }
+
+            buffer.putIfAbsent(update.sequence(), update);
+            drain();
+        }
+
+        void loadSnapshot(
+                Map<String, String> snapshot,
+                long snapshotSequence) {
+
+            state = new HashMap<>(snapshot);
+            nextExpected = snapshotSequence + 1;
+            snapshotLoaded = true;
+
+            buffer.entrySet().removeIf(
+                    entry -> entry.getKey() < nextExpected);
+
+            drain();
+        }
+
+        private void drain() {
+            while (buffer.containsKey(nextExpected)) {
+                Update update = buffer.remove(nextExpected);
+
+                if (update.operation() == Operation.UPSERT) {
+                    state.put(update.key(), update.value());
+                } else {
+                    state.remove(update.key());
+                }
+
+                nextExpected++;
             }
         }
 
-        static final class SnapshotMerger {
-            private Map<String, String> state;
-            private long nextExpected = -1L;
-            private boolean ready;
-            private final TreeMap<Long, Update> pending = new TreeMap<>();
-
-            void loadSnapshot(Map<String, String> snapshot, long snapshotSeq) {
-                if (ready) throw new IllegalStateException("Snapshot already loaded");
-
-                state = new HashMap<>(snapshot);
-                if (snapshotSeq == Long.MAX_VALUE) {
-                    throw new IllegalArgumentException("Cannot continue after Long.MAX_VALUE");
-                }
-
-                nextExpected = snapshotSeq + 1;
-                ready = true;
-
-                pending.headMap(nextExpected, false).clear(); // discard <= snapshotSeq
-                drain();
-            }
-
-            /**
-             * @return true iff this call directly applied the supplied update.
-             *         false means buffered or stale/duplicate.
-             */
-            boolean apply(Update u) {
-                if (!ready) {
-                    pending.putIfAbsent(u.seqNo(), u);
-                    return false;
-                }
-
-                if (u.seqNo() < nextExpected) {
-                    return false; // stale / duplicate
-                }
-
-                if (u.seqNo() > nextExpected) {
-                    pending.putIfAbsent(u.seqNo(), u);
-                    return false; // gap
-                }
-
-                applyOne(u);
-                incrementExpected();
-                drain();
-                return true;
-            }
-
-            private void drain() {
-                while (true) {
-                    Update next = pending.remove(nextExpected);
-                    if (next == null) return;
-
-                    applyOne(next);
-                    incrementExpected();
-                }
-            }
-
-            private void incrementExpected() {
-                if (nextExpected == Long.MAX_VALUE) {
-                    throw new IllegalStateException("Sequence overflow");
-                }
-                nextExpected++;
-            }
-
-            private void applyOne(Update u) {
-                switch (u.op()) {
-                    case UPSERT -> state.put(u.key(), u.value());
-                    case DELETE -> state.remove(u.key());
-                }
-            }
-
-            String get(String key) { return state == null ? null : state.get(key); }
-            boolean isReady() { return ready; }
-            long nextExpected() { return nextExpected; }
-            int pendingCount() { return pending.size(); }
-            Map<String, String> snapshotView() {
-                return state == null ? Map.of() : Collections.unmodifiableMap(state);
-            }
+        String get(String key) {
+            return state.get(key);
         }
     }
 
@@ -1612,386 +1258,32 @@ public class TradingDSA147To165 {
     // DSA-165 — Order Latency Percentile
     // =========================================================================
     /**
-     * INTERVIEW CORE:
-     *   First clarify exact/approximate, offline/streaming, memory bound.
+     * PROBLEM
+     * Given order latencies, return an exact percentile using nearest-rank.
+     * Assume all samples fit in memory.
      *
-     *   A) exact sort
-     *   B) fixed-width histogram (bounded range; approximate)
-     *   C) reservoir sample (approximate)
+     * EXAMPLE
+     * Sort samples, then index = ceil(percentile * N) - 1.
      *
-     * PRODUCTION MAPPING:
-     *   Supplied notes reference HdrHistogram-style production telemetry.
+     * IDEA
+     * Copy the input, sort it, then select index = ceil(percentile * N) - 1.
      *
-     * CORRECTION:
-     *   A simple equal-width histogram is conceptually related to HdrHistogram,
-     *   but HdrHistogram has a more sophisticated bucket/sub-bucket layout.
+     * COMPLEXITY
+     * O(N log N) time, O(N) space for the sorted copy
+     *
+     * FOLLOW-UP
+     * Streaming/bounded-memory production telemetry -> HdrHistogram/t-digest/KLL.
      */
     static final class DSA165_OrderLatencyPercentile {
 
-        static final class ExactPercentile {
-            private final List<Long> data = new ArrayList<>();
-            private boolean sorted;
+        static long percentile(long[] latencies, double percentile) {
+            long[] sorted = latencies.clone();
+            Arrays.sort(sorted);
 
-            void record(long latencyNs) {
-                requireNonNegative(latencyNs, "latencyNs");
-                data.add(latencyNs);
-                sorted = false;
-            }
+            int index =
+                    (int) Math.ceil(percentile * sorted.length) - 1;
 
-            long percentile(double p) {
-                requirePercentileFraction(p);
-                if (data.isEmpty()) return 0L;
-
-                if (!sorted) {
-                    Collections.sort(data);
-                    sorted = true;
-                }
-
-                int idx = Math.max(0, (int) Math.ceil(p * data.size()) - 1);
-                return data.get(idx);
-            }
-
-            long p50() { return percentile(0.50); }
-            long p95() { return percentile(0.95); }
-            long p99() { return percentile(0.99); }
+            return sorted[index];
         }
-
-        static final class Histogram {
-            private final long bucketWidth;
-            private final long[] counts;
-            private long total;
-            private long sum;
-            private long min = Long.MAX_VALUE;
-            private long max;
-
-            Histogram(long maxValueInclusive, long bucketWidth) {
-                if (maxValueInclusive < 0 || bucketWidth <= 0) {
-                    throw new IllegalArgumentException();
-                }
-
-                long bucketCount = maxValueInclusive / bucketWidth + 2;
-                if (bucketCount > Integer.MAX_VALUE) {
-                    throw new IllegalArgumentException("Too many buckets");
-                }
-
-                this.bucketWidth = bucketWidth;
-                this.counts = new long[(int) bucketCount];
-            }
-
-            void record(long latencyNs) {
-                requireNonNegative(latencyNs, "latencyNs");
-
-                total++;
-                sum = Math.addExact(sum, latencyNs);
-                min = Math.min(min, latencyNs);
-                max = Math.max(max, latencyNs);
-
-                long rawBucket = latencyNs / bucketWidth;
-                int bucket = (int) Math.min(rawBucket, counts.length - 1L);
-                counts[bucket]++;
-            }
-
-            /**
-             * Returns upper bound of selected fixed-width bucket.
-             */
-            long percentile(double p) {
-                requirePercentileFraction(p);
-                if (total == 0) return 0L;
-
-                long target = (long) Math.ceil(p * total);
-                long running = 0;
-
-                for (int i = 0; i < counts.length; i++) {
-                    running += counts[i];
-                    if (running >= target) {
-                        if (i == counts.length - 1) return max; // overflow bucket
-                        return Math.multiplyExact(i + 1L, bucketWidth);
-                    }
-                }
-                return max;
-            }
-
-            long p50() { return percentile(0.50); }
-            long p95() { return percentile(0.95); }
-            long p99() { return percentile(0.99); }
-            long mean() { return total == 0 ? 0L : sum / total; }
-            long min() { return min == Long.MAX_VALUE ? 0L : min; }
-            long max() { return max; }
-            long total() { return total; }
-        }
-
-        static final class Reservoir {
-            private final long[] sample;
-            private long seen;
-            private final Random rng;
-
-            Reservoir(int size, long seed) {
-                if (size <= 0) throw new IllegalArgumentException("size must be > 0");
-                this.sample = new long[size];
-                this.rng = new Random(seed);
-            }
-
-            void record(long latencyNs) {
-                requireNonNegative(latencyNs, "latencyNs");
-
-                if (seen < sample.length) {
-                    sample[(int) seen] = latencyNs;
-                } else {
-                    long j = nextLongBounded(rng, seen + 1);
-                    if (j < sample.length) {
-                        sample[(int) j] = latencyNs;
-                    }
-                }
-                seen++;
-            }
-
-            long percentile(double p) {
-                requirePercentileFraction(p);
-
-                int n = (int) Math.min(seen, sample.length);
-                if (n == 0) return 0L;
-
-                long[] copy = Arrays.copyOf(sample, n);
-                Arrays.sort(copy);
-
-                int idx = Math.max(0, (int) Math.ceil(p * n) - 1);
-                return copy[idx];
-            }
-        }
-    }
-
-    // =========================================================================
-    // Shared helpers
-    // =========================================================================
-
-    private static String key(String a, String b) {
-        return a + '\u0000' + b;
-    }
-
-    private static void requirePositive(long value, String name) {
-        if (value <= 0) throw new IllegalArgumentException(name + " must be > 0");
-    }
-
-    private static void requireNonNegative(long value, String name) {
-        if (value < 0) throw new IllegalArgumentException(name + " must be >= 0");
-    }
-
-    private static void requirePercentileFraction(double p) {
-        if (!(p > 0.0 && p <= 1.0)) {
-            throw new IllegalArgumentException("percentile must be in (0,1]");
-        }
-    }
-
-    private static boolean safeAbsExceeds(long value, long limit) {
-        if (value == Long.MIN_VALUE) return true;
-        return Math.abs(value) > limit;
-    }
-
-    /**
-     * Uniform long in [0, bound) without requiring a newer Random API.
-     */
-    private static long nextLongBounded(Random random, long bound) {
-        if (bound <= 0) throw new IllegalArgumentException("bound must be positive");
-
-        long r = random.nextLong();
-        long m = bound - 1;
-
-        if ((bound & m) == 0L) {
-            return r & m;
-        }
-
-        long u = r >>> 1;
-        while (u + m - (u % bound) < 0L) {
-            u = random.nextLong() >>> 1;
-        }
-        return u % bound;
-    }
-
-    // =========================================================================
-    // MAIN — smoke tests for all DSA-147 through DSA-165
-    // =========================================================================
-
-    public static void main(String[] args) {
-
-        System.out.println("=== DSA-147 Best Bid / Ask ===");
-        var bbo = new DSA147_BestBidAsk.OrderBook();
-        bbo.process(new DSA147_BestBidAsk.OrderEvent(
-                DSA147_BestBidAsk.EventType.NEW,
-                DSA147_BestBidAsk.Side.BUY, 100, 10));
-        bbo.process(new DSA147_BestBidAsk.OrderEvent(
-                DSA147_BestBidAsk.EventType.NEW,
-                DSA147_BestBidAsk.Side.BUY, 101, 5));
-        bbo.process(new DSA147_BestBidAsk.OrderEvent(
-                DSA147_BestBidAsk.EventType.NEW,
-                DSA147_BestBidAsk.Side.SELL, 103, 7));
-        bbo.process(new DSA147_BestBidAsk.OrderEvent(
-                DSA147_BestBidAsk.EventType.NEW,
-                DSA147_BestBidAsk.Side.SELL, 102, 8));
-        System.out.println("bestBid=" + bbo.bestBid() + " qty=" + bbo.bestBidQty());
-        System.out.println("bestAsk=" + bbo.bestAsk() + " qty=" + bbo.bestAskQty());
-        System.out.println("spread=" + bbo.spread());
-
-        System.out.println("\n=== DSA-148 Top N Price Levels ===");
-        var depth = new DSA148_TopNPriceLevels.OrderBook();
-        depth.process(new DSA148_TopNPriceLevels.OrderEvent(
-                DSA148_TopNPriceLevels.EventType.NEW,
-                DSA148_TopNPriceLevels.Side.BUY, 100, 10));
-        depth.process(new DSA148_TopNPriceLevels.OrderEvent(
-                DSA148_TopNPriceLevels.EventType.NEW,
-                DSA148_TopNPriceLevels.Side.BUY, 101, 20));
-        depth.process(new DSA148_TopNPriceLevels.OrderEvent(
-                DSA148_TopNPriceLevels.EventType.NEW,
-                DSA148_TopNPriceLevels.Side.BUY, 99, 30));
-        depth.process(new DSA148_TopNPriceLevels.OrderEvent(
-                DSA148_TopNPriceLevels.EventType.NEW,
-                DSA148_TopNPriceLevels.Side.SELL, 102, 5));
-        depth.process(new DSA148_TopNPriceLevels.OrderEvent(
-                DSA148_TopNPriceLevels.EventType.NEW,
-                DSA148_TopNPriceLevels.Side.SELL, 103, 15));
-        System.out.println("topBids=" + depth.topBids(2));
-        System.out.println("topAsks=" + depth.topAsks(2));
-
-        System.out.println("\n=== DSA-149 Price-Time Priority ===");
-        var pt = new DSA149_PriceTimePriorityQueue.PriceTimeQueue();
-        pt.add(new DSA149_PriceTimePriorityQueue.Order(
-                "B1", DSA149_PriceTimePriorityQueue.Side.BUY, 100, 2, 10));
-        pt.add(new DSA149_PriceTimePriorityQueue.Order(
-                "B2", DSA149_PriceTimePriorityQueue.Side.BUY, 101, 3, 10));
-        pt.add(new DSA149_PriceTimePriorityQueue.Order(
-                "B3", DSA149_PriceTimePriorityQueue.Side.BUY, 101, 1, 10));
-        System.out.println("nextBuy=" + pt.peekBuy());
-
-        System.out.println("\n=== DSA-150 Execution Dedup ===");
-        var exec = new DSA150_DeduplicateExecutionEvents.ExecutionProcessor();
-        var ex1 = new DSA150_DeduplicateExecutionEvents.ExecutionEvent(
-                1, "ACC1", "AAPL",
-                DSA150_DeduplicateExecutionEvents.Side.BUY, 100, 10);
-        System.out.println("accepted1=" + exec.process(ex1));
-        System.out.println("acceptedDuplicate=" + exec.process(ex1));
-        System.out.println("position=" + exec.position("ACC1", "AAPL"));
-
-        System.out.println("\n=== DSA-151 Sequence Gap ===");
-        System.out.println(DSA151_DetectSequenceGap.detectOrdered(
-                new long[]{1, 2, 5, 6, 10}));
-
-        System.out.println("\n=== DSA-152 Reorder ===");
-        var reorder = new DSA152_ReorderOutOfOrderMessages.ExactReorderBuffer(1, 10);
-        System.out.println(reorder.receive(
-                new DSA152_ReorderOutOfOrderMessages.Message(3, "C")));
-        System.out.println(reorder.receive(
-                new DSA152_ReorderOutOfOrderMessages.Message(2, "B")));
-        System.out.println(reorder.receive(
-                new DSA152_ReorderOutOfOrderMessages.Message(1, "A")));
-
-        System.out.println("\n=== DSA-153 Rolling Exposure ===");
-        var exposure = new DSA153_RollingExposure.ExposureTracker(15_000);
-        System.out.println(exposure.process(
-                DSA153_RollingExposure.EventType.NEW, "O1", 100, 100));
-        System.out.println(exposure.process(
-                DSA153_RollingExposure.EventType.UPDATE, "O1", 100, 120));
-        System.out.println("total=" + exposure.total());
-
-        System.out.println("\n=== DSA-154 Price Collar ===");
-        var collar = new DSA154_SlidingPriceDeviationCheck.PriceCollar(500);
-        collar.updateRef("AAPL", 10_000);
-        System.out.println("104=" + collar.check("AAPL", 10_400));
-        System.out.println("106=" + collar.check("AAPL", 10_600));
-
-        System.out.println("\n=== DSA-155 Exchange Throttle ===");
-        var throttle = new DSA155_ExchangeThrottle.SlidingWindowThrottle(2, 1_000);
-        System.out.println(throttle.submit(1_000));
-        System.out.println(throttle.submit(1_100));
-        System.out.println(throttle.submit(1_200));
-        System.out.println(throttle.submit(2_001));
-
-        System.out.println("\n=== DSA-156 Rolling VWAP ===");
-        var vwap = new DSA156_RollingVWAP.CountVWAP(3);
-        vwap.add(new DSA156_RollingVWAP.Trade(100, 10, 1));
-        vwap.add(new DSA156_RollingVWAP.Trade(110, 20, 2));
-        System.out.println("vwap=" + vwap.vwap());
-
-        System.out.println("\n=== DSA-157 Sliding Maximum ===");
-        var max = new DSA157_MarketDataSlidingMaximum.SlidingMax(3);
-        for (long x : new long[]{1, 3, -1, -3, 5, 3, 6, 7}) {
-            max.add(x);
-            System.out.println("add=" + x + " currentMax=" + max.max());
-        }
-
-        System.out.println("\n=== DSA-158 Order State Aggregation ===");
-        var states = new DSA158_OrderStateAggregation.OrderBook();
-        states.process("O1", DSA158_OrderStateAggregation.Event.NEW, 100);
-        states.process("O1", DSA158_OrderStateAggregation.Event.ACK, 0);
-        states.process("O1", DSA158_OrderStateAggregation.Event.PARTIAL_FILL, 40);
-        states.process("O1", DSA158_OrderStateAggregation.Event.FILL, 60);
-        System.out.println(states.get("O1"));
-
-        System.out.println("\n=== DSA-159 Matching Engine ===");
-        var engine = new DSA159_MatchBuyAndSellOrders.MatchingEngine();
-        engine.submit("S1", DSA159_MatchBuyAndSellOrders.Side.SELL, 101, 50);
-        engine.submit("S2", DSA159_MatchBuyAndSellOrders.Side.SELL, 102, 50);
-        System.out.println(engine.submit(
-                "B1", DSA159_MatchBuyAndSellOrders.Side.BUY, 102, 70));
-        System.out.println("bestAsk=" + engine.bestAsk());
-
-        System.out.println("\n=== DSA-160 Position ===");
-        var positions = new DSA160_PositionFromExecutions.PositionTracker();
-        positions.process(new DSA160_PositionFromExecutions.Fill(
-                "E1", "ACC1", "AAPL",
-                DSA160_PositionFromExecutions.Side.BUY, 100, 100));
-        positions.process(new DSA160_PositionFromExecutions.Fill(
-                "E2", "ACC1", "AAPL",
-                DSA160_PositionFromExecutions.Side.SELL, 35, 105));
-        System.out.println("position=" + positions.position("ACC1", "AAPL"));
-
-        System.out.println("\n=== DSA-161 Duplicate Orders ===");
-        var dupOrders = new DSA161_DetectDuplicateOrders.DuplicateDetector(
-                true, 1_000, 10_000);
-        var o1 = new DSA161_DetectDuplicateOrders.Order(
-                "O1", "C1", "ACC1", "AAPL",
-                DSA161_DetectDuplicateOrders.Side.BUY,
-                100, 10, 1_000);
-        System.out.println(dupOrders.check(o1));
-        System.out.println(dupOrders.check(o1));
-
-        System.out.println("\n=== DSA-162 Most Active Instruments ===");
-        var active = new DSA162_MostActiveInstruments.ActivityTracker(1_000);
-        active.add(new DSA162_MostActiveInstruments.Event("AAPL", 100, 1_000));
-        active.add(new DSA162_MostActiveInstruments.Event("MSFT", 300, 1_100));
-        active.add(new DSA162_MostActiveInstruments.Event("AAPL", 250, 1_200));
-        System.out.println(active.topK(2, 1_200));
-
-        System.out.println("\n=== DSA-163 Merge K Feeds ===");
-        List<List<DSA163_MergeMultipleOrderedMarketFeeds.Event>> feeds = List.of(
-                List.of(
-                        new DSA163_MergeMultipleOrderedMarketFeeds.Event(1000, 1, "F1", "A"),
-                        new DSA163_MergeMultipleOrderedMarketFeeds.Event(1300, 2, "F1", "C")
-                ),
-                List.of(
-                        new DSA163_MergeMultipleOrderedMarketFeeds.Event(1100, 1, "F2", "B"),
-                        new DSA163_MergeMultipleOrderedMarketFeeds.Event(1400, 2, "F2", "D")
-                )
-        );
-        System.out.println(DSA163_MergeMultipleOrderedMarketFeeds.merge(feeds));
-
-        System.out.println("\n=== DSA-164 Snapshot + Incrementals ===");
-        var merger = new DSA164_SnapshotIncrementalMerge.SnapshotMerger();
-        merger.apply(new DSA164_SnapshotIncrementalMerge.Update(
-                12, DSA164_SnapshotIncrementalMerge.Op.UPSERT, "MSFT", "200"));
-        merger.loadSnapshot(Map.of("AAPL", "100"), 10);
-        merger.apply(new DSA164_SnapshotIncrementalMerge.Update(
-                11, DSA164_SnapshotIncrementalMerge.Op.UPSERT, "AAPL", "120"));
-        System.out.println("state=" + merger.snapshotView());
-        System.out.println("nextExpected=" + merger.nextExpected());
-
-        System.out.println("\n=== DSA-165 Latency Percentiles ===");
-        var histogram = new DSA165_OrderLatencyPercentile.Histogram(1_000, 10);
-        for (long x : new long[]{10, 20, 15, 100, 50, 30, 40, 200, 25, 35}) {
-            histogram.record(x);
-        }
-        System.out.println("p50=" + histogram.p50());
-        System.out.println("p95=" + histogram.p95());
-        System.out.println("p99=" + histogram.p99());
-
-        System.out.println("\nALL SMOKE TESTS COMPLETED.");
     }
 }
