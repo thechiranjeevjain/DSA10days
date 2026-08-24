@@ -6,9 +6,9 @@ Use this page to translate the historical `dayX/sessionY` layout into interview 
 |---|---|---|
 | Day 1 | Arrays, hashing, intervals, two pointers, greedy stock scans | [Open Day 1](day1/README.md) |
 | Day 2 | Binary search, binary search on answer, ordered history, interval DP | [Open Day 2](day2/README.md) |
-| Day 3 | Sliding windows, prefix/suffix, greedy arrays, strings and palindrome | [Open Day 3](day3/README.md) |
+| Day 3 | Fixed/variable sliding windows, monotonic deque, prefix/suffix and strings | [Open Day 3](day3/README.md) |
 | Day 4 | Linked-list pointers, cycle detection, merging and LRU cache | [Open Day 4](day4/README.md) |
-| Day 5 | Monotonic stack/deque, two pointers, expression and stack/queue design | [Open Day 5](day5/README.md) |
+| Day 5 | Monotonic stack, two pointers, expression and stack/queue design | [Open Day 5](day5/README.md) |
 | Day 6 | Tree traversal, BST, construction, serialization and path recursion | [Open Day 6](day6/README.md) |
 | Day 7 | Heap/top-K/streaming and KMP/string matching | [Open Day 7](day7/README.md) |
 | Day 8 | Grid and graph traversal, topological sort, shortest paths and components | [Open Day 8](day8/README.md) |

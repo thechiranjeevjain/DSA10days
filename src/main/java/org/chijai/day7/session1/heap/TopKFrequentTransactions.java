@@ -684,56 +684,48 @@ public class TopKFrequentTransactions {
      */
     static class Optimal {
 
+        record Node(String transaction, int frequency) {}
+
         List<String> topKFrequent(List<String> transactions, int k) {
 
-            // 🔵 State: final occurrence count for every transaction.
+            if (k <= 0) {
+                return List.of();
+            }
+
+            // 1. Count final frequencies.
             Map<String, Integer> frequency = new HashMap<>();
 
             for (String tx : transactions) {
-
                 frequency.merge(tx, 1, Integer::sum);
             }
 
-            // 🟢 Invariant:
-            // Root is always the weakest accepted transaction.
+            // 2. Min-heap:
+            // root = weakest member of current Top K.
             PriorityQueue<Node> heap =
                     new PriorityQueue<>(
-                            Comparator.comparingInt(node -> node.frequency)
+                            Comparator.comparingInt(Node::frequency)
                     );
 
+            // 3. Keep only the best K candidates.
             for (Map.Entry<String, Integer> entry : frequency.entrySet()) {
 
-                Node current =
-                        new Node(entry.getKey(), entry.getValue());
+                heap.offer(new Node(entry.getKey(), entry.getValue()));
 
-                // Invariant:
-                // Until size reaches K every candidate is accepted.
-                if (heap.size() < k) {
-
-                    heap.offer(current);
-                    continue;
-                }
-
-                // Compare only with the weakest accepted transaction.
-                if (current.frequency > heap.peek().frequency) {
-
-                    // Discard the weakest.
+                // If we temporarily have K + 1 candidates,
+                // remove the weakest one.
+                if (heap.size() > k) {
                     heap.poll();
-
-                    // Accept the stronger candidate.
-                    heap.offer(current);
                 }
             }
 
+            // 4. Heap gives weakest -> strongest.
             List<String> answer = new ArrayList<>();
 
-            // Extraction occurs from weakest to strongest.
             while (!heap.isEmpty()) {
-
-                answer.add(heap.poll().transaction);
+                answer.add(heap.poll().transaction());
             }
 
-            // Restore descending frequency order.
+            // 5. Return strongest -> weakest.
             Collections.reverse(answer);
 
             return answer;

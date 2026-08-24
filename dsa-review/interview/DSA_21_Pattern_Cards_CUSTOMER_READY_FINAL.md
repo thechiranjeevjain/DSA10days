@@ -1,15 +1,161 @@
-# DSA — 21 Core Pattern Cards to Memorize
+# DSA — 21 Core Pattern Reconstruction Cards
 ## The reusable mental machines behind the problem bank
 
-> **Memorize this, not 150 final solutions.**
+> **Reconstruct from this; do not memorize 150 final solutions or 150 code listings.**
 >
 > For each pattern, retrieve:
 >
-> **TRIGGER → INVARIANT → SKELETON → COMPLEXITY → FAILURES → VARIATIONS → RECALL PHRASE**
+> **CORE IDEA → INVARIANT → IMPLEMENTATION TRAPS → DERIVATION QUESTION**
+>
+> Use the Java skeleton only after you can explain why every important line is
+> forced by the invariant.
 >
 > For each A/B/C anchor, retrieve only:
 >
 > **ROLE → RECOGNITION → CORE INVARIANT → TRANSFER**
+
+## Reconstruction Loop
+
+```text
+read once
+→ close the card
+→ write from blank
+→ identify the exact missing rule
+→ add one invariant or trap
+→ rewrite
+→ space it
+→ retrieve in random order
+```
+
+Mastery does not mean never forgetting a line. Mastery means the core idea and
+invariant let you regenerate the line after forgetting it.
+
+## 21-Pattern Reconstruction Index
+
+Use this index closed-book. Say the core idea, then answer the derivation
+question. Open the detailed card only after attempting both.
+
+| # | Pattern | Core idea | Derivation question |
+|---:|---|---|---|
+| 1 | HashMap / Frequency | Store only the earlier counts, indices, or lookup facts needed to answer the current item quickly. | What information from earlier input would let me answer the current item immediately? |
+| 2 | Two Pointers | Use ordering to prove that one pointer can move without losing a possible answer. | Given this comparison, which side is now impossible? |
+| 3 | Sliding Window | Reuse state between overlapping contiguous ranges while moving boundaries. | What makes the window invalid, and which boundary movement restores validity? |
+| 4 | Prefix Sum | Express a range result as the difference between two accumulated prefixes. | Can the answer be written as total through right minus total before left? |
+| 5 | Binary Search | Preserve an answer-containing interval and eliminate half using a monotonic comparison. | What remains possible, and which half did the comparison prove impossible? |
+| 6 | Binary Search on Answer | Search an ordered answer space using a monotonic feasibility test. | If candidate x works, which entire direction of candidates must also work? |
+| 7 | Intervals / Sweep Line | Sort boundaries so overlap and active-state changes become locally decidable. | After sorting, what minimal state summarizes everything already merged or active? |
+| 8 | Greedy | Make a locally safe choice that cannot damage the best achievable future. | Why can an optimal solution be changed to use this choice without becoming worse? |
+| 9 | Monotonic Stack | Keep unresolved candidates until the current value permanently resolves them. | Which previous candidates does the current value resolve now? |
+| 10 | Monotonic Deque | Keep only unexpired, undominated candidates so the best remains at the front. | Which candidates expired, and which are permanently dominated by the new value? |
+| 11 | Heap / Top-K | Maintain only the next priority item or best k candidates instead of fully sorting. | Do I need full order, or only repeated access to an extreme or kth boundary? |
+| 12 | Linked-List Pointers | Rewire links while preserving access to the unprocessed remainder. | Which pointer must be saved before changing this link? |
+| 13 | Tree DFS | Define what a subtree call returns, combine children, and propagate one result upward. | What exact fact must the parent receive from this subtree? |
+| 14 | Tree BFS | Process one frontier at a time when the answer depends on level or unweighted distance. | What does one queue layer represent, and when must its size be captured? |
+| 15 | BST | Exploit global ordering to skip a subtree or expose sorted order through inorder traversal. | How does BST ordering prove that one branch is unnecessary? |
+| 16 | Graph DFS / BFS | Model states and transitions, then visit each reachable state once. | What is a node, what is an edge, and when must a state become visited? |
+| 17 | Topological Sort | Repeatedly process dependency-free nodes; failure to process all nodes reveals a cycle. | What does indegree count, and what makes a node safe to schedule? |
+| 18 | Dijkstra | Finalize the smallest tentative distance and relax nonnegative outgoing edges. | Why is the smallest queued distance final, and which neighbors can improve? |
+| 19 | Union-Find / DSU | Maintain connected-component representatives under repeated merges and queries. | Do I need the full path, or only whether two values share a component? |
+| 20 | Backtracking | Choose, recurse, and undo so every sibling branch starts from the same state. | What choice is made, what ends the branch, and what must be undone? |
+| 21 | Dynamic Programming | Define a reusable state and transition from smaller already-solved states. | What minimal state identifies a subproblem, and which smaller states determine it? |
+
+## Per-Problem Mini-Card
+
+Use this template for every A/B/C anchor or any problem you fail during recall:
+
+```text
+PROBLEM:
+
+CORE IDEA:
+1–2 lines only
+
+INVARIANT:
+One sentence describing what must stay true
+
+IMPLEMENTATION TRAPS:
+- 3–5 failure points only
+
+DERIVATION QUESTION:
+What question regenerates the code if the exact line is forgotten?
+```
+
+Do not add a trap merely because it exists in the explanation. Add it after
+you actually forget or violate that rule during reconstruction.
+
+## Interview Execution Script
+
+Use this order aloud before writing code. It prevents a correct idea from
+turning into unexplained or fragile implementation.
+
+```text
+1. RESTATE
+   "We are given ... and must return ..."
+
+2. CLARIFY
+   Ask only questions that can change the algorithm:
+   - input size and value range?
+   - duplicates, negatives, null/empty input?
+   - sorted or unsorted?
+   - return one answer, every answer, count, or actual path?
+   - may I modify the input?
+
+3. BASELINE
+   State the simplest correct approach and its cost.
+
+4. RECOGNIZE
+   Name the trigger, not merely the pattern:
+   "The ranges overlap, so I can reuse window state."
+
+5. STATE THE INVARIANT
+   Say exactly what each data structure or pointer represents.
+
+6. DERIVE EACH UPDATE
+   For every pointer move, removal, or state transition, say what fact makes
+   the discarded alternative impossible.
+
+7. CODE
+   Keep variable names aligned with the explanation.
+
+8. DRY-RUN
+   Use one normal example and one boundary example.
+
+9. DEFEND
+   Give correctness, time, space, and the assumption that makes the method valid.
+```
+
+### Universal Boundary Checklist
+
+Before declaring the solution complete, test the applicable cases:
+
+- empty input and one element
+- answer at the first or last position
+- all values equal; all values distinct
+- duplicates when equality changes pointer movement or deduplication
+- negative values, zero, and overflow risk
+- no solution, exactly one solution, and multiple valid solutions
+- window of size 1 and window equal to the whole input
+- disconnected graph, graph cycle, and repeated edge
+- skewed tree and null child
+- whether input may be modified
+
+Do not mechanically recite irrelevant cases. State which cases threaten this
+algorithm's invariant and dry-run those.
+
+### Correctness Defense Template
+
+```text
+Initialization:
+The invariant is true before processing begins because ...
+
+Maintenance:
+Each update preserves it because ...
+
+Progress:
+Every iteration permanently processes, removes, or fixes at least one state.
+
+Termination:
+When the loop/recursion ends, the invariant implies the required answer because ...
+```
 
 ---
 
@@ -104,7 +250,7 @@ for (int i = 0; i < nums.length; i++) {
 
 **TRANSFER:** Heap/bucket top-k, frequency-ranked problems.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - updating the map before checking when order matters
 - confusing frequency with index
@@ -224,7 +370,7 @@ while (left < right) {
 
 **TRANSFER:** 4Sum/k-Sum, duplicate handling.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - moving the wrong pointer without proving why
 - missing duplicate skipping in 3Sum
@@ -353,7 +499,7 @@ for (int right = 0; right < nums.length; right++) {
 
 **TRANSFER:** Need/have bookkeeping, shortest satisfying window.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - shrinking under the wrong condition
 - moving `left` backward
@@ -471,7 +617,7 @@ for (int x : nums) {
 
 **TRANSFER:** Tree path counting + backtracking state.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - forgetting initial prefix `0`
 - off-by-one prefix definition
@@ -596,7 +742,7 @@ return left;
 
 **TRANSFER:** Rotated II, modified binary search.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - mixing binary-search templates
 - wrong interval meaning
@@ -710,7 +856,7 @@ return left;
 
 **TRANSFER:** Painter/book-allocation family.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - binary searching before proving monotonicity
 - wrong lower/upper bound; for the shown minimum-feasible template, `right` must be a feasible upper bound
@@ -834,7 +980,7 @@ for (int[] e : events) {
 
 **TRANSFER:** Difference arrays, capacity timelines.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - wrong endpoint tie rule
 - forgetting to sort
@@ -945,7 +1091,7 @@ for (int i = 0; i < n; i++) {
 
 **TRANSFER:** Cooldown scheduling, rearrangement by frequency.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - calling something greedy without proof
 - choosing a plausible local rule that has a counterexample
@@ -1042,7 +1188,7 @@ for (int i = 0; i < nums.length; i++) {
 
 **TRANSFER:** Maximal Rectangle, contribution ranges.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - storing values when indices are required
 - wrong monotonic direction
@@ -1126,7 +1272,19 @@ for (int right = 0; right < nums.length; right++) {
 
 **RECOGNITION:** Maximum for every fixed-size moving window.
 
+**CORE IDEA:** Keep only useful candidates for the maximum; discard candidates that expired or can never win again.
+
 **CORE INVARIANT:** Deque contains in-window indices with decreasing values; front is the maximum.
+
+**IMPLEMENTATION TRAPS:**
+
+- remove expired indices from the front
+- remove smaller/equal dominated values from the back
+- store indices, not values, so expiry can be detected
+- output only after the first complete window
+- read the answer from the front, never the back
+
+**DERIVATION QUESTION:** Which candidates are outside the window, and which candidates can never become a maximum after the new value arrives?
 
 **TRANSFER:** Sliding minimum, repeated best under expiry.
 
@@ -1150,7 +1308,7 @@ for (int right = 0; right < nums.length; right++) {
 
 **TRANSFER:** Monotonic-queue DP optimization.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - storing values instead of indices
 - removing expired indices after reading the answer
@@ -1258,7 +1416,7 @@ PriorityQueue<Node> pq =
 
 **TRANSFER:** Online percentile/order statistics.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - min-heap vs max-heap confusion
 - comparator reversed incorrectly
@@ -1373,7 +1531,7 @@ while (fast != null && fast.next != null) {
 
 **TRANSFER:** Pair swap, block manipulation.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - losing `next`
 - null dereference
@@ -1483,7 +1641,7 @@ int dfs(TreeNode node) {
 
 **TRANSFER:** Tree DP, diameter-style global aggregation.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - undefined recursive return meaning
 - mixing global answer with returned value
@@ -1589,7 +1747,7 @@ while (!queue.isEmpty()) {
 
 **TRANSFER:** Burn Tree, nodes at distance K.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - using changing `queue.size()` inside the loop
 - adding null nodes to `ArrayDeque`
@@ -1711,7 +1869,7 @@ boolean valid(TreeNode node, long low, long high) {
 
 **TRANSFER:** BST iterator, rank/select.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - checking only parent-child relation
 - integer boundary overflow
@@ -1841,7 +1999,7 @@ void dfs(int r, int c) {
 
 **TRANSFER:** State-space BFS, mutation chains.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - marking visited too late
 - revisiting states
@@ -1962,7 +2120,7 @@ boolean hasCycle = processed != n;
 
 **TRANSFER:** Custom dependency extraction + topological ordering.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - reversing edge direction
 - incrementing wrong indegree
@@ -2069,7 +2227,7 @@ while (!pq.isEmpty()) {
 
 **TRANSFER:** Minimum-bottleneck paths, threshold routing.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - using ordinary BFS on unequal weights
 - using Dijkstra with negative edge weights
@@ -2191,7 +2349,7 @@ class DSU {
 
 **TRANSFER:** Dynamic cycle detection, incremental connectivity.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - using DSU for directed reachability/order
 - forgetting path compression
@@ -2302,7 +2460,7 @@ void backtrack(int start, List<Integer> path) {
 
 **TRANSFER:** Constraint/path search.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - forgetting undo
 - adding the same mutable `path` object to result
@@ -2432,7 +2590,7 @@ for (int x : nums) {
 
 **TRANSFER:** Unbounded knapsack, min-cost construction.
 
-## COMMON FAILURES
+## IMPLEMENTATION TRAPS
 
 - coding before defining state
 - wrong iteration direction
@@ -2460,65 +2618,31 @@ for (int x : nums) {
 
 ---
 
-# CUSTOMER STANDARD — WHAT TO MEMORIZE
-
-For each pattern card, memorize the conceptual spine:
-
-`Trigger → Invariant → Skeleton → Complexity → Failures → Recall Phrase`
-
-For each anchor micro-card, memorize:
-
-`Recognition → Core Invariant → Transfer`
-
-`Role` is orientation only; you do not need to recite it in an interview.
-
----
-
-# HOW TO MEMORIZE THE A / B / C ANCHORS
-
-Do **not** memorize final code for each anchor.
-
-For every anchor, retrieve in under 20 seconds:
-
-```text
-ROLE        Why is this an anchor?
-RECOGNITION What clue fires the pattern?
-INVARIANT   What must stay true?
-TRANSFER    What harder/adjacent problem does it unlock?
-```
-
-Then prove ownership by coding from a blank editor:
-
-```text
-A = primitive mechanics
-B = canonical interview anchor
-C = harder transfer / mutation
-```
-
-Recognition without blank-editor reconstruction is not ownership.
-
----
-
 # HIGH-VALUE CONFUSION GUARDS
 
-Memorize these distinctions; they prevent wrong-pattern starts.
+Use these distinctions to prevent wrong-pattern starts. Do not choose from the
+problem's nouns; choose from the operation and invariant the solution requires.
 
 | If you are choosing between... | Use this discriminator |
 |---|---|
 | Sliding Window vs Prefix Sum | Window needs monotonic repair by moving left; arbitrary negatives often break that. Prefix Sum handles exact historical differences. |
+| Sliding Window vs Monotonic Deque | Sliding window controls which contiguous range is active. A monotonic deque is an extra data structure used only when that window needs a rolling min/max or another undominated candidate. Sliding Window Maximum uses both. |
+| Monotonic Stack vs Monotonic Deque | Stack resolves previous items by next/previous greater-or-smaller relationships. Deque also removes expired indices from the front while maintaining best candidates at the back. |
 | Binary Search vs Binary Search on Answer | Search data directly vs search a candidate answer using a monotonic feasibility predicate. |
 | BFS vs Dijkstra | Equal edge cost / fewest edges vs unequal nonnegative edge weights. |
 | DFS/BFS vs DSU | Traverse/reach states now vs repeatedly merge/query undirected components. |
 | Heap vs Monotonic Deque | General repeated best candidate vs moving-window best where candidates expire by index and domination is permanent. |
+| Heap / Top-K vs Sorting | Keep a heap when only k candidates or repeated extremes matter; sort when the complete order is needed or its simplicity already meets the bound. |
 | Greedy vs DP | Greedy needs a proof that the local choice cannot hurt the optimal future; otherwise keep competing future states with DP. |
 | Backtracking vs DP | Enumerate actual solutions/paths vs cache overlapping subproblems for min/max/count/can. |
+| Backtracking vs ordinary DFS | Backtracking explores alternative choices and must undo mutable choice state. Ordinary DFS may only visit reachable nodes and need no choose/undo cycle. |
 | Tree DFS vs Tree BFS | Parent answer from child answers vs level/frontier/nearest-by-edges. |
 | Interval Merge vs Sweep Line | Produce merged ranges vs track active count/capacity across ordered boundaries. |
 | Topological Sort vs Generic Graph Traversal | Directed prerequisites/order vs ordinary reachability/components. |
 
 ---
 
-# OPTIONAL SPECIALIZED CARDS
+# OPTIONAL SPECIALIZED CARDS — OUTSIDE THE 21 CORE CARDS
 
 These are lower-frequency specialized tools. Learn them after the 21 core cards unless your target problems require them earlier.
 
@@ -2617,75 +2741,6 @@ Maximum XOR of Two Numbers in an Array
 ## RECALL PHRASE
 
 > **Max XOR → greedily seek opposite bits in a binary trie.**
-
----
-
-# ONE-PAGE RECALL INDEX
-
-```text
-01 HashMap / Frequency
-   Fast memory of what I have already seen.
-
-02 Two Pointers
-   One comparison lets me discard one side.
-
-03 Sliding Window
-   Contiguous + maintainable constraint.
-
-04 Prefix Sum
-   Range = difference of cumulative states.
-
-05 Binary Search
-   One test discards half.
-
-06 Binary Search on Answer
-   Candidate answer has monotonic feasibility.
-
-07 Intervals / Sweep
-   Order boundaries, then reason locally.
-
-08 Greedy
-   Prove local choice cannot hurt optimal future.
-
-09 Monotonic Stack
-   Nearest boundary where order breaks.
-
-10 Monotonic Deque
-   Moving window + repeated best + expiry.
-
-11 Heap / Top-K
-   Need next best repeatedly, not a full sort.
-
-12 Linked-List Pointers
-   Preserve the remainder before rewiring.
-
-13 Tree DFS
-   Define dfs(node) returns ____.
-
-14 Tree BFS
-   Frontier / level / nearest.
-
-15 BST
-   Tree + sorted-order leverage.
-
-16 Graph DFS/BFS
-   Node / edge / visited / start / target.
-
-17 Topological Sort
-   Directed prerequisites → indegree zero first.
-
-18 Dijkstra
-   Nonnegative weighted shortest path → relax through min-heap.
-
-19 Union-Find / DSU
-   Repeated merge/connectivity → representative roots.
-
-20 Backtracking
-   Choose → recurse → undo.
-
-21 Dynamic Programming
-   STATE → CHOICE → RECURRENCE → BASE.
-```
 
 ---
 

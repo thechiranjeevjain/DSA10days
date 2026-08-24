@@ -1,319 +1,101 @@
 package org.chijai.day1.session2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
-/*
- =====================================================================
- 📘 MERGE INTERVALS — SORT + SWEEP PATTERN CHAPTER
- =====================================================================
-
- This file is designed to be:
- ✔ Read like a textbook chapter
- ✔ Used for interview articulation
- ✔ Revisited months later without relearning
- ✔ Taught to others confidently
-
- Pattern Scope:
- - Merge Intervals
- - Insert Interval
- - Meeting Rooms II
-*/
-
+/**
+ * INTERVALS — FINAL INTERVIEW VERSION
+ *
+ * Keep Java modern where it improves readability:
+ *   - record Interval
+ *   - Comparator.comparingInt(Interval::start)
+ *
+ * Keep algorithm reconstruction simple:
+ *   - plain loops
+ *   - no Streams / Collectors in core or plumbing
+ *
+ * Recall:
+ *   MERGE  = sort -> active -> overlap: merge -> gap: commit/reset -> commit last
+ *   INSERT = before -> overlap -> add -> after
+ *   ROOMS  = sort starts + ends -> overlap: new room -> else reuse
+ */
 public class Intervals {
 
     // ============================================================
-    // 🔵 CORE PATTERN OVERVIEW
+    // DOMAIN MODEL
     // ============================================================
+    record Interval(int start, int end) {
 
-    /*
-     🔵 Pattern Name:
-        Sort + Sweep (Interval Merging)
-
-     🔵 Core Idea:
-        Sort intervals by start.
-        Sweep left → right.
-        Maintain ONE active interval.
-        Expand it while overlapping.
-        Commit it when overlap stops.
-
-     🔵 Why It Works:
-        Sorting guarantees that overlap decisions are local.
-        Once overlap breaks, it can NEVER reappear later.
-
-     🔵 When To Use:
-        - Overlapping ranges
-        - Time windows / bookings
-        - Schedule compression
-        - Range union problems
-
-     🧭 Pattern Recognition Signals:
-        - Input looks like [start, end]
-        - Overlap is defined by boundary comparison
-        - Output requires non-overlapping ranges
-    */
-
-    // ============================================================
-    // 🟢 MENTAL MODEL & INVARIANTS
-    // ============================================================
-
-    /*
-     🟢 Mental Model:
-        Walk along a number line holding ONE elastic band.
-        Stretch it while intervals overlap.
-        Drop it and pick a new one when overlap stops.
-
-     🟢 Invariants (Must Always Hold):
-        1. Intervals are processed in sorted start order
-        2. activeInterval covers ALL overlaps seen so far
-        3. activeInterval.end is the MAX end among merged intervals
-        4. Once overlap breaks, it cannot resume
-
-     🟢 Forbidden Actions:
-        ❌ Checking overlap without sorting
-        ❌ Tracking multiple active intervals
-        ❌ Forgetting to commit the final interval
-    */
-
-    // ============================================================
-    // 🟢 DOMAIN MODEL (FOR CLARITY & TEACHING)
-    // ============================================================
-
-    static class Interval {
-        int start;
-        int end;
-
-        Interval(int start, int end) {
-            this.start = start;
-            this.end = end;
+        Interval merge(Interval other) {
+            return new Interval(
+                    Math.min(start, other.start()),
+                    Math.max(end, other.end())
+            );
         }
     }
 
     // ============================================================
-    // 🟢 BOUNDARY CONVERSION HELPERS
+    // SIMPLE BOUNDARY CONVERSION
     // ============================================================
+    static List<Interval> toIntervals(int[][] raw) {
+        List<Interval> result = new ArrayList<>();
 
-    static List<Interval> toIntervalList(int[][] rawIntervals) {
-        List<Interval> list = new ArrayList<>();
-        for (int[] raw : rawIntervals) {
-            list.add(new Interval(raw[0], raw[1]));
+        for (int[] interval : raw) {
+            result.add(new Interval(interval[0], interval[1]));
         }
-        return list;
+
+        return result;
     }
 
     static int[][] toArray(List<Interval> intervals) {
-        int n = intervals.size();
-        int[][] result = new int[n][2];
-        for (int i = 0; i < n; i++) {
-            result[i][0] = intervals.get(i).start;
-            result[i][1] = intervals.get(i).end;
+        int[][] result = new int[intervals.size()][2];
+
+        for (int i = 0; i < intervals.size(); i++) {
+            result[i][0] = intervals.get(i).start();
+            result[i][1] = intervals.get(i).end();
         }
+
         return result;
     }
 
     // ============================================================
-    // PRIMARY PROBLEM — MERGE INTERVALS
+    // 1) MERGE INTERVALS
     // ============================================================
+    static class MergeIntervals {
 
-    // ------------------------------------------------------------
-    // 🟢 OPTIMAL — ARRAY VERSION (PLATFORM STYLE)
-
-    static class MergeIntervalsOptimal {
-
-        /**
-         * ---------------------------------------------------------------------------
-         * Mental Model
-         * ---------------------------------------------------------------------------
-         *
-         * Sort intervals
-         *         ↓
-         * Open the first interval (activeInterval)
-         *         ↓
-         * For every remaining interval:
-         *
-         *     Does it overlap the active interval?
-         *              ↓
-         *        Yes → Extend the active interval.
-         *
-         *        No  → Finalize (store) the active interval.
-         *              Start a new active interval.
-         *
-         * Finish iteration
-         *         ↓
-         * Finalize the last active interval.
-         *
-         * ---------------------------------------------------------------------------
-         * Invariant:
-         * activeInterval always represents the merged interval currently being built.
-         * It is the accumulated merged span of all overlapping intervals processed
-         * so far that has not yet been added to the answer.
-         * ---------------------------------------------------------------------------
-         */
-        public int[][] merge(int[][] intervals) {
-
-            if (intervals.length < 2)
-                return intervals;
-
-            // Sort intervals by start position.
-            Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
-
-            List<int[]> merged = new ArrayList<>();
-
-            // Active merged interval currently being built.
-            int[] activeInterval = intervals[0];
-
-            for (int i = 1; i < intervals.length; i++) {
-
-                int[] current = intervals[i];
-
-                int currentStart = current[0];
-                int currentEnd = current[1];
-
-                // Overlap → extend the active interval.
-                if (currentStart <= activeInterval[1]) {
-                    activeInterval[1] = Math.max(activeInterval[1], currentEnd);
-                }
-                // Gap → finalize current interval and start a new one.
-                else {
-                    merged.add(activeInterval);
-                    activeInterval = current;
-                }
+        public int[][] merge(int[][] rawIntervals) {
+            if (rawIntervals.length <= 1) {
+                return rawIntervals;
             }
 
-            // Don't forget to finalize the last active interval.
-            merged.add(activeInterval);
+            List<Interval> intervals = toIntervals(rawIntervals);
+            intervals.sort(Comparator.comparingInt(Interval::start));
 
-            return merged.toArray(new int[merged.size()][]);
-        }
-    }
+            List<Interval> result = new ArrayList<>();
+            Interval active = intervals.get(0);
 
-    // ------------------------------------------------------------
-    // 🟢 OPTIMAL — DOMAIN MODEL VERSION (CLARITY STYLE)
-    // ------------------------------------------------------------
-    static class MergeIntervalsUsingDomain {
+            for (int i = 1; i < intervals.size(); i++) {
+                Interval current = intervals.get(i);
 
-        public int[][] merge(int[][] intervals) {
-
-            if (intervals.length < 2) return intervals;
-
-            List<Interval> sortedIntervals = toIntervalList(intervals);
-
-            // 🟢 INVARIANT: sorted by start
-            sortedIntervals.sort((a, b) -> a.start - b.start);
-
-            List<Interval> merged = new ArrayList<>();
-
-            // 🟢 INVARIANT: activeInterval covers all overlaps so far
-            Interval activeInterval = sortedIntervals.get(0);
-
-            for (int i = 1; i < sortedIntervals.size(); i++) {
-                Interval current = sortedIntervals.get(i);
-
-                if (current.start <= activeInterval.end) {
-                    activeInterval.end = Math.max(activeInterval.end, current.end);
+                if (current.start() <= active.end()) {
+                    active = active.merge(current);   // overlap -> stretch
                 } else {
-                    merged.add(activeInterval);
-                    activeInterval = current;
+                    result.add(active);               // gap -> commit
+                    active = current;                 // reset
                 }
             }
 
-            merged.add(activeInterval);
-            return toArray(merged);
+            result.add(active);                       // commit last
+            return toArray(result);
         }
     }
 
     // ============================================================
-    // ⚫ REINFORCEMENT 1 — INSERT INTERVAL
+    // 2) INSERT INTERVAL
     // ============================================================
-
-    /*
-     Four explicit cases:
-     1. curr ends before new starts
-     2. curr starts after new ends
-     3. overlap → merge
-     4. new interval is last
-    */
-
-        /*
-     =========================================================
-     INSERT INTERVAL — VISUAL MENTAL MODEL (FROM DIAGRAM)
-     =========================================================
-
-     Timeline:  min ------------------------------------ max
-
-     Red dashed lines = current interval boundaries
-
-     Case 1: Current ends BEFORE new starts
-     --------------------------------------------------
-       New:        [----]
-       Curr:               [========]
-
-       Rule:
-         curr.end < new.start
-       Action:
-         add curr
-
-     --------------------------------------------------
-
-     Case 2: Current starts AFTER new ends
-     --------------------------------------------------
-       Curr:      [========]
-       New:                   [----]
-
-       Rule:
-         curr.start > new.end
-       Action:
-         add new, then curr
-         mark new as finalized
-
-     --------------------------------------------------
-
-     Case 3: Overlap / Touch (merge zone)
-     --------------------------------------------------
-       Curr:         [========]
-       New:       [------]
-
-       OR
-
-       Curr:      [========]
-       New:             [------]
-
-       OR
-
-       Curr:      [========]
-       New:   [----------------]
-
-       Rule:
-         curr.start <= new.end
-         AND
-         curr.end   >= new.start
-
-       Action:
-         expand new:
-           new.start = min(new.start, curr.start)
-           new.end   = max(new.end,   curr.end)
-
-     --------------------------------------------------
-
-     Case 4: New interval survives till the end
-     --------------------------------------------------
-       No curr interval exists AFTER new
-
-       Rule:
-         newInterval != null after loop
-
-       Action:
-         add new at the end
-
-     =========================================================
-     INVARIANT:
-       newInterval always represents the merged block so far
-     =========================================================
-    */
-
-    // ------------------------------------------------------------
-    // 🟢 ARRAY VERSION — 4 CASE LOGIC
-    // ------------------------------------------------------------
-    static class InsertIntervalArray {
+    static class InsertInterval {
 
         public int[][] insert(int[][] intervals, int[] newInterval) {
 
@@ -354,87 +136,21 @@ public class Intervals {
         }
     }
 
-    // ------------------------------------------------------------
-    // 🟢 DOMAIN MODEL VERSION — SAME 4 CASES
-    // ------------------------------------------------------------
-    static class InsertIntervalUsingDomain {
-
-        public int[][] insert(int[][] intervals, int[] newRaw) {
-
-            List<Interval> sorted = toIntervalList(intervals);
-            Interval newInterval = new Interval(newRaw[0], newRaw[1]);
-
-            List<Interval> result = new ArrayList<>();
-
-            for (Interval curr : sorted) {
-
-                // Case 1: curr completely before new
-                if (newInterval != null && curr.end < newInterval.start) {
-                    result.add(curr);
-                }
-
-                // Case 2: curr completely after new
-                else if (newInterval != null && curr.start > newInterval.end) {
-                    result.add(newInterval);
-                    result.add(curr);
-                    newInterval = null;
-                }
-
-                // Case 3: overlap → merge
-                else if (newInterval != null) {
-                    newInterval.start = Math.min(newInterval.start, curr.start);
-                    newInterval.end   = Math.max(newInterval.end, curr.end);
-                }
-
-                // new already placed
-                else {
-                    result.add(curr);
-                }
-            }
-
-            // Case 4: new interval is last
-            if (newInterval != null) {
-                result.add(newInterval);
-            }
-
-            return toArray(result);
-        }
-    }
-
     // ============================================================
-    // ⚫ REINFORCEMENT 2 — MEETING ROOMS II
+    // 3) MEETING ROOMS II
     // ============================================================
-
-    /*
-     ⚫ SAME CORE IDEA:
-        Sweep sorted boundaries.
-        But here we COUNT overlaps instead of merging them.
-
-        Given an array of meeting time intervals consisting of start and end times[[s1,e1],[s2,e2],...](si< ei), find the minimum number of conference rooms required.
-        Example 1:
-        Input:
-        [[0, 30],[5, 10],[15, 20]]
-        Output:
-        2
-        Example 2:
-        Input:
-        [[7,10],[2,4]]
-        Output:
-
-    */
-
-    // ------------------------------------------------------------
-    // 🟢 ARRAY VERSION
-    // ------------------------------------------------------------
-    static class MeetingRoomsIIArray {
+    static class MeetingRoomsII {
 
         public int minMeetingRooms(int[][] intervals) {
+            if (intervals.length == 0) {
+                return 0;
+            }
 
-            // Whenever an old meeting ends before a new meeting starts, we reuse the room (i.e., do not add more room). Otherwise, we need an extra room (i.e., add a room).
-            int[] starts = new int[intervals.length];
-            int[] ends = new int[intervals.length];
+            int n = intervals.length;
+            int[] starts = new int[n];
+            int[] ends = new int[n];
 
-            for (int i = 0; i < intervals.length; i++) {
+            for (int i = 0; i < n; i++) {
                 starts[i] = intervals[i][0];
                 ends[i] = intervals[i][1];
             }
@@ -446,54 +162,102 @@ public class Intervals {
             int endIndex = 0;
 
             for (int start : starts) {
-
-                // If a meeting starts before the earliest one ends → overlap -> need a new room
                 if (start < ends[endIndex]) {
-                    rooms++;
+                    rooms++;          // overlap -> new room
                 } else {
-                    // Otherwise, reuse a room
-                    // Meeting ended , room freed up.
-                    endIndex++;
+                    endIndex++;       // room freed -> reuse
                 }
             }
+
             return rooms;
         }
     }
 
+    // ============================================================
+    // TEST HELPERS
+    // ============================================================
+    static void check(String name, int[][] actual, int[][] expected) {
+        if (!Arrays.deepEquals(actual, expected)) {
+            throw new AssertionError(
+                    name + " expected=" + Arrays.deepToString(expected)
+                            + " actual=" + Arrays.deepToString(actual)
+            );
+        }
+        System.out.println("PASS: " + name + " -> " + Arrays.deepToString(actual));
+    }
+
+    static void check(String name, int actual, int expected) {
+        if (actual != expected) {
+            throw new AssertionError(name + " expected=" + expected + " actual=" + actual);
+        }
+        System.out.println("PASS: " + name + " -> " + actual);
+    }
 
     // ============================================================
-    // 🧪 MAIN METHOD — TESTS (MUST BE LAST)
+    // MAIN — TESTS
     // ============================================================
-
     public static void main(String[] args) {
+        MergeIntervals merge = new MergeIntervals();
 
-        MergeIntervalsUsingDomain merge = new MergeIntervalsUsingDomain();
+        check(
+                "merge/core",
+                merge.merge(new int[][]{{1, 3}, {2, 6}, {8, 10}, {15, 18}}),
+                new int[][]{{1, 6}, {8, 10}, {15, 18}}
+        );
 
-        // 🟡 Core case
-        int[][] input1 = {{1,3},{2,6},{8,10},{15,18}};
-        System.out.println(Arrays.deepToString(merge.merge(input1)));
-        // Expected: [[1,6],[8,10],[15,18]]
+        check(
+                "merge/all-overlap",
+                merge.merge(new int[][]{{1, 4}, {2, 3}, {3, 5}}),
+                new int[][]{{1, 5}}
+        );
 
-        // 🟡 Single interval (interviewer trap)
-        int[][] input2 = {{5,7}};
-        System.out.println(Arrays.deepToString(merge.merge(input2)));
-        // Expected: [[5,7]]
+        check(
+                "merge/single",
+                merge.merge(new int[][]{{5, 7}}),
+                new int[][]{{5, 7}}
+        );
 
-        // 🟡 All overlapping
-        int[][] input3 = {{1,4},{2,3},{3,5}};
-        System.out.println(Arrays.deepToString(merge.merge(input3)));
-        // Expected: [[1,5]]
+        InsertInterval insert = new InsertInterval();
 
-        // ❌ INTERVIEW TRAP: touching but non-overlapping
-        int[][] input4 = {{1,2},{3,3}};
-        System.out.println(Arrays.deepToString(merge.merge(input4)));
-        // Expected: [[1,2],[3,3]]
+        check(
+                "insert/core",
+                insert.insert(new int[][]{{1, 3}, {6, 9}}, new int[]{2, 5}),
+                new int[][]{{1, 5}, {6, 9}}
+        );
 
-        InsertIntervalUsingDomain insert = new InsertIntervalUsingDomain();
-        System.out.println(Arrays.deepToString(
-                insert.insert(new int[][]{{1,3},{6,9}}, new int[]{2,5})
-        ));
-        // Expected: [[1,5],[6,9]]
-        
+        check(
+                "insert/multiple-overlaps",
+                insert.insert(
+                        new int[][]{{1, 2}, {3, 5}, {6, 7}, {8, 10}, {12, 16}},
+                        new int[]{4, 8}
+                ),
+                new int[][]{{1, 2}, {3, 10}, {12, 16}}
+        );
+
+        check(
+                "insert/no-overlap-at-end",
+                insert.insert(new int[][]{{1, 2}, {3, 5}}, new int[]{7, 9}),
+                new int[][]{{1, 2}, {3, 5}, {7, 9}}
+        );
+
+        check(
+                "insert/no-overlap-at-start",
+                insert.insert(new int[][]{{3, 5}, {7, 9}}, new int[]{1, 2}),
+                new int[][]{{1, 2}, {3, 5}, {7, 9}}
+        );
+
+        MeetingRoomsII rooms = new MeetingRoomsII();
+
+        check(
+                "rooms/overlap",
+                rooms.minMeetingRooms(new int[][]{{0, 30}, {5, 10}, {15, 20}}),
+                2
+        );
+
+        check(
+                "rooms/reuse",
+                rooms.minMeetingRooms(new int[][]{{7, 10}, {2, 4}}),
+                1
+        );
     }
 }

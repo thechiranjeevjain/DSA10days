@@ -366,7 +366,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 36. Top K Frequent Elements
 
-- Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentTransactions.java) | [LeetCode](https://leetcode.com/problems/top-k-frequent-elements/)
+- Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/top-k-frequent-elements/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
 - Bottleneck: Sorting all unique values works but costs more than keeping a size-k heap or buckets.
 - Pattern: Heap / Priority Queue, using Frequency + heap/bucket.

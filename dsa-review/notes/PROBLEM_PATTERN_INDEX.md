@@ -102,7 +102,7 @@ These often appear, but they should come after Priority A is reliable.
 | `day7/session1/heap/Median.java` | Two heaps | B |  |  |  | |
 | `day7/session1/heap/MovingAverage.java` | Queue / stream | B |  |  |  | |
 | `day7/session1/heap/TaskScheduler.java` | Greedy / heap | B |  |  |  | |
-| `day7/session1/heap/TopKFrequentTransactions.java` | Frequency + heap/bucket | B |  |  |  | |
+| `day7/session1/heap/TopKFrequentElements.java` | Frequency + heap/bucket | B |  |  |  | |
 | `day8/graph/session1/ColoringABorder.java` | Matrix DFS | B |  |  |  | |
 | `day8/graph/session2/NetworkDelayTime.java` | Dijkstra / graph | B |  |  |  | |
 | `day8/graph/session3/AccountsMerge.java` | Union Find / graph | B |  |  |  | |
