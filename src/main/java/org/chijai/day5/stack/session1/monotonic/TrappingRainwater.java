@@ -1,4 +1,4 @@
-package org.chijai.day5.stack.session2;
+package org.chijai.day5.stack.session1.monotonic;
 
 public class TrappingRainwater {
 

@@ -1,4 +1,4 @@
-package org.chijai.day5.stack.session1;
+package org.chijai.day5.stack.session1.monotonic;
 
 // =====================================================================================
 // NEXT GREATER ELEMENT II — INVARIANT-FIRST ALGORITHM CHAPTER
@@ -8,9 +8,7 @@ package org.chijai.day5.stack.session1;
 //
 // =====================================================================================
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.Stack;
 
 public class NextGreaterElement {

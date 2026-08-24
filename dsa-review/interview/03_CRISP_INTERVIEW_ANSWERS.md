@@ -326,7 +326,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 32. Daily Temperatures
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/DailyTemperatures.java) | [LeetCode](https://leetcode.com/problems/daily-temperatures/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/monotonicDeque/DailyTemperatures.java) | [LeetCode](https://leetcode.com/problems/daily-temperatures/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Scanning forward from every day is O(n^2); a decreasing stack resolves each day once.
 - Pattern: Stack / Monotonic Stack, using Monotonic stack.
@@ -1070,7 +1070,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 
 ### 106. Next Greater Element Ii
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/NextGreaterElement.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-ii/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/monotonicDeque/NextGreaterElement.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-ii/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Naive circular scans repeat work; stack resolves each index when the next greater appears.
 - Pattern: Stack / Monotonic Stack, using Monotonic stack.
@@ -1324,7 +1324,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 131. Min Stack
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/min-stack/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/min-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Scanning stack on getMin makes the required O(1) operation impossible.
 - Pattern: Stack / Monotonic Stack, using Stack design.
@@ -1334,7 +1334,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 132. Max Stack
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/max-stack/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/max-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: A plain stack gives pop order but cannot remove max efficiently.
 - Pattern: Stack / Monotonic Stack, using Stack design.
@@ -1364,7 +1364,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 135. Next Greater Element I
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-i/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-i/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Searching nums2 for every nums1 value repeats the same next-greater work.
 - Pattern: Stack / Monotonic Stack, using Stack design.
@@ -1374,7 +1374,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 136. Online Stock Span
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/online-stock-span/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/online-stock-span/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Scanning backward repeats work; collapsed spans let each price enter and leave once.
 - Pattern: Stack / Monotonic Stack, using Stack design.
@@ -1484,7 +1484,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 147. Design A Stack With Increment Operation
 
-- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/design-a-stack-with-increment-operation/)
+- Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/design-a-stack-with-increment-operation/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
 - Bottleneck: Incrementing bottom k elements directly makes increment O(k).
 - Pattern: Stack / Monotonic Stack, using Stack design.

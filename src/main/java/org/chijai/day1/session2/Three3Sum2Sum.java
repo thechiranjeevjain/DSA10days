@@ -182,6 +182,10 @@ public class Three3Sum2Sum {
                     int currentSum =
                             nums[fixedIndex] + nums[leftPointer] + nums[rightPointer];
 
+                    //remember the Arrays.asList() method syntax
+                    // returns a fixed-size list backed by the specified array,
+                    // so you cannot add or remove elements from it.
+                    // However, you can modify the elements of the list.
                     if (currentSum == 0) {
                         result.add(Arrays.asList(
                                 nums[fixedIndex],
@@ -192,11 +196,15 @@ public class Three3Sum2Sum {
                         leftPointer++;
                         rightPointer--;
 
+                        //Skip duplicates only when they would create the same triplet again,
+                        // not merely because two adjacent values are equal.
                         // ❌ COMMON BUG: forgetting duplicate skips
+                        //this should not be just if condition but while loop why
                         while (leftPointer < rightPointer &&
                                 nums[leftPointer] == nums[leftPointer - 1]) {
                             leftPointer++;
                         }
+                        //this has to be k+1 not k-1
                         while (leftPointer < rightPointer &&
                                 nums[rightPointer] == nums[rightPointer + 1]) {
                             rightPointer--;
@@ -212,6 +220,36 @@ public class Three3Sum2Sum {
             return result;
         }
     }
+
+    /*
+     * DUPLICATE HANDLING — IMPORTANT NUANCE
+     *
+     * Goal: remove duplicate TRIPLETS, not duplicate VALUES.
+     *
+     * 1. Duplicate anchor i before starting two-pointer search
+     *      → SKIP
+     *    Reason: same anchor value would repeat the same search space.
+     *
+     * 2. nums[j] happens to equal nums[i]
+     *      → DO NOT SKIP
+     *    Reason: repeated values are allowed inside a valid triplet.
+     *    Example: [-1, -1, 2] is valid.
+     *
+     * 3. After finding a valid triplet, next j has the same value
+     *      → SKIP
+     *    Reason: it would produce the same triplet again.
+     *
+     * 4. After finding a valid triplet, next k has the same value
+     *      → SKIP
+     *    Reason: it would also produce the same triplet again.
+     *
+     * Mental model:
+     *      Duplicate VALUE != Duplicate ANSWER
+     *
+     * Skip a value only when that value has already been explored
+     * in the SAME ROLE (anchor / left / right).
+     */
+
 
     class Solution {
         public List < List < Integer >> threeSum(int[] nums) {

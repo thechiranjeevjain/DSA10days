@@ -16,6 +16,7 @@ package org.chijai.day4.LinkedList.session3;
  */
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LruCache {
@@ -472,9 +473,18 @@ public class LruCache {
             this.capacity = capacity;
 
             // Initialize sentinels
+            //we can't Initialize to null because
+            // we need to maintain the invariant that
+            // head.next is most recent and tail.prev is least recent
             head = new Node(-1, -1);
             tail = new Node(-1, -1);
 
+            //we also need to link the sentinels together
+            //else the invariant will be broken because
+            // head.next will be null and tail.prev will be null
+            //broken at what point?
+            // when we try to add a new node,
+            // we will try to access head.next and tail.prev
             head.next = tail;
             tail.prev = head;
         }
@@ -532,8 +542,57 @@ public class LruCache {
             node.prev = head;
             node.next = head.next;
 
+            //this order sequence very important, otherwise will break the invariant
+            //can't update head.next first, because head.next is the old most recent node,
+            // we need to update its prev pointer first
             head.next.prev = node;
             head.next = node;
+        }
+    }
+
+    /*
+     * LinkedHashMap LRU — 2 controls:
+     *
+     * accessOrder = false → insertion order   [DEFAULT]
+     * accessOrder = true  → access/LRU order
+     *
+     * removeEldestEntry() → returns false     [DEFAULT: no auto-eviction]
+     * override → return size() > capacity     [evict eldest]
+     *
+     * LRU = accessOrder true + size-based eldest eviction
+     *  * Why not ArrayDeque?
+     * ends add/remove      → O(1)
+     * find/remove middle  → O(n)  ❌
+     *
+     * LinkedHashMap:
+     * key lookup          → O(1)
+     * move accessed entry → O(1)
+     * evict eldest/LRU    → O(1)  ✅
+     */
+
+    static class LRUCacheJava extends LinkedHashMap<Integer, Integer> {
+
+        private final int capacity;
+
+        public LRUCacheJava(int capacity) {
+            // true = maintain ACCESS order, not insertion order
+            super(capacity, 0.75f, true);
+            this.capacity = capacity;
+        }
+
+        public int get(int key) {
+            return super.getOrDefault(key, -1);
+        }
+
+        public void put(int key, int value) {
+            super.put(key, value);
+        }
+
+        @Override
+        protected boolean removeEldestEntry(
+                Map.Entry<Integer, Integer> eldest) {
+
+            return size() > capacity;
         }
     }
 

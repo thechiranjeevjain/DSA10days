@@ -42,6 +42,7 @@ public class Intervals {
     static List<Interval> toIntervals(int[][] raw) {
         List<Interval> result = new ArrayList<>();
 
+        //raw.size() does not exist, so we use raw.length instead
         for (int[] interval : raw) {
             result.add(new Interval(interval[0], interval[1]));
         }
