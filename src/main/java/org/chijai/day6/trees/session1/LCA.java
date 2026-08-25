@@ -409,6 +409,7 @@ public class LCA {
             stack.push(root);
 
             // Build parent pointers until both p and q are found
+            // not till the end of the tree, just until both targets are located
             while (!parent.containsKey(p) || !parent.containsKey(q)) {
                 TreeNode node = stack.pop();
 

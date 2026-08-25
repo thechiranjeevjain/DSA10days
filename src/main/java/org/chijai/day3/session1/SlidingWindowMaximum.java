@@ -367,6 +367,9 @@ public class SlidingWindowMaximum {
                 }
 
                 // RULE 2: remove older candidates dominated by the new value.
+                //make sure to use <= instead of < to remove equal values as well, so that we always keep the most recent maximum in the deque
+                //don't forget to use peekLast() instead of peekFirst() to check the last element in the deque
+                //we are comparing nums here both side not indices, so we need to use nums[decreasingIndices.peekLast()] instead of decreasingIndices.peekLast()
                 while (!decreasingIndices.isEmpty()
                         && nums[decreasingIndices.peekLast()] <= nums[right]) {
                     decreasingIndices.pollLast();

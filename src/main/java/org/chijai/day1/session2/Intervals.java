@@ -77,6 +77,7 @@ public class Intervals {
             List<Interval> result = new ArrayList<>();
             Interval active = intervals.get(0);
 
+            //starting from 1
             for (int i = 1; i < intervals.size(); i++) {
                 Interval current = intervals.get(i);
 
