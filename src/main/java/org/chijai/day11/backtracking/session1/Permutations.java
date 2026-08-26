@@ -1233,7 +1233,10 @@ public class Permutations {
             dfs(nums, used, path, answer);
 
             return answer;
-        }        private void dfs(
+        }
+
+
+        private void dfs(
                 int[] nums,
                 boolean[] used,
                 List<Integer> path,

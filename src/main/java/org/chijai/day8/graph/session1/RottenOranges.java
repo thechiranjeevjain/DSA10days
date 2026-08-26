@@ -679,95 +679,96 @@ public class RottenOranges {
 
     static class OptimalSolution {
 
-        public int orangesRotting(int[][] grid) {
+            private static final int FRESH = 1;
+            private static final int ROTTEN = 2;
 
-            // Handle malformed input early.
-            if (grid == null || grid.length == 0) {
-                return 0;
-            }
-
-            int rows = grid.length;
-            int cols = grid[0].length;
-
-            Queue<int[]> queue = new LinkedList<>();
-
-            int fresh = 0;
-
-            // Collect all starting rotten sources.
-            // Invariant: all these start at minute 0.
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-
-                    if (grid[r][c] == 2) {
-                        queue.offer(new int[]{r, c});
-                    } else if (grid[r][c] == 1) {
-                        fresh++;
-                    }
-                }
-            }
-
-            // No fresh oranges means no time needed.
-            if (fresh == 0) {
-                return 0;
-            }
-
-            int[][] directions = {
+            private static final int[][] DIRECTIONS = {
                     {-1, 0},
                     {1, 0},
                     {0, -1},
                     {0, 1}
             };
 
-            int minutes = 0;
+            private static class Cell {
+                final int row;
+                final int col;
 
-            // Invariant:
-            // one full BFS layer == one minute.
-            while (!queue.isEmpty() && fresh > 0) {
+                Cell(int row, int col) {
+                    this.row = row;
+                    this.col = col;
+                }
+            }
 
-                int size = queue.size();
+            public int orangesRotting(int[][] grid) {
 
-                // Process current minute layer.
-                for (int i = 0; i < size; i++) {
+                if (grid == null
+                        || grid.length == 0
+                        || grid[0].length == 0) {
+                    return 0;
+                }
 
-                    int[] current = queue.poll();
+                int rows = grid.length;
+                int cols = grid[0].length;
 
-                    int r = current[0];
-                    int c = current[1];
+                Queue<Cell> queue = new ArrayDeque<>();
+                int fresh = 0;
 
-                    for (int[] dir : directions) {
+                // All initially rotten oranges are BFS sources at minute 0.
+                for (int r = 0; r < rows; r++) {
+                    for (int c = 0; c < cols; c++) {
 
-                        int nr = r + dir[0];
-                        int nc = c + dir[1];
-
-                        // Boundary protection.
-                        if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) {
-                            continue;
+                        if (grid[r][c] == ROTTEN) {
+                            queue.offer(new Cell(r, c));
+                        } else if (grid[r][c] == FRESH) {
+                            fresh++;
                         }
-
-                        // Only fresh oranges can rot.
-                        if (grid[nr][nc] != 1) {
-                            continue;
-                        }
-
-                        // Rot immediately to avoid duplicate enqueue.
-                        grid[nr][nc] = 2;
-
-                        fresh--;
-
-                        // Newly rotten becomes future BFS source.
-                        queue.offer(new int[]{nr, nc});
                     }
                 }
 
-                // Entire layer completed => one minute passed.
-                minutes++;
-            }
+                if (fresh == 0) {
+                    return 0;
+                }
 
-            // If fresh remains,
-            // some oranges were unreachable.
-            return fresh == 0 ? minutes : -1;
+                int minutes = 0;
+
+                // One BFS level represents one minute.
+                while (!queue.isEmpty() && fresh > 0) {
+
+                    int size = queue.size();
+
+                    for (int i = 0; i < size; i++) {
+
+                        Cell current = queue.poll();
+
+                        for (int[] dir : DIRECTIONS) {
+
+                            int nr = current.row + dir[0];
+                            int nc = current.col + dir[1];
+
+                            if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) {
+                                continue;
+                            }
+
+                            if (grid[nr][nc] != FRESH) {
+                                continue;
+                            }
+
+                            // Mark when discovered to prevent duplicate enqueue.
+                            grid[nr][nc] = ROTTEN;
+                            fresh--;
+
+                            queue.offer(new Cell(nr, nc));
+                        }
+                    }
+
+                    minutes++;
+                }
+
+                return fresh == 0 ? minutes : -1;
+            }
         }
-    }
+
+
 
     /**
      * =================================================================================

@@ -1,4 +1,4 @@
-package org.chijai.day3.session2;
+package org.chijai.day3.session2.prefix.suffix;
 
 import org.junit.jupiter.api.Test;
 

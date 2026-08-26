@@ -739,64 +739,30 @@ public class HouseRobber {
      */
     static class MemoizationSolution {
 
-        public int rob(int[] nums) {
+        static int rob(int[] nums) {
 
-            Integer[] memo = new Integer[nums.length];
-
-            return dfs(nums, 0, memo);
-        }
-
-        private int dfs(
-                int[] nums,
-                int index,
-                Integer[] memo
-        ) {
-
-            /*
-             * Base case:
-             *
-             * beyond final house.
-             */
-            if (index >= nums.length) {
+            if (nums.length == 0) {
                 return 0;
             }
 
-            /*
-             * LIVE CODING NARRATION:
-             *
-             * Reuse previously solved subproblem.
-             */
-            if (memo[index] != null) {
-                return memo[index];
+            if (nums.length == 1) {
+                return nums[0];
             }
 
-            /*
-             * Rob current house.
-             *
-             * Adjacent becomes forbidden.
-             */
-            int take = nums[index] + dfs(
-                    nums,
-                    index + 2,
-                    memo
-            );
+            int[] dp = new int[nums.length];
 
-            /*
-             * Skip current house.
-             */
-            int skip = dfs(
-                    nums,
-                    index + 1,
-                    memo
-            );
+            dp[0] = nums[0];
+            dp[1] = Math.max(nums[0], nums[1]);
 
-            /*
-             * Store globally optimal answer
-             * for this starting index.
-             */
-            memo[index] = Math.max(take, skip);
+            for (int i = 2; i < nums.length; i++) {
 
-            return memo[index];
+                int take = nums[i] + dp[i - 2];
+                int skip = dp[i - 1];
+
+                dp[i] = Math.max(take, skip);
+            }
+
+            return dp[nums.length - 1];
         }
     }
 
@@ -851,85 +817,23 @@ public class HouseRobber {
      * O(1)
      */
     static class OptimalSolution {
+        static int rob(int[] nums) {
 
-        public int rob(int[] nums) {
+            int twoBack = 0;
+            int oneBack = 0;
 
-            /*
-             * LIVE CODING NARRATION:
-             *
-             * Handle smallest edge case early.
-             */
-            if (nums.length == 1) {
-                return nums[0];
+            for (int money : nums) {
+
+                int take = money + twoBack;
+                int skip = oneBack;
+
+                int current = Math.max(take, skip);
+
+                twoBack = oneBack;
+                oneBack = current;
             }
 
-            /*
-             * dp_i_2
-             *
-             * Initially:
-             *
-             * dp[0]
-             */
-            int dp_i_2 = nums[0];
-
-            /*
-             * dp_i_1
-             *
-             * Initially:
-             *
-             * best answer till index 1.
-             */
-            int dp_i_1 = Math.max(
-                    nums[0],
-                    nums[1]
-            );
-
-            /*
-             * LIVE CODING NARRATION:
-             *
-             * Start from third house because
-             * first two states already initialized.
-             */
-            for (int i = 2; i < nums.length; i++) {
-
-                /*
-                 * LIVE CODING NARRATION:
-                 *
-                 * Taking current means previous
-                 * house becomes illegal.
-                 */
-                int take = nums[i] + dp_i_2;
-
-                /*
-                 * LIVE CODING NARRATION:
-                 *
-                 * Skipping current preserves
-                 * previous optimal answer.
-                 */
-                int skip = dp_i_1;
-
-                /*
-                 * dp_i
-                 * =
-                 * best answer till current index.
-                 */
-                int dp_i = Math.max(take, skip);
-
-                /*
-                 * LIVE CODING NARRATION:
-                 *
-                 * Slide DP window forward.
-                 */
-                dp_i_2 = dp_i_1;
-                dp_i_1 = dp_i;
-            }
-
-            /*
-             * Final invariant:
-             *
-             * dp_i_1 stores answer till last index.
-             */
-            return dp_i_1;
+            return oneBack;
         }
     }
 

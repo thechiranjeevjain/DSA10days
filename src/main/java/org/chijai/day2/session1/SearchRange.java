@@ -236,6 +236,9 @@ public class SearchRange {
         }
     }
 
+    // problem wants worst case 0(logn)
+    // this solution is O(n) in worst case, so it is not optimal
+    // as when input is [8,8,8,8,8,8,8,8] and target is 8, it will scan the entire array
     static class Improved {
         static int[] searchRange(int[] nums, int target) {
             int index = binarySearch(nums, target);
@@ -346,37 +349,255 @@ public class SearchRange {
      */
 
     static class Optimal {
+
+        enum Boundary {
+            FIRST,
+            LAST
+        }
+
         static int[] searchRange(int[] nums, int target) {
-            int first = findFirst(nums, target);
-            if (first == -1) return new int[]{-1, -1};
-            int last = findLast(nums, target);
+
+            int first = findBoundary(nums, target, Boundary.FIRST);
+
+            if (first == -1) {
+                return new int[]{-1, -1};
+            }
+
+            int last = findBoundary(nums, target, Boundary.LAST);
+
             return new int[]{first, last};
         }
 
-        private static int findFirst(int[] nums, int target) {
-            int left = 0, right = nums.length - 1, answer = -1;
-            while (left <= right) {
-                int mid = left + (right - left) / 2;
-                if (nums[mid] >= target) {
-                    if (nums[mid] == target) answer = mid;
-                    right = mid - 1;
-                } else left = mid + 1;
-            }
-            return answer;
-        }
+        private static int findBoundary(
+                int[] nums,
+                int target,
+                Boundary boundary
+        ) {
 
-        private static int findLast(int[] nums, int target) {
-            int left = 0, right = nums.length - 1, answer = -1;
+            int left = 0;
+            int right = nums.length - 1;
+            int answer = -1;
+
             while (left <= right) {
+
                 int mid = left + (right - left) / 2;
-                if (nums[mid] <= target) {
-                    if (nums[mid] == target) answer = mid;
+
+                if (nums[mid] < target) {
                     left = mid + 1;
-                } else right = mid - 1;
+
+                } else if (nums[mid] > target) {
+                    right = mid - 1;
+
+                } else {
+
+                    answer = mid;
+
+                    // The key difference between finding the first and last occurrence is which side we continue searching after finding a match.
+                    if (boundary == Boundary.FIRST) {
+                        // If we are looking for the first occurrence, we continue searching to the left.
+                        // half of the search space is discarded, and we keep the left half.
+                        right = mid - 1;
+                    } else {
+                        // If we are looking for the last occurrence, we continue searching to the right.
+                        // half of the search space is discarded, and we keep the right half.
+                        left = mid + 1;
+                    }
+                }
             }
+
             return answer;
         }
     }
+
+    /*
+     * ================================================================
+     * BOUNDARY BINARY SEARCH — INTUITION
+     * ================================================================
+     *
+     * Normal binary search:
+     *
+     * nums[mid] < target
+     * -> search RIGHT
+     *
+     * nums[mid] > target
+     * -> search LEFT
+     *
+     * nums[mid] == target
+     * -> normally return immediately
+     *
+     *
+     * Boundary binary search changes ONLY the equality case.
+     *
+     * When target is found:
+     *
+     *      answer = mid;
+     *
+     * We save the occurrence, but DO NOT return yet.
+     *
+     *
+     * FIRST occurrence:
+     *
+     *      Found target.
+     *      Could there be another target before this one?
+     *
+     *      YES -> continue searching LEFT.
+     *
+     *      right = mid - 1;
+     *
+     *
+     * LAST occurrence:
+     *
+     *      Found target.
+     *      Could there be another target after this one?
+     *
+     *      YES -> continue searching RIGHT.
+     *
+     *      left = mid + 1;
+     *
+     *
+     * Mental rule:
+     *
+     *      FIRST -> found -> save -> go LEFT
+     *
+     *      LAST  -> found -> save -> go RIGHT
+     *
+     *
+     * ================================================================
+     * WHY USE ONE COMMON findBoundary() METHOD?
+     * ================================================================
+     *
+     * findFirst() and findLast() have almost identical binary-search
+     * logic.
+     *
+     * The ONLY meaningful difference is what happens after:
+     *
+     *      nums[mid] == target
+     *
+     *
+     * FIRST:
+     *
+     *      right = mid - 1;
+     *
+     *
+     * LAST:
+     *
+     *      left = mid + 1;
+     *
+     *
+     * Therefore the common binary-search logic is extracted once,
+     * and Boundary.FIRST / Boundary.LAST controls only the direction
+     * after finding the target.
+     *
+     *
+     * ================================================================
+     * WHY THIS REMAINS O(log n) EVEN IF ALL VALUES ARE EQUAL
+     * ================================================================
+     *
+     * Example:
+     *
+     *      nums = [8, 8, 8, 8, 8, 8, 8, 8]
+     *      target = 8
+     *
+     *
+     * Suppose we first land somewhere in the middle:
+     *
+     *      [8 8 8 8 8 8 8 8]
+     *               ^
+     *
+     *
+     * For FIRST:
+     *
+     * We DO NOT walk left one element at a time.
+     *
+     * We discard the entire right half:
+     *
+     *      n
+     *      ->
+     *      n / 2
+     *      ->
+     *      n / 4
+     *      ->
+     *      n / 8
+     *      ->
+     *      ...
+     *
+     *
+     * Same idea for LAST, except we keep the right half.
+     *
+     *
+     * Therefore:
+     *
+     *      find FIRST = O(log n)
+     *
+     *      find LAST  = O(log n)
+     *
+     *
+     * Total:
+     *
+     *      O(log n) + O(log n)
+     *
+     *      = O(log n)
+     *
+     *
+     * Space:
+     *
+     *      O(1)
+     *
+     *
+     * ================================================================
+     * COMPARED WITH BINARY SEARCH + LINEAR EXPANSION
+     * ================================================================
+     *
+     * Alternative:
+     *
+     *      1. Binary search to find any target.
+     *      2. Move left one-by-one.
+     *      3. Move right one-by-one.
+     *
+     *
+     * If all n elements equal target:
+     *
+     *      binary search = O(log n)
+     *
+     *      expansion     = O(n)
+     *
+     *      total         = O(n)
+     *
+     *
+     * Boundary binary search instead keeps HALVING the search space.
+     *
+     *
+     * Key distinction:
+     *
+     *      Linear expansion
+     *      -> WALK through duplicates.
+     *
+     *      Boundary binary search
+     *      -> DISCARD HALF of the remaining search space.
+     *
+     *
+     * ================================================================
+     * INTERVIEW RECONSTRUCTION RULE
+     * ================================================================
+     *
+     * Start with ordinary binary search.
+     *
+     * The only modification is:
+     *
+     *      nums[mid] == target
+     *
+     *      -> save mid
+     *      -> do NOT return
+     *
+     *
+     * Then:
+     *
+     *      need FIRST -> search LEFT
+     *
+     *      need LAST  -> search RIGHT
+     *
+     * ================================================================
+     */
 
     // =============================================================================================
     // 7️⃣ 🟣 INTERVIEW ARTICULATION
@@ -622,20 +843,44 @@ public class SearchRange {
      */
 
     static class SearchRotatedArray {
-        static int search(int[] nums, int target) {
-            int left = 0, right = nums.length - 1;
-            while (left <= right) {
-                int mid = left + (right - left) / 2;
-                if (nums[mid] == target) return mid;
 
+        static int search(int[] nums, int target) {
+
+            int left = 0;
+            int right = nums.length - 1;
+
+            while (left <= right) {
+
+                int mid = left + (right - left) / 2;
+
+                if (nums[mid] == target) {
+                    return mid;
+                }
+
+                // LEFT half is sorted.
                 if (nums[left] <= nums[mid]) {
-                    if (nums[left] <= target && target < nums[mid]) right = mid - 1;
-                    else left = mid + 1;
-                } else {
-                    if (nums[mid] < target && target <= nums[right]) left = mid + 1;
-                    else right = mid - 1;
+
+                    // Target lies inside sorted LEFT half.
+                    if (nums[left] <= target && target < nums[mid]) {
+                        right = mid - 1;
+                    } else {
+                        left = mid + 1;
+                    }
+
+                }
+
+                // Otherwise RIGHT half is sorted.
+                else {
+
+                    // Target lies inside sorted RIGHT half.
+                    if (nums[mid] < target && target <= nums[right]) {
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
                 }
             }
+
             return -1;
         }
     }
@@ -861,27 +1106,62 @@ public class SearchRange {
      *
      */
     static class SearchRotatedArrayII {
-        static boolean search(int[] nums, int target) {
-            int left = 0, right = nums.length - 1;
-            while (left <= right) {
-                int mid = left + (right - left) / 2;
-                if (nums[mid] == target) return true;
 
-                if (nums[left] == nums[mid] && nums[mid] == nums[right]) {
+        static boolean search(int[] nums, int target) {
+
+            int left = 0;
+            int right = nums.length - 1;
+
+            while (left <= right) {
+
+                int mid = left + (right - left) / 2;
+
+                if (nums[mid] == target) {
+                    return true;
+                }
+
+                /*
+                 * DUPLICATE AMBIGUITY:
+                 *
+                 * Cannot determine which half is sorted.
+                 * Safely remove equal boundary values.
+                 */
+                if (nums[left] == nums[mid]
+                        && nums[mid] == nums[right]) {
+
                     left++;
                     right--;
-                } else if (nums[left] <= nums[mid]) {
-                    if (nums[left] <= target && target < nums[mid]) right = mid - 1;
-                    else left = mid + 1;
-                } else {
-                    if (nums[mid] < target && target <= nums[right]) left = mid + 1;
-                    else right = mid - 1;
+
+                    continue;
+                }
+
+                // LEFT half is sorted.
+                if (nums[left] <= nums[mid]) {
+
+                    // Target lies inside sorted LEFT half.
+                    if (nums[left] <= target && target < nums[mid]) {
+                        right = mid - 1;
+                    } else {
+                        left = mid + 1;
+                    }
+
+                }
+
+                // Otherwise RIGHT half is sorted.
+                else {
+
+                    // Target lies inside sorted RIGHT half.
+                    if (nums[mid] < target && target <= nums[right]) {
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
                 }
             }
+
             return false;
         }
     }
-
     // =============================================================================================
     // 11️⃣ 🟢 LEARNING VERIFICATION
     // =============================================================================================

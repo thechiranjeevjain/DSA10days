@@ -671,6 +671,159 @@ public class DailyTemperatures {
         }
     }
 
+    /*
+     * MONOTONIC STACK — SIMPLE MENTAL MODEL
+     *
+     * Do NOT first think:
+     * "Should the stack be increasing or decreasing?"
+     *
+     * Instead think:
+     *
+     * 1. Stack stores unresolved candidates.
+     *
+     * 2. For the current element:
+     *
+     *      while current can resolve / invalidate stack top:
+     *          pop top
+     *          process its answer
+     *
+     * 3. When current can no longer resolve the top:
+     *      stop popping.
+     *
+     * 4. Add current itself because it is now unresolved.
+     *
+     *
+     * Generic shape:
+     *
+     * while (!stack.isEmpty() && currentResolves(stack.peek())) {
+     *     resolve(stack.pop());
+     * }
+     *
+     * stack.push(current);
+     *
+     *
+     * The monotonic order forms AUTOMATICALLY.
+     * We do not need to invent the order first.
+     *
+     *
+     * DAILY TEMPERATURES
+     *
+     * Current warmer day resolves previous colder days:
+     *
+     * while (temperatures[curr] > temperatures[stack.peek()]) {
+     *     int prev = stack.pop();
+     *     answer[prev] = curr - prev;
+     * }
+     *
+     * stack.push(curr);
+     *
+     *
+     * Example:
+     *
+     * temperatures = [75, 71, 69, 72]
+     *
+     * Before 72:
+     *
+     *              TOP
+     *               ↓
+     *          ┌────────┐
+     *          │   69   │
+     *          ├────────┤
+     *          │   71   │
+     *          ├────────┤
+     *          │   75   │
+     *          └────────┘
+     *             BOTTOM
+     *
+     * 72 > 69 -> pop 69, resolve it
+     * 72 > 71 -> pop 71, resolve it
+     * 72 > 75 -> false, stop
+     *
+     * Push 72:
+     *
+     *              TOP
+     *               ↓
+     *          ┌────────┐
+     *          │   72   │
+     *          ├────────┤
+     *          │   75   │
+     *          └────────┘
+     *             BOTTOM
+     *
+     * The remaining unresolved values naturally become:
+     *
+     * BOTTOM -> TOP
+     * 75 -> 72
+     *
+     * = decreasing stack
+     *
+     *
+     * NEXT GREATER:
+     *
+     * current greater value pops previous smaller values.
+     * Whatever remains naturally forms a decreasing stack.
+     *
+     *
+     * NEXT SMALLER:
+     *
+     * current smaller value pops previous greater values.
+     * Whatever remains naturally forms an increasing stack.
+     *
+     *
+     * CORE REUSABLE PATTERN
+     *
+     * Keep candidates that are still relevant.
+     *
+     * while (top is no longer needed because of current) {
+     *     remove top;
+     * }
+     *
+     * add current;
+     *
+     *
+     * This same high-level idea appears elsewhere too:
+     *
+     * Meeting Rooms / Minimum Platforms:
+     *
+     * while (earliest ending meeting/train is already finished) {
+     *     remove it;
+     * }
+     *
+     * add current meeting/train;
+     *
+     *
+     * Difference:
+     *
+     * Monotonic Stack
+     * -> stack stores unresolved candidates
+     * -> current resolves previous candidates
+     *
+     * Meeting Rooms / Platforms
+     * -> min-heap stores currently active intervals
+     * -> current time expires finished intervals
+     *
+     *
+     * DATA STRUCTURE CHOICE
+     *
+     * Need most recent unresolved candidate
+     * -> STACK
+     *
+     * Need earliest ending / minimum candidate
+     * -> MIN-HEAP
+     *
+     * Need oldest candidate
+     * -> QUEUE
+     *
+     *
+     * MAIN INTERVIEW RECALL:
+     *
+     * KEEP relevant candidates
+     * -> REMOVE while current resolves / invalidates the top
+     * -> ADD current
+     *
+     * The required ordering usually emerges automatically.
+     */
+
 /*
  * ============================================================
  * 🟣 INTERVIEW ARTICULATION

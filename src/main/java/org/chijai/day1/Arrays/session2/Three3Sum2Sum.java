@@ -1,4 +1,4 @@
-package org.chijai.day1.session2;
+package org.chijai.day1.Arrays.session2;
 import java.util.*;
 
 /*

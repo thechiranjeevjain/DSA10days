@@ -4,7 +4,7 @@ Use this page to translate the historical `dayX/sessionY` layout into interview 
 
 | Day | Main patterns | Guide |
 |---|---|---|
-| Day 1 | Arrays, hashing, intervals, two pointers, greedy stock scans | [Open Day 1](day1/README.md) |
+| Day 1 | Arrays, hashing, intervals, two pointers, greedy stock scans | [Open Day 1](day1/Arrays/README.md) |
 | Day 2 | Binary search, binary search on answer, ordered history, interval DP | [Open Day 2](day2/README.md) |
 | Day 3 | Fixed/variable sliding windows, monotonic deque, prefix/suffix and strings | [Open Day 3](day3/README.md) |
 | Day 4 | Linked-list pointers, cycle detection, merging and LRU cache | [Open Day 4](day4/README.md) |

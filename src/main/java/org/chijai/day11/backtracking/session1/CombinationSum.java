@@ -1066,6 +1066,116 @@ public class CombinationSum {
         }
     }
 
+    /*
+     * BACKTRACKING PATH INVARIANT
+     *
+     * When backtrack() returns,
+     * path must be exactly as it was
+     * when that call started.
+     *
+     *
+     * TREE VIEW
+     *
+     * Suppose candidates allow:
+     *
+     *                  []
+     *               /       \
+     *             [2]       [3]
+     *            /   \
+     *         [2,2]  [2,3]
+     *           |
+     *        [2,2,3]
+     *
+     *
+     * DFS movement:
+     *
+     * []
+     *  |
+     *  +-- add 2 --------> [2]
+     *                       |
+     *                       +-- add 2 --------> [2,2]
+     *                                           |
+     *                                           +-- add 3 --> [2,2,3]
+     *                                                        |
+     *                                                        +-- remove 3
+     *                                           <------------+
+     *                                           [2,2]
+     *                                           |
+     *                                           +-- remove 2
+     *                       <-------------------+
+     *                       [2]
+     *                       |
+     *                       +-- try next choice
+     *
+     *
+     * Important:
+     *
+     * A child may modify path many times,
+     * but before the child returns,
+     * it restores path to the state
+     * it received from its parent.
+     *
+     * Example:
+     *
+     * Parent enters recursion with:
+     *
+     * path = [2]
+     *
+     * Child temporarily creates:
+     *
+     * [2,2]
+     * [2,2,3]
+     *
+     * But child restores everything before returning:
+     *
+     * [2,2,3]
+     *    -> remove 3
+     * [2,2]
+     *    -> remove 2
+     * [2]
+     *
+     * So parent gets back exactly:
+     *
+     * path = [2]
+     *
+     *
+     * LIST USED LIKE A STACK
+     *
+     * We only modify the END of the list.
+     *
+     * PUSH:
+     * path.add(value);
+     *
+     * POP:
+     * path.remove(path.size() - 1);
+     *
+     * TOP:
+     * path.get(path.size() - 1);
+     *
+     * Therefore path behaves as LIFO.
+     *
+     *
+     * BACKTRACKING PATTERN
+     *
+     * CHOOSE
+     * path.add(choice);
+     *
+     * EXPLORE
+     * backtrack(...);
+     *
+     * UNDO
+     * path.remove(path.size() - 1);
+     *
+     *
+     * Mental model:
+     *
+     * GO DOWN TREE  -> PUSH choice
+     * COME BACK UP  -> POP choice
+     *
+     * Every recursion level removes
+     * exactly the choice that it added.
+     */
+
 /*
  * ============================================================
  * 🟣 INTERVIEW ARTICULATION
@@ -1335,38 +1445,149 @@ public class CombinationSum {
                          int remain,
                          int start) {
 
+            // THIS ENTIRE dfs() CALL = ONE NODE / ONE DEPTH LEVEL
+
             if (remain < 0) {
-                return;
+                return;                     // GO BACK TO PARENT
             }
 
             if (remain == 0) {
                 answer.add(new ArrayList<>(path));
-                return;
+                return;                     // GO BACK TO PARENT
             }
 
+            // THIS LOOP = GENERATE CHILDREN OF THE CURRENT NODE
+            //
+            // Different i values here are SIBLINGS.
             for (int i = start; i < candidates.length; i++) {
 
-                // Skip duplicate siblings.
+                // SAME dfs call + different i
+                // => same depth => siblings.
+                // Therefore skip duplicate siblings.
+                //start = first index available at this depth
+                // i>start -> This is not the first child being tried from the current parent node.
+                // candidates[i] == candidates[i-1] -> This child is a duplicate of the previous sibling.
+                //
                 if (i > start &&
                         candidates[i] == candidates[i - 1]) {
-                    continue;
+                    continue;               // SKIP THIS SIBLING
                 }
 
+                // CHOOSE EDGE TO ONE CHILD.
                 path.add(candidates[i]);
 
-                // Reuse forbidden.
-
+                // RECURSIVE CALL = GO ONE LEVEL DEEPER.
+                // Current node -> child node.
                 dfs(answer,
                         path,
                         candidates,
                         remain - candidates[i],
                         i + 1);
 
+                // CHILD RETURNED.
+                // We are back at the CURRENT NODE.
                 path.remove(path.size() - 1);
+
+                // for-loop continues:
+                // try NEXT SIBLING.
             }
+
+            // Loop finished.
+            // This dfs() call ends and returns to its PARENT.
         }
     }
 
+    /*
+     * Example:
+     *
+     * candidates = [1, 1, 2]
+     *
+     *
+     * CASE 1: SAME DEPTH -> SKIP DUPLICATE SIBLING
+     *
+     * start = 0
+     *
+     *              []
+     *            /  |  \
+     *          i=0 i=1 i=2
+     *           1   1   2
+     *               ^
+     *               duplicate sibling -> skip
+     *
+     * Both 1s would fill the SAME position in path:
+     *
+     * [1]
+     * [1]
+     *
+     * and generate the same subtree.
+     *
+     *
+     * CASE 2: NEXT DEPTH -> ALLOW DUPLICATE VALUE
+     *
+     * Choose first 1:
+     *
+     *              []
+     *               |
+     *              [1]
+     *             /   \
+     *          i=1   i=2
+     *           1     2
+     *           |     |
+     *        [1,1]  [1,2]
+     *
+     * The second 1 is allowed here because it fills
+     * the NEXT position in the path.
+     *
+     * It is not a duplicate sibling anymore.
+     * It is a valid deeper choice.
+     *
+     *
+     * SAME VALUE + SAME DEPTH -> skip
+     * SAME VALUE + NEXT DEPTH -> allow
+     */
+
+    /*
+     * DFS MOVEMENT
+     *
+     * candidates = [2, 3, 5]
+     *
+     *                         []
+     *                          |
+     *  i = 0: add 2 --------> [2]          // DOWN: child
+     *                           |
+     *           i = 1: add 3 -> [2,3]      // DOWN: child
+     *                           |
+     *                        dfs(...)
+     *                           |
+     *                     remove 3
+     *                           |
+     *                         [2]           // UP: back to parent
+     *                           |
+     *           i = 2: add 5 -> [2,5]      // SIDEWAYS: next sibling
+     *                           |
+     *                     remove 5
+     *                           |
+     *                         [2]
+     *                           |
+     *                     remove 2
+     *  <------------------------+
+     *                         []             // UP: back to root
+     *                          |
+     *  i = 1: add 3 --------> [3]           // SIDEWAYS: next root sibling
+     *
+     *
+     * READ THE CODE AS:
+     *
+     * path.add(...)       -> go DOWN to child
+     * dfs(...)            -> explore child's subtree
+     * path.remove(...)    -> come UP to current node
+     * i++                 -> move SIDEWAYS to next sibling
+     * dfs() returns       -> go back to parent
+     *
+     * SAME for-loop       = siblings
+     * NEW dfs() call      = one level deeper
+     * RETURN from dfs()   = one level upward
+     */
     /*
      * ------------------------------------------------------------
      * Alternative Duplicate Detection

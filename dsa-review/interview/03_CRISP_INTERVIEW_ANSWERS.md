@@ -12,7 +12,7 @@ Ranks 1-30. Remove common interview red flags first.
 
 ### 1. 2Sum / 3Sum / 4Sum
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session2/Three3Sum2Sum.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session2/Three3Sum2Sum.java)
 - Brute force: Try all pairs, all boundaries, or build an auxiliary cleaned structure.
 - Bottleneck: Brute force tries all tuples; sorting makes duplicate skipping and pair elimination possible.
 - Pattern: Two Pointers, using Two pointers / hash.
@@ -42,7 +42,7 @@ Ranks 1-30. Remove common interview red flags first.
 
 ### 4. Product Of Array Except Self
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/ProductOfArrayExceptSelf.java) | [LeetCode](https://leetcode.com/problems/product-of-array-except-self/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/ProductOfArrayExceptSelf.java) | [LeetCode](https://leetcode.com/problems/product-of-array-except-self/)
 - Brute force: For every index or query, recompute the needed range/product/sum directly.
 - Bottleneck: For each index recomputing products is O(n^2); prefix/suffix accumulates in two passes.
 - Pattern: Prefix Sum / Prefix-Suffix, using Prefix/suffix.
@@ -316,7 +316,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 31. Meeting Rooms Ii
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session2/MeetingRoom.java) | [LeetCode](https://leetcode.com/problems/meeting-rooms-ii/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session2/MeetingRoom.java) | [LeetCode](https://leetcode.com/problems/meeting-rooms-ii/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
 - Bottleneck: Need the earliest finishing active meeting to decide whether a room can be reused.
 - Pattern: Heap / Priority Queue, using Intervals / heap.
@@ -376,7 +376,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 37. Minimum Number Of Arrows To Burst Balloons
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/MinimumPlatforms.java) | [LeetCode](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/MinimumPlatforms.java) | [LeetCode](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/)
 - Brute force: Try arrow positions or compare balloon overlaps pair by pair.
 - Bottleneck: This is greedy endpoint selection, not overlap counting like meeting rooms.
 - Pattern: Intervals / Sorting Greedy, using Intervals / sorting.
@@ -536,7 +536,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 53. Binary Subarrays With Sum
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/NiceSubArrays.java) | [LeetCode](https://leetcode.com/problems/binary-subarrays-with-sum/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/NiceSubArrays.java) | [LeetCode](https://leetcode.com/problems/binary-subarrays-with-sum/)
 - Brute force: For every index or query, recompute the needed range/product/sum directly.
 - Bottleneck: Brute force sums all ranges; binary nonnegative values let the window count at-most sums.
 - Pattern: Prefix Sum / Prefix-Suffix, using Prefix/window counting.
@@ -546,7 +546,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 54. Majority Element
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session2/MajorityElement.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session2/MajorityElement.java)
 - Brute force: Scan repeatedly or compare every candidate pair/count directly.
 - Bottleneck: Counting uses O(n) space; majority > n/2 lets pair cancellation preserve the answer.
 - Pattern: HashMap / Frequency / Set, using Boyer-Moore / frequency.
@@ -556,7 +556,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 55. Ransom Note
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session1/RansomNote.java) | [LeetCode](https://leetcode.com/problems/ransom-note/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session1/RansomNote.java) | [LeetCode](https://leetcode.com/problems/ransom-note/)
 - Brute force: Scan repeatedly or compare every candidate pair/count directly.
 - Bottleneck: Brute force repeatedly searches magazine; counting turns every char check into O(1).
 - Pattern: HashMap / Frequency / Set, using HashMap/frequency.
@@ -616,7 +616,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 61. Sort Colors
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session1/SortColors.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session1/SortColors.java)
 - Brute force: Try all pairs, all boundaries, or build an auxiliary cleaned structure.
 - Bottleneck: Sorting is overkill for three values; partitioning maintains regions in one pass.
 - Pattern: Two Pointers, using Partition / Dutch flag.
@@ -900,7 +900,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 
 ### 89. Kadane Max Sub Array
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session1/KadaneMaxSubArray.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session1/KadaneMaxSubArray.java)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
 - Bottleneck: Checking all subarrays is O(n^2); local ending-best captures the only needed history.
 - Pattern: Dynamic Programming, using Kadane / DP.
@@ -920,7 +920,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 
 ### 91. Best Time To Buy And Sell Stock
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
 - Bottleneck: Trying all buy/sell pairs repeats the same prefix minimum search.
 - Pattern: Dynamic Programming, using Greedy / DP states.
@@ -960,7 +960,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 
 ### 95. Meeting Rooms
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session2/MeetingRoom.java) | [LeetCode](https://leetcode.com/problems/meeting-rooms/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session2/MeetingRoom.java) | [LeetCode](https://leetcode.com/problems/meeting-rooms/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
 - Bottleneck: Unsorted pair checks are noisy; sorting makes the only dangerous interval the previous one.
 - Pattern: Intervals / Sorting Greedy, using Intervals / heap.
@@ -1144,7 +1144,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 113. Count Number Of Nice Subarrays
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/NiceSubArrays.java) | [LeetCode](https://leetcode.com/problems/count-number-of-nice-subarrays/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/NiceSubArrays.java) | [LeetCode](https://leetcode.com/problems/count-number-of-nice-subarrays/)
 - Brute force: Enumerate every substring/subarray and recompute validity from scratch.
 - Bottleneck: Enumerating subarrays repeats odd counts; prefix/window reuses odd-count state.
 - Pattern: Sliding Window, using Prefix/window counting.
@@ -1394,7 +1394,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 138. Intervals
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session2/Intervals.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session2/Intervals.java)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
 - Bottleneck: Unsorted comparisons are noisy; sorting makes overlap or greedy choice local.
 - Pattern: Intervals / Sorting Greedy, using Intervals / merge.
@@ -1404,7 +1404,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 139. Car Pooling
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/MinimumPlatforms.java) | [LeetCode](https://leetcode.com/problems/car-pooling/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/MinimumPlatforms.java) | [LeetCode](https://leetcode.com/problems/car-pooling/)
 - Brute force: For every route point, recompute passenger load by checking all trips.
 - Bottleneck: Checking every trip pair misses the global passenger load over the route.
 - Pattern: Intervals / Sorting Greedy, using Intervals / sorting.
@@ -1434,7 +1434,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 142. Gas Station
 
-- Links: [Java](../../src/main/java/org/chijai/day3/session2/GasStation.java) | [LeetCode](https://leetcode.com/problems/gas-station/)
+- Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/prefix/suffix/GasStation.java) | [LeetCode](https://leetcode.com/problems/gas-station/)
 - Brute force: Explore all choices with search/DP before noticing a local choice is safe.
 - Bottleneck: DP/search may be possible, but a proven safe local choice collapses the state space.
 - Pattern: Greedy, using Greedy.
@@ -1444,7 +1444,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 ### 143. Spiral Matrix
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session1/SpiralMatrix.java) | [LeetCode](https://leetcode.com/problems/spiral-matrix/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session1/SpiralMatrix.java) | [LeetCode](https://leetcode.com/problems/spiral-matrix/)
 - Brute force: Try the direct simulation or enumeration first.
 - Bottleneck: Visited simulation is more state than needed; boundaries define the remaining ring.
 - Pattern: Basics / Implementation, using Matrix boundary traversal.
@@ -1678,7 +1678,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 ### 166. Stock Series2
 
-- Links: [Java](../../src/main/java/org/chijai/day1/session3/StockSeries2.java)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/Arrays/session3/StockSeries2.java)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
 - Bottleneck: Enumerating buy/sell sequences repeats work; every rising edge can be taken independently.
 - Pattern: Dynamic Programming, using Stock DP variants.

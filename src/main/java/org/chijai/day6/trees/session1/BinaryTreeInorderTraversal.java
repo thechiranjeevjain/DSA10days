@@ -729,6 +729,8 @@ public class BinaryTreeInorderTraversal {
 
                 TreeNode node = stack.pop();
 
+                //== Check invariant: current node must be greater than previous
+                //
                 if (prev != null && node.val <= prev) {
                     return false; // invariant violated
                 }

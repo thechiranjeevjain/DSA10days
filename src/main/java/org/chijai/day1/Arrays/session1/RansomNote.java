@@ -1,4 +1,4 @@
-package org.chijai.day1.session1;
+package org.chijai.day1.Arrays.session1;
 
 import java.util.Arrays;
 import java.util.HashMap;

@@ -651,38 +651,339 @@ public class ValidAnagram {
 
             Map<Character, Integer> frequency = new HashMap<>();
 
-            for (int i = 0; i < s.length(); i++) {
-
-                char c = s.charAt(i);
-
-                frequency.put(c, frequency.getOrDefault(c, 0) + 1);
+            for (char c : s.toCharArray()) {
+                frequency.merge(c, 1, Integer::sum);
             }
 
-            for (int i = 0; i < t.length(); i++) {
+            for (char c : t.toCharArray()) {
 
-                char c = t.charAt(i);
-
-                Integer remaining = frequency.get(c);
-
-                // Invariant:
-                // every character in t must already exist in s.
-                if (remaining == null) {
+                if (frequency.merge(c, -1, Integer::sum) < 0) {
                     return false;
                 }
-
-                if (remaining == 1) {
-
-                    frequency.remove(c);
-
-                } else {
-
-                    frequency.put(c, remaining - 1);
-                }
             }
 
-            return frequency.isEmpty();
+            return true;
         }
     }
+
+
+    static boolean isAnagramJavaChars(String s, String t) {
+
+        Map<Integer, Integer> frequency = new HashMap<>();
+
+        s.chars()
+                .forEach(c -> frequency.merge(c, 1, Integer::sum));
+
+        t.chars()
+                .forEach(c -> frequency.merge(c, -1, Integer::sum));
+
+        return frequency.values()
+                .stream()
+                .allMatch(count -> count == 0);
+    }
+
+    static boolean isAnagramUnicodeCodePoints(String s, String t) {
+
+        Map<Integer, Integer> frequency = new HashMap<>();
+
+        s.codePoints()
+                .forEach(c -> frequency.merge(c, 1, Integer::sum));
+
+        t.codePoints()
+                .forEach(c -> frequency.merge(c, -1, Integer::sum));
+
+        return frequency.values()
+                .stream()
+                .allMatch(count -> count == 0);
+    }
+
+
+    /*
+     * CHARACTER REPRESENTATION — INTERVIEW MEMORY
+     *
+     * 1) LOWERCASE ENGLISH
+     *
+     *    Range:
+     *    'a' to 'z'
+     *
+     *    Count:
+     *    26
+     *
+     *    Mapping:
+     *    'a' - 'a' -> 0
+     *    'b' - 'a' -> 1
+     *    ...
+     *    'z' - 'a' -> 25
+     *
+     *    Use:
+     *
+     *    int[] count = new int[26];
+     *    count[c - 'a']++;
+     *
+     *
+     * 2) ASCII
+     *
+     *    Range:
+     *    0 to 127
+     *
+     *    Count:
+     *    128
+     *
+     *    Examples:
+     *
+     *    0   -> NUL
+     *    32  -> space
+     *    48  -> '0'
+     *    57  -> '9'
+     *    65  -> 'A'
+     *    90  -> 'Z'
+     *    97  -> 'a'
+     *    122 -> 'z'
+     *    127 -> DEL
+     *
+     *    Use:
+     *
+     *    int[] count = new int[128];
+     *    count[c]++;
+     *
+     *    No "- 'a'" is needed because the ASCII value itself
+     *    is used directly as the array index.
+     *
+     *
+     * 3) JAVA char / Character
+     *
+     *    char:
+     *    - primitive type
+     *    - 16-bit UTF-16 code unit
+     *
+     *    Character:
+     *    - object wrapper around char
+     *    - same underlying char value domain
+     *    - required for generics such as:
+     *
+     *      Map<Character, Integer>
+     *
+     *    Range:
+     *
+     *    0 to 65,535
+     *    '\u0000' to '\uFFFF'
+     *
+     *    Examples:
+     *
+     *    0        -> '\u0000'
+     *    9        -> tab
+     *    10       -> newline
+     *    32       -> space
+     *    48       -> '0'
+     *    65       -> 'A'
+     *    97       -> 'a'
+     *    169      -> '©'
+     *    233      -> 'é'
+     *    2309     -> 'अ'
+     *    2361     -> 'ह'
+     *    8364     -> '€'
+     *    20013    -> '中'
+     *
+     *    UTF-16 surrogate range:
+     *
+     *    55296-56319 -> high surrogates
+     *    56320-57343 -> low surrogates
+     *
+     *    Surrogate pairs are used for Unicode code points
+     *    that cannot fit inside one Java char.
+     *
+     *    Important:
+     *
+     *    char / Character represents ONE UTF-16 CODE UNIT,
+     *    not necessarily one complete Unicode character.
+     *
+     *
+     * 4) String.chars()
+     *
+     *    Returns:
+     *
+     *    IntStream
+     *
+     *    But each int represents one UTF-16 char/code unit.
+     *
+     *    Example:
+     *
+     *    s.chars()
+     *        .forEach(c -> ...)
+     *
+     *    If Character objects are required:
+     *
+     *    s.chars()
+     *        .mapToObj(c -> (char) c)
+     *
+     *    Conversion:
+     *
+     *    IntStream
+     *        -> int
+     *        -> cast to char
+     *        -> autoboxed to Character
+     *
+     *
+     * 5) UNICODE CODE POINTS
+     *
+     *    Unicode notation:
+     *
+     *    U+XXXX
+     *
+     *    "U+" means Unicode code point.
+     *
+     *    The digits after U+ are hexadecimal.
+     *
+     *    Hexadecimal digits:
+     *
+     *    0-9, A-F
+     *
+     *    A = 10
+     *    B = 11
+     *    C = 12
+     *    D = 13
+     *    E = 14
+     *    F = 15
+     *
+     *    Unicode range:
+     *
+     *    U+0000 to U+10FFFF
+     *
+     *    U+10FFFF = 1,114,111 decimal.
+     *
+     *    Examples:
+     *
+     *    U+0030  -> '0'
+     *    U+0041  -> 'A'
+     *    U+0061  -> 'a'
+     *    U+00E9  -> 'é'
+     *    U+0939  -> 'ह'
+     *    U+20AC  -> '€'
+     *    U+4E2D  -> '中'
+     *    U+1F60A -> '😊'
+     *
+     *
+     * 6) String.codePoints()
+     *
+     *    Returns:
+     *
+     *    IntStream
+     *
+     *    Each int represents one Unicode code point.
+     *
+     *    Example:
+     *
+     *    Map<Integer, Integer> frequency = new HashMap<>();
+     *
+     *    s.codePoints()
+     *        .forEach(c ->
+     *            frequency.merge(c, 1, Integer::sum)
+     *        );
+     *
+     *
+     *    Important difference:
+     *
+     *    chars()
+     *        -> UTF-16 code units
+     *
+     *    codePoints()
+     *        -> Unicode code points
+     *
+     *
+     * 7) EMOJI EXAMPLE
+     *
+     *    String s = "😊";
+     *
+     *    s.length()
+     *        -> 2
+     *
+     *    because Java String.length() counts UTF-16 code units.
+     *
+     *    s.codePoints()
+     *        -> sees one code point:
+     *
+     *           U+1F60A
+     *
+     *    Therefore:
+     *
+     *    one visible Unicode character
+     *        !=
+     *    necessarily one Java char.
+     *
+     *
+     * 8) JAVA NOTATION VS UNICODE NOTATION
+     *
+     *    ''\\uXXXX'
+     *        -> Java UTF-16 code-unit notation
+     *
+     *    U+XXXX
+     *        -> Unicode code-point notation
+     *
+     *
+     * 9) FREQUENCY COUNTING PATTERNS
+     *
+     *    Array:
+     *
+     *    count[index]++;
+     *
+     *
+     *    HashMap:
+     *
+     *    frequency.merge(key, 1, Integer::sum);
+     *
+     *    Equivalent to:
+     *
+     *    frequency.put(
+     *        key,
+     *        frequency.getOrDefault(key, 0) + 1
+     *    );
+     *
+     *
+     *    Functional net-count technique:
+     *
+     *    source -> +1
+     *    target -> -1
+     *
+     *    Then:
+     *
+     *    frequency.values()
+     *        .stream()
+     *        .allMatch(count -> count == 0);
+     *
+     *
+     * 10) INTERVIEW RULE OF THUMB
+     *
+     *    Problem guarantees lowercase 'a'-'z'
+     *        -> int[26]
+     *        -> count[c - 'a']
+     *
+     *    Problem guarantees ASCII
+     *        -> int[128]
+     *        -> count[c]
+     *
+     *    Problem deals with arbitrary Java char values
+     *        -> Map<Character, Integer>
+     *           OR int[65536]
+     *
+     *    Want functional Character-based Java
+     *        -> String.chars()
+     *        -> mapToObj(c -> (char) c)
+     *
+     *    Want full Unicode / emoji correctness
+     *        -> String.codePoints()
+     *        -> Map<Integer, Integer>
+     *
+     *
+     * INTERVIEW PRIORITY:
+     *
+     *    Use the narrowest representation guaranteed
+     *    by the problem constraints.
+     *
+     *    a-z      -> 26
+     *    ASCII    -> 128
+     *    char     -> 65,536
+     *    Unicode  -> codePoints()
+     */
 
 /*
  * =========================================================================

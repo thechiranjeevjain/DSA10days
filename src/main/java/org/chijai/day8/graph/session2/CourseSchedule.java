@@ -1,885 +1,258 @@
 package org.chijai.day8.graph.session2;
+
 import java.util.*;
 
 /**
  * ====================================================================================================
- * 📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
+ * COURSE SCHEDULE / TOPOLOGICAL SORT FAMILY — INTERVIEW MASTER FILE
  * ====================================================================================================
  *
- * 210. Course Schedule II
+ * PRIMARY ANCHOR:
+ * LeetCode 210 — Course Schedule II
  *
- * Difficulty: Medium
+ * CANONICAL PATTERN:
+ * Topological Sort using BFS (Kahn's Algorithm)
  *
- * Tags:
- * Graph, Breadth-First Search, Depth-First Search, Topological Sort
+ * ----------------------------------------------------------------------------------------------------
+ * WHY THIS FILE IS STRUCTURED THIS WAY
+ * ----------------------------------------------------------------------------------------------------
  *
- * Official Link:
- * https://leetcode.com/problems/course-schedule-ii/
+ * This is an INTERVIEW-RECALL file, not a DRY production-code library.
  *
- * Problem Statement:
+ * Therefore:
  *
- * There are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1.
- * You are given an array prerequisites where prerequisites[i] = [ai, bi] indicates that
- * you must take course bi first if you want to take course ai.
+ *     graph construction + indegree construction
  *
- * For example, the pair [0, 1], indicates that to take course 0 you have to first take course 1.
+ * are intentionally repeated inside the important variants.
  *
- * Return the ordering of courses you should take to finish all courses.
- * If there are many valid answers, return any of them.
- * If it is impossible to finish all courses, return an empty array.
+ * Why?
  *
- * Example 1:
+ *     controlled repetition
+ *          ->
+ *     same skeleton repeatedly visible
+ *          ->
+ *     easier reconstruction under pressure
  *
- * Input: numCourses = 2, prerequisites = [[1,0]]
- * Output: [0,1]
- * Explanation:
- * There are a total of 2 courses to take.
- * To take course 1 you should have finished course 0.
- * So the correct course order is [0,1].
+ * We intentionally DO NOT hide the core logic behind:
  *
- * Example 2:
+ *     Graph g = buildGraph(...)
  *
- * Input: numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]
- * Output: [0,2,1,3]
- * Explanation:
- * There are a total of 4 courses to take.
- * To take course 3 you should have finished both courses 1 and 2.
- * Both courses 1 and 2 should be taken after you finished course 0.
- * So one correct course order is [0,1,2,3].
- * Another correct ordering is [0,2,1,3].
+ * because the most important thing to remember is exactly how:
  *
- * Example 3:
+ *     [course, prerequisite]
  *
- * Input: numCourses = 1, prerequisites = []
- * Output: [0]
+ * becomes:
  *
- * Constraints:
+ *     prerequisite -> course
+ *     indegree[course]++
  *
- * 1 <= numCourses <= 2000
- * 0 <= prerequisites.length <= numCourses * (numCourses - 1)
- * prerequisites[i].length == 2
- * 0 <= ai, bi < numCourses
- * ai != bi
- * All the pairs [ai, bi] are distinct.
+ * ----------------------------------------------------------------------------------------------------
+ * MASTER MENTAL MODEL
+ * ----------------------------------------------------------------------------------------------------
  *
- * ====================================================================================================
- * 🔵 CORE PATTERN OVERVIEW
- * ====================================================================================================
- *
- * Pattern Name:
- * Topological Sorting using BFS (Kahn's Algorithm)
- *
- * Problem Archetype:
- * Dependency Resolution in Directed Acyclic Graph (DAG)
- *
- * CORE INVARIANT:
- *
- * A node can enter the ordering ONLY when its indegree becomes 0.
- *
- * Meaning:
- * Every prerequisite for that node has already been processed.
- *
- * Why It Works:
- *
- * Indegree represents remaining unmet dependencies.
- * Once indegree becomes 0:
- * - all prerequisites are satisfied
- * - node is now safe to process
- *
- * We repeatedly:
- * - process currently unlocked nodes
- * - remove their outgoing edges
- * - unlock new nodes
- *
- * If all nodes are processed:
- * - graph had no cycle
- *
- * If some nodes remain locked forever:
- * - cycle exists
- * - impossible ordering
- *
- * When To Use:
- *
- * Use this pattern when:
- * - dependencies exist
- * - ordering matters
- * - prerequisite relationships exist
- * - tasks must happen before other tasks
- * - directed graph + cycle detection + ordering
- *
- * Recognition Signals:
- *
- * Keywords:
- * - before
- * - after
- * - prerequisite
- * - dependency
- * - build order
- * - scheduling
- * - task pipeline
- *
- * Output asks:
- * - valid ordering
- * - execution order
- * - feasibility
- *
- * Differences vs Similar Patterns:
- *
- * DFS Cycle Detection:
- * - good for detecting cycles
- * - harder to reason about ordering incrementally
- *
- * Kahn BFS:
- * - naturally produces topological order
- * - very interview friendly
- * - easier invariant
- * - excellent for dependency unlock simulation
- *
- * ====================================================================================================
- * 🟢 MENTAL MODEL & INVARIANTS
- * ====================================================================================================
- *
- * Mental Model:
- *
- * Imagine courses locked behind prerequisite chains.
- *
- * indegree[x] =
- * number of remaining locks on course x.
- *
- * Queue contains:
- * courses currently unlocked.
- *
- * Processing a course:
- * means we completed it.
- *
- * Completing a course removes one dependency from neighbors.
- *
- * If neighbor loses all locks:
- * it becomes available.
- *
- * --------------------------------------------------------------------------------
- * ALL INVARIANTS
- * --------------------------------------------------------------------------------
- *
- * INVARIANT 1:
- * Queue always contains ONLY nodes with indegree == 0.
- *
- * INVARIANT 2:
- * Every node removed from queue is safe to place in final ordering.
- *
- * INVARIANT 3:
- * Once a node is processed, it never needs reconsideration.
- *
- * INVARIANT 4:
- * indegree[v] always equals remaining unmet prerequisites.
- *
- * INVARIANT 5:
- * If cycle exists, some nodes never reach indegree 0.
- *
- * --------------------------------------------------------------------------------
- * Meaning of Variables
- * --------------------------------------------------------------------------------
- *
- * graph[u]:
- * all nodes dependent on u
- *
- * indegree[v]:
- * remaining prerequisites for v
- *
- * queue:
- * currently executable courses
- *
- * order:
- * valid topological ordering constructed incrementally
- *
- * processedCount:
- * number of finalized nodes
- *
- * --------------------------------------------------------------------------------
- * Allowed Moves
- * --------------------------------------------------------------------------------
- *
- * ✔ Remove node with indegree 0
- * ✔ Reduce neighbor indegrees
- * ✔ Add neighbor when indegree becomes 0
- *
- * --------------------------------------------------------------------------------
- * Forbidden Moves
- * --------------------------------------------------------------------------------
- *
- * ✘ Process node with indegree > 0
- * ✘ Ignore cycle leftovers
- * ✘ Reverse edge direction accidentally
- *
- * --------------------------------------------------------------------------------
- * Termination Logic
- * --------------------------------------------------------------------------------
- *
- * BFS stops when queue becomes empty.
- *
- * Then:
- *
- * If processedCount == numCourses:
- *     success
- *
- * Else:
- *     cycle exists
- *
- * --------------------------------------------------------------------------------
- * Why Naive Approaches Fail
- * --------------------------------------------------------------------------------
- *
- * Naive mistake:
- * "Just do BFS/DFS traversal."
- *
- * Failure:
- * Traversal order ≠ dependency-safe order.
+ * prerequisites[i] = [course, prerequisite]
  *
  * Example:
  *
- * 1 depends on 0
+ *     [1, 0]
  *
- * If traversal starts at 1:
- * invalid ordering produced.
+ * means:
  *
- * Dependency satisfaction must be enforced explicitly.
+ *     take 0 before 1
  *
- * ====================================================================================================
- * 🔴 WHY WRONG SOLUTIONS FAIL
- * ====================================================================================================
+ * therefore directed edge:
  *
- * --------------------------------------------------------------------------------
- * Wrong Approach 1:
- * Simple DFS Traversal
- * --------------------------------------------------------------------------------
+ *     0 ----------> 1
+ *     prereq       course
  *
- * Why it seems correct:
- * DFS explores deeply.
  *
- * Invariant violation:
- * Node may be processed before prerequisites complete.
+ * indegree[x]
  *
- * Counterexample:
+ *     = number of prerequisites of x
+ *       that are STILL unresolved.
  *
- * 0 -> 1
+ * Therefore:
  *
- * Starting DFS from 1:
- * ordering becomes [1,0]
+ *     indegree == 0
  *
- * invalid.
+ * means:
  *
- * --------------------------------------------------------------------------------
- * Wrong Approach 2:
- * Process Any Unvisited Node
- * --------------------------------------------------------------------------------
+ *     "THIS NODE IS AVAILABLE TO PROCESS RIGHT NOW."
  *
- * Why it seems correct:
- * "Eventually everything gets visited."
  *
- * Invariant violation:
- * ignores prerequisite readiness.
+ *                              DEPENDENCIES
+ *                                   |
+ *                                   v
+ *                           DIRECTED GRAPH
+ *                                   |
+ *                                   v
+ *                    TOPOLOGICAL SORT — KAHN BFS
+ *                                   |
+ *                                   v
+ *                     prerequisite -> dependent
+ *                                   |
+ *                                   v
+ *                     indegree = unresolved deps
+ *                                   |
+ *                                   v
+ *                     all indegree 0 -> queue
+ *                                   |
+ *                                   v
+ *                                process
+ *                                   |
+ *                                   v
+ *                        release outgoing edges
+ *                          indegree[neighbor]--
+ *                                   |
+ *                                   v
+ *                        newly 0 -> queue
+ *                                   |
+ *                                   v
+ *                         queue eventually empty
+ *                                   |
+ *                         +---------+---------+
+ *                         |                   |
+ *                    processed == V      processed < V
+ *                         |                   |
+ *                       VALID               CYCLE
  *
- * Ordering correctness destroyed.
  *
- * --------------------------------------------------------------------------------
- * Wrong Approach 3:
- * Forget Cycle Validation
- * --------------------------------------------------------------------------------
+ * ----------------------------------------------------------------------------------------------------
+ * 30-SECOND RECALL
+ * ----------------------------------------------------------------------------------------------------
  *
- * Why it seems correct:
- * queue became empty.
+ * Trigger words:
  *
- * Hidden bug:
- * queue may empty because cycle deadlocked graph.
+ *     prerequisite
+ *     dependency
+ *     before / after
+ *     build order
+ *     task ordering
+ *     execution ordering
  *
- * Example:
+ * Immediate thought:
  *
- * 0 -> 1
- * 1 -> 0
+ *     dependency ordering
+ *          ->
+ *     directed graph
+ *          ->
+ *     topological sort
+ *          ->
+ *     Kahn BFS + indegree
  *
- * No node reaches indegree 0.
+ * Core invariant:
  *
- * --------------------------------------------------------------------------------
- * Wrong Approach 4:
- * Reverse Edge Direction
- * --------------------------------------------------------------------------------
+ *     queue contains only nodes whose dependencies are fully satisfied.
  *
- * Common interview trap.
+ * Generic engine:
  *
- * Correct:
- * prerequisite -> course
+ *     build graph
+ *     build indegree
+ *     enqueue all indegree 0
  *
- * If reversed:
- * indegrees become meaningless.
+ *     while queue not empty:
+ *         pop
+ *         process
  *
- * ====================================================================================================
- * ⚙️ HOW TO PHYSICALLY ASSEMBLE THE CODE
- * ====================================================================================================
+ *         for each dependent:
+ *             indegree--
  *
- * 🛠️ IMPLEMENTATION BLUEPRINT
+ *             if indegree == 0:
+ *                 enqueue
  *
- * STEP 1:
- * Create adjacency list.
+ *     processed == V ? success : cycle
  *
- * STEP 2:
- * Create indegree array.
  *
- * STEP 3:
- * Build graph:
+ * ----------------------------------------------------------------------------------------------------
+ * FAMILY MAP — SAME ENGINE, SMALL MUTATIONS
+ * ----------------------------------------------------------------------------------------------------
  *
- * for each [a,b]:
- *     b -> a
- *     indegree[a]++
+ * KAHN ENGINE
+ *     |
+ *     +-- Can everything finish?
+ *     |      -> count processed
+ *     |      -> Course Schedule I / LC 207
+ *     |
+ *     +-- Return one valid ordering?
+ *     |      -> store popped nodes
+ *     |      -> Course Schedule II / LC 210
+ *     |
+ *     +-- Smallest valid ordering?
+ *     |      -> Queue -> PriorityQueue
+ *     |
+ *     +-- Is the ordering unique?
+ *     |      -> queue.size() must always be exactly 1
+ *     |      -> Sequence Reconstruction idea / LC 444
+ *     |
+ *     +-- Minimum number of rounds / semesters?
+ *     |      -> BFS level-by-level
+ *     |      -> Parallel Courses / LC 1136
+ *     |
+ *     +-- Tasks have durations?
+ *     |      -> topo traversal + DAG DP
+ *     |      -> wait for the slowest prerequisite chain
+ *     |
+ *     +-- Constraints must be inferred first?
+ *     |      -> infer edges, then same Kahn engine
+ *     |      -> Alien Dictionary / LC 269
+ *     |
+ *     +-- Nodes are safe if every path eventually terminates?
+ *     |      -> reverse graph + OUTDEGREE elimination
+ *     |      -> Eventual Safe States / LC 802
+ *     |
+ *     +-- Need ALL valid orders?
+ *            -> every currently-zero-indegree node is a backtracking choice
  *
- * STEP 4:
- * Initialize queue with all indegree 0 nodes.
  *
- * STEP 5:
- * Create answer array.
+ * ----------------------------------------------------------------------------------------------------
+ * IMPORTANT PRECISION
+ * ----------------------------------------------------------------------------------------------------
  *
- * STEP 6:
- * BFS loop:
+ * DFS is NOT "wrong" for topological sorting.
  *
- * while queue not empty:
- *     pop node
- *     add to answer
+ * Correct DFS topological sorting requires:
  *
- *     for neighbors:
- *         reduce indegree
+ *     3-state cycle detection
+ *     + postorder insertion
+ *     + reversal
  *
- *         if indegree becomes 0:
- *             enqueue
+ * What is wrong is:
  *
- * STEP 7:
- * Validate:
+ *     "plain DFS traversal order is automatically a valid dependency order."
  *
- * if processed != numCourses:
- *     return empty array
+ * Kahn BFS is preferred here because:
  *
- * STEP 8:
- * return answer
+ *     - iterative
+ *     - explicit readiness invariant
+ *     - natural cycle detection
+ *     - variants are easy to derive
  *
- * --------------------------------------------------------------------------------
- * 🧾 ULTRA-COMPACT PSEUDOCODE (MEMORY SCAFFOLD)
- * --------------------------------------------------------------------------------
  *
- * build graph
- * build indegree
+ * ----------------------------------------------------------------------------------------------------
+ * COMPLEXITY OF THE CANONICAL KAHN ENGINE
+ * ----------------------------------------------------------------------------------------------------
  *
- * push indegree 0 nodes
+ * V = vertices / courses
+ * E = dependency edges
  *
- * while queue not empty:
- *     node = pop
- *     add to answer
+ * Time:  O(V + E)
+ * Space: O(V + E)
  *
- *     for neighbor:
- *         indegree--
- *
- *         if indegree == 0:
- *             push
- *
- * if processed != n:
- *     return empty
- *
- * return answer
- *
- * ====================================================================================================
- * 6. PRIMARY PROBLEM — SOLUTION CLASSES
  * ====================================================================================================
  */
 public class CourseSchedule {
 
-    /**
-     * ================================================================================================
-     * Brute Force Solution
-     * ================================================================================================
-     *
-     * Core Idea:
-     * Repeatedly scan all courses.
-     * Pick courses whose prerequisites are already completed.
-     *
-     * Invariant Enforced:
-     * Only executable courses are selected.
-     *
-     * Limitation:
-     * Extremely inefficient repeated rescanning.
-     *
-     * Time Complexity:
-     * O(V * (V + E))
-     *
-     * Space Complexity:
-     * O(V)
-     *
-     * Interview Preference:
-     * Low
-     * Only useful as reasoning bridge toward Kahn's algorithm.
-     */
-    static class BruteForceSolution {
-
-        public int[] findOrder(int numCourses, int[][] prerequisites) {
-
-            boolean[] completed = new boolean[numCourses];
-            int[] order = new int[numCourses];
-
-            int completedCount = 0;
-
-            while (completedCount < numCourses) {
-
-                boolean progressMade = false;
-
-                // Try every course repeatedly.
-                for (int course = 0; course < numCourses; course++) {
-
-                    if (completed[course]) {
-                        continue;
-                    }
-
-                    boolean canTake = true;
-
-                    // Check whether all prerequisites are done.
-                    for (int[] edge : prerequisites) {
-
-                        int next = edge[0];
-                        int prereq = edge[1];
-
-                        if (next == course && !completed[prereq]) {
-                            canTake = false;
-                            break;
-                        }
-                    }
-
-                    if (canTake) {
-
-                        completed[course] = true;
-
-                        order[completedCount++] = course;
-
-                        progressMade = true;
-                    }
-                }
-
-                // No progress means cycle deadlock.
-                if (!progressMade) {
-                    return new int[0];
-                }
-            }
-
-            return order;
-        }
-    }
-
-    /**
-     * ================================================================================================
-     * Improved Solution — DFS Topological Sort
-     * ================================================================================================
-     *
-     * Core Idea:
-     * DFS postorder.
-     *
-     * Invariant:
-     * Node enters answer AFTER all descendants processed.
-     *
-     * Limitation Fixed:
-     * Avoid repeated rescanning.
-     *
-     * Time Complexity:
-     * O(V + E)
-     *
-     * Space Complexity:
-     * O(V + E)
-     *
-     * Interview Preference:
-     * Medium
-     *
-     * Harder than Kahn BFS because:
-     * - recursion states
-     * - cycle handling
-     * - postorder reversal
-     */
-    static class DFSTopologicalSortSolution {
-
-        private static final int UNVISITED = 0;
-        private static final int VISITING = 1;
-        private static final int VISITED = 2;
-
-        public int[] findOrder(int numCourses, int[][] prerequisites) {
-
-            List<List<Integer>> graph = buildGraph(numCourses, prerequisites);
-
-            int[] state = new int[numCourses];
-
-            List<Integer> topo = new ArrayList<>();
-
-            for (int node = 0; node < numCourses; node++) {
-
-                if (state[node] == UNVISITED) {
-
-                    if (hasCycle(node, graph, state, topo)) {
-                        return new int[0];
-                    }
-                }
-            }
-
-            Collections.reverse(topo);
-
-            int[] answer = new int[numCourses];
-
-            for (int i = 0; i < numCourses; i++) {
-                answer[i] = topo.get(i);
-            }
-
-            return answer;
-        }
-
-        private boolean hasCycle(int node,
-                                 List<List<Integer>> graph,
-                                 int[] state,
-                                 List<Integer> topo) {
-
-            // Back-edge detected.
-            if (state[node] == VISITING) {
-                return true;
-            }
-
-            // Already processed safely.
-            if (state[node] == VISITED) {
-                return false;
-            }
-
-            state[node] = VISITING;
-
-            for (int neighbor : graph.get(node)) {
-
-                if (hasCycle(neighbor, graph, state, topo)) {
-                    return true;
-                }
-            }
-
-            state[node] = VISITED;
-
-            // Postorder insertion.
-            topo.add(node);
-
-            return false;
-        }
-
-        private List<List<Integer>> buildGraph(int n, int[][] prerequisites) {
-
-            List<List<Integer>> graph = new ArrayList<>();
-
-            for (int i = 0; i < n; i++) {
-                graph.add(new ArrayList<>());
-            }
-
-            for (int[] edge : prerequisites) {
-
-                int next = edge[0];
-                int prereq = edge[1];
-
-                graph.get(prereq).add(next);
-            }
-
-            return graph;
-        }
-    }
-
-    /**
-     * ================================================================================================
-     * Optimal Solution — Interview Preferred
-     * Kahn's Algorithm (BFS Topological Sort)
-     * ================================================================================================
-     *
-     * Core Idea:
-     * Process only indegree 0 nodes.
-     *
-     * Core Invariant:
-     * Every node inside queue currently has ALL prerequisites satisfied.
-     *
-     * Limitation Fixed:
-     * Natural ordering generation + explicit cycle detection.
-     *
-     * Time Complexity:
-     * O(V + E)
-     *
-     * Space Complexity:
-     * O(V + E)
-     *
-     * Interview Preference:
-     * HIGH
-     *
-     * Why Interviewers Like It:
-     * - clear invariant
-     * - iterative
-     * - deterministic reasoning
-     * - dependency modeling
-     * - easy debugging
-     */
-    static class OptimalKahnBFSSolution {
-
-        public int[] findOrder(int numCourses, int[][] prerequisites) {
-
-            // Handle minimal graph cleanly.
-            if (numCourses == 0) {
-                return new int[0];
-            }
-
-            // Adjacency list:
-            // prerequisite -> dependent courses
-            List<List<Integer>> graph = new ArrayList<>();
-
-            for (int i = 0; i < numCourses; i++) {
-                graph.add(new ArrayList<>());
-            }
-
-            // indegree[x] =
-            // remaining unmet prerequisites for x
-            int[] indegree = new int[numCourses];
-
-            // Build graph carefully.
-            for (int[] edge : prerequisites) {
-
-                int nextCourse = edge[0];
-                int prerequisiteCourse = edge[1];
-
-                graph.get(prerequisiteCourse).add(nextCourse);
-
-                indegree[nextCourse]++;
-            }
-
-            // Queue stores only executable courses.
-            Queue<Integer> queue = new ArrayDeque<>();
-
-            // Initially unlocked courses.
-            for (int course = 0; course < numCourses; course++) {
-
-                if (indegree[course] == 0) {
-                    queue.offer(course);
-                }
-            }
-
-            int[] order = new int[numCourses];
-
-            int index = 0;
-
-            // Invariant:
-            // queue always contains dependency-safe nodes.
-            while (!queue.isEmpty()) {
-
-                int currentCourse = queue.poll();
-
-                // Safe to finalize now.
-                order[index++] = currentCourse;
-
-                // Completing currentCourse removes one dependency
-                // from all dependent courses.
-                for (int neighbor : graph.get(currentCourse)) {
-
-                    indegree[neighbor]--;
-
-                    // Newly unlocked course.
-                    if (indegree[neighbor] == 0) {
-                        queue.offer(neighbor);
-                    }
-                }
-            }
-
-            // If some nodes never processed:
-            // cycle exists.
-            if (index != numCourses) {
-                return new int[0];
-            }
-
-            return order;
-        }
-    }
-
-    /**
-     * ====================================================================================================
-     * 🟣 INTERVIEW ARTICULATION (NO CODE)
-     * ====================================================================================================
-     *
-     * Verbal Explanation:
-     *
-     * "I model prerequisites as a directed graph.
-     *
-     * Edge:
-     * prerequisite -> course
-     *
-     * indegree[x] means:
-     * how many prerequisites are still unmet for course x.
-     *
-     * My invariant is:
-     * queue always contains only courses whose prerequisites are fully satisfied.
-     *
-     * Every time I process a course:
-     * I remove its outgoing edges by decrementing neighbor indegrees.
-     *
-     * When neighbor indegree becomes zero:
-     * it becomes executable and enters queue.
-     *
-     * If I process all nodes:
-     * graph was acyclic.
-     *
-     * Otherwise:
-     * some nodes remained dependency-locked forever,
-     * meaning a cycle exists."
-     *
-     * --------------------------------------------------------------------------------
-     * Discard Logic
-     * --------------------------------------------------------------------------------
-     *
-     * Once course processed:
-     * it never needs reconsideration.
-     *
-     * --------------------------------------------------------------------------------
-     * Correctness Guarantee
-     * --------------------------------------------------------------------------------
-     *
-     * Node enters answer only after all prerequisites processed.
-     *
-     * --------------------------------------------------------------------------------
-     * What Breaks If Changed
-     * --------------------------------------------------------------------------------
-     *
-     * If we enqueue indegree > 0 nodes:
-     * ordering may violate prerequisites.
-     *
-     * --------------------------------------------------------------------------------
-     * In-place Feasibility
-     * --------------------------------------------------------------------------------
-     *
-     * Not naturally.
-     *
-     * Need:
-     * graph + indegree tracking.
-     *
-     * --------------------------------------------------------------------------------
-     * Streaming Feasibility
-     * --------------------------------------------------------------------------------
-     *
-     * Partially.
-     *
-     * If edges dynamically arrive:
-     * indegrees must be updated incrementally.
-     *
-     * --------------------------------------------------------------------------------
-     * When NOT To Use
-     * --------------------------------------------------------------------------------
-     *
-     * Do not use if:
-     * - graph undirected
-     * - dependencies absent
-     * - shortest path problem
-     * - weighted optimization problem
-     *
-     * ====================================================================================================
-     * 🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
-     * ====================================================================================================
-     *
-     * Pattern Trigger:
-     * dependency ordering
-     *
-     * Core Invariant:
-     * queue contains only indegree 0 nodes
-     *
-     * Search Target:
-     * valid topological ordering
-     *
-     * Discard Rule:
-     * processed node permanently finalized
-     *
-     * Common Trap:
-     * reversing edge direction
-     *
-     * Edge Cases:
-     * - cycle
-     * - isolated nodes
-     * - no prerequisites
-     * - disconnected graph
-     *
-     * Interview One-Liner:
-     *
-     * "Indegree counts remaining prerequisites.
-     * Process only fully unlocked courses."
-     *
-     * Re-derivation Cue:
-     *
-     * "Dependency unlock simulation."
-     *
-     * ====================================================================================================
-     * 🔄 VARIATIONS & TWEAKS
-     * ====================================================================================================
-     *
-     * --------------------------------------------------------------------------------
-     * Variation 1:
-     * Return Only Feasibility
-     * --------------------------------------------------------------------------------
-     *
-     * Same invariant.
-     *
-     * Instead of storing order:
-     * just compare processed count.
-     *
-     * Example:
-     * LeetCode 207 — Course Schedule
-     *
-     * --------------------------------------------------------------------------------
-     * Variation 2:
-     * Lexicographically Smallest Ordering
-     * --------------------------------------------------------------------------------
-     *
-     * Replace queue with min-heap.
-     *
-     * Invariant preserved:
-     * still process only indegree 0 nodes.
-     *
-     * --------------------------------------------------------------------------------
-     * Variation 3:
-     * Dynamic Dependency Updates
-     * --------------------------------------------------------------------------------
-     *
-     * Pattern becomes harder.
-     *
-     * Need incremental graph maintenance.
-     *
-     * --------------------------------------------------------------------------------
-     * Pattern Break Signals
-     * --------------------------------------------------------------------------------
-     *
-     * If graph weighted:
-     * topological sort alone insufficient.
-     *
-     * If cycles allowed intentionally:
-     * ordering impossible.
-     *
-     * ====================================================================================================
-     * ⚫ REINFORCEMENT PROBLEMS
-     * ====================================================================================================
-     */
-
-    /**
-     * --------------------------------------------------------------------------------
-     * Reinforcement Problem 1
-     * LeetCode 207 — Course Schedule
-     * --------------------------------------------------------------------------------
-     *
-     * Summary:
-     * Determine whether all courses can be completed.
-     *
-     * Invariant Mapping:
-     * Same exact indegree invariant.
-     *
-     * Key Difference:
-     * Boolean result only.
-     *
-     * Edge Cases:
-     * - cycle
-     * - disconnected graph
-     *
-     * Interview Trap:
-     * forgetting isolated nodes
-     */
-    static class CourseScheduleCanFinish {
+    // =================================================================================================
+    // 1. COURSE SCHEDULE I — CAN EVERYTHING FINISH?
+    // LeetCode 207
+    //
+    // SAME KAHN ENGINE.
+    // Mutation:
+    //     do not store the ordering;
+    //     only count how many nodes were processed.
+    // =================================================================================================
+
+    static class CourseScheduleI {
 
         public boolean canFinish(int numCourses, int[][] prerequisites) {
 
@@ -891,39 +264,36 @@ public class CourseSchedule {
 
             int[] indegree = new int[numCourses];
 
-            for (int[] edge : prerequisites) {
+            // [course, prereq] => prereq -> course
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
 
-                int next = edge[0];
-                int prereq = edge[1];
-
-                graph.get(prereq).add(next);
-
-                indegree[next]++;
+                graph.get(prereq).add(course);
+                indegree[course]++;
             }
 
-            Queue<Integer> queue = new ArrayDeque<>();
+            Queue<Integer> q = new ArrayDeque<>();
 
-            for (int i = 0; i < numCourses; i++) {
-
-                if (indegree[i] == 0) {
-                    queue.offer(i);
+            for (int course = 0; course < numCourses; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
                 }
             }
 
             int processed = 0;
 
-            while (!queue.isEmpty()) {
+            while (!q.isEmpty()) {
 
-                int node = queue.poll();
-
+                int course = q.poll();
                 processed++;
 
-                for (int neighbor : graph.get(node)) {
+                for (int next : graph.get(course)) {
 
-                    indegree[neighbor]--;
+                    indegree[next]--;
 
-                    if (indegree[neighbor] == 0) {
-                        queue.offer(neighbor);
+                    if (indegree[next] == 0) {
+                        q.offer(next);
                     }
                 }
             }
@@ -932,39 +302,430 @@ public class CourseSchedule {
         }
     }
 
-    /**
-     * --------------------------------------------------------------------------------
-     * Reinforcement Problem 2
-     * LeetCode 269 — Alien Dictionary
-     * --------------------------------------------------------------------------------
-     *
-     * Summary:
-     * Derive valid character ordering from sorted alien words.
-     *
-     * Invariant Mapping:
-     * Character enters ordering only when all preceding constraints satisfied.
-     *
-     * Edge Case:
-     * prefix invalidity
-     *
-     * Interview Trap:
-     * forgetting isolated characters
-     */
-    static class AlienDictionarySolution {
+
+    // =================================================================================================
+    // 2. COURSE SCHEDULE II — RETURN ONE VALID ORDER
+    // LeetCode 210
+    //
+    // THIS IS THE PRIMARY CANONICAL SOLUTION TO RETAIN.
+    //
+    // Core invariant:
+    //     every node inside q currently has all prerequisites satisfied.
+    // =================================================================================================
+
+    static class CourseScheduleII {
+
+        public int[] findOrder(int numCourses, int[][] prerequisites) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int i = 0; i < numCourses; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[numCourses];
+
+            // IMPORTANT:
+            // There is NO inner j-loop here.
+            // Each prerequisite pair represents ONE directed edge.
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            Queue<Integer> q = new ArrayDeque<>();
+
+            for (int course = 0; course < numCourses; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
+                }
+            }
+
+            int[] order = new int[numCourses];
+            int index = 0;
+
+            while (!q.isEmpty()) {
+
+                int course = q.poll();
+
+                // Safe to finalize because indegree == 0.
+                order[index++] = course;
+
+                for (int next : graph.get(course)) {
+
+                    // Current prerequisite has now been satisfied.
+                    indegree[next]--;
+
+                    // Newly unlocked node.
+                    if (indegree[next] == 0) {
+                        q.offer(next);
+                    }
+                }
+            }
+
+            // Leftover nodes => cycle => no complete topological order.
+            return index == numCourses
+                    ? order
+                    : new int[0];
+        }
+    }
+
+
+    // =================================================================================================
+    // 3. LEXICOGRAPHICALLY SMALLEST TOPOLOGICAL ORDER
+    //
+    // Mutation:
+    //
+    //     Queue
+    //       ->
+    //     PriorityQueue
+    //
+    // We still process ONLY indegree-0 nodes.
+    // Among currently valid choices, choose the smallest numbered node.
+    //
+    // Time:
+    //     O((V + E) log V)
+    // =================================================================================================
+
+    static class LexicographicallySmallestOrder {
+
+        public int[] findOrder(int numCourses, int[][] prerequisites) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int i = 0; i < numCourses; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[numCourses];
+
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            PriorityQueue<Integer> q = new PriorityQueue<>();
+
+            for (int course = 0; course < numCourses; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
+                }
+            }
+
+            int[] order = new int[numCourses];
+            int index = 0;
+
+            while (!q.isEmpty()) {
+
+                int course = q.poll();
+                order[index++] = course;
+
+                for (int next : graph.get(course)) {
+
+                    indegree[next]--;
+
+                    if (indegree[next] == 0) {
+                        q.offer(next);
+                    }
+                }
+            }
+
+            return index == numCourses
+                    ? order
+                    : new int[0];
+        }
+    }
+
+
+    // =================================================================================================
+    // 4. IS THE TOPOLOGICAL ORDER UNIQUE?
+    //
+    // Key observation:
+    //
+    //     q.size() > 1
+    //
+    // means:
+    //
+    //     there are at least two currently-valid next choices,
+    //
+    // therefore:
+    //
+    //     more than one topological ordering exists.
+    //
+    // For uniqueness:
+    //
+    //     queue size must be EXACTLY 1 at every processing step.
+    // =================================================================================================
+
+    static class UniqueTopologicalOrder {
+
+        public boolean hasUniqueOrder(int numCourses, int[][] prerequisites) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int i = 0; i < numCourses; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[numCourses];
+
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            Queue<Integer> q = new ArrayDeque<>();
+
+            for (int course = 0; course < numCourses; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
+                }
+            }
+
+            int processed = 0;
+
+            while (!q.isEmpty()) {
+
+                if (q.size() != 1) {
+                    return false;
+                }
+
+                int course = q.poll();
+                processed++;
+
+                for (int next : graph.get(course)) {
+
+                    indegree[next]--;
+
+                    if (indegree[next] == 0) {
+                        q.offer(next);
+                    }
+                }
+            }
+
+            return processed == numCourses;
+        }
+    }
+
+
+    // =================================================================================================
+    // 5. PARALLEL COURSES — MINIMUM SEMESTERS
+    // LeetCode 1136
+    //
+    // relations[i] = [prerequisite, nextCourse]
+    //
+    // IMPORTANT:
+    // The input orientation here is different from LC 207/210.
+    //
+    // Mutation:
+    //
+    //     normal Kahn BFS
+    //          +
+    //     process one queue LEVEL at a time
+    //
+    // Every level = one semester because all currently-unlocked courses can run in parallel.
+    // =================================================================================================
+
+    static class ParallelCourses {
+
+        public int minimumSemesters(int n, int[][] relations) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            // Courses are labeled 1..n.
+            for (int i = 0; i <= n; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[n + 1];
+
+            for (int[] relation : relations) {
+                int prereq = relation[0];
+                int course = relation[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            Queue<Integer> q = new ArrayDeque<>();
+
+            for (int course = 1; course <= n; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
+                }
+            }
+
+            int semesters = 0;
+            int completed = 0;
+
+            while (!q.isEmpty()) {
+
+                int size = q.size();
+                semesters++;
+
+                while (size-- > 0) {
+
+                    int course = q.poll();
+                    completed++;
+
+                    for (int next : graph.get(course)) {
+
+                        indegree[next]--;
+
+                        if (indegree[next] == 0) {
+                            q.offer(next);
+                        }
+                    }
+                }
+            }
+
+            return completed == n
+                    ? semesters
+                    : -1;
+        }
+    }
+
+
+    // =================================================================================================
+    // 6. TASKS / COURSES HAVE DURATIONS — DAG DP / CRITICAL PATH
+    //
+    // Input:
+    //
+    //     prerequisites[i] = [course, prerequisite]
+    //     duration[course]  = time required by that course
+    //
+    // Mutation:
+    //
+    //     Kahn traversal
+    //          +
+    //     earliestFinish DP
+    //
+    // For edge:
+    //
+    //     course -> next
+    //
+    // update:
+    //
+    //     earliestFinish[next]
+    //         = max(
+    //               earliestFinish[next],
+    //               earliestFinish[course] + duration[next]
+    //           )
+    //
+    // WHY max?
+    //
+    // A node with multiple prerequisites must wait for the SLOWEST prerequisite chain.
+    // =================================================================================================
+
+    static class MinimumCompletionTime {
+
+        public int minimumTime(int numCourses,
+                               int[][] prerequisites,
+                               int[] duration) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int i = 0; i < numCourses; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[numCourses];
+
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            Queue<Integer> q = new ArrayDeque<>();
+
+            int[] earliestFinish = duration.clone();
+
+            for (int course = 0; course < numCourses; course++) {
+                if (indegree[course] == 0) {
+                    q.offer(course);
+                }
+            }
+
+            int processed = 0;
+            int answer = 0;
+
+            while (!q.isEmpty()) {
+
+                int course = q.poll();
+                processed++;
+
+                answer = Math.max(answer, earliestFinish[course]);
+
+                for (int next : graph.get(course)) {
+
+                    earliestFinish[next] = Math.max(
+                            earliestFinish[next],
+                            earliestFinish[course] + duration[next]
+                    );
+
+                    indegree[next]--;
+
+                    if (indegree[next] == 0) {
+                        q.offer(next);
+                    }
+                }
+            }
+
+            return processed == numCourses
+                    ? answer
+                    : -1;
+        }
+    }
+
+
+    // =================================================================================================
+    // 7. ALIEN DICTIONARY
+    // LeetCode 269
+    //
+    // New difficulty:
+    //
+    //     edges are NOT directly given.
+    //
+    // We first infer ordering constraints from adjacent sorted words.
+    //
+    // Then:
+    //
+    //     SAME KAHN ENGINE.
+    //
+    // Critical rule:
+    //
+    //     Only the FIRST differing character between adjacent words creates an ordering constraint.
+    //
+    // Prefix invalidity:
+    //
+    //     ["abc", "ab"]
+    //
+    // is impossible because a longer word cannot appear before its exact prefix.
+    // =================================================================================================
+
+    static class AlienDictionary {
 
         public String alienOrder(String[] words) {
 
             Map<Character, Set<Character>> graph = new HashMap<>();
-
             Map<Character, Integer> indegree = new HashMap<>();
 
-            // Initialize all characters.
+            // Include every character, even isolated ones.
             for (String word : words) {
-
                 for (char ch : word.toCharArray()) {
-
                     graph.putIfAbsent(ch, new HashSet<>());
-
                     indegree.putIfAbsent(ch, 0);
                 }
             }
@@ -974,27 +735,23 @@ public class CourseSchedule {
                 String first = words[i];
                 String second = words[i + 1];
 
-                // Invalid prefix case.
                 if (first.length() > second.length()
                         && first.startsWith(second)) {
-
                     return "";
                 }
 
-                int minLength = Math.min(first.length(), second.length());
+                int length = Math.min(first.length(), second.length());
 
-                for (int j = 0; j < minLength; j++) {
+                for (int j = 0; j < length; j++) {
 
-                    char u = first.charAt(j);
-                    char v = second.charAt(j);
+                    char from = first.charAt(j);
+                    char to = second.charAt(j);
 
-                    if (u != v) {
+                    if (from != to) {
 
-                        if (!graph.get(u).contains(v)) {
-
-                            graph.get(u).add(v);
-
-                            indegree.put(v, indegree.get(v) + 1);
+                        // Avoid duplicate edge => avoid double indegree count.
+                        if (graph.get(from).add(to)) {
+                            indegree.put(to, indegree.get(to) + 1);
                         }
 
                         break;
@@ -1002,140 +759,59 @@ public class CourseSchedule {
                 }
             }
 
-            Queue<Character> queue = new ArrayDeque<>();
+            Queue<Character> q = new ArrayDeque<>();
 
             for (char ch : indegree.keySet()) {
-
                 if (indegree.get(ch) == 0) {
-                    queue.offer(ch);
+                    q.offer(ch);
                 }
             }
 
-            StringBuilder answer = new StringBuilder();
+            StringBuilder order = new StringBuilder();
 
-            while (!queue.isEmpty()) {
+            while (!q.isEmpty()) {
 
-                char current = queue.poll();
+                char current = q.poll();
+                order.append(current);
 
-                answer.append(current);
+                for (char next : graph.get(current)) {
 
-                for (char neighbor : graph.get(current)) {
+                    indegree.put(next, indegree.get(next) - 1);
 
-                    indegree.put(neighbor, indegree.get(neighbor) - 1);
-
-                    if (indegree.get(neighbor) == 0) {
-                        queue.offer(neighbor);
+                    if (indegree.get(next) == 0) {
+                        q.offer(next);
                     }
                 }
             }
 
-            return answer.length() == indegree.size()
-                    ? answer.toString()
+            return order.length() == indegree.size()
+                    ? order.toString()
                     : "";
         }
     }
 
-    /**
-     * --------------------------------------------------------------------------------
-     * Reinforcement Problem 3
-     * LeetCode 1136 — Parallel Courses
-     * --------------------------------------------------------------------------------
-     *
-     * Summary:
-     * Minimum semesters required.
-     *
-     * Invariant Mapping:
-     * Semester queue contains currently executable courses.
-     *
-     * Interview Trap:
-     * forgetting level-by-level BFS meaning.
-     */
-    static class ParallelCoursesSolution {
 
-        public int minimumSemesters(int n, int[][] relations) {
+    // =================================================================================================
+    // 8. SEQUENCE RECONSTRUCTION — UNIQUE ORDER MUST MATCH TARGET
+    // LeetCode 444
+    //
+    // Mutation:
+    //
+    //     Kahn uniqueness check
+    //          +
+    //     popped node must equal nums[index]
+    //
+    // Important:
+    //
+    //     every required value must actually appear in the supplied sequences.
+    //
+    // Otherwise a target can look "reconstructible" even though the evidence never mentioned a node.
+    // =================================================================================================
 
-            List<List<Integer>> graph = new ArrayList<>();
+    static class SequenceReconstruction {
 
-            for (int i = 0; i <= n; i++) {
-                graph.add(new ArrayList<>());
-            }
-
-            int[] indegree = new int[n + 1];
-
-            for (int[] edge : relations) {
-
-                int prereq = edge[0];
-                int next = edge[1];
-
-                graph.get(prereq).add(next);
-
-                indegree[next]++;
-            }
-
-            Queue<Integer> queue = new ArrayDeque<>();
-
-            for (int course = 1; course <= n; course++) {
-
-                if (indegree[course] == 0) {
-                    queue.offer(course);
-                }
-            }
-
-            int semesters = 0;
-            int completed = 0;
-
-            while (!queue.isEmpty()) {
-
-                int size = queue.size();
-
-                semesters++;
-
-                for (int i = 0; i < size; i++) {
-
-                    int current = queue.poll();
-
-                    completed++;
-
-                    for (int neighbor : graph.get(current)) {
-
-                        indegree[neighbor]--;
-
-                        if (indegree[neighbor] == 0) {
-                            queue.offer(neighbor);
-                        }
-                    }
-                }
-            }
-
-            return completed == n ? semesters : -1;
-        }
-    }
-
-    /**
-     * ====================================================================================================
-     * 🧩 RELATED PROBLEMS
-     * ====================================================================================================
-     */
-
-    /**
-     * --------------------------------------------------------------------------------
-     * Related Problem 1
-     * LeetCode 444 — Sequence Reconstruction
-     * --------------------------------------------------------------------------------
-     *
-     * Same / Modified / Broken Invariant:
-     * Same invariant +
-     * uniqueness constraint.
-     *
-     * Edge Case:
-     * multiple valid nodes simultaneously.
-     *
-     * Interview Note:
-     * Queue size > 1 means ordering not unique.
-     */
-    static class SequenceReconstructionSolution {
-
-        public boolean sequenceReconstruction(int[] nums, List<List<Integer>> sequences) {
+        public boolean sequenceReconstruction(int[] nums,
+                                              List<List<Integer>> sequences) {
 
             Map<Integer, Set<Integer>> graph = new HashMap<>();
             Map<Integer, Integer> indegree = new HashMap<>();
@@ -1145,6 +821,8 @@ public class CourseSchedule {
                 indegree.put(num, 0);
             }
 
+            Set<Integer> seen = new HashSet<>();
+
             for (List<Integer> seq : sequences) {
 
                 for (int num : seq) {
@@ -1152,49 +830,56 @@ public class CourseSchedule {
                     if (!graph.containsKey(num)) {
                         return false;
                     }
+
+                    seen.add(num);
                 }
 
                 for (int i = 1; i < seq.size(); i++) {
 
-                    int u = seq.get(i - 1);
-                    int v = seq.get(i);
+                    int from = seq.get(i - 1);
+                    int to = seq.get(i);
 
-                    if (graph.get(u).add(v)) {
-                        indegree.put(v, indegree.get(v) + 1);
+                    if (graph.get(from).add(to)) {
+                        indegree.put(to, indegree.get(to) + 1);
                     }
                 }
             }
 
-            Queue<Integer> queue = new ArrayDeque<>();
+            if (seen.size() != nums.length) {
+                return false;
+            }
 
-            for (int node : indegree.keySet()) {
+            Queue<Integer> q = new ArrayDeque<>();
 
+            for (int node : nums) {
                 if (indegree.get(node) == 0) {
-                    queue.offer(node);
+                    q.offer(node);
                 }
             }
 
             int index = 0;
 
-            while (!queue.isEmpty()) {
+            while (!q.isEmpty()) {
 
-                // Multiple choices => non-unique ordering.
-                if (queue.size() > 1) {
+                // More than one valid next node => target is not uniquely determined.
+                if (q.size() != 1) {
                     return false;
                 }
 
-                int current = queue.poll();
+                int current = q.poll();
 
-                if (nums[index++] != current) {
+                if (index >= nums.length || nums[index] != current) {
                     return false;
                 }
 
-                for (int neighbor : graph.get(current)) {
+                index++;
 
-                    indegree.put(neighbor, indegree.get(neighbor) - 1);
+                for (int next : graph.get(current)) {
 
-                    if (indegree.get(neighbor) == 0) {
-                        queue.offer(neighbor);
+                    indegree.put(next, indegree.get(next) - 1);
+
+                    if (indegree.get(next) == 0) {
+                        q.offer(next);
                     }
                 }
             }
@@ -1203,22 +888,37 @@ public class CourseSchedule {
         }
     }
 
-    /**
-     * --------------------------------------------------------------------------------
-     * Related Problem 2
-     * LeetCode 802 — Find Eventual Safe States
-     * --------------------------------------------------------------------------------
-     *
-     * Modified Invariant:
-     * reverse graph + outdegree reduction.
-     *
-     * Edge Case:
-     * cycles create unsafe nodes.
-     *
-     * Interview Note:
-     * same dependency elimination principle.
-     */
-    static class EventualSafeStatesSolution {
+
+    // =================================================================================================
+    // 9. EVENTUAL SAFE STATES
+    // LeetCode 802
+    //
+    // Related elimination pattern:
+    //
+    // Original graph:
+    //
+    //     node -> next
+    //
+    // A terminal node has:
+    //
+    //     outdegree == 0
+    //
+    // Terminal nodes are obviously safe.
+    //
+    // Reverse the graph:
+    //
+    //     next -> previous
+    //
+    // Then repeatedly remove safe outgoing dependencies.
+    //
+    // This is the SAME "dependency elimination" idea, but using:
+    //
+    //     OUTDEGREE
+    //
+    // instead of indegree.
+    // =================================================================================================
+
+    static class EventualSafeStates {
 
         public List<Integer> eventualSafeNodes(int[][] graph) {
 
@@ -1236,34 +936,32 @@ public class CourseSchedule {
 
                 outdegree[node] = graph[node].length;
 
-                for (int neighbor : graph[node]) {
-                    reverse.get(neighbor).add(node);
+                for (int next : graph[node]) {
+                    reverse.get(next).add(node);
                 }
             }
 
-            Queue<Integer> queue = new ArrayDeque<>();
+            Queue<Integer> q = new ArrayDeque<>();
 
             for (int node = 0; node < n; node++) {
-
                 if (outdegree[node] == 0) {
-                    queue.offer(node);
+                    q.offer(node);
                 }
             }
 
             List<Integer> safe = new ArrayList<>();
 
-            while (!queue.isEmpty()) {
+            while (!q.isEmpty()) {
 
-                int current = queue.poll();
-
+                int current = q.poll();
                 safe.add(current);
 
-                for (int prev : reverse.get(current)) {
+                for (int previous : reverse.get(current)) {
 
-                    outdegree[prev]--;
+                    outdegree[previous]--;
 
-                    if (outdegree[prev] == 0) {
-                        queue.offer(prev);
+                    if (outdegree[previous] == 0) {
+                        q.offer(previous);
                     }
                 }
             }
@@ -1274,155 +972,292 @@ public class CourseSchedule {
         }
     }
 
-    /**
-     * --------------------------------------------------------------------------------
-     * Related Problem 3
-     * LeetCode 1203 — Sort Items by Groups Respecting Dependencies
-     * --------------------------------------------------------------------------------
-     *
-     * Modified Invariant:
-     * two-level topological sort.
-     *
-     * Edge Case:
-     * inter-group dependencies.
-     *
-     * Interview Note:
-     * layered DAG reasoning.
-     *
-     * Concise simplified implementation shown.
-     */
-    static class SimpleTopologicalUtility {
 
-        public List<Integer> topoSort(int nodes,
-                                      List<List<Integer>> graph,
-                                      int[] indegree) {
+    // =================================================================================================
+    // 10. COURSE SCHEDULE IV — REACHABILITY BOUNDARY CASE
+    // LeetCode 1462
+    //
+    // Question:
+    //
+    //     Is A a prerequisite of B, directly OR indirectly?
+    //
+    // This is not primarily:
+    //
+    //     "produce a topological order"
+    //
+    // It is:
+    //
+    //     "answer reachability queries"
+    //
+    // So do NOT force every dependency problem into Kahn.
+    //
+    // For moderate V, transitive closure is simple and robust:
+    //
+    //     reachable[a][b] = whether a can eventually reach b
+    //
+    // Time:  O(V^3)
+    // Space: O(V^2)
+    // =================================================================================================
 
-            Queue<Integer> queue = new ArrayDeque<>();
+    static class CourseScheduleIV {
 
-            for (int i = 0; i < nodes; i++) {
+        public List<Boolean> checkIfPrerequisite(int numCourses,
+                                                 int[][] prerequisites,
+                                                 int[][] queries) {
 
-                if (indegree[i] == 0) {
-                    queue.offer(i);
-                }
+            boolean[][] reachable = new boolean[numCourses][numCourses];
+
+            // Here prerequisite pair is [prereq, course].
+            for (int[] p : prerequisites) {
+                int prereq = p[0];
+                int course = p[1];
+
+                reachable[prereq][course] = true;
             }
 
-            List<Integer> order = new ArrayList<>();
+            for (int via = 0; via < numCourses; via++) {
+                for (int from = 0; from < numCourses; from++) {
+                    for (int to = 0; to < numCourses; to++) {
 
-            while (!queue.isEmpty()) {
-
-                int current = queue.poll();
-
-                order.add(current);
-
-                for (int neighbor : graph.get(current)) {
-
-                    indegree[neighbor]--;
-
-                    if (indegree[neighbor] == 0) {
-                        queue.offer(neighbor);
+                        reachable[from][to] =
+                                reachable[from][to]
+                                        || (reachable[from][via] && reachable[via][to]);
                     }
                 }
             }
 
-            return order.size() == nodes
-                    ? order
-                    : new ArrayList<>();
+            List<Boolean> answer = new ArrayList<>();
+
+            for (int[] query : queries) {
+                answer.add(reachable[query[0]][query[1]]);
+            }
+
+            return answer;
         }
     }
 
-    /**
-     * ====================================================================================================
-     * 🧠 MASTERY CHECKLIST
-     * ====================================================================================================
-     *
-     * ✔ Invariant
-     *
-     * Queue contains only indegree 0 nodes.
-     *
-     * ✔ Search Target
-     *
-     * Valid dependency-safe ordering.
-     *
-     * ✔ Discard Rule
-     *
-     * Processed node permanently finalized.
-     *
-     * ✔ Termination Logic
-     *
-     * Queue empty.
-     *
-     * Then compare processed count vs total nodes.
-     *
-     * ✔ Naive Failure
-     *
-     * Traversal order does not guarantee dependency correctness.
-     *
-     * ✔ Edge Cases
-     *
-     * - cycle
-     * - disconnected graph
-     * - isolated nodes
-     * - no prerequisites
-     * - multiple valid orders
-     *
-     * ✔ Debugging Readiness
-     *
-     * Debug checkpoints:
-     * - graph direction
-     * - indegree correctness
-     * - queue initialization
-     * - processed count
-     *
-     * ✔ Variant Readiness
-     *
-     * Can adapt to:
-     * - feasibility
-     * - uniqueness
-     * - semester batching
-     * - dependency unlock systems
-     *
-     * ✔ Pattern Boundary
-     *
-     * Not for:
-     * - weighted shortest path
-     * - undirected graphs
-     * - cyclic execution systems
-     *
-     * ====================================================================================================
-     * 🧪 main() + SELF-VERIFYING TESTS
-     * ====================================================================================================
-     */
+
+    // =================================================================================================
+    // 11. ALL VALID TOPOLOGICAL ORDERS
+    //
+    // Normal Kahn:
+    //
+    //     choose ANY zero-indegree node.
+    //
+    // If interviewer asks:
+    //
+    //     "return ALL possible valid orderings"
+    //
+    // then every current zero-indegree node becomes a BACKTRACKING CHOICE.
+    //
+    // Pattern:
+    //
+    //     choose
+    //       ->
+    //     decrement neighbors
+    //       ->
+    //     explore
+    //       ->
+    //     restore neighbors
+    //       ->
+    //     undo choice
+    //
+    // Potentially exponential.
+    //
+    // This is NOT the default solution.
+    // =================================================================================================
+
+    static class AllTopologicalOrders {
+
+        public List<List<Integer>> findAllOrders(int numCourses,
+                                                 int[][] prerequisites) {
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int i = 0; i < numCourses; i++) {
+                graph.add(new ArrayList<>());
+            }
+
+            int[] indegree = new int[numCourses];
+
+            for (int[] p : prerequisites) {
+                int course = p[0];
+                int prereq = p[1];
+
+                graph.get(prereq).add(course);
+                indegree[course]++;
+            }
+
+            List<List<Integer>> result = new ArrayList<>();
+
+            backtrack(
+                    graph,
+                    indegree,
+                    new boolean[numCourses],
+                    new ArrayList<>(),
+                    result
+            );
+
+            return result;
+        }
+
+        private void backtrack(List<List<Integer>> graph,
+                               int[] indegree,
+                               boolean[] used,
+                               List<Integer> path,
+                               List<List<Integer>> result) {
+
+            if (path.size() == graph.size()) {
+                result.add(new ArrayList<>(path));
+                return;
+            }
+
+            for (int node = 0; node < graph.size(); node++) {
+
+                if (used[node] || indegree[node] != 0) {
+                    continue;
+                }
+
+                // CHOOSE
+                used[node] = true;
+                path.add(node);
+
+                for (int next : graph.get(node)) {
+                    indegree[next]--;
+                }
+
+                // EXPLORE
+                backtrack(graph, indegree, used, path, result);
+
+                // UNDO
+                for (int next : graph.get(node)) {
+                    indegree[next]++;
+                }
+
+                path.remove(path.size() - 1);
+                used[node] = false;
+            }
+        }
+    }
+
+
+    // =================================================================================================
+    // IMPORTANT BOUNDARY / DO-NOT-OVERGENERALIZE NOTES
+    // =================================================================================================
+    //
+    // 1. DFS topological sort is a valid alternative.
+    //
+    //    Keep it as SECONDARY knowledge:
+    //
+    //        state 0 = unvisited
+    //        state 1 = visiting
+    //        state 2 = visited
+    //
+    //        visiting -> visiting edge => cycle
+    //
+    //        add node in postorder
+    //        reverse postorder
+    //
+    //    For this study family, Kahn is the primary reusable anchor.
+    //
+    //
+    // 2. LeetCode 1203 — Sort Items by Groups Respecting Dependencies
+    //
+    //    This is NOT solved by a single generic topoSort helper.
+    //
+    //    It requires two-level dependency reasoning:
+    //
+    //        item graph
+    //        +
+    //        group graph
+    //
+    //    Treat it as an advanced extension, not a basic Course Schedule variant.
+    //
+    //
+    // 3. Weighted shortest-path problems are NOT solved merely because a DAG/topological order exists.
+    //    Topological order may be part of the solution, but the optimization state is separate.
+    //
+    //
+    // 4. "Traversal order" is not automatically "dependency-safe order".
+    //
+    // =================================================================================================
+
+
+    // =================================================================================================
+    // SELF-VERIFYING TESTS
+    //
+    // IMPORTANT:
+    //
+    // Do NOT rely on Java's plain:
+    //
+    //     assert condition;
+    //
+    // because Java assertions are disabled unless the JVM is launched with -ea.
+    //
+    // check(...) below ALWAYS executes.
+    // =================================================================================================
 
     public static void main(String[] args) {
 
-        OptimalKahnBFSSolution solution = new OptimalKahnBFSSolution();
+        testCourseScheduleI();
+        testCourseScheduleII();
+        testLexicographicallySmallestOrder();
+        testUniqueTopologicalOrder();
+        testParallelCourses();
+        testMinimumCompletionTime();
+        testAlienDictionary();
+        testSequenceReconstruction();
+        testEventualSafeStates();
+        testCourseScheduleIV();
+        testAllTopologicalOrders();
 
-        // --------------------------------------------------------------------------------
-        // Test 1:
-        // Basic linear dependency
-        // 0 -> 1
-        // Why:
-        // simplest valid topological order
-        // --------------------------------------------------------------------------------
-        {
-            int numCourses = 2;
-            int[][] prerequisites = {
-                    {1, 0}
-            };
+        System.out.println();
+        System.out.println("ALL COURSE-SCHEDULE-FAMILY TESTS PASSED");
+    }
 
-            int[] result = solution.findOrder(numCourses, prerequisites);
 
-            assert isValidTopologicalOrder(numCourses, prerequisites, result);
+    private static void testCourseScheduleI() {
 
-            System.out.println("Test 1 Passed");
-        }
+        CourseScheduleI solution = new CourseScheduleI();
 
-        // --------------------------------------------------------------------------------
-        // Test 2:
-        // Diamond dependency
-        // Why:
-        // multiple valid orderings
-        // --------------------------------------------------------------------------------
+        check(
+                solution.canFinish(
+                        4,
+                        new int[][]{
+                                {1, 0},
+                                {2, 0},
+                                {3, 1},
+                                {3, 2}
+                        }
+                ),
+                "Course Schedule I — DAG should finish"
+        );
+
+        check(
+                !solution.canFinish(
+                        2,
+                        new int[][]{
+                                {1, 0},
+                                {0, 1}
+                        }
+                ),
+                "Course Schedule I — cycle should fail"
+        );
+
+        check(
+                solution.canFinish(
+                        3,
+                        new int[][]{}
+                ),
+                "Course Schedule I — isolated courses"
+        );
+    }
+
+
+    private static void testCourseScheduleII() {
+
+        CourseScheduleII solution = new CourseScheduleII();
+
         {
             int numCourses = 4;
 
@@ -1433,60 +1268,41 @@ public class CourseSchedule {
                     {3, 2}
             };
 
-            int[] result = solution.findOrder(numCourses, prerequisites);
+            int[] order = solution.findOrder(numCourses, prerequisites);
 
-            assert isValidTopologicalOrder(numCourses, prerequisites, result);
-
-            System.out.println("Test 2 Passed");
+            check(
+                    isValidTopologicalOrder(numCourses, prerequisites, order),
+                    "Course Schedule II — diamond"
+            );
         }
 
-        // --------------------------------------------------------------------------------
-        // Test 3:
-        // No prerequisites
-        // Why:
-        // isolated nodes
-        // --------------------------------------------------------------------------------
         {
-            int numCourses = 3;
+            int[] order = solution.findOrder(
+                    2,
+                    new int[][]{
+                            {1, 0},
+                            {0, 1}
+                    }
+            );
 
-            int[][] prerequisites = {};
-
-            int[] result = solution.findOrder(numCourses, prerequisites);
-
-            assert result.length == 3;
-
-            assert isValidTopologicalOrder(numCourses, prerequisites, result);
-
-            System.out.println("Test 3 Passed");
+            check(
+                    order.length == 0,
+                    "Course Schedule II — cycle returns empty"
+            );
         }
 
-        // --------------------------------------------------------------------------------
-        // Test 4:
-        // Cycle detection
-        // Why:
-        // must return empty
-        // --------------------------------------------------------------------------------
         {
-            int numCourses = 2;
+            int[] order = solution.findOrder(
+                    1,
+                    new int[][]{}
+            );
 
-            int[][] prerequisites = {
-                    {0, 1},
-                    {1, 0}
-            };
-
-            int[] result = solution.findOrder(numCourses, prerequisites);
-
-            assert result.length == 0;
-
-            System.out.println("Test 4 Passed");
+            check(
+                    Arrays.equals(order, new int[]{0}),
+                    "Course Schedule II — single course"
+            );
         }
 
-        // --------------------------------------------------------------------------------
-        // Test 5:
-        // Disconnected graph
-        // Why:
-        // ensure all components handled
-        // --------------------------------------------------------------------------------
         {
             int numCourses = 6;
 
@@ -1495,69 +1311,321 @@ public class CourseSchedule {
                     {3, 2}
             };
 
-            int[] result = solution.findOrder(numCourses, prerequisites);
+            int[] order = solution.findOrder(numCourses, prerequisites);
 
-            assert isValidTopologicalOrder(numCourses, prerequisites, result);
-
-            System.out.println("Test 5 Passed");
+            check(
+                    isValidTopologicalOrder(numCourses, prerequisites, order),
+                    "Course Schedule II — disconnected graph"
+            );
         }
-
-        // --------------------------------------------------------------------------------
-        // Test 6:
-        // Single node
-        // Why:
-        // boundary case
-        // --------------------------------------------------------------------------------
-        {
-            int numCourses = 1;
-
-            int[][] prerequisites = {};
-
-            int[] result = solution.findOrder(numCourses, prerequisites);
-
-            assert result.length == 1;
-            assert result[0] == 0;
-
-            System.out.println("Test 6 Passed");
-        }
-
-        // --------------------------------------------------------------------------------
-        // Test 7:
-        // Long chain
-        // Why:
-        // ordering strictness
-        // --------------------------------------------------------------------------------
-        {
-            int numCourses = 5;
-
-            int[][] prerequisites = {
-                    {1, 0},
-                    {2, 1},
-                    {3, 2},
-                    {4, 3}
-            };
-
-            int[] result = solution.findOrder(numCourses, prerequisites);
-
-            assert isValidTopologicalOrder(numCourses, prerequisites, result);
-
-            System.out.println("Test 7 Passed");
-        }
-
-        System.out.println();
-        System.out.println("All tests passed successfully.");
-
-        System.out.println();
-        System.out.println("I understand the invariant.");
-        System.out.println("I can re-derive the solution.");
-        System.out.println("I can physically reconstruct the implementation under pressure.");
-        System.out.println("This chapter is complete.");
     }
 
-    /**
-     * Helper verifier:
-     * Ensures prerequisite ordering validity.
-     */
+
+    private static void testLexicographicallySmallestOrder() {
+
+        LexicographicallySmallestOrder solution =
+                new LexicographicallySmallestOrder();
+
+        int[] order = solution.findOrder(
+                4,
+                new int[][]{
+                        {1, 0},
+                        {2, 0},
+                        {3, 1},
+                        {3, 2}
+                }
+        );
+
+        check(
+                Arrays.equals(order, new int[]{0, 1, 2, 3}),
+                "Lexicographically smallest order"
+        );
+    }
+
+
+    private static void testUniqueTopologicalOrder() {
+
+        UniqueTopologicalOrder solution =
+                new UniqueTopologicalOrder();
+
+        check(
+                solution.hasUniqueOrder(
+                        4,
+                        new int[][]{
+                                {1, 0},
+                                {2, 1},
+                                {3, 2}
+                        }
+                ),
+                "Unique order — chain"
+        );
+
+        check(
+                !solution.hasUniqueOrder(
+                        4,
+                        new int[][]{
+                                {1, 0},
+                                {2, 0},
+                                {3, 1},
+                                {3, 2}
+                        }
+                ),
+                "Unique order — diamond is not unique"
+        );
+
+        check(
+                !solution.hasUniqueOrder(
+                        2,
+                        new int[][]{
+                                {1, 0},
+                                {0, 1}
+                        }
+                ),
+                "Unique order — cycle"
+        );
+    }
+
+
+    private static void testParallelCourses() {
+
+        ParallelCourses solution = new ParallelCourses();
+
+        check(
+                solution.minimumSemesters(
+                        4,
+                        new int[][]{
+                                {1, 2},
+                                {1, 3},
+                                {2, 4},
+                                {3, 4}
+                        }
+                ) == 3,
+                "Parallel Courses — 3 semesters"
+        );
+
+        check(
+                solution.minimumSemesters(
+                        2,
+                        new int[][]{
+                                {1, 2},
+                                {2, 1}
+                        }
+                ) == -1,
+                "Parallel Courses — cycle"
+        );
+    }
+
+
+    private static void testMinimumCompletionTime() {
+
+        MinimumCompletionTime solution =
+                new MinimumCompletionTime();
+
+        int answer = solution.minimumTime(
+                4,
+                new int[][]{
+                        {1, 0},
+                        {2, 0},
+                        {3, 1},
+                        {3, 2}
+                },
+                new int[]{3, 2, 4, 5}
+        );
+
+        // Critical path:
+        // 0 -> 2 -> 3
+        // 3 + 4 + 5 = 12
+        check(
+                answer == 12,
+                "Minimum completion time — critical path"
+        );
+
+        check(
+                solution.minimumTime(
+                        2,
+                        new int[][]{
+                                {1, 0},
+                                {0, 1}
+                        },
+                        new int[]{2, 3}
+                ) == -1,
+                "Minimum completion time — cycle"
+        );
+    }
+
+
+    private static void testAlienDictionary() {
+
+        AlienDictionary solution = new AlienDictionary();
+
+        String order = solution.alienOrder(
+                new String[]{
+                        "wrt",
+                        "wrf",
+                        "er",
+                        "ett",
+                        "rftt"
+                }
+        );
+
+        check(
+                isValidAlienOrder(
+                        new String[]{
+                                "wrt",
+                                "wrf",
+                                "er",
+                                "ett",
+                                "rftt"
+                        },
+                        order
+                ),
+                "Alien Dictionary — valid inferred ordering"
+        );
+
+        check(
+                solution.alienOrder(
+                        new String[]{
+                                "abc",
+                                "ab"
+                        }
+                ).isEmpty(),
+                "Alien Dictionary — invalid prefix"
+        );
+    }
+
+
+    private static void testSequenceReconstruction() {
+
+        SequenceReconstruction solution =
+                new SequenceReconstruction();
+
+        check(
+                solution.sequenceReconstruction(
+                        new int[]{1, 2, 3},
+                        Arrays.asList(
+                                Arrays.asList(1, 2),
+                                Arrays.asList(2, 3)
+                        )
+                ),
+                "Sequence Reconstruction — uniquely reconstructible"
+        );
+
+        check(
+                !solution.sequenceReconstruction(
+                        new int[]{1, 2, 3},
+                        Arrays.asList(
+                                Arrays.asList(1, 2),
+                                Arrays.asList(1, 3)
+                        )
+                ),
+                "Sequence Reconstruction — multiple valid next choices"
+        );
+
+        check(
+                !solution.sequenceReconstruction(
+                        new int[]{1},
+                        Collections.emptyList()
+                ),
+                "Sequence Reconstruction — required node never appears"
+        );
+    }
+
+
+    private static void testEventualSafeStates() {
+
+        EventualSafeStates solution =
+                new EventualSafeStates();
+
+        int[][] graph = {
+                {1, 2},
+                {2, 3},
+                {5},
+                {0},
+                {5},
+                {},
+                {}
+        };
+
+        check(
+                solution.eventualSafeNodes(graph)
+                        .equals(Arrays.asList(2, 4, 5, 6)),
+                "Eventual Safe States"
+        );
+    }
+
+
+    private static void testCourseScheduleIV() {
+
+        CourseScheduleIV solution =
+                new CourseScheduleIV();
+
+        List<Boolean> answer =
+                solution.checkIfPrerequisite(
+                        4,
+                        new int[][]{
+                                {0, 1},
+                                {1, 2},
+                                {2, 3}
+                        },
+                        new int[][]{
+                                {0, 3},
+                                {1, 3},
+                                {3, 0},
+                                {0, 2}
+                        }
+                );
+
+        check(
+                answer.equals(
+                        Arrays.asList(
+                                true,
+                                true,
+                                false,
+                                true
+                        )
+                ),
+                "Course Schedule IV — transitive prerequisite queries"
+        );
+    }
+
+
+    private static void testAllTopologicalOrders() {
+
+        AllTopologicalOrders solution =
+                new AllTopologicalOrders();
+
+        List<List<Integer>> orders =
+                solution.findAllOrders(
+                        4,
+                        new int[][]{
+                                {1, 0},
+                                {2, 0},
+                                {3, 1},
+                                {3, 2}
+                        }
+                );
+
+        check(
+                orders.size() == 2,
+                "All topological orders — diamond has exactly 2"
+        );
+
+        check(
+                orders.contains(Arrays.asList(0, 1, 2, 3)),
+                "All topological orders — contains 0,1,2,3"
+        );
+
+        check(
+                orders.contains(Arrays.asList(0, 2, 1, 3)),
+                "All topological orders — contains 0,2,1,3"
+        );
+    }
+
+
+    // =================================================================================================
+    // TEST HELPERS
+    // =================================================================================================
+
     private static boolean isValidTopologicalOrder(int numCourses,
                                                    int[][] prerequisites,
                                                    int[] order) {
@@ -1566,25 +1634,112 @@ public class CourseSchedule {
             return false;
         }
 
+        boolean[] seen = new boolean[numCourses];
         int[] position = new int[numCourses];
 
         for (int i = 0; i < order.length; i++) {
-            position[order[i]] = i;
+
+            int course = order[i];
+
+            if (course < 0
+                    || course >= numCourses
+                    || seen[course]) {
+                return false;
+            }
+
+            seen[course] = true;
+            position[course] = i;
         }
 
-        for (int[] edge : prerequisites) {
+        for (int[] p : prerequisites) {
 
-            int next = edge[0];
-            int prereq = edge[1];
+            int course = p[0];
+            int prereq = p[1];
 
-            // prerequisite must appear earlier
-            if (position[prereq] > position[next]) {
+            if (position[prereq] > position[course]) {
                 return false;
             }
         }
 
         return true;
     }
+
+
+    private static boolean isValidAlienOrder(String[] words,
+                                             String order) {
+
+        if (order.isEmpty()) {
+            return false;
+        }
+
+        Map<Character, Integer> position = new HashMap<>();
+
+        for (int i = 0; i < order.length(); i++) {
+            position.put(order.charAt(i), i);
+        }
+
+        Set<Character> allChars = new HashSet<>();
+
+        for (String word : words) {
+            for (char ch : word.toCharArray()) {
+                allChars.add(ch);
+            }
+        }
+
+        if (position.size() != allChars.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < words.length - 1; i++) {
+
+            String first = words[i];
+            String second = words[i + 1];
+
+            if (first.length() > second.length()
+                    && first.startsWith(second)) {
+                return false;
+            }
+
+            int length = Math.min(first.length(), second.length());
+            boolean foundDifference = false;
+
+            for (int j = 0; j < length; j++) {
+
+                char a = first.charAt(j);
+                char b = second.charAt(j);
+
+                if (a != b) {
+
+                    if (position.get(a) > position.get(b)) {
+                        return false;
+                    }
+
+                    foundDifference = true;
+                    break;
+                }
+            }
+
+            if (!foundDifference
+                    && first.length() > second.length()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    private static void check(boolean condition,
+                              String testName) {
+
+        if (!condition) {
+            throw new AssertionError(
+                    "FAILED: " + testName
+            );
+        }
+
+        System.out.println(
+                "PASSED: " + testName
+        );
+    }
 }
-
-

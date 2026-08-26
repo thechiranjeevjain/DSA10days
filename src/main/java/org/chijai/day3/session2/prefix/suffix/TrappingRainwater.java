@@ -1,4 +1,4 @@
-package org.chijai.day5.stack.session1.monotonic;
+package org.chijai.day3.session2.prefix.suffix;
 
 public class TrappingRainwater {
 
@@ -337,11 +337,8 @@ public class TrappingRainwater {
 
             for (int i = 0; i < n; i++) {
                 int boundedHeight = Math.min(maxLeft[i], maxRight[i]);
-                if (boundedHeight > height[i]) {
-                    totalWater += boundedHeight - height[i];
-                }
+                totalWater += boundedHeight - height[i];
             }
-
             return totalWater;
         }
     }
