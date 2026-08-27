@@ -8,9 +8,9 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | Metric | Count |
 |---|---:|
-| Unique LeetCode problems found recursively | 155 |
+| Unique LeetCode problems found recursively | 154 |
 | Also present in interview-ranked cockpit | 154 |
-| Extra source-discovered problems | 1 |
+| Extra source-discovered problems | 0 |
 | Problems appearing in multiple Java files | 29 |
 
 ## Table Of Contents
@@ -29,7 +29,7 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 - [Stack / Monotonic Stack (17)](#stack-monotonic-stack)
 - [Heap / Priority Queue (7)](#heap-priority-queue)
 - [Dynamic Programming (8)](#dynamic-programming)
-- [Backtracking / Combinatorial DFS (7)](#backtracking-combinatorial-dfs)
+- [Backtracking / Combinatorial DFS (6)](#backtracking-combinatorial-dfs)
 - [Trie (4)](#trie)
 - [Union Find / DSU (1)](#union-find-dsu)
 - [Topological Sort (1)](#topological-sort)
@@ -578,12 +578,6 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 |---:|---:|---|---|---|
 | 134 | 143 | Permutations | [LC](https://leetcode.com/problems/permutations/) | [BacktrackingRecursion.java](../../src/main/java/org/chijai/day11/backtracking/BacktrackingRecursion.java), [Permutations.java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) |
 | 153 | 164 | Permutations Ii | [LC](https://leetcode.com/problems/permutations-ii/) | [Permutations.java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) |
-
-### Backtracking / Combinatorial DFS
-
-| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
-|---:|---:|---|---|---|
-| 155 | - | Permutation | [LC](https://leetcode.com/problems/permutation/) | [BacktrackingRecursion.java](../../src/main/java/org/chijai/day11/backtracking/BacktrackingRecursion.java) |
 
 
 ## Trie

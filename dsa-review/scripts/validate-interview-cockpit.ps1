@@ -147,7 +147,10 @@ function Get-RecursiveLeetCodeSlugs {
         $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
         $excluded = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
         $text = Get-Content -LiteralPath $file.FullName -Raw
-        foreach ($match in [regex]::Matches($text, "leetcode\.com/problems/([A-Za-z0-9-]+)(?!/discuss)")) {
+        foreach ($match in [regex]::Matches($text, "leetcode\.com/problems/([A-Za-z0-9-]+)(/[^\s\)]*)?")) {
+            if ($match.Groups[2].Value -match '^/discuss\b') {
+                continue
+            }
             $slug = $match.Groups[1].Value.Trim().ToLowerInvariant()
             if ($slug -and $slug -notin $excluded) {
                 [void] $slugs.Add($slug)
@@ -160,9 +163,23 @@ function Get-RecursiveLeetCodeSlugs {
 $leetcodeIndexPath = Join-Path $interviewRoot "07_LEETCODE_SOLVED_INDEX.md"
 $leetcodeIndexText = Get-Content -LiteralPath $leetcodeIndexPath -Raw
 $leetcodeIndexRows = @([regex]::Matches($leetcodeIndexText, '(?m)^\| (?<index>\d+) \|'))
+$leetcodeIndexSlugs = @([regex]::Matches($leetcodeIndexText, 'https://leetcode\.com/problems/([a-z0-9-]+)/') | ForEach-Object {
+    $_.Groups[1].Value
+})
 $recursiveLeetCodeSlugs = @(Get-RecursiveLeetCodeSlugs)
 if ($leetcodeIndexRows.Count -ne $recursiveLeetCodeSlugs.Count) {
     Fail "expected LeetCode solved index to contain $($recursiveLeetCodeSlugs.Count) recursive rows, found $($leetcodeIndexRows.Count)"
+}
+
+$duplicateIndexSlugs = @($leetcodeIndexSlugs | Group-Object | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+if ($duplicateIndexSlugs.Count -gt 0) {
+    Fail "LeetCode solved index contains duplicate slugs: $($duplicateIndexSlugs -join ', ')"
+}
+
+$missingIndexSlugs = @($recursiveLeetCodeSlugs | Where-Object { $_ -notin $leetcodeIndexSlugs })
+$extraIndexSlugs = @($leetcodeIndexSlugs | Where-Object { $_ -notin $recursiveLeetCodeSlugs })
+if ($missingIndexSlugs.Count -gt 0 -or $extraIndexSlugs.Count -gt 0) {
+    Fail "LeetCode solved index slug mismatch. Missing: $($missingIndexSlugs -join ', '); Extra: $($extraIndexSlugs -join ', ')"
 }
 
 if ($leetcodeIndexText -notmatch 'Recursive source scan') {

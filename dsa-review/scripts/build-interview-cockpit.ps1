@@ -1502,8 +1502,12 @@ function Get-LeetCodeSlugs {
         return @()
     }
     $content = Get-Content -Raw -LiteralPath $SourcePath
-    $matches = [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)")
-    return @($matches | ForEach-Object { $_.Groups[1].Value.Trim().ToLowerInvariant() } | Where-Object { $_ } | Select-Object -Unique)
+    $matches = [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)(/[^\s\)]*)?")
+    return @($matches | Where-Object {
+        $_.Groups[2].Value -notmatch '^/discuss\b'
+    } | ForEach-Object {
+        $_.Groups[1].Value.Trim().ToLowerInvariant()
+    } | Where-Object { $_ } | Select-Object -Unique)
 }
 
 function Get-LeetCodeSlugMatches {
@@ -1514,8 +1518,12 @@ function Get-LeetCodeSlugMatches {
     }
 
     $content = Get-Content -Raw -LiteralPath $SourcePath
-    $matches = [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)(?!/discuss)")
-    return @($matches | ForEach-Object { $_.Groups[1].Value.Trim().ToLowerInvariant() } | Where-Object { $_ })
+    $matches = [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)(/[^\s\)]*)?")
+    return @($matches | Where-Object {
+        $_.Groups[2].Value -notmatch '^/discuss\b'
+    } | ForEach-Object {
+        $_.Groups[1].Value.Trim().ToLowerInvariant()
+    } | Where-Object { $_ })
 }
 
 function Get-ExcludedSlugsForFile {
