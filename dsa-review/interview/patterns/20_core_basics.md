@@ -10,6 +10,20 @@ Derive the direct approach, name the wasted work, then choose the invariant that
 
 Use brute force to expose repeated work, then choose the invariant and data structure.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Basics / Implementation"]
+  Recognition["RECOGNITION<br/>Derive the direct approach, name the wasted work, then choose the invariant that removes it."]
+  Invariant["INVARIANT<br/>Use brute force to expose repeated work, then choose the invariant and data structure."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Matrix boundary traversal<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 144: Spiral Matrix"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Parsing / edge cases<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 145: String To Integer Atoi"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

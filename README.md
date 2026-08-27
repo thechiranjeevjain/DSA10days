@@ -15,7 +15,7 @@ The Java files under `src/main/java/org/chijai` are the source of truth. The `ds
 | Need spoken interview answers | `dsa-review/interview/03_CRISP_INTERVIEW_ANSWERS.md` |
 | Need pattern-focused revision | `dsa-review/interview/patterns/README.md` |
 | Need to audit the ranking | `dsa-review/interview/05_RANKING_METHODOLOGY_AND_AUDIT.md` |
-| Need a random active-recall drill | `dsa-review\scripts\drill.cmd -Priority A -Count 3` |
+| Need a random active-recall drill | Windows: `dsa-review\scripts\drill.cmd -Priority A -Count 3`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority A -Count 3` |
 
 ## Interview Solve Rhythm
 
@@ -39,16 +39,17 @@ Run these from the repo root.
 
 | Goal | Command |
 |---|---|
-| Run full repo verification | `verify-all.cmd` |
-| Rebuild interview cockpit docs | `dsa-review\scripts\build-interview-cockpit.cmd` |
-| Validate generated cockpit links/counts | `dsa-review\scripts\validate-interview-cockpit.cmd` |
-| Pick random priority A drills | `dsa-review\scripts\drill.cmd -Priority A -Count 3` |
-| Import problems into spaced review | `dsa-review\scripts\import-review.cmd` |
-| See today's review queue | `dsa-review\scripts\today.cmd` |
-| See due review items | `dsa-review\scripts\due.cmd` |
-| See review stats | `dsa-review\scripts\stats.cmd` |
-| Mark an item again/hard/good/easy | `dsa-review\scripts\again.cmd <id>`, `hard.cmd <id>`, `good.cmd <id>`, `easy.cmd <id>` |
-| Open dashboard | `dsa-review\scripts\dashboard.cmd` |
+| Run full repo verification | Windows: `verify-all.cmd`; macOS/Linux: `pwsh ./verify-all.ps1` or `./verify-all.sh` |
+| Rebuild interview cockpit docs | Windows: `dsa-review\scripts\build-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/build-interview-cockpit.sh` |
+| Validate generated cockpit links/counts | Windows: `dsa-review\scripts\validate-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/validate-interview-cockpit.sh` |
+| Pick random priority A drills | Windows: `dsa-review\scripts\drill.cmd -Priority A -Count 3`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority A -Count 3` |
+| Import problems into spaced review | Windows: `dsa-review\scripts\import-review.cmd`; macOS/Linux: `./dsa-review/scripts/import-review.sh` |
+| See today's review queue | Windows: `dsa-review\scripts\today.cmd`; macOS/Linux: `./dsa-review/scripts/today.sh` |
+| See due review items | Windows: `dsa-review\scripts\due.cmd`; macOS/Linux: `./dsa-review/scripts/due.sh` |
+| See review stats | Windows: `dsa-review\scripts\stats.cmd`; macOS/Linux: `./dsa-review/scripts/stats.sh` |
+| Mark an item again/hard/good/easy | Windows: `again.cmd <id>`, `hard.cmd <id>`, `good.cmd <id>`, `easy.cmd <id>`; macOS/Linux: `again.sh <id>`, `hard.sh <id>`, `good.sh <id>`, `easy.sh <id>` |
+| Open dashboard | Windows: `dsa-review\scripts\dashboard.cmd`; macOS/Linux: `./dsa-review/scripts/dashboard.sh` |
+| Verify inside Docker | `docker compose run --rm verify` |
 
 ## Folder Map
 
@@ -60,6 +61,12 @@ Run these from the repo root.
 | `dsa-review/notes` | Strategy notes and source problem index used by the generator. |
 | `dsa-review/scripts` | Build, validate, random drill, and spaced-review helper commands. |
 | `review/review.json` | Local spaced-review state imported from this repo. |
+
+## Cross-Platform Notes
+
+Use `verify-all.ps1` as the canonical verification entrypoint. Windows wrappers call it through PowerShell; macOS/Linux wrappers call it through `pwsh`.
+
+The Docker target is a clean Linux verification environment with Java 17, Maven, and PowerShell. It runs the same `verify-all.ps1` path as local development.
 
 ## Source Of Truth Rule
 

@@ -83,24 +83,24 @@ _Showing first 30 of 153. Continue in rank order from the Master Review Ledger._
 
 | Rank | Problem | Action |
 |---:|---|---|
-| 1 | 2Sum / 3Sum / 4Sum | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 31 | Meeting Rooms Ii | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 38 | Minimum Number Of Arrows To Burst Balloons | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 45 | Largest Rectangle In Histogram | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 54 | Binary Subarrays With Sum | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 106 | Next Greater Element Ii | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 107 | Sum Of Subarray Minimums | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 113 | Count Number Of Nice Subarrays | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 130 | Maximal Rectangle | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 131 | Min Stack | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 132 | Max Stack | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 133 | Implement Queue Using Stacks | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 134 | Implement Stack Using Queues | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 135 | Next Greater Element I | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 136 | Online Stock Span | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 141 | Car Pooling | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 148 | Design A Stack With Increment Operation | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
-| 149 | Design Circular Queue | Run dsa-review\scripts\import-review.cmd, then rebuild dashboard. |
+| 1 | 2Sum / 3Sum / 4Sum | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 31 | Meeting Rooms Ii | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 38 | Minimum Number Of Arrows To Burst Balloons | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 45 | Largest Rectangle In Histogram | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 54 | Binary Subarrays With Sum | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 106 | Next Greater Element Ii | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 107 | Sum Of Subarray Minimums | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 113 | Count Number Of Nice Subarrays | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 130 | Maximal Rectangle | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 131 | Min Stack | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 132 | Max Stack | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 133 | Implement Queue Using Stacks | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 134 | Implement Stack Using Queues | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 135 | Next Greater Element I | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 136 | Online Stock Span | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 141 | Car Pooling | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 148 | Design A Stack With Increment Operation | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
+| 149 | Design Circular Queue | Run dsa-review/scripts/import-review.cmd on Windows or dsa-review/scripts/import-review.sh on macOS/Linux, then rebuild dashboard. |
 
 ## Repeated Failure Pattern Heatmap
 

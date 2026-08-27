@@ -10,6 +10,48 @@ Define exactly what the helper returns, combine left/right, and update global an
 
 Brute force revisits subtrees; helper return contracts summarize each subtree once.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Tree DFS / Recursion"]
+  Recognition["RECOGNITION<br/>Define exactly what the helper returns, combine left/right, and update global answer separately if needed."]
+  Invariant["INVARIANT<br/>Brute force revisits subtrees; helper return contracts summarize each subtree once."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>BST inorder<br/>4 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 25: Kth Smallest Element In A BST"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 122: Recover Binary Search Tree"]
+  Sub01 --> Sub01A03["ANCHOR<br/>rank 123: Binary Search Tree Iterator"]
+  Invariant --> Sub02["SUB-PATTERN<br/>BST property<br/>5 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 60: Lowest Common Ancestor Of A Binary Search Tree"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 118: Insert Into A Binary Search Tree"]
+  Sub02 --> Sub02A03["ANCHOR<br/>rank 119: Minimum Absolute Difference In BST"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Core tree patterns<br/>3 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 26: Balanced Binary Tree"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 27: Diameter Of Binary Tree"]
+  Sub03 --> Sub03A03["ANCHOR<br/>rank 80: Maximum Depth Of Binary Tree"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Tree BFS/DFS serialization<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 78: Serialize And Deserialize Binary Tree"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Tree DFS / stack<br/>4 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 15: Validate Binary Search Tree"]
+  Sub05 --> Sub05A02["ANCHOR<br/>rank 68: Binary Tree Inorder Traversal"]
+  Sub05 --> Sub05A03["ANCHOR<br/>rank 116: Binary Tree Postorder Traversal"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Tree DFS return contract<br/>4 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 16: Lowest Common Ancestor Of A Binary Tree"]
+  Sub06 --> Sub06A02["ANCHOR<br/>rank 161: Lowest Common Ancestor Of A Binary Tree Ii"]
+  Sub06 --> Sub06A03["ANCHOR<br/>rank 162: Lowest Common Ancestor Of A Binary Tree Iii"]
+  Invariant --> Sub07["SUB-PATTERN<br/>Tree DFS/BFS<br/>1 problem(s)"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 69: Invert Binary Tree"]
+  Invariant --> Sub08["SUB-PATTERN<br/>Tree path DFS / global answer<br/>5 problem(s)"]
+  Sub08 --> Sub08A01["ANCHOR<br/>rank 28: Path Sum Iii"]
+  Sub08 --> Sub08A02["ANCHOR<br/>rank 71: Sum Root To Leaf Numbers"]
+  Sub08 --> Sub08A03["ANCHOR<br/>rank 100: Binary Tree Maximum Path Sum"]
+  Invariant --> Sub09["SUB-PATTERN<br/>Tree recursion / hashmap index<br/>4 problem(s)"]
+  Sub09 --> Sub09A01["ANCHOR<br/>rank 70: Construct Binary Search Tree From Preorder Traversal"]
+  Sub09 --> Sub09A02["ANCHOR<br/>rank 86: Verify Preorder Serialization Of A Binary Tree"]
+  Sub09 --> Sub09A03["ANCHOR<br/>rank 97: Construct Binary Tree From Inorder And Postorder Traversal"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

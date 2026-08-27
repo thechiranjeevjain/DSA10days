@@ -10,6 +10,24 @@ Store counts, complements, or seen state so repeated lookup becomes O(1).
 
 Brute force scans for matches; bottleneck is repeated lookup; use a map/set to preserve processed state.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>HashMap / Frequency / Set"]
+  Recognition["RECOGNITION<br/>Store counts, complements, or seen state so repeated lookup becomes O(1)."]
+  Invariant["INVARIANT<br/>Brute force scans for matches; bottleneck is repeated lookup; use a map/set to preserve processed state."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Boyer-Moore / frequency<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 55: Majority Element"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Frequency count<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 9: Valid Anagram"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Hash/frequency<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 111: Longest Palindrome"]
+  Invariant --> Sub04["SUB-PATTERN<br/>HashMap/frequency<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 56: Ransom Note"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

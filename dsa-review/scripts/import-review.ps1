@@ -171,8 +171,8 @@ function Get-IndexRows {
             continue
         }
 
-        $normalizedRelative = $relativeFile.Replace("/", "\")
-        $sourcePath = Join-Path $RepoRoot ("src\main\java\org\chijai\" + $normalizedRelative)
+        $normalizedRelative = $relativeFile.Replace("\", "/")
+        $sourcePath = Join-Path $RepoRoot ("src/main/java/org/chijai/" + $normalizedRelative)
         $title = ConvertTo-DisplayTitle $relativeFile
         $row = [pscustomobject]@{
             File = $relativeFile
@@ -230,8 +230,8 @@ function Merge-Tags {
     return @(@($ExistingTags) + @($NewTags) | Where-Object { $_ } | Select-Object -Unique)
 }
 
-$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$IndexPath = Join-Path $RepoRoot "dsa-review\notes\PROBLEM_PATTERN_INDEX.md"
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
+$IndexPath = Join-Path $RepoRoot "dsa-review/notes/PROBLEM_PATTERN_INDEX.md"
 $ReviewDir = Join-Path $RepoRoot "review"
 $ReviewPath = Join-Path $ReviewDir "review.json"
 

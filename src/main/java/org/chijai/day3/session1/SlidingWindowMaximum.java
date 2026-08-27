@@ -1,17 +1,63 @@
 package org.chijai.day3.session1;
 
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.Deque;
+import java.util.PriorityQueue;
 
 /**
  * LeetCode 239 - Sliding Window Maximum
+ * Version: V2 FINAL AUDITED - 2026-08-27
  *
  * Link: https://leetcode.com/problems/sliding-window-maximum/
  * Difficulty: Hard
  * Tags: Array, Queue, Sliding Window, Heap, Monotonic Queue
  *
  * Repository chapter pattern:
- * PROBLEM -> BASELINE -> RECOGNITION -> INVARIANT -> TRAPS -> OPTIMAL -> DEFEND
+ * PROBLEM -> BASELINE -> RECOGNITION -> INVARIANT -> TRAPS -> FALLBACK -> OPTIMAL -> DEFEND
+ *
+ * ================================================================
+ * 0. PATTERN TAXONOMY / WHERE THIS PROBLEM BELONGS
+ * ================================================================
+ *
+ * PRIMARY HOME:
+ *
+ *     Sliding Window
+ *       -> Fixed-Size Sliding Window
+ *          -> Window Extremum / Repeated Max-Min Query
+ *             -> Monotonic Deque
+ *                -> LeetCode 239 Sliding Window Maximum
+ *
+ * Why this is the primary home:
+ *
+ *     fixed moving window
+ *            +
+ *     repeated maximum/minimum
+ *            ↓
+ *     MONOTONIC DEQUE
+ *
+ * SECONDARY / FALLBACK HOME:
+ *
+ *     Heap
+ *       -> Dynamic Best Candidate
+ *          -> Max Heap
+ *             -> Lazy Deletion / Stale Candidates
+ *
+ * Important distinction:
+ *
+ * MONOTONIC STACK
+ *     Usually: next greater/smaller, previous greater/smaller, span, contribution.
+ *     Usually one-ended.
+ *
+ * MONOTONIC DEQUE
+ *     Usually: repeated max/min over a moving bounded range.
+ *     Both ends matter:
+ *
+ *         FRONT -> expire / read best
+ *         BACK  -> remove dominated / add newest
+ *
+ * Do not primarily classify Sliding Window Maximum as a monotonic-stack problem.
+ * The trigger is the moving window; the deque is the optimal data structure.
  *
  * ================================================================
  * 1. PRIMARY PROBLEM - OFFICIAL REQUIREMENTS + ELI5 RESTATEMENT
@@ -55,13 +101,52 @@ import java.util.Deque;
  * 2. Scan all k values inside that window.
  * 3. Save the largest value.
  *
- * For n windows of size k, this costs O(n * k) time in the worst case.
+ * There are exactly n - k + 1 windows. Scanning k values per window costs
+ * O((n - k + 1) * k), which is O(n * k) in the worst case.
  * With n = 100,000 and a large k, repeatedly rescanning almost the same values
  * wastes too much work.
  *
  * The key question is:
  *
  *     When the window moves one step, what old information is still useful?
+ *
+ * ================================================================
+ * 2A. HIGH-ROI FALLBACK RECOGNITION: MAX HEAP
+ * ================================================================
+ *
+ * Before reaching for the specialized O(n) solution, there is a very reusable
+ * first-principles fallback:
+ *
+ *     repeatedly need the largest dynamic candidate
+ *                         ↓
+ *                     MAX HEAP
+ *
+ * For this problem the heap stores:
+ *
+ *     Entry(value, index)
+ *
+ * Why both?
+ *
+ *     value -> priority / maximum
+ *     index -> tells us whether the entry is stale
+ *
+ * Core heap engine:
+ *
+ *     ADD current Entry(value, index)
+ *     REMOVE stale heap roots
+ *     PEEK root for current maximum
+ *
+ * The simple lazy-deletion heap solution is:
+ *
+ *     Time:  O(n log n)
+ *     Space: O(n) worst case
+ *
+ * It is interview-acceptable as a reliable fallback, but the monotonic deque
+ * is the canonical optimal O(n) solution for this problem.
+ *
+ * Heap is worth knowing because the same operating logic transfers broadly to
+ * Top K, Kth largest, meeting rooms, minimum platforms, merge-k, scheduling,
+ * dynamic priority, and other stale-candidate problems.
  *
  * ================================================================
  * 3. PATTERN RECOGNITION: WHY A MONOTONIC DEQUE
@@ -71,7 +156,9 @@ import java.util.Deque;
  * it cannot tell us the maximum in O(1) time.
  *
  * A max heap can expose the maximum, but removing an expired value that is not
- * at the heap root is awkward. A heap also costs O(log k) per insertion.
+ * at the heap root is awkward. Heap operations cost O(log H), where H is the
+ * current heap size. In the simple lazy-deletion fallback below, H can grow to
+ * O(n), so heap operations are O(log n) in the worst case.
  *
  * We need a structure that supports both facts:
  *
@@ -142,6 +229,81 @@ import java.util.Deque;
  * 1. Every stored index belongs to the current window.
  * 2. Stored values are decreasing from front to back.
  * 3. The front index points to the current maximum.
+ *
+ * ================================================================
+ * 6A. THE THREE EQUALITY SIGNS — DERIVE THEM, DO NOT MEMORIZE THEM
+ * ================================================================
+ *
+ * These three conditions look similar syntactically but mean three different
+ * things. Keep their meanings separate.
+ *
+ * ----------------------------------------------------------------
+ * A. EXPIRATION
+ * ----------------------------------------------------------------
+ *
+ *     decreasingIndices.peekFirst() <= right - k
+ *
+ * Equality is REQUIRED.
+ *
+ * Current valid window is:
+ *
+ *     [right - k + 1 ... right]
+ *
+ * Therefore right - k itself is already outside the window.
+ *
+ * Example: right = 3, k = 3
+ *
+ *     valid indices = [1, 2, 3]
+ *     right - k    = 0
+ *
+ * Index 0 is stale, so <= is correct.
+ *
+ * Permanent meaning:
+ *
+ *     EXPIRED -> <= right - k
+ *
+ * ----------------------------------------------------------------
+ * B. DOMINATION / REDUNDANT EQUAL VALUES
+ * ----------------------------------------------------------------
+ *
+ *     nums[decreasingIndices.peekLast()] <= nums[right]
+ *
+ * Equality is OPTIONAL FOR CORRECTNESS, but <= is the cleaner canonical choice.
+ *
+ * If old value == new value, the newer equal value is at least as good because
+ * it survives longer. So the older equal value is redundant and may be removed.
+ *
+ *     <   -> keep equal candidates
+ *     <=  -> remove older equal candidates
+ *
+ * Both can produce correct window maxima. We standardize on <=.
+ *
+ * Permanent meaning:
+ *
+ *     WEAKER OR REDUNDANT -> <= current value
+ *
+ * ----------------------------------------------------------------
+ * C. FIRST COMPLETE WINDOW
+ * ----------------------------------------------------------------
+ *
+ *     if (right >= k - 1)
+ *
+ * Equality is REQUIRED.
+ *
+ * With k = 3, the first complete window uses indices [0, 1, 2].
+ * So the first answer must be emitted exactly when right == 2 == k - 1.
+ *
+ * Permanent meaning:
+ *
+ *     WINDOW READY -> >= k - 1
+ *
+ * ----------------------------------------------------------------
+ * ONE-LINE SIGN CHEAT SHEET
+ * ----------------------------------------------------------------
+ *
+ *     EXPIRED?      index <= right - k
+ *     DOMINATED?    oldValue <= newValue    // equality is a cleanup choice
+ *     WINDOW READY? right >= k - 1
  *
  * ================================================================
  * 7. STEP-BY-STEP TRACE
@@ -270,7 +432,8 @@ import java.util.Deque;
  * "I use a monotonic decreasing deque of indices. Before inserting index i, I
  * remove expired indices from the front. Then I remove indices from the back
  * while their values are less than or equal to nums[i], because the new value
- * is larger and will live longer. After adding i, the front is the maximum for
+ * is at least as large and, being newer, expires later. After adding i, the
+ * front is the maximum for
  * the current window. Each index enters and leaves once, so the solution is
  * O(n) time and O(k) space."
  */
@@ -284,8 +447,9 @@ public class SlidingWindowMaximum {
      * 3. RECOGNIZE   - fixed moving window needs a reusable maximum.
      * 4. INVARIANT   - deque holds in-window indices in decreasing value order.
      * 5. TRAPS       - expire front, remove dominated back, store indices.
-     * 6. OPTIMAL     - derive every deque operation from the invariant.
-     * 7. DEFEND      - each index enters/leaves once: O(n) time, O(k) space.
+     * 6. FALLBACK    - max heap + Entry(value, index) + lazy stale removal.
+     * 7. OPTIMAL     - derive every deque operation from the invariant.
+     * 8. DEFEND      - each index enters/leaves once: O(n) time, O(k) space.
      */
 
     /**
@@ -331,6 +495,50 @@ public class SlidingWindowMaximum {
     }
 
     /**
+     * High-reuse fallback: max heap + lazy deletion.
+     *
+     * <p>The heap stores both value and index. Value determines priority; index
+     * tells us whether the candidate has expired from the current window.</p>
+     *
+     * <p>Expired entries buried inside the heap are left there until they reach
+     * the root. This is lazy deletion.</p>
+     *
+     * <p>Time: O(n log n). Extra space: O(n) worst case, excluding result.</p>
+     */
+    static class HeapFallback {
+
+        record Entry(int value, int index) {
+        }
+
+        public int[] maxSlidingWindow(int[] nums, int k) {
+            if (hasInvalidInput(nums, k)) {
+                return new int[0];
+            }
+
+            int[] result = new int[nums.length - k + 1];
+
+            PriorityQueue<Entry> maxHeap =
+                    new PriorityQueue<>(
+                            Comparator.comparingInt(Entry::value).reversed());
+
+            for (int i = 0; i < nums.length; i++) {
+                maxHeap.offer(new Entry(nums[i], i));
+
+                // Heap root must belong to the current window.
+                while (!maxHeap.isEmpty() && maxHeap.peek().index() <= i - k) {
+                    maxHeap.poll();
+                }
+
+                if (i >= k - 1) {
+                    result[i - k + 1] = maxHeap.peek().value();
+                }
+            }
+
+            return result;
+        }
+    }
+
+    /**
      * Interview-preferred monotonic-deque solution.
      *
      * <p>Core invariant after processing index {@code right}:</p>
@@ -361,15 +569,23 @@ public class SlidingWindowMaximum {
 
             for (int right = 0; right < nums.length; right++) {
                 // RULE 1: expire indices that are left of the active window.
+                // <= is REQUIRED: right - k itself is already outside the window.
                 while (!decreasingIndices.isEmpty()
                         && decreasingIndices.peekFirst() <= right - k) {
                     decreasingIndices.pollFirst();
                 }
 
                 // RULE 2: remove older candidates dominated by the new value.
-                //make sure to use <= instead of < to remove equal values as well, so that we always keep the most recent maximum in the deque
-                //don't forget to use peekLast() instead of peekFirst() to check the last element in the deque
-                //we are comparing nums here both side not indices, so we need to use nums[decreasingIndices.peekLast()] instead of decreasingIndices.peekLast()
+                // Use <= instead of < to remove equal values as well, keeping
+                // the most recent equal maximum in the deque.
+                // Use peekLast(), not peekFirst(), because domination cleanup
+                // happens from the back.
+                // Compare VALUES on both sides: nums[decreasingIndices.peekLast()]
+                // versus nums[right], not the raw stored index.
+                // Equality is OPTIONAL for correctness: < keeps equal values;
+                // <= removes older equal values.
+                // Example [3,1,1,3]: when the newer 3 arrives, the older equal
+                // 3 is redundant because the newer one survives longer.
                 while (!decreasingIndices.isEmpty()
                         && nums[decreasingIndices.peekLast()] <= nums[right]) {
                     decreasingIndices.pollLast();
@@ -379,6 +595,7 @@ public class SlidingWindowMaximum {
                 decreasingIndices.addLast(right);
 
                 // RULE 4: emit only after the first complete window exists.
+                // >= is REQUIRED: right == k - 1 is exactly the first complete window.
                 if (right >= k - 1) {
                     result[right - k + 1] = nums[decreasingIndices.peekFirst()];
                 }
@@ -413,6 +630,35 @@ public class SlidingWindowMaximum {
      * - A frequency/contribution window tracks all active items.
      * - This monotonic deque intentionally forgets active items that can never
      *   become the best candidate.
+     *
+     * Same / very similar bounded-best-candidate family:
+     * - Sliding Window Minimum: exact mirror; reverse the back comparison.
+     * - LeetCode 1696 Jump Game VI: heap/deque over dp[i] instead of nums[i].
+     * - LeetCode 1425 Constrained Subsequence Sum: bounded maximum over DP.
+     * - LeetCode 1499 Max Value of Equation: bounded best transformed score.
+     * - LeetCode 1438 Longest Continuous Subarray With Absolute Diff <= Limit:
+     *   maintain both maximum and minimum, using two heaps or two deques.
+     * - LeetCode 2398 Maximum Number of Robots Within Budget: sliding window +
+     *   repeated maximum charge time plus running sum.
+     * - LeetCode 862 Shortest Subarray With Sum at Least K: advanced monotonic
+     *   deque variation over prefix sums; not the exact same skeleton.
+     *
+     * Reusable heap-entry lens:
+     *
+     *     239  -> Entry(nums[i], index)
+     *     1696 -> Entry(dp[i], index)
+     *     1425 -> Entry(dp[i], index)
+     *     1499 -> Entry(y - x, x/index)
+     *
+     * Safe-start recognition:
+     *
+     *     bounded/relevant candidates + repeatedly need best
+     *                            ↓
+     *                  Heap<Entry(score, metadata)>
+     *                            ↓
+     *     if weaker candidates can be permanently discarded
+     *                            ↓
+     *                     Monotonic Deque
      */
 
     /*
@@ -422,6 +668,7 @@ public class SlidingWindowMaximum {
      */
     public static void main(String[] args) {
         BruteForce baseline = new BruteForce();
+        HeapFallback heapFallback = new HeapFallback();
         Optimal solver = new Optimal();
 
         assertArrayEquals(
@@ -429,6 +676,19 @@ public class SlidingWindowMaximum {
                 solver.maxSlidingWindow(
                         new int[]{1, 3, -1, -3, 5, 3, 6, 7}, 3),
                 "official example");
+        assertArrayEquals(
+                new int[]{3, 3, 5, 5, 6, 7},
+                heapFallback.maxSlidingWindow(
+                        new int[]{1, 3, -1, -3, 5, 3, 6, 7}, 3),
+                "official example - heap fallback");
+        assertArrayEquals(
+                new int[]{1, -1},
+                solver.maxSlidingWindow(new int[]{1, -1}, 1),
+                "k = 1 regression");
+        assertArrayEquals(
+                new int[]{1, -1},
+                heapFallback.maxSlidingWindow(new int[]{1, -1}, 1),
+                "k = 1 regression - heap fallback");
         assertArrayEquals(
                 new int[]{4, 4},
                 solver.maxSlidingWindow(new int[]{4, 4, 2}, 2),
@@ -474,6 +734,15 @@ public class SlidingWindowMaximum {
      *
      * Complexity:
      * O(n) time and O(k) auxiliary space.
+     *
+     * Heap fallback:
+     * Max heap Entry(value, index) + lazy stale-root removal.
+     * O(n log n) time and O(n) worst-case auxiliary space.
+     *
+     * Sign reconstruction:
+     * EXPIRED      -> index <= right - k          [equality required]
+     * DOMINATED    -> oldValue <= newValue        [equality optional cleanup]
+     * WINDOW READY -> right >= k - 1              [equality required]
      *
      * Final reconstruction phrase:
      * EXPIRE FRONT -> DOMINATE BACK -> ADD RIGHT -> EMIT FRONT.

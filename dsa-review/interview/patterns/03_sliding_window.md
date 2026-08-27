@@ -10,6 +10,28 @@ Expand right, shrink left to restore validity, then update the answer at the rig
 
 Brute force checks all substrings/subarrays; a window reuses counts while boundaries move once.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Sliding Window"]
+  Recognition["RECOGNITION<br/>Expand right, shrink left to restore validity, then update the answer at the right time."]
+  Invariant["INVARIANT<br/>Brute force checks all substrings/subarrays; a window reuses counts while boundaries move once."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 113: Count Number Of Nice Subarrays"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Sliding window<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 52: Longest Substring With At Most K Distinct Characters"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Sliding window / need-have<br/>5 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 5: Minimum Window Substring"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 51: Longest Repeating Character Replacement"]
+  Sub03 --> Sub03A03["ANCHOR<br/>rank 53: Permutation In String"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Sliding window / set<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 3: Longest Substring Without Repeating Characters"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Sliding window frequency<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 46: Find All Anagrams In A String"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

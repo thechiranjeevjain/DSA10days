@@ -10,6 +10,37 @@ Name the state, base case, transition, and iteration order before writing loops.
 
 Naive recursion repeats states; DP caches each state and reuses transitions.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Dynamic Programming"]
+  Recognition["RECOGNITION<br/>Name the state, base case, transition, and iteration order before writing loops."]
+  Invariant["INVARIANT<br/>Naive recursion repeats states; DP caches each state and reuses transitions."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>0/1 knapsack DP<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 49: Partition Equal Subset Sum"]
+  Invariant --> Sub02["SUB-PATTERN<br/>1D DP<br/>2 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 39: House Robber"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 151: Climbing Stairs Fib"]
+  Invariant --> Sub03["SUB-PATTERN<br/>2D DP<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 152: Edit Distance"]
+  Invariant --> Sub04["SUB-PATTERN<br/>DP / patience sorting<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 50: Longest Increasing Subsequence"]
+  Invariant --> Sub05["SUB-PATTERN<br/>DP + binary search<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 91: Maximum Profit In Job Scheduling"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Greedy / DP states<br/>1 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 92: Best Time To Buy And Sell Stock"]
+  Invariant --> Sub07["SUB-PATTERN<br/>Grid DP<br/>1 problem(s)"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 48: Unique Paths"]
+  Invariant --> Sub08["SUB-PATTERN<br/>Kadane / DP<br/>1 problem(s)"]
+  Sub08 --> Sub08A01["ANCHOR<br/>rank 90: Kadane Max Sub Array"]
+  Invariant --> Sub09["SUB-PATTERN<br/>Stock DP variants<br/>1 problem(s)"]
+  Sub09 --> Sub09A01["ANCHOR<br/>rank 167: Stock Series2"]
+  Invariant --> Sub10["SUB-PATTERN<br/>Unbounded knapsack DP<br/>1 problem(s)"]
+  Sub10 --> Sub10A01["ANCHOR<br/>rank 40: Coin Change"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

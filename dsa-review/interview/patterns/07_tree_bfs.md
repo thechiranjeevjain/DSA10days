@@ -10,6 +10,20 @@ Use a queue by levels; capture level size before pushing children.
 
 DFS can mix levels; BFS preserves level order for views, distances, and serialization.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Tree BFS / Level Order"]
+  Recognition["RECOGNITION<br/>Use a queue by levels; capture level size before pushing children."]
+  Invariant["INVARIANT<br/>DFS can mix levels; BFS preserves level order for views, distances, and serialization."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Tree BFS / DFS<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 61: Binary Tree Right Side View"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Tree traversal<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 14: Binary Tree Level Order Traversal"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

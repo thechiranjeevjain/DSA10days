@@ -10,6 +10,27 @@ Shrink the search space by moving the pointer that can still improve the answer.
 
 Brute force tries pairs; sorting/order lets pointers eliminate impossible pairs.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Two Pointers"]
+  Recognition["RECOGNITION<br/>Shrink the search space by moving the pointer that can still improve the answer."]
+  Invariant["INVARIANT<br/>Brute force tries pairs; sorting/order lets pointers eliminate impossible pairs."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Expand around center<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 112: Longest Palindromic Substring"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Partition / Dutch flag<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 62: Sort Colors"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Two pointers<br/>2 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 10: Valid Palindrome"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 12: Container With Most Water"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Two pointers / hash<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 1: 2Sum / 3Sum / 4Sum"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Two pointers / stack<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 13: Trapping Rain Water"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

@@ -16,7 +16,7 @@ $ErrorActionPreference = 'Stop'
 
 function Get-RepoRoot {
     $scriptDir = Split-Path -Parent $PSCommandPath
-    return (Resolve-Path (Join-Path $scriptDir '..\..')).Path
+    return (Resolve-Path (Join-Path $scriptDir '../..')).Path
 }
 
 function Get-PatternRows {
@@ -24,7 +24,7 @@ function Get-PatternRows {
         [string]$RepoRoot
     )
 
-    $indexPath = Join-Path $RepoRoot 'dsa-review\notes\PROBLEM_PATTERN_INDEX.md'
+    $indexPath = Join-Path $RepoRoot 'dsa-review/notes/PROBLEM_PATTERN_INDEX.md'
     $rows = New-Object System.Collections.Generic.List[object]
 
     if (Test-Path -LiteralPath $indexPath) {
@@ -33,8 +33,8 @@ function Get-PatternRows {
             $match = [regex]::Match($line, $pattern)
             if ($match.Success) {
                 $relativeFile = $match.Groups[1].Value.Trim()
-                $normalizedRelativeFile = $relativeFile.Replace('/', '\')
-                $sourcePath = Join-Path $RepoRoot ('src\main\java\org\chijai\' + $normalizedRelativeFile)
+                $normalizedRelativeFile = $relativeFile.Replace('\', '/')
+                $sourcePath = Join-Path $RepoRoot ('src/main/java/org/chijai/' + $normalizedRelativeFile)
                 $rows.Add([pscustomobject]@{
                     File = $relativeFile
                     Pattern = $match.Groups[2].Value.Trim()
@@ -47,7 +47,7 @@ function Get-PatternRows {
     }
 
     if ($rows.Count -eq 0) {
-        $sourceRoot = Join-Path $RepoRoot 'src\main\java\org\chijai'
+        $sourceRoot = Join-Path $RepoRoot 'src/main/java/org/chijai'
         if (-not (Test-Path -LiteralPath $sourceRoot)) {
             throw "Could not find source root: $sourceRoot"
         }

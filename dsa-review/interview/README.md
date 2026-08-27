@@ -19,14 +19,16 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
-| Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
+| Need visual mental retrieval | `00_DSA_MIND_MAP.md` | Generated Mermaid tree: topic -> sub-pattern -> anchor problem. |
+| Need structure decision | `08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md` | Why Java stays stable while generated docs expose the pattern taxonomy. |
+| Need old static brain map | `DSA_170_Brain_Map_FINAL.md` | Legacy high-signal brain map. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
 | Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
 ## Current Coverage
 
 - Ranked entries: 171
-- Recursive LeetCode solved index: 214
+- Recursive LeetCode solved index: 220
 - Pattern files: 21
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.

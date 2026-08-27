@@ -10,6 +10,33 @@ Keep pending openings, operands, or monotonic candidates until the current item 
 
 Brute force searches previous/next matches; stack keeps unresolved candidates in useful order.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Stack / Monotonic Stack"]
+  Recognition["RECOGNITION<br/>Keep pending openings, operands, or monotonic candidates until the current item resolves them."]
+  Invariant["INVARIANT<br/>Brute force searches previous/next matches; stack keeps unresolved candidates in useful order."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Monotonic stack<br/>5 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 32: Daily Temperatures"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 45: Largest Rectangle In Histogram"]
+  Sub01 --> Sub01A03["ANCHOR<br/>rank 106: Next Greater Element Ii"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Stack<br/>2 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 33: Valid Parentheses"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 108: Evaluate Reverse Polish Notation"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Stack / expression parsing<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 110: Basic Calculator"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Stack design<br/>5 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 131: Min Stack"]
+  Sub04 --> Sub04A02["ANCHOR<br/>rank 132: Max Stack"]
+  Sub04 --> Sub04A03["ANCHOR<br/>rank 135: Next Greater Element I"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Stack/queue design<br/>4 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 96: Sliding Window Maximum"]
+  Sub05 --> Sub05A02["ANCHOR<br/>rank 133: Implement Queue Using Stacks"]
+  Sub05 --> Sub05A03["ANCHOR<br/>rank 134: Implement Stack Using Queues"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

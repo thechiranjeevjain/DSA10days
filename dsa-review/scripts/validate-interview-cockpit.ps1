@@ -12,6 +12,7 @@ function Fail {
 
 $requiredFiles = @(
     "README.md",
+    "00_DSA_MIND_MAP.md",
     "00_PATTERN_RECOGNITION_80_20.md",
     "01_ZERO_TO_HERO_RANKED_TABLE.md",
     "02_ONE_LINE_RECALL_ALL_PROBLEMS.md",
@@ -20,6 +21,7 @@ $requiredFiles = @(
     "05_RANKING_METHODOLOGY_AND_AUDIT.md",
     "06_REVIEW_DASHBOARD.md",
     "07_LEETCODE_SOLVED_INDEX.md",
+    "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -141,7 +143,7 @@ function Get-ExcludedSlugsForFile {
 }
 
 function Get-LeetCodeIdCatalog {
-    $catalogPath = Join-Path $repoRoot "dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+    $catalogPath = Join-Path $repoRoot "dsa-review/notes/LEETCODE_ID_CATALOG.csv"
     if (-not (Test-Path -LiteralPath $catalogPath)) {
         Fail "missing LeetCode ID catalog: $catalogPath"
     }
@@ -157,7 +159,7 @@ function Get-LeetCodeIdCatalog {
 }
 
 function Get-RecursiveLeetCodeSlugs {
-    $javaRoot = Join-Path $repoRoot "src\main\java\org\chijai"
+    $javaRoot = Join-Path $repoRoot "src/main/java/org/chijai"
     $catalog = Get-LeetCodeIdCatalog
     $slugs = New-Object System.Collections.Generic.HashSet[string]
     foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
@@ -177,7 +179,7 @@ function Get-RecursiveLeetCodeSlugs {
         foreach ($match in [regex]::Matches($text, "(?i)\b(?:leetcode|lc)\s*(?:#)?\s*(\d{1,5})\b")) {
             $id = [string] $match.Groups[1].Value
             if (-not $catalog.ContainsKey($id)) {
-                Fail "LeetCode ID $id is referenced in $($file.FullName) but missing from dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+                Fail "LeetCode ID $id is referenced in $($file.FullName) but missing from dsa-review/notes/LEETCODE_ID_CATALOG.csv"
             }
             $slug = $catalog[$id]
             if ($slug -and $slug -notin $excluded) {
@@ -261,6 +263,12 @@ $readmeText = Get-Content -LiteralPath (Join-Path $interviewRoot "README.md") -R
 if ($readmeText -notmatch 'patterns/README\.md') {
     Fail "main README does not link to pattern files"
 }
+if ($readmeText -notmatch '00_DSA_MIND_MAP\.md') {
+    Fail "main README does not link to the generated Mermaid mind map"
+}
+if ($readmeText -notmatch '08_PROJECT_STRUCTURE_AND_PATTERN_TREE\.md') {
+    Fail "main README does not link to the project structure guide"
+}
 if ($readmeText -notmatch 'DSA_170_Brain_Map_FINAL\.md') {
     Fail "main README does not link to the canonical brain map"
 }
@@ -272,6 +280,19 @@ if ($readmeText -notmatch '06_REVIEW_DASHBOARD\.md') {
 }
 if ($readmeText -notmatch '07_LEETCODE_SOLVED_INDEX\.md') {
     Fail "main README does not link to the recursive LeetCode solved index"
+}
+
+$mindMapText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_DSA_MIND_MAP.md") -Raw
+if ($mindMapText -notmatch '```mermaid' -or $mindMapText -notmatch 'DSA Interview Retrieval Tree') {
+    Fail "master mind map is missing Mermaid retrieval tree"
+}
+if ($mindMapText -notmatch 'patterns/') {
+    Fail "master mind map does not link to generated pattern files"
+}
+
+$structureText = Get-Content -LiteralPath (Join-Path $interviewRoot "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md") -Raw
+if ($structureText -notmatch 'Do not physically move Java files' -or $structureText -notmatch 'PROBLEM -> BASELINE -> RECOGNITION -> INVARIANT -> TRAPS -> FALLBACK -> OPTIMAL -> DEFEND') {
+    Fail "project structure guide is missing source-of-truth or chapter-pattern guidance"
 }
 
 $patternDir = Join-Path $interviewRoot "patterns"
@@ -299,6 +320,11 @@ $patternRankSet = @{}
 $patternByRank = @{}
 $missingPatternJavaLinks = @()
 foreach ($patternFile in $patternFiles) {
+    $patternText = Get-Content -LiteralPath $patternFile.FullName -Raw
+    if ($patternText -notmatch '## Pattern Taxonomy Map' -or $patternText -notmatch '```mermaid') {
+        Fail "pattern file is missing generated Mermaid taxonomy map: $($patternFile.FullName)"
+    }
+
     $problemLines = @(Select-String -LiteralPath $patternFile.FullName -Pattern '^\| (?<rank>\d+) \|')
     if ($problemLines.Count -eq 0) {
         Fail "pattern file has no problem rows: $($patternFile.FullName)"

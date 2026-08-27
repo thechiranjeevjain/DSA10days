@@ -10,6 +10,26 @@ Share prefix nodes so lookup/search consumes one character at a time instead of 
 
 Repeated string scans waste prefix work; trie shares prefixes across words.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Trie"]
+  Recognition["RECOGNITION<br/>Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words."]
+  Invariant["INVARIANT<br/>Repeated string scans waste prefix work; trie shares prefixes across words."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Binary trie / bit<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 147: Maximum XOR Of Two Numbers In An Array"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Trie<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 47: Implement Trie Prefix Tree"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Trie / ranking<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 166: Hotel Reviews"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Trie + backtracking<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 105: Word Search Ii"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Trie + DFS wildcard<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 98: Design Add And Search Words Data Structure"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

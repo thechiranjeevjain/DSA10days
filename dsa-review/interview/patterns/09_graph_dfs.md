@@ -10,6 +10,28 @@ Own each component or path with visited state so one traversal fully accounts fo
 
 Brute force revisits states; visited DFS gives each component/path a single exploration.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Graph DFS / Components"]
+  Recognition["RECOGNITION<br/>Own each component or path with visited state so one traversal fully accounts for it."]
+  Invariant["INVARIANT<br/>Brute force revisits states; visited DFS gives each component/path a single exploration."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>BFS/DFS coloring<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 35: Is Graph Bipartite"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Graph DFS/BFS clone<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 82: Clone Graph"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Matrix DFS<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 128: Coloring A Border"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Matrix DFS/BFS<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 34: Flood Fill"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Matrix DFS/BFS components<br/>5 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 17: Number Of Islands"]
+  Sub05 --> Sub05A02["ANCHOR<br/>rank 74: Pacific Atlantic Water Flow"]
+  Sub05 --> Sub05A03["ANCHOR<br/>rank 75: Surrounded Regions"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

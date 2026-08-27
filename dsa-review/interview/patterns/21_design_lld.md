@@ -10,6 +10,26 @@ Define operations, consistency guarantees, stored state, and per-operation compl
 
 Start from operations and constraints, then pick data structures that preserve per-operation invariants.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Design Data Structures"]
+  Recognition["RECOGNITION<br/>Define operations, consistency guarantees, stored state, and per-operation complexity."]
+  Invariant["INVARIANT<br/>Start from operations and constraints, then pick data structures that preserve per-operation invariants."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>LLD / data structures<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 170: Design Redis"]
+  Invariant --> Sub02["SUB-PATTERN<br/>LLD / domain modeling<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 168: Design Fraud Pattern Detection"]
+  Invariant --> Sub03["SUB-PATTERN<br/>LLD / rate limiting<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 171: Design Token Bucket Rate Limiter"]
+  Invariant --> Sub04["SUB-PATTERN<br/>LLD / URL shortener<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 165: Encode And Decode Tinyurl"]
+  Invariant --> Sub05["SUB-PATTERN<br/>LLD/API integration<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 169: Api Integration Example"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

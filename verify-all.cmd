@@ -3,20 +3,14 @@ setlocal
 
 pushd "%~dp0" >nul
 
-echo [1/3] Running Maven tests...
-call mvn test
+where pwsh >nul 2>nul
+if not errorlevel 1 (
+  pwsh -NoProfile -File "%~dp0verify-all.ps1"
+) else (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0verify-all.ps1"
+)
 if errorlevel 1 goto failed
 
-echo [2/3] Rebuilding DSA interview cockpit...
-call dsa-review\scripts\build-interview-cockpit.cmd
-if errorlevel 1 goto failed
-
-echo [3/3] Validating DSA interview cockpit...
-call dsa-review\scripts\validate-interview-cockpit.cmd
-if errorlevel 1 goto failed
-
-echo.
-echo All verification checks passed.
 popd >nul
 exit /b 0
 

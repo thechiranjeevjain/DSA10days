@@ -10,6 +10,24 @@ Sort to make conflicts local, then merge, count active intervals, or choose safe
 
 Unsorted comparisons are noisy; sorting makes overlap or greedy choice local.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Intervals / Sorting Greedy"]
+  Recognition["RECOGNITION<br/>Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints."]
+  Invariant["INVARIANT<br/>Unsorted comparisons are noisy; sorting makes overlap or greedy choice local."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Greedy<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 140: Gas Station"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Intervals / merge<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 139: Intervals"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Intervals / sorting<br/>3 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 31: Meeting Rooms Ii"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 38: Minimum Number Of Arrows To Burst Balloons"]
+  Sub03 --> Sub03A03["ANCHOR<br/>rank 141: Car Pooling"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

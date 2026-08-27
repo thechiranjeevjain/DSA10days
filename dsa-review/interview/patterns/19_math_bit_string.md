@@ -10,6 +10,28 @@ Expose the arithmetic, bit, carry, border, or contribution invariant before simu
 
 Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Math / Bit / String"]
+  Recognition["RECOGNITION<br/>Expose the arithmetic, bit, carry, border, or contribution invariant before simulating."]
+  Invariant["INVARIANT<br/>Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Bit/string addition<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 153: Add Binary"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Contribution counting<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 155: Count Unique Characters Of All Substrings Of A Given String"]
+  Invariant --> Sub03["SUB-PATTERN<br/>KMP / rolling hash<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 150: Longest Happy Prefix"]
+  Invariant --> Sub04["SUB-PATTERN<br/>KMP string matching<br/>3 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 109: Find The Index Of The First Occurrence In A String"]
+  Sub04 --> Sub04A02["ANCHOR<br/>rank 146: Repeated Substring Pattern"]
+  Sub04 --> Sub04A03["ANCHOR<br/>rank 158: Shortest Palindrome"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Math / sieve<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 154: Count Primes"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

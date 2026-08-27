@@ -10,6 +10,20 @@ Precompute cumulative left/right state so each range or exclusion is answered ch
 
 Brute force recomputes ranges; prefix/suffix stores reusable aggregate state.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Prefix Sum / Prefix-Suffix"]
+  Recognition["RECOGNITION<br/>Precompute cumulative left/right state so each range or exclusion is answered cheaply."]
+  Invariant["INVARIANT<br/>Brute force recomputes ranges; prefix/suffix stores reusable aggregate state."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Prefix/suffix<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 4: Product Of Array Except Self"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 54: Binary Subarrays With Sum"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

@@ -1,0 +1,5 @@
+services:
+  verify:
+    build:
+      context: .
+    command: ["pwsh", "-NoProfile", "-File", "./verify-all.ps1"]

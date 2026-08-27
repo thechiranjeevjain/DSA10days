@@ -1495,6 +1495,15 @@ function New-Link {
     return "[$Text]($Href)"
 }
 
+function Escape-MermaidLabel {
+    param([string] $Value)
+
+    if ($null -eq $Value) { return "" }
+    return ($Value -replace "[`r`n]+", " " `
+        -replace '"', "'" `
+        -replace "\s+", " ").Trim()
+}
+
 function Get-LeetCodeSlugs {
     param([string] $SourcePath)
 
@@ -1537,7 +1546,7 @@ function Get-ExcludedSlugsForFile {
 }
 
 function Get-LeetCodeIdCatalog {
-    $catalogPath = Join-Path $RepoRoot "dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+    $catalogPath = Join-Path $RepoRoot "dsa-review/notes/LEETCODE_ID_CATALOG.csv"
     if (-not (Test-Path -LiteralPath $catalogPath)) {
         throw "Could not find LeetCode ID catalog: $catalogPath"
     }
@@ -1586,7 +1595,7 @@ function Get-LeetCodeProblemReferences {
     foreach ($match in [regex]::Matches($content, "(?i)\b(?:leetcode|lc)\s*(?:#)?\s*(\d{1,5})\b")) {
         $id = [string] $match.Groups[1].Value
         if (-not $IdCatalog.ContainsKey($id)) {
-            throw "LeetCode ID $id is referenced in $SourcePath but missing from dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+            throw "LeetCode ID $id is referenced in $SourcePath but missing from dsa-review/notes/LEETCODE_ID_CATALOG.csv"
         }
         $problem = $IdCatalog[$id]
         $references.Add([pscustomobject]@{
@@ -1623,8 +1632,8 @@ function Get-IndexRows {
         $relativeFile = $match.Groups[1].Value.Trim()
         if ($relativeFile -in @("Main.java", "CheatSheet.java")) { continue }
 
-        $normalized = $relativeFile.Replace("/", "\")
-        $sourcePath = Join-Path $RepoRoot ("src\main\java\org\chijai\" + $normalized)
+        $normalized = $relativeFile.Replace("\", "/")
+        $sourcePath = Join-Path $RepoRoot ("src/main/java/org/chijai/" + $normalized)
         $fileTitle = ConvertTo-DisplayTitle $relativeFile
         $patternName = $match.Groups[2].Value.Trim()
         $priority = $match.Groups[3].Value.Trim()
@@ -1729,7 +1738,7 @@ function Get-RecursiveLeetCodeIndexRows {
 
     $bySlug = @{}
     $idCatalog = Get-LeetCodeIdCatalog
-    $javaRoot = Join-Path $RepoRoot "src\main\java\org\chijai"
+    $javaRoot = Join-Path $RepoRoot "src/main/java/org/chijai"
     foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
         $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
         $excluded = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
@@ -1836,6 +1845,157 @@ function Get-PatternGroups {
     return @($groups)
 }
 
+function Build-MasterMindMap {
+    param(
+        [object[]] $Rows,
+        [object[]] $Groups
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# DSA Master Mind Map")
+    $lines.Add("")
+    $lines.Add("Generated from the same ranked metadata as the interview cockpit. Use it to visualize topic -> sub-pattern -> anchor problem without moving Java source files.")
+    $lines.Add("")
+    $lines.Add('Java source of truth remains `../../src/main/java/org/chijai`; this file is the pattern-tree interface.')
+    $lines.Add("")
+    $lines.Add('```mermaid')
+    $lines.Add("flowchart TD")
+    $lines.Add('  Root["DSA Interview Retrieval Tree"]')
+    $lines.Add('  Solve["Solve rhythm<br/>brute force -> bottleneck -> pattern -> invariant -> code -> dry run"]')
+    $lines.Add("  Root --> Solve")
+
+    $categoryIndex = 1
+    foreach ($group in $Groups) {
+        $categoryId = "C{0:D2}" -f $categoryIndex
+        $categoryLabel = Escape-MermaidLabel "$($group.DisplayCategory)<br/>$($group.Count) ranked entries<br/>first rank $($group.FirstRank)"
+        $lines.Add(('  Root --> {0}["{1}"]' -f $categoryId, $categoryLabel))
+
+        $subIndex = 1
+        foreach ($subGroup in (@($group.Items | Group-Object Pattern | Sort-Object Name))) {
+            $subId = "{0}P{1:D2}" -f $categoryId, $subIndex
+            $subName = if ([string]::IsNullOrWhiteSpace($subGroup.Name)) { $group.DisplayCategory } else { $subGroup.Name }
+            $subLabel = Escape-MermaidLabel "$subName<br/>$($subGroup.Count) problem(s)"
+            $lines.Add(('  {0} --> {1}["{2}"]' -f $categoryId, $subId, $subLabel))
+
+            $anchor = @($subGroup.Group | Sort-Object Rank | Select-Object -First 1)
+            if ($anchor.Count -gt 0) {
+                $anchorId = "{0}A" -f $subId
+                $anchorLabel = Escape-MermaidLabel "Anchor rank $($anchor[0].Rank)<br/>$($anchor[0].Title)"
+                $lines.Add(('  {0} --> {1}["{2}"]' -f $subId, $anchorId, $anchorLabel))
+            }
+            $subIndex++
+        }
+        $categoryIndex++
+    }
+
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("## How To Use")
+    $lines.Add("")
+    $lines.Add("1. Start at the problem signal and pick the likely pattern branch.")
+    $lines.Add("2. Speak the invariant before coding.")
+    $lines.Add("3. Use the anchor problem as the mental template.")
+    $lines.Add("4. Open the linked pattern file when a branch feels weak.")
+    $lines.Add("")
+    $lines.Add("## Pattern Files")
+    $lines.Add("")
+    $lines.Add("| Pattern | Problems | First rank | File |")
+    $lines.Add("|---|---:|---:|---|")
+    foreach ($group in $Groups) {
+        $file = New-Link $group.FileName ("patterns/" + $group.FileName)
+        $lines.Add("| $(Escape-Md $group.DisplayCategory) | $($group.Count) | $($group.FirstRank) | $file |")
+    }
+
+    $lines.Add("")
+    $lines.Add("Total ranked entries: $($Rows.Count)")
+    return ($lines -join "`r`n")
+}
+
+function Build-PatternMermaid {
+    param([object] $Group)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('```mermaid')
+    $lines.Add("flowchart TD")
+    $rootLabel = Escape-MermaidLabel "TOPIC<br/>$($Group.DisplayCategory)"
+    $signalLabel = Escape-MermaidLabel "RECOGNITION<br/>$(Get-Recall -Category $Group.Category -Pattern "" -Title "")"
+    $invariantLabel = Escape-MermaidLabel "INVARIANT<br/>$(Get-InterviewHook -Category $Group.Category -Pattern "" -Title "")"
+    $lines.Add(('  Topic["{0}"]' -f $rootLabel))
+    $lines.Add(('  Recognition["{0}"]' -f $signalLabel))
+    $lines.Add(('  Invariant["{0}"]' -f $invariantLabel))
+    $lines.Add("  Topic --> Recognition --> Invariant")
+
+    $subIndex = 1
+    foreach ($subGroup in (@($Group.Items | Group-Object Pattern | Sort-Object Name))) {
+        $subId = "Sub{0:D2}" -f $subIndex
+        $subName = if ([string]::IsNullOrWhiteSpace($subGroup.Name)) { $Group.DisplayCategory } else { $subGroup.Name }
+        $subLabel = Escape-MermaidLabel "SUB-PATTERN<br/>$subName<br/>$($subGroup.Count) problem(s)"
+        $lines.Add(('  Invariant --> {0}["{1}"]' -f $subId, $subLabel))
+
+        $anchorIndex = 1
+        foreach ($row in (@($subGroup.Group | Sort-Object Rank | Select-Object -First 3))) {
+            $anchorId = "{0}A{1:D2}" -f $subId, $anchorIndex
+            $anchorLabel = Escape-MermaidLabel "ANCHOR<br/>rank $($row.Rank): $($row.Title)"
+            $lines.Add(('  {0} --> {1}["{2}"]' -f $subId, $anchorId, $anchorLabel))
+            $anchorIndex++
+        }
+        $subIndex++
+    }
+
+    $lines.Add('```')
+    return ($lines -join "`r`n")
+}
+
+function Build-ProjectStructureGuide {
+    param([object[]] $Groups)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# Project Structure And Pattern Tree")
+    $lines.Add("")
+    $lines.Add("Do not physically move Java files to match the pattern taxonomy. Keep source code stable and let generated Markdown provide the interview-facing pattern tree.")
+    $lines.Add("")
+    $lines.Add("## Source Layout")
+    $lines.Add("")
+    $lines.Add("| Path | Responsibility |")
+    $lines.Add("|---|---|")
+    $lines.Add('| `../../src/main/java/org/chijai` | Java source of truth, package structure, tests, and implementation history. |')
+    $lines.Add('| `../notes/PROBLEM_PATTERN_INDEX.md` | Curated mapping from Java files to pattern metadata and priority. |')
+    $lines.Add('| `../notes/LEETCODE_ID_CATALOG.csv` | Local catalog for explicit `LC 123` references found in Java source. |')
+    $lines.Add('| `01_ZERO_TO_HERO_RANKED_TABLE.md` | Interview-ROI order. |')
+    $lines.Add('| `00_DSA_MIND_MAP.md` | Generated visual retrieval tree. |')
+    $lines.Add('| `patterns/` | Generated per-pattern taxonomy pages. |')
+    $lines.Add("")
+    $lines.Add("## Chapter Pattern")
+    $lines.Add("")
+    $lines.Add("Use this order inside rich Java chapter files:")
+    $lines.Add("")
+    $lines.Add('```text')
+    $lines.Add("PROBLEM -> BASELINE -> RECOGNITION -> INVARIANT -> TRAPS -> FALLBACK -> OPTIMAL -> DEFEND")
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("## Taxonomy Shape")
+    $lines.Add("")
+    $lines.Add('```text')
+    $lines.Add("TOPIC")
+    $lines.Add("  CATEGORY")
+    $lines.Add("    SUBCATEGORY")
+    $lines.Add("      SUB-PATTERN")
+    $lines.Add("        ANCHOR PROBLEM")
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("## Generated Pattern Tree")
+    $lines.Add("")
+    $lines.Add("| Topic | Ranked entries | First rank | Generated file |")
+    $lines.Add("|---|---:|---:|---|")
+    foreach ($group in $Groups) {
+        $file = New-Link $group.FileName ("patterns/" + $group.FileName)
+        $lines.Add("| $(Escape-Md $group.DisplayCategory) | $($group.Count) | $($group.FirstRank) | $file |")
+    }
+    $lines.Add("")
+    $lines.Add("When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.")
+    return ($lines -join "`r`n")
+}
+
 function Build-Readme {
     param([object[]] $Rows)
 
@@ -1862,7 +2022,9 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
 | Need ranking reality check | `05_RANKING_METHODOLOGY_AND_AUDIT.md` | What is objective, what is heuristic, and where ranks can be wrong. |
-| Need visual mental retrieval | `DSA_170_Brain_Map_FINAL.md` | Canonical brain map: signal -> pattern -> invariant -> skeleton. |
+| Need visual mental retrieval | `00_DSA_MIND_MAP.md` | Generated Mermaid tree: topic -> sub-pattern -> anchor problem. |
+| Need structure decision | `08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md` | Why Java stays stable while generated docs expose the pattern taxonomy. |
+| Need old static brain map | `DSA_170_Brain_Map_FINAL.md` | Legacy high-signal brain map. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
 | Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
@@ -2009,7 +2171,7 @@ function Build-LeetCodeSolvedIndex {
     $lines.Add("")
     $lines.Add("Recursive source scan: this is the book-style table of contents for LeetCode problems found in Java source files by full LeetCode URL or explicit LC problem number.")
     $lines.Add("")
-    $lines.Add('Regenerate it with `dsa-review\scripts\build-interview-cockpit.cmd` or `verify-all.cmd` after adding or editing Java solution files. Add a full LeetCode URL or cataloged LC problem number when a file contains a solved problem.')
+    $lines.Add('Regenerate it with `dsa-review/scripts/build-interview-cockpit.cmd`, `dsa-review/scripts/build-interview-cockpit.sh`, or `verify-all.ps1` after adding or editing Java solution files. Add a full LeetCode URL or cataloged LC problem number when a file contains a solved problem.')
     $lines.Add("")
     $lines.Add("Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview crunch order. Use this file when you want the complete source-backed LeetCode inventory.")
     $lines.Add("")
@@ -2379,7 +2541,7 @@ function Get-ObjectPropertyValue {
 }
 
 function Get-ReviewState {
-    $reviewPath = Join-Path $RepoRoot "review\review.json"
+    $reviewPath = Join-Path $RepoRoot "review/review.json"
     $byCodePath = @{}
     $byTitle = @{}
     $problems = @()
@@ -2523,7 +2685,7 @@ function Get-ReviewAction {
         [string] $Mode = "due"
     )
 
-    if ($Entry.Score -eq "UNTRACKED") { return "Run `dsa-review\scripts\import-review.cmd`, then rebuild dashboard." }
+    if ($Entry.Score -eq "UNTRACKED") { return "Run `dsa-review/scripts/import-review.cmd` on Windows or `dsa-review/scripts/import-review.sh` on macOS/Linux, then rebuild dashboard." }
     if ($Entry.Score -eq "NEW") { return "Attempt closed-book, then mark again/hard/good/easy." }
     if ($Entry.Score -eq "RED") { return "Rebuild from brute force -> bottleneck -> invariant, then code from blank." }
     if ($Entry.Score -eq "YELLOW") { return "Redo closed-book; focus the recorded weak step before opening Java." }
@@ -2944,6 +3106,10 @@ function Build-PatternFile {
     $lines.Add("")
     $lines.Add((Get-InterviewHook -Category $Group.Category -Pattern "" -Title ""))
     $lines.Add("")
+    $lines.Add("## Pattern Taxonomy Map")
+    $lines.Add("")
+    $lines.Add((Build-PatternMermaid -Group $Group))
+    $lines.Add("")
     $lines.Add("## Problems")
     $lines.Add("")
     $lines.Add("| Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |")
@@ -2966,9 +3132,9 @@ function Build-PatternFile {
     return ($lines -join "`r`n")
 }
 
-$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$indexPath = Join-Path $repoRoot "dsa-review\notes\PROBLEM_PATTERN_INDEX.md"
-$outDir = Join-Path $repoRoot "dsa-review\interview"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
+$indexPath = Join-Path $repoRoot "dsa-review/notes/PROBLEM_PATTERN_INDEX.md"
+$outDir = Join-Path $repoRoot "dsa-review/interview"
 
 if (-not (Test-Path -LiteralPath $indexPath)) {
     throw "Problem index not found: $indexPath"
@@ -2983,6 +3149,7 @@ $patternGroups = @(Get-PatternGroups -Rows $rows)
 $leetcodeIndexRows = @(Get-RecursiveLeetCodeIndexRows -Rows $rows)
 
 Write-TextFile -Path (Join-Path $outDir "README.md") -Content (Build-Readme -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "00_DSA_MIND_MAP.md") -Content (Build-MasterMindMap -Rows $rows -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "00_PATTERN_RECOGNITION_80_20.md") -Content (Build-PatternRecognition)
 Write-TextFile -Path (Join-Path $outDir "01_ZERO_TO_HERO_RANKED_TABLE.md") -Content (Build-RankedTable -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -Content (Build-OneLineRecall -Rows $rows)
@@ -2991,6 +3158,7 @@ Write-TextFile -Path (Join-Path $outDir "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md") -Co
 Write-TextFile -Path (Join-Path $outDir "05_RANKING_METHODOLOGY_AND_AUDIT.md") -Content (Build-RankingAudit -Rows $rows -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "06_REVIEW_DASHBOARD.md") -Content (Build-ReviewDashboard -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "07_LEETCODE_SOLVED_INDEX.md") -Content (Build-LeetCodeSolvedIndex -Rows $rows -LeetCodeRows $leetcodeIndexRows)
+Write-TextFile -Path (Join-Path $outDir "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md") -Content (Build-ProjectStructureGuide -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"

@@ -10,6 +10,18 @@ Represent components with parent links; union merges and failed union detects cy
 
 Repeated graph searches are expensive; union-find maintains components incrementally.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Union Find / DSU"]
+  Recognition["RECOGNITION<br/>Represent components with parent links; union merges and failed union detects cycles."]
+  Invariant["INVARIANT<br/>Repeated graph searches are expensive; union-find maintains components incrementally."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Union Find / graph<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 76: Accounts Merge"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

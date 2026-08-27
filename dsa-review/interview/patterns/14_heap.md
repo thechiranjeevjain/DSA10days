@@ -10,6 +10,34 @@ Keep only the frontier, top K, or two balanced halves instead of fully sorting e
 
 Sorting everything is wasteful; a heap keeps only the next best or top K frontier.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Heap / Priority Queue"]
+  Recognition["RECOGNITION<br/>Keep only the frontier, top K, or two balanced halves instead of fully sorting each step."]
+  Invariant["INVARIANT<br/>Sorting everything is wasteful; a heap keeps only the next best or top K frontier."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Frequency + heap/bucket<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 36: Top K Frequent Elements"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Greedy / heap<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 101: Task Scheduler"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Heap / quickselect<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 138: K Closest Points To Origin"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Heap / ranking<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 156: Award Top K Hotels"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Heap fundamentals<br/>2 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 37: Top K Frequent Elements"]
+  Sub05 --> Sub05A02["ANCHOR<br/>rank 157: Sort Characters By Frequency"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Intervals / heap<br/>1 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 137: Meeting Room"]
+  Invariant --> Sub07["SUB-PATTERN<br/>Min-heap size K<br/>2 problem(s)"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 102: Kth Largest Element In An Array"]
+  Sub07 --> Sub07A02["ANCHOR<br/>rank 103: Kth Largest Element In A Stream"]
+  Invariant --> Sub08["SUB-PATTERN<br/>Two heaps<br/>1 problem(s)"]
+  Sub08 --> Sub08A01["ANCHOR<br/>rank 44: Find Median From Data Stream"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

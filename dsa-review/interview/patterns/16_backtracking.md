@@ -10,6 +10,27 @@ Choose, recurse, undo; the path is exactly the current decision state.
 
 Brute force generates blindly; backtracking prunes invalid decision paths early.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Backtracking / Combinatorial DFS"]
+  Recognition["RECOGNITION<br/>Choose, recurse, undo; the path is exactly the current decision state."]
+  Invariant["INVARIANT<br/>Brute force generates blindly; backtracking prunes invalid decision paths early."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Backtracking / mapping<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 142: Letter Combinations Of A Phone Number"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Backtracking permutations<br/>2 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 143: Permutations"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 164: Permutations Ii"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Backtracking reuse<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 42: Combination Sum"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Backtracking subsets<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 41: Subsets"]
+  Invariant --> Sub05["SUB-PATTERN<br/>DFS backtracking<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 43: Word Search"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

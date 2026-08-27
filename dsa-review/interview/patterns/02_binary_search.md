@@ -10,6 +10,30 @@ Ask the comparison or yes/no question that makes one side impossible, then prese
 
 Brute force scans candidates; monotonicity lets each check discard half the search space.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Binary Search / Answer Search"]
+  Recognition["RECOGNITION<br/>Ask the comparison or yes/no question that makes one side impossible, then preserve the boundary/index invariant."]
+  Invariant["INVARIANT<br/>Brute force scans candidates; monotonicity lets each check discard half the search space."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Binary search boundary<br/>5 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 21: Search In Rotated Sorted Array"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 22: Find First And Last Position Of Element In Sorted Array"]
+  Sub01 --> Sub01A03["ANCHOR<br/>rank 79: Search In Rotated Sorted Array Ii"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Binary search invariant<br/>3 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 2: Binary Search"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 83: Search Insert Position"]
+  Sub02 --> Sub02A03["ANCHOR<br/>rank 88: First Bad Version"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Binary search on answer<br/>4 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 20: Koko Eating Bananas"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 89: Split Array Largest Sum"]
+  Sub03 --> Sub03A03["ANCHOR<br/>rank 93: Capacity To Ship Packages Within D Days"]
+  Invariant --> Sub04["SUB-PATTERN<br/>HashMap + binary search<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 104: Time Based Key Value Store"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

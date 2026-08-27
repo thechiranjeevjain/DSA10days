@@ -10,6 +10,29 @@ Use queue layers when first discovery is the shortest or minimum-step answer.
 
 DFS finds a path, but BFS gives shortest path when every edge has equal cost.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Graph BFS / Shortest Path"]
+  Recognition["RECOGNITION<br/>Use queue layers when first discovery is the shortest or minimum-step answer."]
+  Invariant["INVARIANT<br/>DFS finds a path, but BFS gives shortest path when every edge has equal cost."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>BFS + sorting<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 125: K Highest Ranked Items Within A Price Range"]
+  Invariant --> Sub02["SUB-PATTERN<br/>BFS shortest path<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 19: Word Ladder"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Dijkstra / graph<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 73: Network Delay Time"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Matrix DFS/BFS components<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 81: Number Of Provinces"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Multi-source BFS<br/>2 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 29: Rotting Oranges"]
+  Sub05 --> Sub05A02["ANCHOR<br/>rank 30: 01 Matrix"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Tree + graph BFS<br/>1 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 72: Burn Binary Tree"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

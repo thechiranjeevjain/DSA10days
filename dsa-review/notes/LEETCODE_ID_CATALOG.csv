@@ -67,6 +67,7 @@ id,slug,title
 802,find-eventual-safe-states,Find Eventual Safe States
 820,short-encoding-of-words,Short Encoding of Words
 828,count-unique-characters-of-all-substrings-of-a-given-string,Count Unique Characters of All Substrings of a Given String
+862,shortest-subarray-with-sum-at-least-k,Shortest Subarray with Sum at Least K
 863,all-nodes-distance-k-in-binary-tree,All Nodes Distance K in Binary Tree
 875,koko-eating-bananas,Koko Eating Bananas
 886,possible-bipartition,Possible Bipartition
@@ -80,12 +81,17 @@ id,slug,title
 1203,sort-items-by-groups-respecting-dependencies,Sort Items by Groups Respecting Dependencies
 1244,design-a-leaderboard,Design A Leaderboard
 1268,search-suggestions-system,Search Suggestions System
+1425,constrained-subsequence-sum,Constrained Subsequence Sum
+1438,longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit,Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit
 1462,course-schedule-iv,Course Schedule IV
+1499,max-value-of-equation,Max Value of Equation
 1603,design-parking-system,Design Parking System
 1656,design-an-ordered-stream,Design an Ordered Stream
+1696,jump-game-vi,Jump Game VI
 1707,maximum-xor-with-an-element-from-array,Maximum XOR With an Element From Array
 1801,number-of-orders-in-the-backlog,Number of Orders in the Backlog
 1803,count-pairs-with-xor-in-a-range,Count Pairs With XOR in a Range
 1938,maximum-genetic-difference-query,Maximum Genetic Difference Query
 2034,stock-price-fluctuation,Stock Price Fluctuation
 2385,amount-of-time-for-binary-tree-to-be-infected,Amount of Time for Binary Tree to Be Infected
+2398,maximum-number-of-robots-within-budget,Maximum Number of Robots Within Budget

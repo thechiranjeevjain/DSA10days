@@ -10,6 +10,20 @@ Use indegree or DFS states to process dependencies before dependents.
 
 Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Topological Sort"]
+  Recognition["RECOGNITION<br/>Use indegree or DFS states to process dependencies before dependents."]
+  Invariant["INVARIANT<br/>Brute force dependency checks loop; topo processes nodes only when prerequisites are done."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Topological sort / cycle<br/>1 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 18: Course Schedule"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Topological trimming<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 77: Minimum Height Trees"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |

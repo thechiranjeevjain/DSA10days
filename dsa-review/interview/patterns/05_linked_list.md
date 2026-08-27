@@ -10,6 +10,39 @@ Name every pointer, save next before rewiring, and return the real new head.
 
 Brute force may use extra storage; pointer invariants let us solve in one pass or O(1) space.
 
+## Pattern Taxonomy Map
+
+```mermaid
+flowchart TD
+  Topic["TOPIC<br/>Linked List Pointers"]
+  Recognition["RECOGNITION<br/>Name every pointer, save next before rewiring, and return the real new head."]
+  Invariant["INVARIANT<br/>Brute force may use extra storage; pointer invariants let us solve in one pass or O(1) space."]
+  Topic --> Recognition --> Invariant
+  Invariant --> Sub01["SUB-PATTERN<br/>Fast/slow pointers<br/>2 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 7: Linked List Cycle"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 95: Middle Of The Linked List"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Floyd cycle entry<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 58: Linked List Cycle Ii"]
+  Invariant --> Sub03["SUB-PATTERN<br/>HashMap / interleaving copy<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 24: Copy List With Random Pointer"]
+  Invariant --> Sub04["SUB-PATTERN<br/>HashMap + doubly linked list<br/>4 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 23: LRU Cache"]
+  Sub04 --> Sub04A02["ANCHOR<br/>rank 67: First Unique Number"]
+  Sub04 --> Sub04A03["ANCHOR<br/>rank 84: Design Browser History"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Heap / divide and conquer<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 11: Merge K Sorted Lists"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Linked list two pointers<br/>1 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 57: Intersection Of Two Linked Lists"]
+  Invariant --> Sub07["SUB-PATTERN<br/>Linked-list reversal groups<br/>5 problem(s)"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 59: Reverse Nodes In K Group"]
+  Sub07 --> Sub07A02["ANCHOR<br/>rank 64: Odd Even Linked List"]
+  Sub07 --> Sub07A03["ANCHOR<br/>rank 65: Rotate List"]
+  Invariant --> Sub08["SUB-PATTERN<br/>Merge / dummy node<br/>1 problem(s)"]
+  Sub08 --> Sub08A01["ANCHOR<br/>rank 8: Merge Two Sorted Lists"]
+  Invariant --> Sub09["SUB-PATTERN<br/>Pointer reversal<br/>1 problem(s)"]
+  Sub09 --> Sub09A01["ANCHOR<br/>rank 6: Reverse Linked List"]
+```
+
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
