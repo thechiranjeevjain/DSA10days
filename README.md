@@ -10,6 +10,7 @@ The Java files under `src/main/java/org/chijai` are the source of truth. The `ds
 |---|---|
 | Interview in 10 minutes | `dsa-review/interview/README.md`, then `dsa-review/notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md` |
 | Need the ranked study order | `dsa-review/interview/01_ZERO_TO_HERO_RANKED_TABLE.md` |
+| Need complete LeetCode source index | `dsa-review/interview/07_LEETCODE_SOLVED_INDEX.md` |
 | Need one-line memory refresh | `dsa-review/interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md` |
 | Need spoken interview answers | `dsa-review/interview/03_CRISP_INTERVIEW_ANSWERS.md` |
 | Need pattern-focused revision | `dsa-review/interview/patterns/README.md` |

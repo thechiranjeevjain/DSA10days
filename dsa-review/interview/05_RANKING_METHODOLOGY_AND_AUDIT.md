@@ -18,14 +18,14 @@ Use phase bands more than exact rank numbers:
 
 | Check | Current result | Meaning |
 |---|---:|---|
-| Ranked rows generated | 170 | Rows came from [Problem Pattern Index](../notes/PROBLEM_PATTERN_INDEX.md) and Java LeetCode links. |
+| Ranked rows generated | 171 | Rows came from [Problem Pattern Index](../notes/PROBLEM_PATTERN_INDEX.md) and Java LeetCode links. |
 | Java source missing | 0 | Should stay 0. |
-| LeetCode-linked rows | 156 | Rows that open LeetCode directly. |
-| Local-only rows | 14 | Repo-only or design rows without direct LeetCode source link. |
-| Pattern files generated | 22 | One focused view per generated category. |
-| Pattern rows covered | 170 | Should match ranked rows so no problem disappears from pattern files. |
+| LeetCode-linked rows | 154 | Rows that open LeetCode directly. |
+| Local-only rows | 17 | Repo-only or design rows without direct LeetCode source link. |
+| Pattern files generated | 21 | One focused view per generated category. |
+| Pattern rows covered | 171 | Should match ranked rows so no problem disappears from pattern files. |
 | Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |
-| Review dashboard rows | 170 | Dashboard ledger covers every ranked row and merges local review state. |
+| Review dashboard rows | 171 | Dashboard ledger covers every ranked row and merges local review state. |
 
 These are objective repository checks. They do not prove the ranking is globally correct.
 
@@ -77,8 +77,8 @@ These checks make the ranking less scammy by catching obvious placement mistakes
 | Java links resolve | PASS | A review row must open its real Java source. |
 | Pattern files cover ranked rows | PASS | Pattern-specific review must not drop problems. |
 | Phase 1 avoids role-specific/design rows | PASS | The first 30 should remove broad DSA red flags, not niche extras. |
-| Top 40 has broad pattern coverage | PASS: 16 categories | Early prep should not be trapped inside one pattern family. |
-| Top 40 contains core anchor problems | PASS | The obvious high-ROI anchors should not drift late. |
+| Top 40 has broad pattern coverage | PASS: 15 categories | Early prep should not be trapped inside one pattern family. |
+| Top 40 contains core anchor problems | CHECK missing: Course Schedule Ii, Subsets | The obvious high-ROI anchors should not drift late. |
 | Design rows deferred from top 70 | PASS | Design-flavored rows are useful, but not first-pass DSA ROI. |
 | Weekly sprint generated from canonical rows | PASS | Sprint titles, patterns, and signals must match ranked/pattern data. |
 | Review dashboard covers ranked rows | PASS | Review state is merged into due/red/yellow/mastered queues without polluting the ranked table. |

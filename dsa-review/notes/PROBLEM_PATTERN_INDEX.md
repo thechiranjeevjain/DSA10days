@@ -15,11 +15,11 @@ These are the highest ROI patterns for avoiding interview red flags.
 
 | File | Main pattern | ROI | Recall | Code | Variant | Notes |
 |---|---|---|---:|---:|---:|---|
-| `day1/session1/RansomNote.java` | HashMap/frequency | A |  |  |  | |
-| `day1/session2/MajorityElement.java` | Boyer-Moore / frequency | A |  |  |  | |
-| `day1/session2/Three3Sum2Sum.java` | Two pointers / hash | A |  |  |  | |
-| `day1/session2/Intervals.java` | Intervals / merge | A |  |  |  | |
-| `day1/session2/MeetingRoom.java` | Intervals / heap | A |  |  |  | |
+| `day1/Arrays/session1/RansomNote.java` | HashMap/frequency | A |  |  |  | |
+| `day1/Arrays/session2/MajorityElement.java` | Boyer-Moore / frequency | A |  |  |  | |
+| `day1/Arrays/session2/Three3Sum2Sum.java` | Two pointers / hash | A |  |  |  | |
+| `day1/Arrays/session4/Intervals/Intervals.java` | Intervals / merge | A |  |  |  | |
+| `day1/Arrays/session4/Intervals/MeetingRoom.java` | Intervals / heap | A |  |  |  | |
 | `day2/session1/BinarySearch.java` | Binary search invariant | A |  |  |  | |
 | `day2/session1/SearchRange.java` | Binary search boundary | A |  |  |  | |
 | `day2/session2/AGGRCOW.java` | Binary search on answer | A |  |  |  | |
@@ -28,8 +28,8 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day3/session1/LongestSubString.java` | Sliding window / set | A |  |  |  | |
 | `day3/session1/LongestSubstringVariations.java` | Sliding window variants | A |  |  |  | |
 | `day3/session1/MinimumWindowSubstring.java` | Sliding window / need-have | A |  |  |  | |
-| `day3/session2/NiceSubArrays.java` | Prefix/window counting | A |  |  |  | |
-| `day3/session2/ProductOfArrayExceptSelf.java` | Prefix/suffix | A |  |  |  | |
+| `day3/session2/prefix/suffix/NiceSubArrays.java` | Prefix/window counting | A |  |  |  | |
+| `day3/session2/prefix/suffix/ProductOfArrayExceptSelf.java` | Prefix/suffix | A |  |  |  | |
 | `day3/session3/FindAllAnagramsInAString.java` | Sliding window frequency | A |  |  |  | |
 | `day3/session3/ValidAnagram.java` | Frequency count | A |  |  |  | |
 | `day3/session3/ValidPalindrome.java` | Two pointers | A |  |  |  | |
@@ -43,11 +43,11 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day4/LinkedList/session4/Merge2SortedLists.java` | Merge / dummy node | A |  |  |  | |
 | `day4/LinkedList/session4/MergeKSortedLists.java` | Heap / divide and conquer | A |  |  |  | |
 | `day4/LinkedList/session4/MiddleOfLinkedList.java` | Fast/slow pointers | A |  |  |  | |
-| `day5/stack/session1/DailyTemperatures.java` | Monotonic stack | A |  |  |  | |
-| `day5/stack/session1/NextGreaterElement.java` | Monotonic stack | A |  |  |  | |
+| `day5/stack/session1/monotonic/DailyTemperatures.java` | Monotonic stack | A |  |  |  | |
+| `day5/stack/session1/monotonic/NextGreaterElement.java` | Monotonic stack | A |  |  |  | |
 | `day5/stack/session2/ContainerWithMostWater.java` | Two pointers | A |  |  |  | |
-| `day5/stack/session2/LargestRectangle.java` | Monotonic stack | A |  |  |  | |
-| `day5/stack/session2/TrappingRainwater.java` | Two pointers / stack | A |  |  |  | |
+| `day5/stack/session1/monotonic/LargestRectangle.java` | Monotonic stack | A |  |  |  | |
+| `day3/session2/prefix/suffix/TrappingRainwater.java` | Two pointers / stack | A |  |  |  | |
 | `day5/stack/session3/ValidParentheses.java` | Stack | A |  |  |  | |
 | `day6/trees/session1/BinaryTreeInorderTraversal.java` | Tree DFS / stack | A |  |  |  | |
 | `day6/trees/session1/BinaryTreeSideView.java` | Tree BFS / DFS | A |  |  |  | |
@@ -77,22 +77,22 @@ These often appear, but they should come after Priority A is reliable.
 
 | File | Main pattern | ROI | Recall | Code | Variant | Notes |
 |---|---|---|---:|---:|---:|---|
-| `day1/session1/KadaneMaxSubArray.java` | Kadane / DP | B |  |  |  | |
-| `day1/session1/SortColors.java` | Partition / Dutch flag | B |  |  |  | |
-| `day1/session1/SpiralMatrix.java` | Matrix boundary traversal | B |  |  |  | |
-| `day1/session3/StockSeries1.java` | Greedy / DP states | B |  |  |  | |
-| `day1/session3/StockSeries2.java` | Stock DP variants | B |  |  |  | |
+| `day1/Arrays/session1/KadaneMaxSubArray.java` | Kadane / DP | B |  |  |  | |
+| `day1/Arrays/session1/SortColors.java` | Partition / Dutch flag | B |  |  |  | |
+| `day1/Arrays/session1/SpiralMatrix.java` | Matrix boundary traversal | B |  |  |  | |
+| `day1/Arrays/session3/StockSeries1.java` | Greedy / DP states | B |  |  |  | |
+| `day1/Arrays/session3/StockSeries2.java` | Stock DP variants | B |  |  |  | |
 | `day2/session3/MaximumProfitInJobScheduling.java` | DP + binary search | B |  |  |  | |
 | `day2/session3/TimeBasedKeyValueStore.java` | HashMap + binary search | B |  |  |  | |
-| `day3/session2/GasStation.java` | Greedy | B |  |  |  | |
-| `day3/session2/MinimumPlatforms.java` | Intervals / sorting | B |  |  |  | |
+| `day1/Arrays/session4/Intervals/GasStation.java` | Greedy | B |  |  |  | |
+| `day1/Arrays/session4/Intervals/MinimumPlatforms.java` | Intervals / sorting | B |  |  |  | |
 | `day3/session3/LongestPalindrome.java` | Hash/frequency | B |  |  |  | |
 | `day3/session3/LongestPalindromicSubstring.java` | Expand around center | B |  |  |  | |
 | `day3/session3/StringToIntegerAtoi.java` | Parsing / edge cases | B |  |  |  | |
-| `day5/stack/session1/MinStackDesign.java` | Stack design | B |  |  |  | |
+| `day5/stack/session2/MinStackDesign.java` | Stack design | B |  |  |  | |
 | `day5/stack/session3/BasicCalculator.java` | Stack / expression parsing | B |  |  |  | |
 | `day5/stack/session3/EvalRPN.java` | Stack | B |  |  |  | |
-| `day5/stack/session3/StackQueue.java` | Stack/queue design | B |  |  |  | |
+| `day5/stack/session2/StackQueue.java` | Stack/queue design | B |  |  |  | |
 | `day6/trees/session2/BurnBinaryTree.java` | Tree + graph BFS | B |  |  |  | |
 | `day6/trees/session2/RecoverBST.java` | BST inorder | B |  |  |  | |
 | `day7/session1/heap/AwardTopKHotels.java` | Heap / ranking | B |  |  |  | |

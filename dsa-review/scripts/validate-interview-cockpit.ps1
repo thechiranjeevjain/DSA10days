@@ -19,6 +19,7 @@ $requiredFiles = @(
     "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md",
     "05_RANKING_METHODOLOGY_AND_AUDIT.md",
     "06_REVIEW_DASHBOARD.md",
+    "07_LEETCODE_SOLVED_INDEX.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -129,6 +130,45 @@ if ($leetcodeLinkCount -lt 100) {
     Fail "expected substantial LeetCode coverage, found $leetcodeLinkCount links"
 }
 
+function Get-ExcludedSlugsForFile {
+    param([string] $RelativeFile)
+
+    $fileKey = $RelativeFile.Replace("\", "/").ToLowerInvariant()
+    switch ($fileKey) {
+        "design/lld/designurlshortner.java" { return @("two-sum") }
+        default { return @() }
+    }
+}
+
+function Get-RecursiveLeetCodeSlugs {
+    $javaRoot = Join-Path $repoRoot "src\main\java\org\chijai"
+    $slugs = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
+        $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
+        $excluded = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
+        $text = Get-Content -LiteralPath $file.FullName -Raw
+        foreach ($match in [regex]::Matches($text, "leetcode\.com/problems/([A-Za-z0-9-]+)(?!/discuss)")) {
+            $slug = $match.Groups[1].Value.Trim().ToLowerInvariant()
+            if ($slug -and $slug -notin $excluded) {
+                [void] $slugs.Add($slug)
+            }
+        }
+    }
+    return @($slugs)
+}
+
+$leetcodeIndexPath = Join-Path $interviewRoot "07_LEETCODE_SOLVED_INDEX.md"
+$leetcodeIndexText = Get-Content -LiteralPath $leetcodeIndexPath -Raw
+$leetcodeIndexRows = @([regex]::Matches($leetcodeIndexText, '(?m)^\| (?<index>\d+) \|'))
+$recursiveLeetCodeSlugs = @(Get-RecursiveLeetCodeSlugs)
+if ($leetcodeIndexRows.Count -ne $recursiveLeetCodeSlugs.Count) {
+    Fail "expected LeetCode solved index to contain $($recursiveLeetCodeSlugs.Count) recursive rows, found $($leetcodeIndexRows.Count)"
+}
+
+if ($leetcodeIndexText -notmatch 'Recursive source scan') {
+    Fail "LeetCode solved index is missing recursive scan summary"
+}
+
 if (-not $topRankMatch.Success) {
     Fail "could not parse the current rank 1 title"
 }
@@ -184,6 +224,9 @@ if ($readmeText -notmatch 'DSA_7-Day_Interview_Performance_Sprint\.md') {
 }
 if ($readmeText -notmatch '06_REVIEW_DASHBOARD\.md') {
     Fail "main README does not link to the review dashboard"
+}
+if ($readmeText -notmatch '07_LEETCODE_SOLVED_INDEX\.md') {
+    Fail "main README does not link to the recursive LeetCode solved index"
 }
 
 $patternDir = Join-Path $interviewRoot "patterns"

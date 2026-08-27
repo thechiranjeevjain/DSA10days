@@ -19,11 +19,12 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 1. Open `interview/README.md`.
 2. If time is short, follow `interview/04_TWO_DAY_AND_SEVEN_DAY_PLANS.md`.
 3. For global order, use `interview/01_ZERO_TO_HERO_RANKED_TABLE.md`.
-4. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
-5. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-6. For weak-topic focus, open `interview/patterns/README.md`.
-7. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-8. After a miss, run the review command and mark the item honestly.
+4. For the complete recursive LeetCode source index, use `interview/07_LEETCODE_SOLVED_INDEX.md`.
+5. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
+6. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
+7. For weak-topic focus, open `interview/patterns/README.md`.
+8. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+9. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 

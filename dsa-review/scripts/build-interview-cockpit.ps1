@@ -1506,6 +1506,18 @@ function Get-LeetCodeSlugs {
     return @($matches | ForEach-Object { $_.Groups[1].Value.Trim().ToLowerInvariant() } | Where-Object { $_ } | Select-Object -Unique)
 }
 
+function Get-LeetCodeSlugMatches {
+    param([string] $SourcePath)
+
+    if (-not (Test-Path -LiteralPath $SourcePath)) {
+        return @()
+    }
+
+    $content = Get-Content -Raw -LiteralPath $SourcePath
+    $matches = [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)(?!/discuss)")
+    return @($matches | ForEach-Object { $_.Groups[1].Value.Trim().ToLowerInvariant() } | Where-Object { $_ })
+}
+
 function Get-ExcludedSlugsForFile {
     param([string] $RelativeFile)
 
@@ -1617,6 +1629,72 @@ function Get-IndexRows {
     return @($deduped | Sort-Object Rank)
 }
 
+function Get-RecursiveLeetCodeIndexRows {
+    param(
+        [object[]] $Rows
+    )
+
+    $rankedBySlug = @{}
+    $rankedByFile = @{}
+    foreach ($row in $Rows) {
+        if (-not [string]::IsNullOrWhiteSpace($row.Slug) -and -not $rankedBySlug.ContainsKey($row.Slug)) {
+            $rankedBySlug[$row.Slug] = $row
+        }
+        $fileKey = $row.File.Replace("\", "/").ToLowerInvariant()
+        if (-not $rankedByFile.ContainsKey($fileKey)) {
+            $rankedByFile[$fileKey] = New-Object System.Collections.Generic.List[object]
+        }
+        $rankedByFile[$fileKey].Add($row)
+    }
+
+    $bySlug = @{}
+    $javaRoot = Join-Path $RepoRoot "src\main\java\org\chijai"
+    foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
+        $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
+        $excluded = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
+        $slugs = @(Get-LeetCodeSlugMatches -SourcePath $file.FullName | Where-Object { $_ -notin $excluded } | Select-Object -Unique)
+        foreach ($slug in $slugs) {
+            if (-not $bySlug.ContainsKey($slug)) {
+                $rankedRow = if ($rankedBySlug.ContainsKey($slug)) { $rankedBySlug[$slug] } else { $null }
+                $title = if ($null -ne $rankedRow) { $rankedRow.Title } else { ConvertTo-TitleFromSlug $slug }
+                $category = if ($null -ne $rankedRow) { $rankedRow.Category } else { Get-Category -Pattern "" -File $relativeFile -Title $title }
+                $pattern = if ($null -ne $rankedRow) { $rankedRow.Pattern } else { "" }
+                if ([string]::IsNullOrWhiteSpace($pattern)) {
+                    $fileKey = $relativeFile.ToLowerInvariant()
+                    if ($rankedByFile.ContainsKey($fileKey)) {
+                        $sameFileRows = @($rankedByFile[$fileKey] | Sort-Object Rank)
+                        $pattern = ($sameFileRows | Select-Object -First 1).Pattern
+                    }
+                }
+                if ([string]::IsNullOrWhiteSpace($pattern)) {
+                    $pattern = Get-DisplayCategory $category
+                }
+
+                $bySlug[$slug] = [pscustomobject]@{
+                    Slug = $slug
+                    Title = $title
+                    Category = $category
+                    Pattern = $pattern
+                    InterviewRank = if ($null -ne $rankedRow) { [int] $rankedRow.Rank } else { 999999 }
+                    Files = New-Object System.Collections.Generic.List[string]
+                }
+            }
+            if (-not $bySlug[$slug].Files.Contains($relativeFile)) {
+                $bySlug[$slug].Files.Add($relativeFile)
+            }
+        }
+    }
+
+    $indexRank = 1
+    $result = @($bySlug.Values | Sort-Object InterviewRank, @{ Expression = { Get-CategoryWeight $_.Category } }, Category, Pattern, Title)
+    foreach ($item in $result) {
+        Add-Member -InputObject $item -NotePropertyName IndexRank -NotePropertyValue $indexRank -Force
+        $indexRank++
+    }
+
+    return @($result)
+}
+
 function Write-TextFile {
     param(
         [string] $Path,
@@ -1691,6 +1769,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 2 days | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 60 with implementation drills. |
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
+| Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of every LeetCode problem URL in Java files. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -1702,6 +1781,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 ## Current Coverage
 
 - Ranked entries: __TOTAL__
+- Recursive LeetCode solved index: __LEETCODE_INDEX_TOTAL__
 - Pattern files: __PATTERN_COUNT__
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
@@ -1720,7 +1800,8 @@ brute force -> bottleneck -> pattern -> invariant -> code -> dry run
 Do not start by trying to remember the final code.
 '@
     $patternCount = @(Get-PatternGroups -Rows $Rows).Count
-    return $content.Replace("__TOTAL__", [string] $total).Replace("__PATTERN_COUNT__", [string] $patternCount)
+    $leetcodeIndexCount = @(Get-RecursiveLeetCodeIndexRows -Rows $Rows).Count
+    return $content.Replace("__TOTAL__", [string] $total).Replace("__PATTERN_COUNT__", [string] $patternCount).Replace("__LEETCODE_INDEX_TOTAL__", [string] $leetcodeIndexCount)
 }
 
 function Build-PatternRecognition {
@@ -1823,6 +1904,74 @@ function Build-RankedTable {
         $lines.Add($line)
     }
     return ($lines -join "`r`n")
+}
+
+function Build-LeetCodeSolvedIndex {
+    param(
+        [object[]] $Rows,
+        [object[]] $LeetCodeRows
+    )
+
+    $rankedCount = @($LeetCodeRows | Where-Object { $_.InterviewRank -lt 999999 }).Count
+    $extraCount = $LeetCodeRows.Count - $rankedCount
+    $multiFileCount = @($LeetCodeRows | Where-Object { $_.Files.Count -gt 1 }).Count
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# LeetCode Solved Index")
+    $lines.Add("")
+    $lines.Add("Recursive source scan: this is the book-style table of contents for LeetCode problems found in Java source files.")
+    $lines.Add("")
+    $lines.Add('Regenerate it with `dsa-review\scripts\build-interview-cockpit.cmd` or `verify-all.cmd` after adding or editing Java solution files.')
+    $lines.Add("")
+    $lines.Add("Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview crunch order. Use this file when you want the complete source-backed LeetCode inventory.")
+    $lines.Add("")
+    $lines.Add("| Metric | Count |")
+    $lines.Add("|---|---:|")
+    $lines.Add("| Unique LeetCode problems found recursively | $($LeetCodeRows.Count) |")
+    $lines.Add("| Also present in interview-ranked cockpit | $rankedCount |")
+    $lines.Add("| Extra source-discovered problems | $extraCount |")
+    $lines.Add("| Problems appearing in multiple Java files | $multiFileCount |")
+    $lines.Add("")
+    $lines.Add("## Table Of Contents")
+    $lines.Add("")
+    $groups = @($LeetCodeRows | Group-Object Category | ForEach-Object {
+        $items = @($_.Group | Sort-Object InterviewRank, IndexRank)
+        [pscustomobject]@{
+            Category = $_.Name
+            DisplayCategory = Get-DisplayCategory $_.Name
+            Count = $items.Count
+            FirstIndexRank = ($items | Select-Object -First 1).IndexRank
+        }
+    } | Sort-Object FirstIndexRank, DisplayCategory)
+
+    foreach ($group in $groups) {
+        $anchor = (Get-DisplayCategory $group.Category).ToLowerInvariant() -replace '[^a-z0-9 ]', '' -replace '\s+', '-'
+        $lines.Add("- [$($group.DisplayCategory) ($($group.Count))](#$anchor)")
+    }
+
+    foreach ($categoryGroup in ($LeetCodeRows | Group-Object Category | Sort-Object { (@($_.Group | Sort-Object InterviewRank, IndexRank | Select-Object -First 1)).IndexRank }, Name)) {
+        $displayCategory = Get-DisplayCategory $categoryGroup.Name
+        $lines.Add("")
+        $lines.Add("## $displayCategory")
+        $lines.Add("")
+        foreach ($patternGroup in ($categoryGroup.Group | Group-Object Pattern | Sort-Object { (@($_.Group | Sort-Object InterviewRank, IndexRank | Select-Object -First 1)).IndexRank }, Name)) {
+            $lines.Add("### $(Escape-Md $patternGroup.Name)")
+            $lines.Add("")
+            $lines.Add("| # | Interview Rank | Problem | LeetCode | Local solution file(s) |")
+            $lines.Add("|---:|---:|---|---|---|")
+            foreach ($item in ($patternGroup.Group | Sort-Object InterviewRank, IndexRank)) {
+                $interviewRank = if ($item.InterviewRank -lt 999999) { [string] $item.InterviewRank } else { "-" }
+                $lc = New-Link "LC" "https://leetcode.com/problems/$($item.Slug)/"
+                $links = @($item.Files | Sort-Object | ForEach-Object {
+                    New-Link ([System.IO.Path]::GetFileName($_)) ("../../src/main/java/org/chijai/" + $_)
+                }) -join ", "
+                $lines.Add("| $($item.IndexRank) | $interviewRank | $(Escape-Md $item.Title) | $lc | $links |")
+            }
+            $lines.Add("")
+        }
+    }
+
+    return ($lines -join "`r`n").TrimEnd()
 }
 
 function Build-OneLineRecall {
@@ -2743,6 +2892,7 @@ if ($rows.Count -eq 0) {
 }
 
 $patternGroups = @(Get-PatternGroups -Rows $rows)
+$leetcodeIndexRows = @(Get-RecursiveLeetCodeIndexRows -Rows $rows)
 
 Write-TextFile -Path (Join-Path $outDir "README.md") -Content (Build-Readme -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "00_PATTERN_RECOGNITION_80_20.md") -Content (Build-PatternRecognition)
@@ -2752,6 +2902,7 @@ Write-TextFile -Path (Join-Path $outDir "03_CRISP_INTERVIEW_ANSWERS.md") -Conten
 Write-TextFile -Path (Join-Path $outDir "04_TWO_DAY_AND_SEVEN_DAY_PLANS.md") -Content (Build-Plans -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "05_RANKING_METHODOLOGY_AND_AUDIT.md") -Content (Build-RankingAudit -Rows $rows -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "06_REVIEW_DASHBOARD.md") -Content (Build-ReviewDashboard -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "07_LEETCODE_SOLVED_INDEX.md") -Content (Build-LeetCodeSolvedIndex -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"
@@ -2769,6 +2920,7 @@ foreach ($group in $patternGroups) {
     output = $outDir
     rankedEntries = $rows.Count
     leetcodeLinks = @($rows | Where-Object { $_.LeetCodeLink }).Count
+    recursiveLeetCodeIndex = $leetcodeIndexRows.Count
     localOnlyEntries = @($rows | Where-Object { -not $_.LeetCodeLink }).Count
     patternFiles = $patternGroups.Count
 } | Format-List
