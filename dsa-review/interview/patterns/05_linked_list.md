@@ -22,25 +22,29 @@ flowchart TD
   Sub01 --> Sub01A01["ANCHOR<br/>rank 7: Linked List Cycle"]
   Sub01 --> Sub01A02["ANCHOR<br/>rank 95: Middle Of The Linked List"]
   Invariant --> Sub02["SUB-PATTERN<br/>Floyd cycle entry<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 58: Linked List Cycle Ii"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 59: Linked List Cycle Ii"]
   Invariant --> Sub03["SUB-PATTERN<br/>HashMap / interleaving copy<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 24: Copy List With Random Pointer"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 26: Copy List With Random Pointer"]
   Invariant --> Sub04["SUB-PATTERN<br/>HashMap + doubly linked list<br/>4 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 23: LRU Cache"]
-  Sub04 --> Sub04A02["ANCHOR<br/>rank 67: First Unique Number"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 25: LRU Cache"]
+  Sub04 --> Sub04A02["ANCHOR<br/>rank 68: First Unique Number"]
   Sub04 --> Sub04A03["ANCHOR<br/>rank 84: Design Browser History"]
   Invariant --> Sub05["SUB-PATTERN<br/>Heap / divide and conquer<br/>1 problem(s)"]
   Sub05 --> Sub05A01["ANCHOR<br/>rank 11: Merge K Sorted Lists"]
   Invariant --> Sub06["SUB-PATTERN<br/>Linked list two pointers<br/>1 problem(s)"]
-  Sub06 --> Sub06A01["ANCHOR<br/>rank 57: Intersection Of Two Linked Lists"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 58: Intersection Of Two Linked Lists"]
   Invariant --> Sub07["SUB-PATTERN<br/>Linked-list reversal groups<br/>5 problem(s)"]
-  Sub07 --> Sub07A01["ANCHOR<br/>rank 59: Reverse Nodes In K Group"]
-  Sub07 --> Sub07A02["ANCHOR<br/>rank 64: Odd Even Linked List"]
-  Sub07 --> Sub07A03["ANCHOR<br/>rank 65: Rotate List"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 60: Reverse Nodes in k-Group"]
+  Sub07 --> Sub07A02["ANCHOR<br/>rank 65: Odd Even Linked List"]
+  Sub07 --> Sub07A03["ANCHOR<br/>rank 66: Rotate List"]
   Invariant --> Sub08["SUB-PATTERN<br/>Merge / dummy node<br/>1 problem(s)"]
   Sub08 --> Sub08A01["ANCHOR<br/>rank 8: Merge Two Sorted Lists"]
   Invariant --> Sub09["SUB-PATTERN<br/>Pointer reversal<br/>1 problem(s)"]
   Sub09 --> Sub09A01["ANCHOR<br/>rank 6: Reverse Linked List"]
+  Invariant --> Sub10["SUB-PATTERN<br/>Topological sort / cycle<br/>5 problem(s)"]
+  Sub10 --> Sub10A01["ANCHOR<br/>rank 120: Parallel Courses"]
+  Sub10 --> Sub10A02["ANCHOR<br/>rank 121: Alien Dictionary"]
+  Sub10 --> Sub10A03["ANCHOR<br/>rank 122: Find Eventual Safe States"]
 ```
 
 ## Problems
@@ -51,19 +55,24 @@ flowchart TD
 | 7 | Phase 1 - No Red Flags | Linked List Cycle | Fast/slow pointers | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session1/LinkedListCycle.java) | [LC](https://leetcode.com/problems/linked-list-cycle/) | Slow and fast meet only if a cycle exists. | Move slow one, fast two while fast and fast.next exist; meeting means cycle. |
 | 8 | Phase 1 - No Red Flags | Merge Two Sorted Lists | Merge / dummy node | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/Merge2SortedLists.java) | [LC](https://leetcode.com/problems/merge-two-sorted-lists/) | Dummy tail repeatedly takes the smaller current node. | Compare l1/l2, append smaller to tail, advance, then attach remainder. |
 | 11 | Phase 1 - No Red Flags | Merge K Sorted Lists | Heap / divide and conquer | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/MergeKSortedLists.java) | [LC](https://leetcode.com/problems/merge-k-sorted-lists/) | A min-heap stores the current smallest head among k lists. | Push non-null heads, poll min, append it, push its next. |
-| 23 | Phase 1 - No Red Flags | LRU Cache | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/lru-cache/) | HashMap gives O(1) lookup; doubly linked list keeps recency order. | On get/put move node to front; if over capacity remove tail and map entry. |
-| 24 | Phase 1 - No Red Flags | Copy List With Random Pointer | HashMap / interleaving copy | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/CopyListWithRandomPointer.java) | [LC](https://leetcode.com/problems/copy-list-with-random-pointer/) | Clone nodes then connect next/random using old-to-new mapping or interleaving. | First create clones in map, second assign clone.next and clone.random from mapped nodes. |
-| 57 | Phase 2 - Strong Core | Intersection Of Two Linked Lists | Linked list two pointers | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) | [LC](https://leetcode.com/problems/intersection-of-two-linked-lists/) | Switch heads at null; equal path lengths make pointers meet at intersection or null. | Move a and b one step; when null redirect to other head; return when a == b. |
-| 58 | Phase 2 - Strong Core | Linked List Cycle Ii | Floyd cycle entry | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/LinkedListCycleII.java) | [LC](https://leetcode.com/problems/linked-list-cycle-ii/) | After slow/fast meet, move one pointer from head and both one step to find entry. | Detect meeting, reset one pointer to head, move both until equal. |
-| 59 | Phase 2 - Strong Core | Reverse Nodes In K Group | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-nodes-in-k-group/) | Only reverse a group after confirming k nodes exist. | Use dummy/groupPrev, locate kth, reverse group, reconnect, advance groupPrev. |
-| 64 | Phase 2 - Strong Core | Odd Even Linked List | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/odd-even-linked-list/) | Keep odd and even chains separately, then attach even head after odd tail. | Move odd to even.next and even to odd.next until even chain ends, then connect. |
-| 65 | Phase 2 - Strong Core | Rotate List | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/rotate-list/) | Make the list circular, then break at length - k % length. | Count length and tail, connect tail to head, move to new tail, break circle. |
-| 66 | Phase 2 - Strong Core | Swap Nodes In Pairs | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/swap-nodes-in-pairs/) | Dummy node lets you swap each adjacent pair without special-casing head. | For each pair, rewire prev->second, first->second.next, second->first. |
-| 67 | Phase 2 - Strong Core | First Unique Number | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/first-unique-number/) | Queue/list stores arrival order; counts decide whether the front is still unique. | On add update count and queue/list, while front count > 1 pop it. |
+| 25 | Phase 1 - No Red Flags | LRU Cache | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/lru-cache/) | HashMap gives O(1) lookup; doubly linked list keeps recency order. | On get/put move node to front; if over capacity remove tail and map entry. |
+| 26 | Phase 1 - No Red Flags | Copy List With Random Pointer | HashMap / interleaving copy | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/CopyListWithRandomPointer.java) | [LC](https://leetcode.com/problems/copy-list-with-random-pointer/) | Clone nodes then connect next/random using old-to-new mapping or interleaving. | First create clones in map, second assign clone.next and clone.random from mapped nodes. |
+| 58 | Phase 2 - Strong Core | Intersection Of Two Linked Lists | Linked list two pointers | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) | [LC](https://leetcode.com/problems/intersection-of-two-linked-lists/) | Switch heads at null; equal path lengths make pointers meet at intersection or null. | Move a and b one step; when null redirect to other head; return when a == b. |
+| 59 | Phase 2 - Strong Core | Linked List Cycle Ii | Floyd cycle entry | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/LinkedListCycleII.java) | [LC](https://leetcode.com/problems/linked-list-cycle-ii/) | After slow/fast meet, move one pointer from head and both one step to find entry. | Detect meeting, reset one pointer to head, move both until equal. |
+| 60 | Phase 2 - Strong Core | Reverse Nodes in k-Group | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-nodes-in-k-group/) | Only reverse a group after confirming k nodes exist. | Use dummy/groupPrev, locate kth, reverse group, reconnect, advance groupPrev. |
+| 65 | Phase 2 - Strong Core | Odd Even Linked List | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/odd-even-linked-list/) | Keep odd and even chains separately, then attach even head after odd tail. | Move odd to even.next and even to odd.next until even chain ends, then connect. |
+| 66 | Phase 2 - Strong Core | Rotate List | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/rotate-list/) | Make the list circular, then break at length - k % length. | Count length and tail, connect tail to head, move to new tail, break circle. |
+| 67 | Phase 2 - Strong Core | Swap Nodes In Pairs | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/swap-nodes-in-pairs/) | Dummy node lets you swap each adjacent pair without special-casing head. | For each pair, rewire prev->second, first->second.next, second->first. |
+| 68 | Phase 2 - Strong Core | First Unique Number | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/first-unique-number/) | Queue/list stores arrival order; counts decide whether the front is still unique. | On add update count and queue/list, while front count > 1 pop it. |
 | 84 | Phase 3 - Important | Design Browser History | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/design-browser-history/) | Back/forward are pointer moves over a history chain; visit drops forward history. | Maintain current node; visit creates current.next and clears forward branch. |
 | 85 | Phase 3 - Important | Moving Average From Data Stream | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/moving-average-from-data-stream/) | Queue last size values and running sum; average is sum divided by queue size. | Offer val, add to sum, if queue too large poll and subtract, return sum/count. |
 | 95 | Phase 3 - Important | Middle Of The Linked List | Fast/slow pointers | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/MiddleOfLinkedList.java) | [LC](https://leetcode.com/problems/middle-of-the-linked-list/) | Fast moves twice as fast; slow lands at the middle when fast finishes. | While fast and fast.next exist, move slow one and fast two, return slow. |
-| 159 | Phase 5 - If Time | Reverse Linked List Ii | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-linked-list-ii/) | Use a dummy and reverse exactly the sublist between left and right. | Find node before left, then head-insert nodes from the sublist for right-left steps. |
+| 120 | Phase 4 - Secondary | Parallel Courses | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/parallel-courses/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
+| 121 | Phase 4 - Secondary | Alien Dictionary | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/alien-dictionary/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
+| 122 | Phase 4 - Secondary | Find Eventual Safe States | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/find-eventual-safe-states/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
+| 123 | Phase 4 - Secondary | Sequence Reconstruction | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/sequence-reconstruction/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
+| 124 | Phase 4 - Secondary | Sort Items by Groups Respecting Dependencies | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
+| 200 | Phase 5 - If Time | Reverse Linked List Ii | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-linked-list-ii/) | Use a dummy and reverse exactly the sublist between left and right. | Find node before left, then head-insert nodes from the sublist for right-left steps. |
 
 ## Drill
 

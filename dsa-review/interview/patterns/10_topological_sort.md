@@ -18,8 +18,10 @@ flowchart TD
   Recognition["RECOGNITION<br/>Use indegree or DFS states to process dependencies before dependents."]
   Invariant["INVARIANT<br/>Brute force dependency checks loop; topo processes nodes only when prerequisites are done."]
   Topic --> Recognition --> Invariant
-  Invariant --> Sub01["SUB-PATTERN<br/>Topological sort / cycle<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 18: Course Schedule"]
+  Invariant --> Sub01["SUB-PATTERN<br/>Topological sort / cycle<br/>3 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 19: Course Schedule"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 20: Course Schedule II"]
+  Sub01 --> Sub01A03["ANCHOR<br/>rank 206: Course Schedule IV"]
   Invariant --> Sub02["SUB-PATTERN<br/>Topological trimming<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 77: Minimum Height Trees"]
 ```
@@ -28,8 +30,10 @@ flowchart TD
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 18 | Phase 1 - No Red Flags | Course Schedule | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | - | A course is unlocked only when its indegree becomes zero. | Build prerequisite->course graph, queue indegree-zero courses, decrement neighbors, compare processed count. |
+| 19 | Phase 1 - No Red Flags | Course Schedule | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/course-schedule/) | A course is unlocked only when its indegree becomes zero. | Build prerequisite->course graph, queue indegree-zero courses, decrement neighbors, compare processed count. |
+| 20 | Phase 1 - No Red Flags | Course Schedule II | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/course-schedule-ii/) | A course enters the order only when its indegree drops to zero. | Build prerequisite->course graph, queue indegree-zero courses, append order, fail if processed < n. |
 | 77 | Phase 3 - Important | Minimum Height Trees | Topological trimming | [Java](../../../src/main/java/org/chijai/day8/graph/session3/MinHTree.java) | [LC](https://leetcode.com/problems/minimum-height-trees/) | Peel all current leaves together until one or two centroid roots remain. | Build graph/degrees, queue degree-1 leaves, remove layers while remainingNodes > 2. |
+| 206 | Phase 5 - If Time | Course Schedule IV | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/course-schedule-iv/) | Use indegree or DFS states to process dependencies before dependents. | Build graph and indegrees, queue zero-indegree nodes, process order. |
 
 ## Drill
 

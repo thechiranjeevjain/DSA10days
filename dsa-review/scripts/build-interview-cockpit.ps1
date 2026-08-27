@@ -126,6 +126,16 @@ function Get-ProblemOverride {
             hook = "Brute force tries all tuples; sorting makes duplicate skipping and pair elimination possible."
             code = "Sort when indices are not required, loop fixed values, move left/right by sum comparison, skip duplicates."
         }
+        "twosum" = @{
+            recall = "Use a HashMap from value to index; each number asks whether its complement was seen."
+            hook = "Brute force tries all pairs; complement lookup makes the second value O(1)."
+            code = "Scan left to right, if target - nums[i] exists return indices, otherwise store nums[i] -> i."
+        }
+        "twosumiiinputarrayissorted" = @{
+            recall = "Sorted input lets left/right shrink toward the target sum."
+            hook = "HashMap works, but sorted order gives O(1) space by eliminating impossible pairs."
+            code = "Compare nums[left] + nums[right] with target; move left if small, right if large."
+        }
         "binarysearch" = @{
             recall = "Sorted order plus mid comparison proves which half cannot contain the target."
             hook = "Linear scan is O(n); sorted order gives monotonic elimination in O(log n)."
@@ -967,7 +977,9 @@ function Get-Category {
     $titleText = $Title.ToLowerInvariant()
 
     if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
-    if ($titleText -match "implement trie prefix tree|design add and search words|word search ii|maximum xor|hotel reviews") { return "Trie" }
+    if ($titleText -match "^two sum$") { return "HashMap/HashSet" }
+    if ($titleText -match "^two sum ii") { return "Two Pointers" }
+    if ($titleText -match "implement trie.*prefix tree|design add and search words|word search ii|maximum xor|hotel reviews") { return "Trie" }
     if ($titleText -match "sliding window maximum|online stock span") { return "Stack" }
     if ($titleText -match "^meeting rooms$") { return "Intervals/Greedy" }
     if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
@@ -1095,6 +1107,7 @@ function Get-ProblemImportanceWeight {
 
     switch ($key) {
         "2sum3sum4sum" { return 1 }
+        "twosum" { return 1 }
         "binarysearch" { return 2 }
         "longestsubstringwithoutrepeatingcharacters" { return 3 }
         "productofarrayexceptself" { return 4 }
@@ -1105,38 +1118,43 @@ function Get-ProblemImportanceWeight {
         "validanagram" { return 9 }
         "validpalindrome" { return 10 }
         "mergeksortedlists" { return 11 }
-        "containerwithmostwater" { return 12 }
-        "trappingrainwater" { return 13 }
-        "binarytreelevelordertraversal" { return 14 }
-        "validatebinarysearchtree" { return 15 }
-        "lowestcommonancestorofabinarytree" { return 16 }
-        "numberofislands" { return 17 }
-        "courseschedule" { return 18 }
-        "coursescheduleii" { return 19 }
-        "wordladder" { return 20 }
-        "kokoeatingbananas" { return 21 }
-        "searchinrotatedsortedarray" { return 22 }
-        "findfirstandlastpositionofelementinsortedarray" { return 23 }
-        "lrucache" { return 24 }
-        "copylistwithrandompointer" { return 25 }
-        "kthsmallestelementinabst" { return 26 }
-        "balancedbinarytree" { return 27 }
-        "diameterofbinarytree" { return 28 }
-        "pathsumiii" { return 29 }
-        "rottingoranges" { return 30 }
-        "01matrix" { return 31 }
-        "meetingroomsii" { return 32 }
-        "dailytemperatures" { return 33 }
-        "validparentheses" { return 34 }
-        "topkfrequentelements" { return 35 }
-        "houserobber" { return 36 }
-        "coinchange" { return 37 }
-        "subsets" { return 38 }
-        "combinationsum" { return 39 }
-        "wordsearch" { return 40 }
-        "findmedianfromdatastream" { return 41 }
-        "largestrectangleinhistogram" { return 42 }
-        "findallanagramsinastring" { return 43 }
+        "twosumiiinputarrayissorted" { return 12 }
+        "containerwithmostwater" { return 13 }
+        "trappingrainwater" { return 14 }
+        "binarytreelevelordertraversal" { return 15 }
+        "validatebinarysearchtree" { return 16 }
+        "lowestcommonancestorofabinarytree" { return 17 }
+        "numberofislands" { return 18 }
+        "courseschedule" { return 19 }
+        "coursescheduleii" { return 20 }
+        "wordladder" { return 21 }
+        "kokoeatingbananas" { return 22 }
+        "searchinrotatedsortedarray" { return 23 }
+        "findfirstandlastpositionofelementinsortedarray" { return 24 }
+        "lrucache" { return 25 }
+        "copylistwithrandompointer" { return 26 }
+        "kthsmallestelementinabst" { return 27 }
+        "balancedbinarytree" { return 28 }
+        "diameterofbinarytree" { return 29 }
+        "pathsumiii" { return 30 }
+        "rottingoranges" { return 31 }
+        "01matrix" { return 32 }
+        "houserobber" { return 33 }
+        "coinchange" { return 34 }
+        "subsets" { return 35 }
+        "validparentheses" { return 36 }
+        "topkfrequentelements" { return 37 }
+        "dailytemperatures" { return 38 }
+        "meetingroomsii" { return 39 }
+        "implementtrieprefixtree" { return 40 }
+        "floodfill" { return 41 }
+        "isgraphbipartite" { return 42 }
+        "minimumnumberofarrowstoburstballoons" { return 43 }
+        "combinationsum" { return 44 }
+        "wordsearch" { return 45 }
+        "findmedianfromdatastream" { return 46 }
+        "largestrectangleinhistogram" { return 47 }
+        "findallanagramsinastring" { return 48 }
         "longestrepeatingcharacterreplacement" { return 44 }
         "longestsubstringwithatmostkdistinctcharacters" { return 45 }
         "permutationinstring" { return 46 }
@@ -1624,6 +1642,7 @@ function Get-IndexRows {
     )
 
     $rows = New-Object System.Collections.Generic.List[object]
+    $idCatalog = Get-LeetCodeIdCatalog
     $pattern = '^\|\s*`([^`]+\.java)`\s*\|\s*([^|]+?)\s*\|\s*([ABC])\s*\|'
     foreach ($line in Get-Content -LiteralPath $IndexPath) {
         $match = [regex]::Match($line, $pattern)
@@ -1639,9 +1658,9 @@ function Get-IndexRows {
         $priority = $match.Groups[3].Value.Trim()
         $category = Get-Category -Pattern $patternName -File $relativeFile -Title $fileTitle
         $excludedSlugs = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
-        $slugs = @(Get-LeetCodeSlugs -SourcePath $sourcePath | Where-Object { $_ -notin $excludedSlugs })
+        $references = @(Get-LeetCodeProblemReferences -SourcePath $sourcePath -IdCatalog $idCatalog | Where-Object { $_.Slug -notin $excludedSlugs })
 
-        if ($slugs.Count -eq 0) {
+        if ($references.Count -eq 0) {
             $importanceWeight = Get-ProblemImportanceWeight -Title $fileTitle -Category $category -Pattern $patternName
             $priorityWeight = Get-PriorityWeight $priority
             $categoryWeight = Get-CategoryWeight $category
@@ -1664,8 +1683,9 @@ function Get-IndexRows {
             continue
         }
 
-        foreach ($slug in $slugs) {
-            $title = ConvertTo-TitleFromSlug $slug
+        foreach ($reference in $references) {
+            $slug = $reference.Slug
+            $title = if (-not [string]::IsNullOrWhiteSpace($reference.Title)) { $reference.Title } else { ConvertTo-TitleFromSlug $slug }
             $rowCategory = Get-Category -Pattern $patternName -File $relativeFile -Title $title
             $importanceWeight = Get-ProblemImportanceWeight -Title $title -Category $rowCategory -Pattern $patternName
             $priorityWeight = Get-PriorityWeight $priority
@@ -1691,10 +1711,12 @@ function Get-IndexRows {
 
     $deduped = New-Object System.Collections.Generic.List[object]
     $seen = @{}
-    foreach ($row in ($rows | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, MatchScore, File, Title)) {
-        $key = if ($row.Slug) { "LC:" + $row.Slug } else { "LOCAL:" + $row.File }
-        if ($seen.ContainsKey($key)) { continue }
-        $seen[$key] = $true
+    foreach ($row in ($rows | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, @{ Expression = { if ($_.Slug) { 0 } else { 1 } } }, MatchScore, File, Title)) {
+        $titleKey = "TITLE:" + (Get-NormalizedKey $row.Title)
+        $sourceKey = if ($row.Slug) { "LC:" + $row.Slug } else { "LOCAL:" + $row.File }
+        if ($seen.ContainsKey($sourceKey) -or $seen.ContainsKey($titleKey)) { continue }
+        $seen[$sourceKey] = $true
+        $seen[$titleKey] = $true
         $deduped.Add($row)
     }
 
@@ -2908,7 +2930,7 @@ function Build-RankingAudit {
     $top70DesignCount = @($top70 | Where-Object { $_.Category -eq "Design/LLD" }).Count
     $top40CategoryCount = @($top40 | Select-Object -ExpandProperty Category -Unique).Count
     $anchorTitles = @(
-        "2Sum / 3Sum / 4Sum",
+        "Two Sum",
         "Binary Search",
         "Longest Substring Without Repeating Characters",
         "Minimum Window Substring",

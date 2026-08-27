@@ -18,27 +18,34 @@ flowchart TD
   Recognition["RECOGNITION<br/>Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words."]
   Invariant["INVARIANT<br/>Repeated string scans waste prefix work; trie shares prefixes across words."]
   Topic --> Recognition --> Invariant
-  Invariant --> Sub01["SUB-PATTERN<br/>Binary trie / bit<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 147: Maximum XOR Of Two Numbers In An Array"]
-  Invariant --> Sub02["SUB-PATTERN<br/>Trie<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 47: Implement Trie Prefix Tree"]
+  Invariant --> Sub01["SUB-PATTERN<br/>Binary trie / bit<br/>4 problem(s)"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 166: Maximum XOR of Two Numbers in an Array"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 171: Maximum XOR With an Element From Array"]
+  Sub01 --> Sub01A03["ANCHOR<br/>rank 172: Maximum Genetic Difference Query"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Trie<br/>2 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 40: Implement Trie (Prefix Tree)"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 98: Design Add and Search Words Data Structure"]
   Invariant --> Sub03["SUB-PATTERN<br/>Trie / ranking<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 166: Hotel Reviews"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 209: Hotel Reviews"]
   Invariant --> Sub04["SUB-PATTERN<br/>Trie + backtracking<br/>1 problem(s)"]
   Sub04 --> Sub04A01["ANCHOR<br/>rank 105: Word Search Ii"]
   Invariant --> Sub05["SUB-PATTERN<br/>Trie + DFS wildcard<br/>1 problem(s)"]
-  Sub05 --> Sub05A01["ANCHOR<br/>rank 98: Design Add And Search Words Data Structure"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 170: Map Sum Pairs"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 47 | Phase 2 - Strong Core | Implement Trie Prefix Tree | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/implement-trie-prefix-tree/) | Each trie node represents one prefix; terminal marks distinguish full words from prefixes. | For insert/search/startsWith, walk chars through children; create on insert, fail on missing child. |
-| 98 | Phase 3 - Important | Design Add And Search Words Data Structure | Trie + DFS wildcard | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LC](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | Trie search branches only on '.', otherwise it follows exactly one child. | DFS over trie and word index; on '.', try every child, otherwise follow the matching child. |
+| 40 | Phase 2 - Strong Core | Implement Trie (Prefix Tree) | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/implement-trie-prefix-tree/) | Each trie node represents one prefix; terminal marks distinguish full words from prefixes. | For insert/search/startsWith, walk chars through children; create on insert, fail on missing child. |
+| 98 | Phase 3 - Important | Design Add and Search Words Data Structure | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | Trie search branches only on '.', otherwise it follows exactly one child. | DFS over trie and word index; on '.', try every child, otherwise follow the matching child. |
 | 105 | Phase 3 - Important | Word Search Ii | Trie + backtracking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/WordSearchII.java) | [LC](https://leetcode.com/problems/word-search-ii/) | Trie prunes dictionary prefixes while board DFS chooses, marks, explores, and unmarks cells. | Build trie, DFS board paths, stop when prefix missing, collect terminal words, mark cells in-place. |
-| 147 | Phase 4 - Secondary | Maximum XOR Of Two Numbers In An Array | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/) | Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low. | Insert numbers by bits, then for each number walk preferred opposite bits and update max. |
-| 166 | Phase 5 - If Time | Hotel Reviews | Trie / ranking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java) | - | Use trie or keyword set to count good words per review, then rank hotels by score. | Normalize review words, count keyword hits, aggregate per hotel, sort by score and id. |
+| 166 | Phase 5 - If Time | Maximum XOR of Two Numbers in an Array | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/) | Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low. | Insert numbers by bits, then for each number walk preferred opposite bits and update max. |
+| 170 | Phase 5 - If Time | Map Sum Pairs | Trie + DFS wildcard | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LC](https://leetcode.com/problems/map-sum-pairs/) | Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words. | Insert words by characters; search follows children and DFS branches on wildcard/board. |
+| 171 | Phase 5 - If Time | Maximum XOR With an Element From Array | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-with-an-element-from-array/) | Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words. | Insert words by characters; search follows children and DFS branches on wildcard/board. |
+| 172 | Phase 5 - If Time | Maximum Genetic Difference Query | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-genetic-difference-query/) | Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words. | Insert words by characters; search follows children and DFS branches on wildcard/board. |
+| 173 | Phase 5 - If Time | Count Pairs With XOR in a Range | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/count-pairs-with-xor-in-a-range/) | Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words. | Insert words by characters; search follows children and DFS branches on wildcard/board. |
+| 209 | Phase 5 - If Time | Hotel Reviews | Trie / ranking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java) | - | Use trie or keyword set to count good words per review, then rank hotels by score. | Normalize review words, count keyword hits, aggregate per hotel, sort by score and id. |
 
 ## Drill
 

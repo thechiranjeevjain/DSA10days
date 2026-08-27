@@ -27,7 +27,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 
 ## Current Coverage
 
-- Ranked entries: 171
+- Ranked entries: 216
 - Recursive LeetCode solved index: 220
 - Pattern files: 21
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.

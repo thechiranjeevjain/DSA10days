@@ -21,25 +21,25 @@ flowchart TD
   Invariant --> Sub01["SUB-PATTERN<br/>Expand around center<br/>1 problem(s)"]
   Sub01 --> Sub01A01["ANCHOR<br/>rank 112: Longest Palindromic Substring"]
   Invariant --> Sub02["SUB-PATTERN<br/>Partition / Dutch flag<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 62: Sort Colors"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 63: Sort Colors"]
   Invariant --> Sub03["SUB-PATTERN<br/>Two pointers<br/>2 problem(s)"]
   Sub03 --> Sub03A01["ANCHOR<br/>rank 10: Valid Palindrome"]
-  Sub03 --> Sub03A02["ANCHOR<br/>rank 12: Container With Most Water"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 13: Container With Most Water"]
   Invariant --> Sub04["SUB-PATTERN<br/>Two pointers / hash<br/>1 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 1: 2Sum / 3Sum / 4Sum"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 12: Two Sum II - Input Array Is Sorted"]
   Invariant --> Sub05["SUB-PATTERN<br/>Two pointers / stack<br/>1 problem(s)"]
-  Sub05 --> Sub05A01["ANCHOR<br/>rank 13: Trapping Rain Water"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 14: Trapping Rain Water"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 1 | Phase 1 - No Red Flags | 2Sum / 3Sum / 4Sum | Two pointers / hash | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/Three3Sum2Sum.java) | - | For sum families: hash for 2Sum, sort/fix one value, then two-pointer the remaining sum. | Sort when indices are not required, loop fixed values, move left/right by sum comparison, skip duplicates. |
 | 10 | Phase 1 - No Red Flags | Valid Palindrome | Two pointers | [Java](../../../src/main/java/org/chijai/day3/session3/ValidPalindrome.java) | [LC](https://leetcode.com/problems/valid-palindrome/) | Skip non-alphanumeric chars and compare normalized ends while pointers move inward. | Advance left/right past invalid chars, compare lowercase chars, stop when pointers cross. |
-| 12 | Phase 1 - No Red Flags | Container With Most Water | Two pointers | [Java](../../../src/main/java/org/chijai/day5/stack/session2/ContainerWithMostWater.java) | [LC](https://leetcode.com/problems/container-with-most-water/) | Area is limited by shorter wall, so move the shorter side inward. | Compute area at left/right, update max, move pointer with smaller height. |
-| 13 | Phase 1 - No Red Flags | Trapping Rain Water | Two pointers / stack | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | [LC](https://leetcode.com/problems/trapping-rain-water/) | Water at a side depends on the smaller max boundary seen so far. | Move the side with lower height, update max, add max-height when bounded. |
-| 62 | Phase 2 - Strong Core | Sort Colors | Partition / Dutch flag | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | - | Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers. | Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1. |
+| 12 | Phase 1 - No Red Flags | Two Sum II - Input Array Is Sorted | Two pointers / hash | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/Three3Sum2Sum.java) | [LC](https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/) | Sorted input lets left/right shrink toward the target sum. | Compare nums[left] + nums[right] with target; move left if small, right if large. |
+| 13 | Phase 1 - No Red Flags | Container With Most Water | Two pointers | [Java](../../../src/main/java/org/chijai/day5/stack/session2/ContainerWithMostWater.java) | [LC](https://leetcode.com/problems/container-with-most-water/) | Area is limited by shorter wall, so move the shorter side inward. | Compute area at left/right, update max, move pointer with smaller height. |
+| 14 | Phase 1 - No Red Flags | Trapping Rain Water | Two pointers / stack | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | [LC](https://leetcode.com/problems/trapping-rain-water/) | Water at a side depends on the smaller max boundary seen so far. | Move the side with lower height, update max, add max-height when bounded. |
+| 63 | Phase 2 - Strong Core | Sort Colors | Partition / Dutch flag | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/sort-colors/) | Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers. | Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1. |
 | 112 | Phase 4 - Secondary | Longest Palindromic Substring | Expand around center | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | Expand around every odd and even center and keep the longest span. | For each index, expand(i,i) and expand(i,i+1), update best start/length. |
 
 ## Drill
