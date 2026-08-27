@@ -14,7 +14,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 2 days | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 60 with implementation drills. |
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
-| Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of every LeetCode problem URL in Java files. |
+| Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -26,7 +26,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 ## Current Coverage
 
 - Ranked entries: 171
-- Recursive LeetCode solved index: 154
+- Recursive LeetCode solved index: 214
 - Pattern files: 21
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.

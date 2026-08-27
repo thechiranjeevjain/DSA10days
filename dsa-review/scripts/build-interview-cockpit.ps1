@@ -1536,6 +1536,78 @@ function Get-ExcludedSlugsForFile {
     }
 }
 
+function Get-LeetCodeIdCatalog {
+    $catalogPath = Join-Path $RepoRoot "dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+    if (-not (Test-Path -LiteralPath $catalogPath)) {
+        throw "Could not find LeetCode ID catalog: $catalogPath"
+    }
+
+    $catalog = @{}
+    foreach ($row in (Import-Csv -LiteralPath $catalogPath)) {
+        if ([string]::IsNullOrWhiteSpace($row.id) -or [string]::IsNullOrWhiteSpace($row.slug)) {
+            continue
+        }
+        $catalog[[string] $row.id] = [pscustomobject]@{
+            Id = [string] $row.id
+            Slug = $row.slug.Trim().ToLowerInvariant()
+            Title = $row.title.Trim()
+        }
+    }
+    return $catalog
+}
+
+function Get-LeetCodeProblemReferences {
+    param(
+        [string] $SourcePath,
+        [hashtable] $IdCatalog
+    )
+
+    if (-not (Test-Path -LiteralPath $SourcePath)) {
+        return @()
+    }
+
+    $content = Get-Content -Raw -LiteralPath $SourcePath
+    $references = New-Object System.Collections.Generic.List[object]
+
+    foreach ($match in [regex]::Matches($content, "leetcode\.com/problems/([A-Za-z0-9-]+)(/[^\s\)]*)?")) {
+        if ($match.Groups[2].Value -match '^/discuss\b') {
+            continue
+        }
+        $slug = $match.Groups[1].Value.Trim().ToLowerInvariant()
+        if ($slug) {
+            $references.Add([pscustomobject]@{
+                Slug = $slug
+                Title = ""
+                SourceKind = "url"
+            })
+        }
+    }
+
+    foreach ($match in [regex]::Matches($content, "(?i)\b(?:leetcode|lc)\s*(?:#)?\s*(\d{1,5})\b")) {
+        $id = [string] $match.Groups[1].Value
+        if (-not $IdCatalog.ContainsKey($id)) {
+            throw "LeetCode ID $id is referenced in $SourcePath but missing from dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+        }
+        $problem = $IdCatalog[$id]
+        $references.Add([pscustomobject]@{
+            Slug = $problem.Slug
+            Title = $problem.Title
+            SourceKind = "id"
+        })
+    }
+
+    return @($references | Group-Object Slug | ForEach-Object {
+        $first = $_.Group | Select-Object -First 1
+        $bestTitleRef = $_.Group | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Title) } | Select-Object -First 1
+        $bestTitle = if ($null -ne $bestTitleRef) { $bestTitleRef.Title } else { "" }
+        [pscustomobject]@{
+            Slug = $_.Name
+            Title = if ($bestTitle) { $bestTitle } else { $first.Title }
+            SourceKind = (@($_.Group.SourceKind | Sort-Object -Unique) -join "+")
+        }
+    })
+}
+
 function Get-IndexRows {
     param(
         [string] $RepoRoot,
@@ -1656,15 +1728,23 @@ function Get-RecursiveLeetCodeIndexRows {
     }
 
     $bySlug = @{}
+    $idCatalog = Get-LeetCodeIdCatalog
     $javaRoot = Join-Path $RepoRoot "src\main\java\org\chijai"
     foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
         $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
         $excluded = @(Get-ExcludedSlugsForFile -RelativeFile $relativeFile)
-        $slugs = @(Get-LeetCodeSlugMatches -SourcePath $file.FullName | Where-Object { $_ -notin $excluded } | Select-Object -Unique)
-        foreach ($slug in $slugs) {
+        $references = @(Get-LeetCodeProblemReferences -SourcePath $file.FullName -IdCatalog $idCatalog | Where-Object { $_.Slug -notin $excluded })
+        foreach ($reference in $references) {
+            $slug = $reference.Slug
             if (-not $bySlug.ContainsKey($slug)) {
                 $rankedRow = if ($rankedBySlug.ContainsKey($slug)) { $rankedBySlug[$slug] } else { $null }
-                $title = if ($null -ne $rankedRow) { $rankedRow.Title } else { ConvertTo-TitleFromSlug $slug }
+                $title = if ($null -ne $rankedRow) {
+                    $rankedRow.Title
+                } elseif (-not [string]::IsNullOrWhiteSpace($reference.Title)) {
+                    $reference.Title
+                } else {
+                    ConvertTo-TitleFromSlug $slug
+                }
                 $category = if ($null -ne $rankedRow) { $rankedRow.Category } else { Get-Category -Pattern "" -File $relativeFile -Title $title }
                 $pattern = if ($null -ne $rankedRow) { $rankedRow.Pattern } else { "" }
                 if ([string]::IsNullOrWhiteSpace($pattern)) {
@@ -1777,7 +1857,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 2 days | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 60 with implementation drills. |
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
-| Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of every LeetCode problem URL in Java files. |
+| Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -1927,9 +2007,9 @@ function Build-LeetCodeSolvedIndex {
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# LeetCode Solved Index")
     $lines.Add("")
-    $lines.Add("Recursive source scan: this is the book-style table of contents for LeetCode problems found in Java source files.")
+    $lines.Add("Recursive source scan: this is the book-style table of contents for LeetCode problems found in Java source files by full LeetCode URL or explicit LC problem number.")
     $lines.Add("")
-    $lines.Add('Regenerate it with `dsa-review\scripts\build-interview-cockpit.cmd` or `verify-all.cmd` after adding or editing Java solution files.')
+    $lines.Add('Regenerate it with `dsa-review\scripts\build-interview-cockpit.cmd` or `verify-all.cmd` after adding or editing Java solution files. Add a full LeetCode URL or cataloged LC problem number when a file contains a solved problem.')
     $lines.Add("")
     $lines.Add("Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview crunch order. Use this file when you want the complete source-backed LeetCode inventory.")
     $lines.Add("")

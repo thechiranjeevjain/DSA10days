@@ -140,8 +140,25 @@ function Get-ExcludedSlugsForFile {
     }
 }
 
+function Get-LeetCodeIdCatalog {
+    $catalogPath = Join-Path $repoRoot "dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+    if (-not (Test-Path -LiteralPath $catalogPath)) {
+        Fail "missing LeetCode ID catalog: $catalogPath"
+    }
+
+    $catalog = @{}
+    foreach ($row in (Import-Csv -LiteralPath $catalogPath)) {
+        if ([string]::IsNullOrWhiteSpace($row.id) -or [string]::IsNullOrWhiteSpace($row.slug)) {
+            continue
+        }
+        $catalog[[string] $row.id] = $row.slug.Trim().ToLowerInvariant()
+    }
+    return $catalog
+}
+
 function Get-RecursiveLeetCodeSlugs {
     $javaRoot = Join-Path $repoRoot "src\main\java\org\chijai"
+    $catalog = Get-LeetCodeIdCatalog
     $slugs = New-Object System.Collections.Generic.HashSet[string]
     foreach ($file in (Get-ChildItem -LiteralPath $javaRoot -Recurse -File -Filter "*.java")) {
         $relativeFile = $file.FullName.Substring($javaRoot.Length).TrimStart("\", "/").Replace("\", "/")
@@ -152,6 +169,17 @@ function Get-RecursiveLeetCodeSlugs {
                 continue
             }
             $slug = $match.Groups[1].Value.Trim().ToLowerInvariant()
+            if ($slug -and $slug -notin $excluded) {
+                [void] $slugs.Add($slug)
+            }
+        }
+
+        foreach ($match in [regex]::Matches($text, "(?i)\b(?:leetcode|lc)\s*(?:#)?\s*(\d{1,5})\b")) {
+            $id = [string] $match.Groups[1].Value
+            if (-not $catalog.ContainsKey($id)) {
+                Fail "LeetCode ID $id is referenced in $($file.FullName) but missing from dsa-review\notes\LEETCODE_ID_CATALOG.csv"
+            }
+            $slug = $catalog[$id]
             if ($slug -and $slug -notin $excluded) {
                 [void] $slugs.Add($slug)
             }
@@ -464,6 +492,7 @@ if ($controlByteFiles.Count -gt 0) {
     javaLinks = $javaLinkCount
     missingJavaLinks = $missingJavaLinks.Count
     leetcodeLinks = $leetcodeLinkCount
+    recursiveLeetCodeIndex = $leetcodeIndexRows.Count
     localOnlyEntries = $localOnlyCount
     patternFiles = $patternFiles.Count
     patternRows = $patternProblemRows
