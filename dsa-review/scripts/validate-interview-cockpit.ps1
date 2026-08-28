@@ -219,10 +219,10 @@ if ($leetcodeIndexText -notmatch 'Recursive source scan') {
 
 $curriculumTocPath = Join-Path $interviewRoot "09_LEETCODE_CURRICULUM_TOC.md"
 $curriculumTocText = Get-Content -LiteralPath $curriculumTocPath -Raw
-if ($curriculumTocText -notmatch '## Full Hierarchy' -or $curriculumTocText -notmatch '1\.1\.1\.') {
+if ($curriculumTocText -notmatch '## Curriculum Hierarchy' -or $curriculumTocText -notmatch '\*\*1\.1\.1\*\*') {
     Fail "LeetCode curriculum TOC is missing the expected nested hierarchy"
 }
-$curriculumProblemLines = @([regex]::Matches($curriculumTocText, '(?m)^\s{6}\d+\.\d+\.\d+\. \*\*'))
+$curriculumProblemLines = @([regex]::Matches($curriculumTocText, '(?m)^\s{4}- \*\*\d+\.\d+\.\d+\*\* \['))
 if ($curriculumProblemLines.Count -ne $leetcodeIndexRows.Count) {
     Fail "expected LeetCode curriculum TOC to contain $($leetcodeIndexRows.Count) problem rows, found $($curriculumProblemLines.Count)"
 }

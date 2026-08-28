@@ -849,6 +849,9 @@ public class SearchRange {
             int left = 0;
             int right = nums.length - 1;
 
+            // here equals to == is very important
+            // both left and right converging on same could be our answer, so we need to check that as well
+            //
             while (left <= right) {
 
                 int mid = left + (right - left) / 2;
@@ -857,8 +860,11 @@ public class SearchRange {
                     return mid;
                 }
 
-                // LEFT half is sorted.
+                // Left half is sorted.
+                // Use <= because l can equal mid; a 1-element half is still sorted.
+                // If l == mid, mid was already checked, so that element is resolved
                 if (nums[left] <= nums[mid]) {
+
 
                     // Target lies inside sorted LEFT half.
                     if (nums[left] <= target && target < nums[mid]) {
@@ -1112,6 +1118,9 @@ public class SearchRange {
             int left = 0;
             int right = nums.length - 1;
 
+            // here equals to == is very important
+            // both left and right converging on same could be our answer, so we need to check that as well
+            //
             while (left <= right) {
 
                 int mid = left + (right - left) / 2;

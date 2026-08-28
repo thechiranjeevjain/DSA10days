@@ -732,6 +732,11 @@ public class RottenOranges {
                 int minutes = 0;
 
                 // One BFS level represents one minute.
+                // here fresh > 0 ensures we stop early if all fresh oranges are rotted.
+                // else extra minutes would be counted unnecessarily.
+                // also this needs to be && not || because we want to stop if either condition fails.
+                // if we did || then we would continue even if fresh == 0 and queue is not empty, which would be incorrect.
+                // then time limit would be exceeded because we would be processing empty cells unnecessarily.
                 while (!queue.isEmpty() && fresh > 0) {
 
                     int size = queue.size();

@@ -19,14 +19,14 @@ flowchart TD
   Invariant["INVARIANT<br/>Unsorted comparisons are noisy; sorting makes overlap or greedy choice local."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Greedy<br/>2 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 158: Gas Station"]
-  Sub01 --> Sub01A02["ANCHOR<br/>rank 159: Jump Game"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 148: Gas Station"]
+  Sub01 --> Sub01A02["ANCHOR<br/>rank 149: Jump Game"]
   Invariant --> Sub02["SUB-PATTERN<br/>Intervals / merge<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 157: Intervals"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 147: Intervals"]
   Invariant --> Sub03["SUB-PATTERN<br/>Intervals / sorting<br/>3 problem(s)"]
   Sub03 --> Sub03A01["ANCHOR<br/>rank 39: Meeting Rooms Ii"]
   Sub03 --> Sub03A02["ANCHOR<br/>rank 43: Minimum Number Of Arrows To Burst Balloons"]
-  Sub03 --> Sub03A03["ANCHOR<br/>rank 160: Car Pooling"]
+  Sub03 --> Sub03A03["ANCHOR<br/>rank 150: Car Pooling"]
 ```
 
 ## Problems
@@ -35,10 +35,10 @@ flowchart TD
 |---:|---|---|---|---|---|---|---|
 | 39 | Phase 2 - Strong Core | Meeting Rooms Ii | Intervals / sorting | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/MinimumPlatforms.java) | [LC](https://leetcode.com/problems/meeting-rooms-ii/) | Sort meetings by start; a min-heap of end times counts active rooms. | Sort intervals, pop heap while end <= start, push current end, track max heap size. |
 | 43 | Phase 2 - Strong Core | Minimum Number Of Arrows To Burst Balloons | Intervals / sorting | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/MinimumPlatforms.java) | [LC](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/) | Sort balloons by end; shoot at current end and start a new arrow only after it is missed. | Sort by end, keep currentArrowEnd, increment arrows when next.start > currentArrowEnd. |
-| 157 | Phase 5 - If Time | Intervals | Intervals / merge | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/Intervals.java) | - | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
-| 158 | Phase 5 - If Time | Gas Station | Greedy | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
-| 159 | Phase 5 - If Time | Jump Game | Greedy | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/GasStation.java) | [LC](https://leetcode.com/problems/jump-game/) | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
-| 160 | Phase 5 - If Time | Car Pooling | Intervals / sorting | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/MinimumPlatforms.java) | [LC](https://leetcode.com/problems/car-pooling/) | Treat each pickup/dropoff as passenger-count delta and ensure capacity is never exceeded. | Use difference array or sorted events: add passengers at start, subtract at end, track running load. |
+| 147 | Phase 4 - Secondary | Intervals | Intervals / merge | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/Intervals.java) | - | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
+| 148 | Phase 4 - Secondary | Gas Station | Greedy | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
+| 149 | Phase 4 - Secondary | Jump Game | Greedy | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/GasStation.java) | [LC](https://leetcode.com/problems/jump-game/) | Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints. | Sort by start/end, then merge/count/select with one pass or heap. |
+| 150 | Phase 4 - Secondary | Car Pooling | Intervals / sorting | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/MinimumPlatforms.java) | [LC](https://leetcode.com/problems/car-pooling/) | Treat each pickup/dropoff as passenger-count delta and ensure capacity is never exceeded. | Use difference array or sorted events: add passengers at start, subtract at end, track running load. |
 
 ## Drill
 

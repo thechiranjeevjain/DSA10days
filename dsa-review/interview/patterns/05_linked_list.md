@@ -41,10 +41,6 @@ flowchart TD
   Sub08 --> Sub08A01["ANCHOR<br/>rank 8: Merge Two Sorted Lists"]
   Invariant --> Sub09["SUB-PATTERN<br/>Pointer reversal<br/>1 problem(s)"]
   Sub09 --> Sub09A01["ANCHOR<br/>rank 6: Reverse Linked List"]
-  Invariant --> Sub10["SUB-PATTERN<br/>Topological sort / cycle<br/>5 problem(s)"]
-  Sub10 --> Sub10A01["ANCHOR<br/>rank 120: Parallel Courses"]
-  Sub10 --> Sub10A02["ANCHOR<br/>rank 121: Alien Dictionary"]
-  Sub10 --> Sub10A03["ANCHOR<br/>rank 122: Find Eventual Safe States"]
 ```
 
 ## Problems
@@ -67,11 +63,6 @@ flowchart TD
 | 84 | Phase 3 - Important | Design Browser History | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/design-browser-history/) | Back/forward are pointer moves over a history chain; visit drops forward history. | Maintain current node; visit creates current.next and clears forward branch. |
 | 85 | Phase 3 - Important | Moving Average From Data Stream | HashMap + doubly linked list | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LC](https://leetcode.com/problems/moving-average-from-data-stream/) | Queue last size values and running sum; average is sum divided by queue size. | Offer val, add to sum, if queue too large poll and subtract, return sum/count. |
 | 95 | Phase 3 - Important | Middle Of The Linked List | Fast/slow pointers | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session4/MiddleOfLinkedList.java) | [LC](https://leetcode.com/problems/middle-of-the-linked-list/) | Fast moves twice as fast; slow lands at the middle when fast finishes. | While fast and fast.next exist, move slow one and fast two, return slow. |
-| 120 | Phase 4 - Secondary | Parallel Courses | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/parallel-courses/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
-| 121 | Phase 4 - Secondary | Alien Dictionary | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/alien-dictionary/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
-| 122 | Phase 4 - Secondary | Find Eventual Safe States | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/find-eventual-safe-states/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
-| 123 | Phase 4 - Secondary | Sequence Reconstruction | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/sequence-reconstruction/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
-| 124 | Phase 4 - Secondary | Sort Items by Groups Respecting Dependencies | Topological sort / cycle | [Java](../../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LC](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/) | Name every pointer, save next before rewiring, and return the real new head. | Use dummy when head can change; update prev/current/next in a fixed order. |
 | 200 | Phase 5 - If Time | Reverse Linked List Ii | Linked-list reversal groups | [Java](../../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LC](https://leetcode.com/problems/reverse-linked-list-ii/) | Use a dummy and reverse exactly the sublist between left and right. | Find node before left, then head-insert nodes from the sublist for right-left steps. |
 
 ## Drill

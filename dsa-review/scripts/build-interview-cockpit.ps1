@@ -979,7 +979,9 @@ function Get-Category {
     if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
     if ($titleText -match "^two sum$") { return "HashMap/HashSet" }
     if ($titleText -match "^two sum ii") { return "Two Pointers" }
-    if ($titleText -match "implement trie.*prefix tree|design add and search words|word search ii|maximum xor|hotel reviews") { return "Trie" }
+    if ($titleText -match "implement trie.*prefix tree|design add and search words|word search ii|maximum xor|hotel reviews|longest common prefix|longest word in dictionary|replace words|search suggestions system|short encoding of words") { return "Trie" }
+    if ($titleText -match "parallel courses|alien dictionary|eventual safe states|sequence reconstruction|sort items by groups") { return "Topological Sort" }
+    if ($titleText -match "possible bipartition|graph valid tree|redundant connection") { return "Graph DFS" }
     if ($titleText -match "sliding window maximum|online stock span") { return "Stack" }
     if ($titleText -match "^meeting rooms$") { return "Intervals/Greedy" }
     if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
@@ -2267,36 +2269,20 @@ function Build-LeetCodeCurriculumToc {
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("# LeetCode Curriculum TOC")
     $lines.Add("")
-    $lines.Add("This is the single nested book-style curriculum index for every LeetCode problem found recursively in Java source files.")
+    $lines.Add("Single top-to-bottom curriculum hierarchy for every LeetCode problem found recursively in Java source files.")
     $lines.Add("")
-    $lines.Add('Source scan rules: full `leetcode.com/problems/...` URLs and cataloged `LC 123` / `LeetCode 123` references are included. Java source remains the source of truth.')
+    $lines.Add("Coverage: $($LeetCodeRows.Count) confirmed LeetCode problems; $rankedCount in the interview-ranked cockpit; $extraCount source-discovered extras; $($categoryGroups.Count) pattern families.")
     $lines.Add("")
-    $lines.Add('Regenerate with `verify-all.ps1` or `dsa-review/scripts/build-interview-cockpit.cmd` after adding or editing Java solution files.')
+    $lines.Add("Regenerate with `verify-all.ps1` or `dsa-review/scripts/build-interview-cockpit.cmd` after adding or editing Java solution files.")
     $lines.Add("")
-    $lines.Add("| Metric | Count |")
-    $lines.Add("|---|---:|")
-    $lines.Add("| Confirmed LeetCode problems | $($LeetCodeRows.Count) |")
-    $lines.Add("| Also in interview-ranked cockpit | $rankedCount |")
-    $lines.Add("| Source-discovered extras | $extraCount |")
-    $lines.Add("| Pattern families | $($categoryGroups.Count) |")
+    $lines.Add("## Curriculum Hierarchy")
     $lines.Add("")
-    $lines.Add("## Top-Level Curriculum")
+    $lines.Add("Read this as: pattern family -> sub-pattern -> problem. Problem names open LeetCode; local links open the Java solution files.")
     $lines.Add("")
 
     $categoryIndex = 1
     foreach ($categoryGroup in $categoryGroups) {
-        $categoryAnchor = ($categoryGroup.DisplayCategory.ToLowerInvariant() -replace '[^a-z0-9 ]', '' -replace '\s+', '-')
-        $lines.Add("$categoryIndex. [$($categoryGroup.DisplayCategory) ($($categoryGroup.Count))](#$categoryAnchor)")
-        $categoryIndex++
-    }
-
-    $lines.Add("")
-    $lines.Add("## Full Hierarchy")
-    $lines.Add("")
-
-    $categoryIndex = 1
-    foreach ($categoryGroup in $categoryGroups) {
-        $lines.Add("$categoryIndex. **$(Escape-Md $categoryGroup.DisplayCategory)** ($($categoryGroup.Count))")
+        $lines.Add("- **$categoryIndex** $(Escape-Md $categoryGroup.DisplayCategory) ($($categoryGroup.Count) problems)")
 
         $patternGroups = @($categoryGroup.Items | Group-Object Pattern | ForEach-Object {
             $items = @($_.Group | Sort-Object InterviewRank, IndexRank)
@@ -2311,16 +2297,16 @@ function Build-LeetCodeCurriculumToc {
 
         $patternIndex = 1
         foreach ($patternGroup in $patternGroups) {
-            $lines.Add("   $categoryIndex.$patternIndex. **$(Escape-Md $patternGroup.Pattern)** ($($patternGroup.Count))")
+            $lines.Add("  - **$categoryIndex.$patternIndex** $(Escape-Md $patternGroup.Pattern) ($($patternGroup.Count))")
 
             $problemIndex = 1
             foreach ($item in $patternGroup.Items) {
                 $interviewRank = if ($item.InterviewRank -lt 999999) { "rank $($item.InterviewRank)" } else { "source-only" }
-                $lc = New-Link "LC" "https://leetcode.com/problems/$($item.Slug)/"
+                $lc = New-Link (Escape-Md $item.Title) "https://leetcode.com/problems/$($item.Slug)/"
                 $links = @($item.Files | Sort-Object | ForEach-Object {
                     New-Link ([System.IO.Path]::GetFileName($_)) ("../../src/main/java/org/chijai/" + $_)
                 }) -join ", "
-                $lines.Add("      $categoryIndex.$patternIndex.$problemIndex. **$(Escape-Md $item.Title)** ($interviewRank) - $lc - Local: $links")
+                $lines.Add("    - **$categoryIndex.$patternIndex.$problemIndex** $lc - $interviewRank - Local: $links")
                 $problemIndex++
             }
 
