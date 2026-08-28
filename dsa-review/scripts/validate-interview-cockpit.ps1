@@ -22,6 +22,7 @@ $requiredFiles = @(
     "06_REVIEW_DASHBOARD.md",
     "07_LEETCODE_SOLVED_INDEX.md",
     "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md",
+    "09_LEETCODE_CURRICULUM_TOC.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -216,6 +217,24 @@ if ($leetcodeIndexText -notmatch 'Recursive source scan') {
     Fail "LeetCode solved index is missing recursive scan summary"
 }
 
+$curriculumTocPath = Join-Path $interviewRoot "09_LEETCODE_CURRICULUM_TOC.md"
+$curriculumTocText = Get-Content -LiteralPath $curriculumTocPath -Raw
+if ($curriculumTocText -notmatch '## Full Hierarchy' -or $curriculumTocText -notmatch '1\.1\.1\.') {
+    Fail "LeetCode curriculum TOC is missing the expected nested hierarchy"
+}
+$curriculumProblemLines = @([regex]::Matches($curriculumTocText, '(?m)^\s{6}\d+\.\d+\.\d+\. \*\*'))
+if ($curriculumProblemLines.Count -ne $leetcodeIndexRows.Count) {
+    Fail "expected LeetCode curriculum TOC to contain $($leetcodeIndexRows.Count) problem rows, found $($curriculumProblemLines.Count)"
+}
+$curriculumSlugs = @([regex]::Matches($curriculumTocText, 'https://leetcode\.com/problems/([a-z0-9-]+)/') | ForEach-Object {
+    $_.Groups[1].Value
+})
+$missingCurriculumSlugs = @($recursiveLeetCodeSlugs | Where-Object { $_ -notin $curriculumSlugs })
+$extraCurriculumSlugs = @($curriculumSlugs | Where-Object { $_ -notin $recursiveLeetCodeSlugs })
+if ($missingCurriculumSlugs.Count -gt 0 -or $extraCurriculumSlugs.Count -gt 0) {
+    Fail "LeetCode curriculum TOC slug mismatch. Missing: $($missingCurriculumSlugs -join ', '); Extra: $($extraCurriculumSlugs -join ', ')"
+}
+
 if (-not $topRankMatch.Success) {
     Fail "could not parse the current rank 1 title"
 }
@@ -280,6 +299,9 @@ if ($readmeText -notmatch '06_REVIEW_DASHBOARD\.md') {
 }
 if ($readmeText -notmatch '07_LEETCODE_SOLVED_INDEX\.md') {
     Fail "main README does not link to the recursive LeetCode solved index"
+}
+if ($readmeText -notmatch '09_LEETCODE_CURRICULUM_TOC\.md') {
+    Fail "main README does not link to the nested LeetCode curriculum TOC"
 }
 
 $mindMapText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_DSA_MIND_MAP.md") -Raw

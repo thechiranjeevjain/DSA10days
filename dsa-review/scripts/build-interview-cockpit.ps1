@@ -2040,6 +2040,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
+| Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -2054,6 +2055,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 
 - Ranked entries: __TOTAL__
 - Recursive LeetCode solved index: __LEETCODE_INDEX_TOTAL__
+- Nested LeetCode curriculum TOC: `09_LEETCODE_CURRICULUM_TOC.md`
 - Pattern files: __PATTERN_COUNT__
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
@@ -2241,6 +2243,92 @@ function Build-LeetCodeSolvedIndex {
             }
             $lines.Add("")
         }
+    }
+
+    return ($lines -join "`r`n").TrimEnd()
+}
+
+function Build-LeetCodeCurriculumToc {
+    param([object[]] $LeetCodeRows)
+
+    $rankedCount = @($LeetCodeRows | Where-Object { $_.InterviewRank -lt 999999 }).Count
+    $extraCount = $LeetCodeRows.Count - $rankedCount
+    $categoryGroups = @($LeetCodeRows | Group-Object Category | ForEach-Object {
+        $items = @($_.Group | Sort-Object InterviewRank, IndexRank)
+        [pscustomobject]@{
+            Category = $_.Name
+            DisplayCategory = Get-DisplayCategory $_.Name
+            Count = $items.Count
+            FirstIndexRank = ($items | Select-Object -First 1).IndexRank
+            Items = $items
+        }
+    } | Sort-Object FirstIndexRank, DisplayCategory)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# LeetCode Curriculum TOC")
+    $lines.Add("")
+    $lines.Add("This is the single nested book-style curriculum index for every LeetCode problem found recursively in Java source files.")
+    $lines.Add("")
+    $lines.Add('Source scan rules: full `leetcode.com/problems/...` URLs and cataloged `LC 123` / `LeetCode 123` references are included. Java source remains the source of truth.')
+    $lines.Add("")
+    $lines.Add('Regenerate with `verify-all.ps1` or `dsa-review/scripts/build-interview-cockpit.cmd` after adding or editing Java solution files.')
+    $lines.Add("")
+    $lines.Add("| Metric | Count |")
+    $lines.Add("|---|---:|")
+    $lines.Add("| Confirmed LeetCode problems | $($LeetCodeRows.Count) |")
+    $lines.Add("| Also in interview-ranked cockpit | $rankedCount |")
+    $lines.Add("| Source-discovered extras | $extraCount |")
+    $lines.Add("| Pattern families | $($categoryGroups.Count) |")
+    $lines.Add("")
+    $lines.Add("## Top-Level Curriculum")
+    $lines.Add("")
+
+    $categoryIndex = 1
+    foreach ($categoryGroup in $categoryGroups) {
+        $categoryAnchor = ($categoryGroup.DisplayCategory.ToLowerInvariant() -replace '[^a-z0-9 ]', '' -replace '\s+', '-')
+        $lines.Add("$categoryIndex. [$($categoryGroup.DisplayCategory) ($($categoryGroup.Count))](#$categoryAnchor)")
+        $categoryIndex++
+    }
+
+    $lines.Add("")
+    $lines.Add("## Full Hierarchy")
+    $lines.Add("")
+
+    $categoryIndex = 1
+    foreach ($categoryGroup in $categoryGroups) {
+        $lines.Add("$categoryIndex. **$(Escape-Md $categoryGroup.DisplayCategory)** ($($categoryGroup.Count))")
+
+        $patternGroups = @($categoryGroup.Items | Group-Object Pattern | ForEach-Object {
+            $items = @($_.Group | Sort-Object InterviewRank, IndexRank)
+            $patternName = if ([string]::IsNullOrWhiteSpace($_.Name)) { $categoryGroup.DisplayCategory } else { $_.Name }
+            [pscustomobject]@{
+                Pattern = $patternName
+                Count = $items.Count
+                FirstIndexRank = ($items | Select-Object -First 1).IndexRank
+                Items = $items
+            }
+        } | Sort-Object FirstIndexRank, Pattern)
+
+        $patternIndex = 1
+        foreach ($patternGroup in $patternGroups) {
+            $lines.Add("   $categoryIndex.$patternIndex. **$(Escape-Md $patternGroup.Pattern)** ($($patternGroup.Count))")
+
+            $problemIndex = 1
+            foreach ($item in $patternGroup.Items) {
+                $interviewRank = if ($item.InterviewRank -lt 999999) { "rank $($item.InterviewRank)" } else { "source-only" }
+                $lc = New-Link "LC" "https://leetcode.com/problems/$($item.Slug)/"
+                $links = @($item.Files | Sort-Object | ForEach-Object {
+                    New-Link ([System.IO.Path]::GetFileName($_)) ("../../src/main/java/org/chijai/" + $_)
+                }) -join ", "
+                $lines.Add("      $categoryIndex.$patternIndex.$problemIndex. **$(Escape-Md $item.Title)** ($interviewRank) - $lc - Local: $links")
+                $problemIndex++
+            }
+
+            $patternIndex++
+        }
+
+        $lines.Add("")
+        $categoryIndex++
     }
 
     return ($lines -join "`r`n").TrimEnd()
@@ -3181,6 +3269,7 @@ Write-TextFile -Path (Join-Path $outDir "05_RANKING_METHODOLOGY_AND_AUDIT.md") -
 Write-TextFile -Path (Join-Path $outDir "06_REVIEW_DASHBOARD.md") -Content (Build-ReviewDashboard -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "07_LEETCODE_SOLVED_INDEX.md") -Content (Build-LeetCodeSolvedIndex -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md") -Content (Build-ProjectStructureGuide -Groups $patternGroups)
+Write-TextFile -Path (Join-Path $outDir "09_LEETCODE_CURRICULUM_TOC.md") -Content (Build-LeetCodeCurriculumToc -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"
