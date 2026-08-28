@@ -987,7 +987,8 @@ function Get-Category {
     if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
     if ($titleText -match "network delay time") { return "Graph BFS" }
     if ($titleText -match "^longest palindrome$") { return "HashMap/HashSet" }
-    if ($titleText -match "sort colors") { return "Two Pointers" }
+    if ($titleText -match "sort colors|sort array by parity|move zeroes") { return "Two Pointers" }
+    if ($titleText -match "partition labels") { return "Intervals/Greedy" }
     if ($titleText -match "find the index of the first occurrence|longest happy prefix|repeated substring pattern|shortest palindrome") { return "Math/Bit/String" }
 
     if ($titleText -match "sum of subarray minimums|daily temperatures|next greater|largest rectangle|valid parentheses|calculator|reverse polish|stack") { return "Stack" }
@@ -1043,6 +1044,21 @@ function Get-Category {
     if ($text -match "hash|map|set|frequency|majority|ransom") { return "HashMap/HashSet" }
 
     return "Core Basics"
+}
+
+function Get-PatternOverride {
+    param(
+        [string] $Title,
+        [string] $Pattern
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "partitionlabels" { return "Greedy last-occurrence boundary" }
+        "sortarraybyparity" { return "Parity partition" }
+        "movezeroes" { return "Stable two-pointer compaction" }
+        default { return $Pattern }
+    }
 }
 
 function Get-DisplayCategory {
@@ -1327,6 +1343,13 @@ function Get-Recall {
         [string] $Title
     )
 
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "partitionlabels" { return "Close a partition only when the current index reaches the farthest last occurrence of all chars seen so far." }
+        "sortarraybyparity" { return "Partition the array so the write/left side contains only values satisfying the parity condition." }
+        "movezeroes" { return "Compact nonzero values forward in order, then fill the remaining suffix with zeroes." }
+    }
+
     switch ($Category) {
         "HashMap/HashSet" { return "Store counts, complements, or seen state so repeated lookup becomes O(1)." }
         "Two Pointers" { return "Shrink the search space by moving the pointer that can still improve the answer." }
@@ -1359,6 +1382,13 @@ function Get-InterviewHook {
         [string] $Pattern,
         [string] $Title
     )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "partitionlabels" { return "Brute force checks future conflicts repeatedly; last-occurrence boundaries reveal exactly when a safe partition can close." }
+        "sortarraybyparity" { return "Sorting is unnecessary; parity gives a direct partition predicate maintained by two pointers or a write index." }
+        "movezeroes" { return "Repeated shifting is the bottleneck; stable compaction writes each nonzero once and zero-fills the tail." }
+    }
 
     switch ($Category) {
         "HashMap/HashSet" { return "Brute force scans for matches; bottleneck is repeated lookup; use a map/set to preserve processed state." }
@@ -1663,14 +1693,15 @@ function Get-IndexRows {
         $references = @(Get-LeetCodeProblemReferences -SourcePath $sourcePath -IdCatalog $idCatalog | Where-Object { $_.Slug -notin $excludedSlugs })
 
         if ($references.Count -eq 0) {
-            $importanceWeight = Get-ProblemImportanceWeight -Title $fileTitle -Category $category -Pattern $patternName
+            $rowPatternName = Get-PatternOverride -Title $fileTitle -Pattern $patternName
+            $importanceWeight = Get-ProblemImportanceWeight -Title $fileTitle -Category $category -Pattern $rowPatternName
             $priorityWeight = Get-PriorityWeight $priority
             $categoryWeight = Get-CategoryWeight $category
             $rows.Add([pscustomobject]@{
                 Title = $fileTitle
                 Slug = ""
                 File = $relativeFile
-                Pattern = $patternName
+                Pattern = $rowPatternName
                 Category = $category
                 Priority = $priority
                 JavaLink = "../../src/main/java/org/chijai/" + $relativeFile.Replace("\", "/")
@@ -1689,14 +1720,15 @@ function Get-IndexRows {
             $slug = $reference.Slug
             $title = if (-not [string]::IsNullOrWhiteSpace($reference.Title)) { $reference.Title } else { ConvertTo-TitleFromSlug $slug }
             $rowCategory = Get-Category -Pattern $patternName -File $relativeFile -Title $title
-            $importanceWeight = Get-ProblemImportanceWeight -Title $title -Category $rowCategory -Pattern $patternName
+            $rowPatternName = Get-PatternOverride -Title $title -Pattern $patternName
+            $importanceWeight = Get-ProblemImportanceWeight -Title $title -Category $rowCategory -Pattern $rowPatternName
             $priorityWeight = Get-PriorityWeight $priority
             $categoryWeight = Get-CategoryWeight $rowCategory
             $rows.Add([pscustomobject]@{
                 Title = $title
                 Slug = $slug
                 File = $relativeFile
-                Pattern = $patternName
+                Pattern = $rowPatternName
                 Category = $rowCategory
                 Priority = $priority
                 JavaLink = "../../src/main/java/org/chijai/" + $relativeFile.Replace("\", "/")
@@ -2051,6 +2083,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need structure decision | `08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md` | Why Java stays stable while generated docs expose the pattern taxonomy. |
 | Need old static brain map | `DSA_170_Brain_Map_FINAL.md` | Legacy high-signal brain map. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
+| Need after-week continuation | `10_AFTER_7_DAY_EXTENSION_PLAN.md` | Days 8-12 for ranks 151+ and source-only LeetCode extras, with stop/recircle rules. |
 | Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
 ## Current Coverage
@@ -2273,7 +2306,7 @@ function Build-LeetCodeCurriculumToc {
     $lines.Add("")
     $lines.Add("Coverage: $($LeetCodeRows.Count) confirmed LeetCode problems; $rankedCount in the interview-ranked cockpit; $extraCount source-discovered extras; $($categoryGroups.Count) pattern families.")
     $lines.Add("")
-    $lines.Add("Regenerate with `verify-all.ps1` or `dsa-review/scripts/build-interview-cockpit.cmd` after adding or editing Java solution files.")
+    $lines.Add('Regenerate with `verify-all.ps1` or `dsa-review/scripts/build-interview-cockpit.cmd` after adding or editing Java solution files.')
     $lines.Add("")
     $lines.Add("## Curriculum Hierarchy")
     $lines.Add("")
@@ -2392,9 +2425,10 @@ function Build-Plans {
     $answers = New-Link "Crisp Interview Answers" "03_CRISP_INTERVIEW_ANSWERS.md"
     $patterns = New-Link "Pattern Files" "patterns/README.md"
     $preZoom = New-Link "Pre-Zoom RAM Cache" "../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md"
+    $extension = New-Link "Post-7-Day Extension Plan" "10_AFTER_7_DAY_EXTENSION_PLAN.md"
     $lines.Add("Use this when a company asks for a DSA round soon. The goal is interview triage: remove red flags first, then expand coverage by rank.")
     $lines.Add("")
-    $lines.Add("Core files: $ranked, $recall, $answers, $patterns, $preZoom.")
+    $lines.Add("Core files: $ranked, $recall, $answers, $patterns, $preZoom, $extension.")
     $lines.Add("")
     $lines.Add("## If You Have 2 Hours")
     $lines.Add("")
@@ -2423,6 +2457,7 @@ function Build-Plans {
     $lines.Add("- Day 5: Phase 3 plus weakest pattern file.")
     $lines.Add("- Day 6: mock interview, two random Priority A/B drills.")
     $lines.Add("- Day 7: pre-Zoom cache, one-line recall, and no-blunder review.")
+    $lines.Add("- After Day 7: continue with $extension only if ranks 1-100 are mostly GREEN and ranks 1-50 have no repeated RED.")
     $lines.Add("")
     $lines.Add("## What Not To Do")
     $lines.Add("")
@@ -2612,6 +2647,102 @@ function Build-WeeklySprint {
     $lines.Add("Stop accumulating sheets. Shift to performance mode: due spaced reviews -> random unseen/rephrased DSA -> timed coding -> requirement mutation/debugging -> LLD mock -> HLD mock.")
     $lines.Add("")
     $lines.Add('Execution mantra: `MASTER FUNDAMENTALS -> RETRIEVE -> FAIL FAST -> RECORD -> SPACE -> REPAIR -> RANDOMIZE -> MOCK -> INTERVIEW`')
+
+    return ($lines -join "`r`n")
+}
+
+function Add-ExtensionRow {
+    param(
+        [System.Collections.Generic.List[string]] $Lines,
+        [object] $Row
+    )
+
+    $links = New-ProblemLinks -Row $Row
+    $family = Get-DisplayCategory $Row.Category
+    $Lines.Add("| $($Row.Rank) | $(Escape-Md $Row.Title) | $links | $(Escape-Md $family) | $(Escape-Md $Row.Pattern) | $(Escape-Md $Row.Recall) |  |  |  |")
+}
+
+function Add-SourceOnlyExtensionRow {
+    param(
+        [System.Collections.Generic.List[string]] $Lines,
+        [object] $Item
+    )
+
+    $lc = New-Link "LC" "https://leetcode.com/problems/$($Item.Slug)/"
+    $links = @($Item.Files | Sort-Object | ForEach-Object {
+        New-Link ([System.IO.Path]::GetFileName($_)) ("../../src/main/java/org/chijai/" + $_)
+    }) -join ", "
+    $family = Get-DisplayCategory $Item.Category
+    $pattern = if ([string]::IsNullOrWhiteSpace($Item.Pattern)) { $family } else { $Item.Pattern }
+    $Lines.Add("| source-only | $(Escape-Md $Item.Title) | $lc / $links | $(Escape-Md $family) | $(Escape-Md $pattern) | Recursive source reference; derive the invariant from linked Java before promoting it into the ranked cockpit. |  |  |  |")
+}
+
+function Build-PostSevenDayExtensionPlan {
+    param(
+        [object[]] $Rows,
+        [object[]] $LeetCodeRows
+    )
+
+    $rankedTail = @($Rows | Where-Object { [int] $_.Rank -gt 150 } | Sort-Object Rank)
+    $sourceOnly = @($LeetCodeRows | Where-Object { $_.InterviewRank -ge 999999 } | Sort-Object IndexRank)
+    $days = @(
+        @{ Name = "Day 8"; Focus = "finish remaining Phase 4 depth without touching weak fundamentals"; Items = @($rankedTail | Select-Object -Skip 0 -First 15) },
+        @{ Name = "Day 9"; Focus = "pattern transfer across medium-frequency variants"; Items = @($rankedTail | Select-Object -Skip 15 -First 15) },
+        @{ Name = "Day 10"; Focus = "secondary tree, graph, stack, and linked-list variants"; Items = @($rankedTail | Select-Object -Skip 30 -First 15) },
+        @{ Name = "Day 11"; Focus = "lower-ROI but useful breadth; keep attempts timed"; Items = @($rankedTail | Select-Object -Skip 45 -First 15) },
+        @{ Name = "Day 12"; Focus = "ranked cleanup plus recursive source-only LeetCode inventory"; Items = @($rankedTail | Select-Object -Skip 60) }
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# After 7 Days Extension Plan")
+    $lines.Add("")
+    $lines.Add("Purpose: continue after the 7-day sprint without pretending that raw coverage equals interview readiness.")
+    $lines.Add("")
+    $lines.Add("This file is generated from the same ranked metadata and recursive LeetCode source scan as the cockpit.")
+    $lines.Add("")
+    $lines.Add("## Cutoff Rule")
+    $lines.Add("")
+    $lines.Add("- If interview is in 1-2 days: stop new coverage around rank 70 and repair misses.")
+    $lines.Add("- If interview is in 1 week: target ranks 1-150 plus spaced review, not all 220.")
+    $lines.Add("- If interview is in 2+ weeks: finish ranks 151-216 and source-only extras, but only after top 100 recall is stable.")
+    $lines.Add("- If ranks 1-50 contain repeated RED, do not continue this extension. Rebuild fundamentals first.")
+    $lines.Add("")
+    $lines.Add("## Daily Shape")
+    $lines.Add("")
+    $lines.Add('- 09:00-10:00: due reviews from `review/review.json`.')
+    $lines.Add("- 10:00-15:00: 15 new or weak-tail problems, three 18-minute reps per hour.")
+    $lines.Add("- 15:00-16:00: repair the worst three misses from today.")
+    $lines.Add("- 16:00-17:00: one random mock from ranks 1-150 so old fundamentals stay hot.")
+    $lines.Add("")
+
+    foreach ($day in $days) {
+        $lines.Add("---")
+        $lines.Add("")
+        $lines.Add("## $($day.Name) - $($day.Focus)")
+        $lines.Add("")
+        $lines.Add("| Rank | Problem | Links | Family | Pattern | Signal / Invariant | Score | Failure | Next Review |")
+        $lines.Add("|---:|---|---|---|---|---|---|---|---|")
+        foreach ($row in $day.Items) {
+            Add-ExtensionRow -Lines $lines -Row $row
+        }
+
+        if ($day.Name -eq "Day 12" -and $sourceOnly.Count -gt 0) {
+            foreach ($item in $sourceOnly) {
+                Add-SourceOnlyExtensionRow -Lines $lines -Item $item
+            }
+        }
+
+        $lines.Add("")
+        $lines.Add("End-of-day gate: new attempted __; GREEN __; YELLOW __; RED __; carry-forward repair __.")
+        $lines.Add("")
+    }
+
+    $lines.Add("## Recircling Rule")
+    $lines.Add("")
+    $lines.Add("- After ranks 1-216 are touched once, stop adding lists.")
+    $lines.Add("- Recircle by weakest signal: repeated RED -> old YELLOW -> random rank 1-150 mock -> source-only extras.")
+    $lines.Add("- A problem graduates only when you can explain brute force -> bottleneck -> pattern -> invariant -> code -> dry run without opening Java.")
+    $lines.Add("- The target is fast retrieval and adaptation, not finishing a file.")
 
     return ($lines -join "`r`n")
 }
@@ -3256,6 +3387,7 @@ Write-TextFile -Path (Join-Path $outDir "06_REVIEW_DASHBOARD.md") -Content (Buil
 Write-TextFile -Path (Join-Path $outDir "07_LEETCODE_SOLVED_INDEX.md") -Content (Build-LeetCodeSolvedIndex -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md") -Content (Build-ProjectStructureGuide -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "09_LEETCODE_CURRICULUM_TOC.md") -Content (Build-LeetCodeCurriculumToc -LeetCodeRows $leetcodeIndexRows)
+Write-TextFile -Path (Join-Path $outDir "10_AFTER_7_DAY_EXTENSION_PLAN.md") -Content (Build-PostSevenDayExtensionPlan -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"

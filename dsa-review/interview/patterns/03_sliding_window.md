@@ -19,7 +19,7 @@ flowchart TD
   Invariant["INVARIANT<br/>Brute force checks all substrings/subarrays; a window reuses counts while boundaries move once."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 113: Count Number Of Nice Subarrays"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 115: Count Number Of Nice Subarrays"]
   Invariant --> Sub02["SUB-PATTERN<br/>Sliding window<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 49: Longest Substring With At Most K Distinct Characters"]
   Invariant --> Sub03["SUB-PATTERN<br/>Sliding window / need-have<br/>5 problem(s)"]
@@ -43,8 +43,8 @@ flowchart TD
 | 51 | Phase 2 - Strong Core | Permutation In String | Sliding window / need-have | [Java](../../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java) | [LC](https://leetcode.com/problems/permutation-in-string/) | A fixed-size window is a permutation when its frequency counts match the target. | Track counts/matches for window length s1, slide one char in and one char out. |
 | 56 | Phase 2 - Strong Core | Find All Anagrams In A String | Sliding window frequency | [Java](../../../src/main/java/org/chijai/day3/session3/FindAllAnagramsInAString.java) | [LC](https://leetcode.com/problems/find-all-anagrams-in-a-string/) | Slide a fixed-size frequency window and record starts where counts match p. | Maintain difference counts or match count across a window of length p. |
 | 64 | Phase 2 - Strong Core | Substring With Concatenation Of All Words | Sliding window / need-have | [Java](../../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java) | [LC](https://leetcode.com/problems/substring-with-concatenation-of-all-words/) | Scan word-sized windows by offset and keep word counts bounded by need. | For each offset, move in wordLen steps, count words, shrink when a word is overused. |
-| 113 | Phase 4 - Secondary | Count Number Of Nice Subarrays | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/count-number-of-nice-subarrays/) | Exactly k odds equals atMost(k) minus atMost(k-1), or prefix count of odd count. | Count subarrays with at most k odd numbers using a sliding left pointer, subtract atMost(k-1). |
-| 114 | Phase 4 - Secondary | Minimum Size Subarray Sum | Sliding window / need-have | [Java](../../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java) | [LC](https://leetcode.com/problems/minimum-size-subarray-sum/) | For positive numbers, expand until sum >= target, then shrink to minimize length. | Add right to sum, while sum >= target update min and subtract left. |
+| 115 | Phase 4 - Secondary | Count Number Of Nice Subarrays | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/count-number-of-nice-subarrays/) | Exactly k odds equals atMost(k) minus atMost(k-1), or prefix count of odd count. | Count subarrays with at most k odd numbers using a sliding left pointer, subtract atMost(k-1). |
+| 116 | Phase 4 - Secondary | Minimum Size Subarray Sum | Sliding window / need-have | [Java](../../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java) | [LC](https://leetcode.com/problems/minimum-size-subarray-sum/) | For positive numbers, expand until sum >= target, then shrink to minimize length. | Add right to sum, while sum >= target update min and subtract left. |
 
 ## Drill
 

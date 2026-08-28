@@ -19,7 +19,7 @@ flowchart TD
   Invariant["INVARIANT<br/>DFS finds a path, but BFS gives shortest path when every edge has equal cost."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>BFS + sorting<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 127: K Highest Ranked Items Within A Price Range"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 129: K Highest Ranked Items Within A Price Range"]
   Invariant --> Sub02["SUB-PATTERN<br/>BFS shortest path<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 21: Word Ladder"]
   Invariant --> Sub03["SUB-PATTERN<br/>Dijkstra / graph<br/>1 problem(s)"]
@@ -40,7 +40,7 @@ flowchart TD
 | 32 | Phase 2 - Strong Core | 01 Matrix | Multi-source BFS | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | [LC](https://leetcode.com/problems/01-matrix/) | Start BFS from all zero cells; first visit gives nearest-zero distance. | Queue every zero with distance 0, then relax unvisited neighbors to dist+1. |
 | 73 | Phase 3 - Important | Network Delay Time | Dijkstra / graph | [Java](../../../src/main/java/org/chijai/day8/graph/session2/NetworkDelayTime.java) | [LC](https://leetcode.com/problems/network-delay-time/) | Dijkstra keeps the next shortest unsettled node in a min-heap. | Build adjacency, push source distance 0, relax neighbors when a smaller distance is found. |
 | 81 | Phase 3 - Important | Number Of Provinces | Matrix DFS/BFS components | [Java](../../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LC](https://leetcode.com/problems/number-of-provinces/) | Each DFS/BFS from an unvisited city marks one connected province. | Scan cities; when unvisited, count province and traverse connected cities from adjacency matrix. |
-| 127 | Phase 4 - Secondary | K Highest Ranked Items Within A Price Range | BFS + sorting | [Java](../../../src/main/java/org/chijai/day8/graph/session3/KHighestRankedItemsWithinAPriceRange.java) | [LC](https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/) | BFS by distance, collecting valid items and sorting tie-breaks by price,row,col. | BFS from start through passable cells; collect price-in-range items with distance and sort ranking. |
+| 129 | Phase 4 - Secondary | K Highest Ranked Items Within A Price Range | BFS + sorting | [Java](../../../src/main/java/org/chijai/day8/graph/session3/KHighestRankedItemsWithinAPriceRange.java) | [LC](https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/) | BFS by distance, collecting valid items and sorting tie-breaks by price,row,col. | BFS from start through passable cells; collect price-in-range items with distance and sort ranking. |
 
 ## Drill
 

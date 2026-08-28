@@ -24,6 +24,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need structure decision | `08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md` | Why Java stays stable while generated docs expose the pattern taxonomy. |
 | Need old static brain map | `DSA_170_Brain_Map_FINAL.md` | Legacy high-signal brain map. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
+| Need after-week continuation | `10_AFTER_7_DAY_EXTENSION_PLAN.md` | Days 8-12 for ranks 151+ and source-only LeetCode extras, with stop/recircle rules. |
 | Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
 ## Current Coverage

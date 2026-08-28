@@ -23,6 +23,7 @@ $requiredFiles = @(
     "07_LEETCODE_SOLVED_INDEX.md",
     "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md",
     "09_LEETCODE_CURRICULUM_TOC.md",
+    "10_AFTER_7_DAY_EXTENSION_PLAN.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -302,6 +303,21 @@ if ($readmeText -notmatch '07_LEETCODE_SOLVED_INDEX\.md') {
 }
 if ($readmeText -notmatch '09_LEETCODE_CURRICULUM_TOC\.md') {
     Fail "main README does not link to the nested LeetCode curriculum TOC"
+}
+if ($readmeText -notmatch '10_AFTER_7_DAY_EXTENSION_PLAN\.md') {
+    Fail "main README does not link to the post-7-day extension plan"
+}
+
+$extensionPath = Join-Path $interviewRoot "10_AFTER_7_DAY_EXTENSION_PLAN.md"
+$extensionText = Get-Content -LiteralPath $extensionPath -Raw
+foreach ($requiredExtensionPhrase in @("## Cutoff Rule", "## Day 8", "## Day 12", "source-only", "## Recircling Rule")) {
+    if ($extensionText -notmatch [regex]::Escape($requiredExtensionPhrase)) {
+        Fail "post-7-day extension plan is missing: $requiredExtensionPhrase"
+    }
+}
+$extensionRankRows = @([regex]::Matches($extensionText, '(?m)^\| (?<rank>\d{3}) \|'))
+if ($extensionRankRows.Count -lt 60) {
+    Fail "expected extension plan to contain at least 60 ranked tail rows, found $($extensionRankRows.Count)"
 }
 
 $mindMapText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_DSA_MIND_MAP.md") -Raw

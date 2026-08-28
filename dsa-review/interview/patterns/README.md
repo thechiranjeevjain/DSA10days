@@ -11,21 +11,21 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 | 3 | Sliding Window | 9 | 3 | 2 | 5 | 0 | 2 | [03_sliding_window.md](03_sliding_window.md) |
 | 4 | Prefix Sum / Prefix-Suffix | 2 | 4 | 1 | 1 | 0 | 0 | [04_prefix_suffix.md](04_prefix_suffix.md) |
 | 5 | Linked List Pointers | 17 | 6 | 6 | 7 | 3 | 1 | [05_linked_list.md](05_linked_list.md) |
-| 6 | Two Pointers | 6 | 10 | 4 | 1 | 0 | 1 | [06_two_pointers.md](06_two_pointers.md) |
+| 6 | Two Pointers | 8 | 10 | 4 | 1 | 0 | 3 | [06_two_pointers.md](06_two_pointers.md) |
 | 7 | Tree BFS / Level Order | 2 | 15 | 1 | 1 | 0 | 0 | [07_tree_bfs.md](07_tree_bfs.md) |
 | 8 | Tree DFS / Recursion | 33 | 16 | 6 | 3 | 8 | 16 | [08_tree_dfs.md](08_tree_dfs.md) |
 | 9 | Graph DFS / Components | 12 | 18 | 1 | 2 | 3 | 6 | [09_graph_dfs.md](09_graph_dfs.md) |
 | 10 | Topological Sort | 9 | 19 | 2 | 0 | 1 | 6 | [10_topological_sort.md](10_topological_sort.md) |
 | 11 | Graph BFS / Shortest Path | 6 | 21 | 1 | 2 | 2 | 1 | [11_graph_bfs.md](11_graph_bfs.md) |
-| 12 | Dynamic Programming | 32 | 33 | 0 | 5 | 3 | 24 | [12_dynamic_programming.md](12_dynamic_programming.md) |
+| 12 | Dynamic Programming | 29 | 33 | 0 | 5 | 3 | 21 | [12_dynamic_programming.md](12_dynamic_programming.md) |
 | 13 | Backtracking / Combinatorial DFS | 6 | 35 | 0 | 3 | 0 | 3 | [13_backtracking.md](13_backtracking.md) |
 | 14 | Stack / Monotonic Stack | 17 | 36 | 0 | 3 | 5 | 9 | [14_stack.md](14_stack.md) |
 | 15 | Heap / Priority Queue | 11 | 37 | 0 | 2 | 3 | 6 | [15_heap.md](15_heap.md) |
-| 16 | Intervals / Sorting Greedy | 6 | 39 | 0 | 2 | 0 | 4 | [16_intervals_greedy.md](16_intervals_greedy.md) |
+| 16 | Intervals / Sorting Greedy | 7 | 39 | 0 | 2 | 0 | 5 | [16_intervals_greedy.md](16_intervals_greedy.md) |
 | 17 | Trie | 14 | 40 | 0 | 1 | 2 | 11 | [17_trie.md](17_trie.md) |
 | 18 | Union Find / DSU | 1 | 76 | 0 | 0 | 1 | 0 | [18_union_find.md](18_union_find.md) |
 | 19 | Math / Bit / String | 7 | 109 | 0 | 0 | 1 | 6 | [19_math_bit_string.md](19_math_bit_string.md) |
-| 20 | Basics / Implementation | 3 | 158 | 0 | 0 | 0 | 3 | [20_core_basics.md](20_core_basics.md) |
+| 20 | Basics / Implementation | 3 | 161 | 0 | 0 | 0 | 3 | [20_core_basics.md](20_core_basics.md) |
 | 21 | Design Data Structures | 5 | 208 | 0 | 0 | 0 | 5 | [21_design_lld.md](21_design_lld.md) |
 
 Total ranked entries: 216
