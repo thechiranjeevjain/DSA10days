@@ -2015,6 +2015,7 @@ function Build-ProjectStructureGuide {
     $lines.Add("| Path | Responsibility |")
     $lines.Add("|---|---|")
     $lines.Add('| `../../src/main/java/org/chijai` | Java source of truth, package structure, tests, and implementation history. |')
+    $lines.Add('| `../../src/main/java/org/chijai/patterns` | Additive pattern-lab package: reusable skeletons for visualizing common frames across problems. Do not move existing solved files into it. |')
     $lines.Add('| `../notes/PROBLEM_PATTERN_INDEX.md` | Curated mapping from Java files to pattern metadata and priority. |')
     $lines.Add('| `../notes/LEETCODE_ID_CATALOG.csv` | Local catalog for explicit `LC 123` references found in Java source. |')
     $lines.Add('| `01_ZERO_TO_HERO_RANKED_TABLE.md` | Interview-ROI order. |')
@@ -2049,6 +2050,8 @@ function Build-ProjectStructureGuide {
     }
     $lines.Add("")
     $lines.Add("When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.")
+    $lines.Add("")
+    $lines.Add("Use `../../src/main/java/org/chijai/patterns` only for pattern labs: one small reusable skeleton per high-ROI family, with tests proving the frame. This helps compare commonality and variation without breaking existing package links.")
     return ($lines -join "`r`n")
 }
 
@@ -2083,6 +2086,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need structure decision | `08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md` | Why Java stays stable while generated docs expose the pattern taxonomy. |
 | Need old static brain map | `DSA_170_Brain_Map_FINAL.md` | Legacy high-signal brain map. |
 | Need one-week execution | `DSA_7-Day_Interview_Performance_Sprint.md` | Timed closed-book weekly sprint with review columns. |
+| Following the legacy 90-problem hourly plan | `11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md` | Decision gate for recircling the 90 vs extending to 150/170+ and whether extra leave is justified. |
 | Need after-week continuation | `10_AFTER_7_DAY_EXTENSION_PLAN.md` | Days 8-12 for ranks 151+ and source-only LeetCode extras, with stop/recircle rules. |
 | Need review control panel | `06_REVIEW_DASHBOARD.md` | Dynamic due/red/yellow/mastered queues from `../../review/review.json`. |
 
@@ -2426,9 +2430,10 @@ function Build-Plans {
     $patterns = New-Link "Pattern Files" "patterns/README.md"
     $preZoom = New-Link "Pre-Zoom RAM Cache" "../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md"
     $extension = New-Link "Post-7-Day Extension Plan" "10_AFTER_7_DAY_EXTENSION_PLAN.md"
+    $activeNinety = New-Link "Active 90-Problem Cutoff Plan" "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md"
     $lines.Add("Use this when a company asks for a DSA round soon. The goal is interview triage: remove red flags first, then expand coverage by rank.")
     $lines.Add("")
-    $lines.Add("Core files: $ranked, $recall, $answers, $patterns, $preZoom, $extension.")
+    $lines.Add("Core files: $ranked, $recall, $answers, $patterns, $preZoom, $extension, $activeNinety.")
     $lines.Add("")
     $lines.Add("## If You Have 2 Hours")
     $lines.Add("")
@@ -2458,6 +2463,7 @@ function Build-Plans {
     $lines.Add("- Day 6: mock interview, two random Priority A/B drills.")
     $lines.Add("- Day 7: pre-Zoom cache, one-line recall, and no-blunder review.")
     $lines.Add("- After Day 7: continue with $extension only if ranks 1-100 are mostly GREEN and ranks 1-50 have no repeated RED.")
+    $lines.Add("- If you are following the legacy 90-problem hourly plan, use $activeNinety as the gate before adding more leave or new coverage.")
     $lines.Add("")
     $lines.Add("## What Not To Do")
     $lines.Add("")
@@ -2743,6 +2749,77 @@ function Build-PostSevenDayExtensionPlan {
     $lines.Add("- Recircle by weakest signal: repeated RED -> old YELLOW -> random rank 1-150 mock -> source-only extras.")
     $lines.Add("- A problem graduates only when you can explain brute force -> bottleneck -> pattern -> invariant -> code -> dry run without opening Java.")
     $lines.Add("- The target is fast retrieval and adaptation, not finishing a file.")
+
+    return ($lines -join "`r`n")
+}
+
+function Build-ActiveNinetyPlanCutoff {
+    param([object[]] $Rows)
+
+    $ranked = New-Link "Zero To Hero Ranked Table" "01_ZERO_TO_HERO_RANKED_TABLE.md"
+    $extension = New-Link "After 7 Days Extension Plan" "10_AFTER_7_DAY_EXTENSION_PLAN.md"
+    $legacyPlan = New-Link "DSA_7-Day_Hourly_WIN_FINAL_v15_HighSignal_Pattern_Triggers.md" "DSA_7-Day_Hourly_WIN_FINAL_v15_HighSignal_Pattern_Triggers.md"
+    $reviewDashboard = New-Link "Review Dashboard" "06_REVIEW_DASHBOARD.md"
+    $patternLabsGuide = New-Link "Project Structure And Pattern Tree" "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md"
+    $top90 = @($Rows | Sort-Object Rank | Select-Object -First 90)
+    $top150 = @($Rows | Sort-Object Rank | Select-Object -First 150)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# Active 90-Problem Plan Cutoff And Extension")
+    $lines.Add("")
+    $lines.Add("Use this because the active plan you are following is $legacyPlan. Do not edit that file while it is in use; treat this file as the companion decision gate.")
+    $lines.Add("")
+    $lines.Add("The goal is not to finish every problem. The goal is to remove interview red flags: recognition, invariant, implementation, dry run, and explanation.")
+    $lines.Add("")
+    $lines.Add("## Main Decision")
+    $lines.Add("")
+    $lines.Add("| Situation after the 90-plan | Action | Extra office leave? |")
+    $lines.Add("|---|---|---|")
+    $lines.Add("| Top 50 has repeated RED or pattern confusion | Recircle only top 50 and repair with review queue | No. Leave will become passive rereading. |")
+    $lines.Add("| Top 50 GREEN, ranks 51-90 mixed YELLOW/RED | Recircle 51-90 plus weakest pattern files | Maybe half-day only if interview is within 2-3 days. |")
+    $lines.Add("| Top 90 mostly GREEN/YELLOW and no repeated RED in top 50 | Extend to ranks 91-150 | Yes, 1-2 focused leave days can help. |")
+    $lines.Add("| Top 150 mostly GREEN and interview is still 2+ weeks away | Extend to rank 170+ and source-only extras | Optional. Use leave only for mocks and repair. |")
+    $lines.Add("")
+    $lines.Add("## Cutoff Numbers")
+    $lines.Add("")
+    $lines.Add("- Minimum interview-safe floor: ranks 1-70 should be fast and defensible.")
+    $lines.Add("- Strong 1-week target: the active 90-plan plus honest review state.")
+    $lines.Add("- Senior no-red-flag target: ranks 1-150 touched hands-on, with top 100 stable.")
+    $lines.Add("- Breadth target: ranks 151-216 and source-only extras after fundamentals are already reliable.")
+    $lines.Add("")
+    $lines.Add("## After The 90 Problems")
+    $lines.Add("")
+    $lines.Add("1. Open $reviewDashboard and list RED/YELLOW items.")
+    $lines.Add("2. Randomly pick five problems from ranks 1-90 without category hints.")
+    $lines.Add("3. For each one, speak brute force -> bottleneck -> pattern -> invariant -> code -> dry run.")
+    $lines.Add("4. Code two misses from blank.")
+    $lines.Add("5. Decide from the table above: recircle, extend to 150, or extend to 170+.")
+    $lines.Add("")
+    $lines.Add("## If You Are Behind By One Day")
+    $lines.Add("")
+    $lines.Add("- Do not compress two full days into one long day.")
+    $lines.Add("- Keep due reviews, then do the next scheduled high-signal blocks.")
+    $lines.Add("- Drop lowest-ROI new coverage before dropping repair.")
+    $lines.Add("- Use the final day for mocks and repair, not panic coverage.")
+    $lines.Add("")
+    $lines.Add("## Extension Path")
+    $lines.Add("")
+    $lines.Add("- Ranks 91-150: use $ranked and continue in order when the 90-plan gate passes.")
+    $lines.Add("- Ranks 151+: use $extension.")
+    $lines.Add("- Pattern visualization and project-structure decision: use $patternLabsGuide.")
+    $lines.Add("")
+    $lines.Add("## 90-Plan Coverage Snapshot")
+    $lines.Add("")
+    $lines.Add("| Band | Count | Expected quality |")
+    $lines.Add("|---|---:|---|")
+    $lines.Add("| Ranks 1-50 inside current top 90 | $(@($top90 | Where-Object { $_.Rank -le 50 }).Count) | Must be mostly GREEN. |")
+    $lines.Add("| Ranks 51-90 inside current top 90 | $(@($top90 | Where-Object { $_.Rank -gt 50 }).Count) | GREEN/YELLOW is acceptable if top 50 is stable. |")
+    $lines.Add("| Ranks 91-150 extension | $(@($top150 | Where-Object { $_.Rank -gt 90 }).Count) | Add only after top 90 gate passes. |")
+    $lines.Add("| Ranks 151+ extension | $(@($Rows | Where-Object { $_.Rank -gt 150 }).Count) | Breadth and long-tail practice. |")
+    $lines.Add("")
+    $lines.Add("## Do Not Move The Current Plan")
+    $lines.Add("")
+    $lines.Add("Keep $legacyPlan unchanged while you are executing it. Add decisions here and in the review dashboard instead of rewriting the active schedule mid-run.")
 
     return ($lines -join "`r`n")
 }
@@ -3388,6 +3465,7 @@ Write-TextFile -Path (Join-Path $outDir "07_LEETCODE_SOLVED_INDEX.md") -Content 
 Write-TextFile -Path (Join-Path $outDir "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md") -Content (Build-ProjectStructureGuide -Groups $patternGroups)
 Write-TextFile -Path (Join-Path $outDir "09_LEETCODE_CURRICULUM_TOC.md") -Content (Build-LeetCodeCurriculumToc -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "10_AFTER_7_DAY_EXTENSION_PLAN.md") -Content (Build-PostSevenDayExtensionPlan -Rows $rows -LeetCodeRows $leetcodeIndexRows)
+Write-TextFile -Path (Join-Path $outDir "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md") -Content (Build-ActiveNinetyPlanCutoff -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"

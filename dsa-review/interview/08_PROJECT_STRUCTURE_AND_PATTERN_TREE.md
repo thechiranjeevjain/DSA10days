@@ -7,6 +7,7 @@ Do not physically move Java files to match the pattern taxonomy. Keep source cod
 | Path | Responsibility |
 |---|---|
 | `../../src/main/java/org/chijai` | Java source of truth, package structure, tests, and implementation history. |
+| `../../src/main/java/org/chijai/patterns` | Additive pattern-lab package: reusable skeletons for visualizing common frames across problems. Do not move existing solved files into it. |
 | `../notes/PROBLEM_PATTERN_INDEX.md` | Curated mapping from Java files to pattern metadata and priority. |
 | `../notes/LEETCODE_ID_CATALOG.csv` | Local catalog for explicit `LC 123` references found in Java source. |
 | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Interview-ROI order. |
@@ -58,3 +59,5 @@ TOPIC
 | Design Data Structures | 5 | 208 | [21_design_lld.md](patterns/21_design_lld.md) |
 
 When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.
+
+Use ../../src/main/java/org/chijai/patterns only for pattern labs: one small reusable skeleton per high-ROI family, with tests proving the frame. This helps compare commonality and variation without breaking existing package links.

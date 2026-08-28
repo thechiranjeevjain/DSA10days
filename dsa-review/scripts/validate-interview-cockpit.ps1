@@ -24,6 +24,7 @@ $requiredFiles = @(
     "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md",
     "09_LEETCODE_CURRICULUM_TOC.md",
     "10_AFTER_7_DAY_EXTENSION_PLAN.md",
+    "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -307,6 +308,9 @@ if ($readmeText -notmatch '09_LEETCODE_CURRICULUM_TOC\.md') {
 if ($readmeText -notmatch '10_AFTER_7_DAY_EXTENSION_PLAN\.md') {
     Fail "main README does not link to the post-7-day extension plan"
 }
+if ($readmeText -notmatch '11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION\.md') {
+    Fail "main README does not link to the active 90-problem cutoff plan"
+}
 
 $extensionPath = Join-Path $interviewRoot "10_AFTER_7_DAY_EXTENSION_PLAN.md"
 $extensionText = Get-Content -LiteralPath $extensionPath -Raw
@@ -318,6 +322,14 @@ foreach ($requiredExtensionPhrase in @("## Cutoff Rule", "## Day 8", "## Day 12"
 $extensionRankRows = @([regex]::Matches($extensionText, '(?m)^\| (?<rank>\d{3}) \|'))
 if ($extensionRankRows.Count -lt 60) {
     Fail "expected extension plan to contain at least 60 ranked tail rows, found $($extensionRankRows.Count)"
+}
+
+$activeNinetyPath = Join-Path $interviewRoot "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md"
+$activeNinetyText = Get-Content -LiteralPath $activeNinetyPath -Raw
+foreach ($requiredNinetyPhrase in @("## Main Decision", "## Cutoff Numbers", "## After The 90 Problems", "Do not edit that file while it is in use", "ranks 91-150", "ranks 151+")) {
+    if ($activeNinetyText -notmatch [regex]::Escape($requiredNinetyPhrase)) {
+        Fail "active 90-problem cutoff plan is missing: $requiredNinetyPhrase"
+    }
 }
 
 $mindMapText = Get-Content -LiteralPath (Join-Path $interviewRoot "00_DSA_MIND_MAP.md") -Raw

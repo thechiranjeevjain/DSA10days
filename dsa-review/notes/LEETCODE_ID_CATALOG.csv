@@ -20,6 +20,7 @@ id,slug,title
 139,word-break,Word Break
 163,missing-ranges,Missing Ranges
 167,two-sum-ii-input-array-is-sorted,Two Sum II - Input Array Is Sorted
+169,majority-element,Majority Element
 188,best-time-to-buy-and-sell-stock-iv,Best Time to Buy and Sell Stock IV
 198,house-robber,House Robber
 204,count-primes,Count Primes

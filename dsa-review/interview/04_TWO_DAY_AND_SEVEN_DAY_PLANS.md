@@ -2,7 +2,7 @@
 
 Use this when a company asks for a DSA round soon. The goal is interview triage: remove red flags first, then expand coverage by rank.
 
-Core files: [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md), [One-Line Recall](02_ONE_LINE_RECALL_ALL_PROBLEMS.md), [Crisp Interview Answers](03_CRISP_INTERVIEW_ANSWERS.md), [Pattern Files](patterns/README.md), [Pre-Zoom RAM Cache](../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md), [Post-7-Day Extension Plan](10_AFTER_7_DAY_EXTENSION_PLAN.md).
+Core files: [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md), [One-Line Recall](02_ONE_LINE_RECALL_ALL_PROBLEMS.md), [Crisp Interview Answers](03_CRISP_INTERVIEW_ANSWERS.md), [Pattern Files](patterns/README.md), [Pre-Zoom RAM Cache](../notes/PRE_ZOOM_INTERVIEW_RAM_CACHE.md), [Post-7-Day Extension Plan](10_AFTER_7_DAY_EXTENSION_PLAN.md), [Active 90-Problem Cutoff Plan](11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md).
 
 ## If You Have 2 Hours
 
@@ -32,6 +32,7 @@ Core files: [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md), [One-L
 - Day 6: mock interview, two random Priority A/B drills.
 - Day 7: pre-Zoom cache, one-line recall, and no-blunder review.
 - After Day 7: continue with [Post-7-Day Extension Plan](10_AFTER_7_DAY_EXTENSION_PLAN.md) only if ranks 1-100 are mostly GREEN and ranks 1-50 have no repeated RED.
+- If you are following the legacy 90-problem hourly plan, use [Active 90-Problem Cutoff Plan](11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md) as the gate before adding more leave or new coverage.
 
 ## What Not To Do
 

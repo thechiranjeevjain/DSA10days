@@ -22,12 +22,13 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 4. For visual retrieval, use `interview/00_DSA_MIND_MAP.md`.
 5. For the complete recursive LeetCode source index, use `interview/07_LEETCODE_SOLVED_INDEX.md`.
 6. For structure decisions, use `interview/08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md`.
-7. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
-8. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
-9. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-10. For weak-topic focus, open `interview/patterns/README.md`.
-11. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-12. After a miss, run the review command and mark the item honestly.
+7. If you are following the legacy 90-problem hourly plan, use `interview/11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md`.
+8. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
+9. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
+10. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
+11. For weak-topic focus, open `interview/patterns/README.md`.
+12. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+13. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 
