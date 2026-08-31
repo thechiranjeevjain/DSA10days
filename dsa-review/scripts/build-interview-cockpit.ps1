@@ -2076,6 +2076,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 2 days | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 60 with implementation drills. |
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
+| Need horizontal pattern discrimination | `../horizontal/README.md` | Winner pattern, near-misses, minimal mutations, and CROSSDRILL. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
@@ -3436,9 +3437,483 @@ function Build-PatternFile {
     return ($lines -join "`r`n")
 }
 
+function New-HorizontalSwitch {
+    param(
+        [string] $Pattern,
+        [string] $WhyNot,
+        [string] $Missing,
+        [string] $Mutation,
+        [string] $NowWhy
+    )
+
+    return [pscustomobject]@{
+        Pattern = $Pattern
+        WhyNot = $WhyNot
+        Missing = $Missing
+        Mutation = $Mutation
+        NowWhy = $NowWhy
+    }
+}
+
+function Get-HorizontalSwitches {
+    param([string] $Category)
+
+    switch ($Category) {
+        "HashMap/HashSet" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "Order is not giving a safe elimination rule." -Missing "Sorted ends, palindrome symmetry, or shrinkable pair bounds." -Mutation "Make the input sorted and ask for one pair or in-place validation." -NowWhy "A left/right move can discard impossible pairs without storing all seen values."),
+                (New-HorizontalSwitch -Pattern "Sliding Window" -WhyNot "The chosen elements are not required to be contiguous." -Missing "A contiguous region with a validity condition that can be repaired by moving left." -Mutation "Change the output to longest/shortest contiguous subarray or substring satisfying the same count rule." -NowWhy "Counts become window state instead of global seen state.")
+            )
+        }
+        "Two Pointers" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "Two pointers need sorted order or end symmetry to justify discarding one side." -Missing "Direct complement or membership lookup on unsorted data." -Mutation "Remove sorted order but keep one-pair existence or index output." -NowWhy "A map remembers prior values and answers complement lookup in O(1)."),
+                (New-HorizontalSwitch -Pattern "Sliding Window" -WhyNot "Pointers are not maintaining one contiguous valid region." -Missing "Window validity that changes predictably when right enters and left leaves." -Mutation "Ask for longest/shortest contiguous segment with a maintainable condition." -NowWhy "The answer can be updated while each boundary moves once.")
+            )
+        }
+        "Sliding Window" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Prefix/Suffix" -WhyNot "The window is useful only while the condition can be repaired monotonically." -Missing "Need to count arbitrary subarrays or answer many range aggregates." -Mutation "Ask for number of subarrays with exact sum over arbitrary integers, or many range sum queries." -NowWhy "Prefix state compares current aggregate with previous aggregates without relying on shrink validity."),
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "A plain map alone does not encode contiguous boundaries." -Missing "No contiguous output; only lookup, frequency, or complement membership." -Mutation "Change the output from substring/subarray length/count to existence of a matching value or global frequency." -NowWhy "The boundary invariant disappears and O(1) lookup is the main operation.")
+            )
+        }
+        "Prefix/Suffix" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Sliding Window" -WhyNot "Prefix handles repeated aggregates, but not every range condition is shrinkable." -Missing "Nonnegative or monotonic window state that becomes valid/invalid predictably." -Mutation "Constrain values to nonnegative and ask for shortest/longest contiguous range by sum." -NowWhy "Moving left only reduces sum, so a window can repair validity."),
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "There is no sequence of choices; the state is only accumulated aggregate." -Missing "Optimal substructure with decisions that lead to repeated future states." -Mutation "Ask for best score/min cost over choices at each index." -NowWhy "The answer depends on previous decision states, not just one cumulative prefix.")
+            )
+        }
+        "Binary Search" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "Binary search needs a sorted target index or monotonic yes/no predicate." -Missing "Pair/end search where moving one boundary safely eliminates candidates." -Mutation "Ask for a pair in a sorted array instead of minimum feasible answer." -NowWhy "Sum comparison tells which end cannot participate."),
+                (New-HorizontalSwitch -Pattern "Heap" -WhyNot "Heap gives next best candidate; it does not exploit a monotonic feasible range." -Missing "Need repeated min/max frontier extraction." -Mutation "Change the output to top k / kth / streaming next best." -NowWhy "Priority order, not predicate monotonicity, drives the workload.")
+            )
+        }
+        "Linked List" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "A set can detect identity but does not perform pointer rewiring." -Missing "Need membership lookup rather than structural mutation." -Mutation "Ask only whether a node repeats/intersects, allowing extra memory." -NowWhy "Identity lookup is enough and avoids pointer algebra."),
+                (New-HorizontalSwitch -Pattern "Stack" -WhyNot "Stack reverses access order, but linked-list mutation needs stable next/prev handling." -Missing "Most recent unmatched item or reverse-order processing." -Mutation "Ask to validate nested tokens or process nodes in reverse without in-place mutation." -NowWhy "LIFO order becomes the natural invariant.")
+            )
+        }
+        "Tree BFS" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Tree DFS" -WhyNot "BFS is chosen because level order or nearest layer is part of the output." -Missing "A subtree return contract such as height, validity, path, or aggregate." -Mutation "Ask for diameter, balance, max depth, or LCA instead of per-level output." -NowWhy "A recursive helper can combine left/right answers bottom-up."),
+                (New-HorizontalSwitch -Pattern "Graph BFS" -WhyNot "Tree BFS has no revisits unless parent links or extra edges are introduced." -Missing "General graph neighbors and visited state." -Mutation "Add parent pointers, undirected edges, or shortest path between arbitrary nodes." -NowWhy "Visited state and shortest-path layering become mandatory.")
+            )
+        }
+        "Tree DFS" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Tree BFS" -WhyNot "DFS is chosen when the result is a subtree/path return, not a level boundary." -Missing "Output grouped by level, nearest depth, or first node seen at each layer." -Mutation "Ask for level order, right side view by level, or minimum tree depth." -NowWhy "Queue-size snapshots preserve level boundaries naturally."),
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "A tree helper may be DP-like, but there are no overlapping subproblems in a normal tree." -Missing "Repeated states reachable by multiple paths." -Mutation "Turn the structure into a DAG/grid with repeated state queries." -NowWhy "Caching state results prevents recomputation.")
+            )
+        }
+        "Graph BFS" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Graph DFS" -WhyNot "DFS can find a path, but not necessarily the shortest unweighted path first." -Missing "Only component ownership, reachability, or exhaustive path exploration." -Mutation "Change output from minimum steps to number of components or whether a path exists." -NowWhy "Depth-first ownership is simpler when layer distance is irrelevant."),
+                (New-HorizontalSwitch -Pattern "Union Find" -WhyNot "Union-Find cannot produce distances or actual BFS layers." -Missing "Only connectivity under merges." -Mutation "Ask whether two nodes are connected after edges are added." -NowWhy "Component parent state answers connectivity cheaply.")
+            )
+        }
+        "Graph DFS" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Graph BFS" -WhyNot "DFS does not guarantee minimum edge count in an unweighted graph." -Missing "Shortest path, nearest target, or simultaneous wave expansion." -Mutation "Ask for minimum transformations, minutes, or nearest zero/source." -NowWhy "First discovery by BFS layer is the shortest answer."),
+                (New-HorizontalSwitch -Pattern "Topological Sort" -WhyNot "Plain DFS reachability does not enforce prerequisite order as output." -Missing "Directed dependencies where nodes unlock after prerequisites." -Mutation "Ask for a valid processing order or cycle detection in prerequisites." -NowWhy "Indegree or DFS state tracks dependency constraints.")
+            )
+        }
+        "Topological Sort" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Graph DFS" -WhyNot "Reachability alone can visit dependents before prerequisites." -Missing "Only explore components/cycles without needing a valid order." -Mutation "Ask whether all nodes in an undirected graph are reachable or whether a component exists." -NowWhy "Visited DFS answers ownership without indegree bookkeeping."),
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Topo order is about dependency unlocking, not optimizing choices by state." -Missing "Repeated optimal subproblem values over a DAG or sequence." -Mutation "Ask for longest path/count of ways in a DAG." -NowWhy "Topo order becomes a fill order for DP states.")
+            )
+        }
+        "Stack" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Heap" -WhyNot "Stack preserves nearest unresolved order, not global priority." -Missing "Need smallest/largest/top-k candidate regardless of position." -Mutation "Ask for kth largest, median stream, or next best task." -NowWhy "Priority queue exposes the best candidate directly."),
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "Two pointers need symmetric elimination; stack keeps many unresolved positions." -Missing "Only two boundary candidates matter." -Mutation "Ask for container area or palindrome validation." -NowWhy "One pointer move discards a boundary safely.")
+            )
+        }
+        "Heap" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Sorting" -WhyNot "Sorting all items may work but over-orders data when only top/frontier is needed." -Missing "Need full sorted output once, not online updates." -Mutation "Ask for all items sorted by frequency/score." -NowWhy "One full sort is simpler when every rank is needed."),
+                (New-HorizontalSwitch -Pattern "Binary Search" -WhyNot "Heap does not use a monotonic feasibility predicate." -Missing "A yes/no check over an ordered answer range." -Mutation "Ask for the minimum capacity/speed/time that satisfies a constraint." -NowWhy "Feasibility lets half the answer space be discarded.")
+            )
+        }
+        "Intervals/Greedy" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Heap" -WhyNot "Greedy endpoint selection works when one sorted pass makes the choice safe." -Missing "Need active interval with earliest finishing resource." -Mutation "Ask for minimum rooms/platforms with overlapping intervals." -NowWhy "A min-heap of end times represents currently occupied resources."),
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Greedy fails when local choice can block a better weighted future." -Missing "Weights/profits or incompatible choices requiring optimal value." -Mutation "Add profit to intervals and ask for max profit schedule." -NowWhy "Choosing or skipping an interval creates repeated optimal subproblems.")
+            )
+        }
+        "Backtracking" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Backtracking enumerates outputs; DP collapses repeated states when only an optimum/count is needed." -Missing "Repeated state identity and no need to list every solution." -Mutation "Ask for count/minimum/best value instead of all combinations." -NowWhy "Memoized state replaces explicit path enumeration."),
+                (New-HorizontalSwitch -Pattern "Trie" -WhyNot "Backtracking alone does not share dictionary prefixes." -Missing "Many word-prefix lookups while exploring characters." -Mutation "Add a dictionary of words and ask for all words on a board." -NowWhy "Trie prunes impossible prefixes early.")
+            )
+        }
+        "Trie" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "A set handles exact words, but not efficient shared prefix traversal." -Missing "Only exact membership, no prefix/wildcard/character path." -Mutation "Ask whether a whole word exists, with no prefix operations." -NowWhy "Hash lookup is simpler and cheaper to code."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Trie is the dictionary accelerator; search still needs DFS only when paths are generated." -Missing "Need to try/undo board paths or wildcard branches." -Mutation "Ask for all dictionary words formed by adjacent board cells." -NowWhy "DFS explores paths while Trie rejects dead prefixes.")
+            )
+        }
+        "Dynamic Programming" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "DP is needed when a local choice can harm a future state." -Missing "A proof that the locally best choice remains globally safe." -Mutation "Constrain the problem so earliest finish, farthest reach, or cheapest immediate choice is always safe." -NowWhy "The state collapse becomes a local invariant."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "DP returns an optimal/count value; backtracking is needed when every concrete solution must be emitted." -Missing "Output requires listing all paths/combinations/permutations." -Mutation "Change output from minimum/count to all valid configurations." -NowWhy "The path itself becomes part of the answer.")
+            )
+        }
+        "Union Find" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Graph DFS" -WhyNot "DSU answers connectivity after merges, but does not enumerate paths/components with custom traversal logic." -Missing "Need to visit cells/nodes and compute component area/shape/path." -Mutation "Ask for number or size of components in a static grid." -NowWhy "DFS/BFS owns each component directly."),
+                (New-HorizontalSwitch -Pattern "Topological Sort" -WhyNot "DSU ignores edge direction and prerequisite ordering." -Missing "Directed dependency constraints." -Mutation "Ask whether courses/tasks can be ordered under prerequisites." -NowWhy "Indegree/DFS state models remaining dependencies.")
+            )
+        }
+        "Greedy" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Greedy is unsafe without a local-choice proof." -Missing "Counterexample-free exchange argument or monotonic boundary." -Mutation "Add weights or future-dependent rewards." -NowWhy "You must compare choose/skip states instead of trusting the local choice."),
+                (New-HorizontalSwitch -Pattern "Intervals/Greedy" -WhyNot "General greedy needs a concrete ordering that makes the local choice safe." -Missing "Interval start/end structure." -Mutation "Express the problem as selecting/merging sorted intervals." -NowWhy "Sorted endpoints give the local decision a proof.")
+            )
+        }
+        "Math/Bit/String" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "The hidden invariant is numeric/string structure, not just lookup." -Missing "Repeated membership/frequency queries." -Mutation "Ask for pairs/counts/complements over the same values." -NowWhy "Lookup becomes the dominant operation."),
+                (New-HorizontalSwitch -Pattern "Prefix/Suffix" -WhyNot "Prefix helps range aggregates, but not every string/bit invariant is a range sum." -Missing "Reusable cumulative aggregate over prefixes/suffixes." -Mutation "Ask many substring/range aggregate queries." -NowWhy "Cumulative state answers each range cheaply.")
+            )
+        }
+        "Design/LLD" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "A single map is usually only one component of the object invariant." -Missing "Only exact key lookup without eviction, order, expiry, or API contract." -Mutation "Ask for plain put/get by key." -NowWhy "The design collapses to direct map state."),
+                (New-HorizontalSwitch -Pattern "Linked List / Heap" -WhyNot "The backing data structure depends on the operation contract." -Missing "Recency order or priority/expiry behavior." -Mutation "Add LRU eviction, rate limits, TTL, or top-k ranking." -NowWhy "The secondary structure maintains the required operation invariant.")
+            )
+        }
+        default {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "No repeated lookup/frequency signal has been established." -Missing "Complement, seen state, or counting requirement." -Mutation "Ask for existence/count by value." -NowWhy "Map/set state removes repeated scan work."),
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "No sorted/symmetric elimination rule has been established." -Missing "A boundary comparison that safely discards candidates." -Mutation "Sort the input or ask for end-to-end validation." -NowWhy "Pointer movement has a correctness reason.")
+            )
+        }
+    }
+}
+
+function Get-HorizontalWrongPatternGuard {
+    param([string] $Category)
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "Do not force window/pointers unless contiguity or sorted elimination is explicit." }
+        "Two Pointers" { return "Do not use two pointers on unsorted data unless movement has a proof." }
+        "Sliding Window" { return "Do not use window when removing left cannot repair validity predictably." }
+        "Prefix/Suffix" { return "Do not use prefix as a reflex; name the repeated aggregate first." }
+        "Binary Search" { return "Do not binary search unless the index/order or feasibility predicate is monotonic." }
+        "Linked List" { return "Do not hide pointer invariants behind arrays unless mutation is not required." }
+        "Tree BFS" { return "Do not use BFS for subtree-return problems just because the input is a tree." }
+        "Tree DFS" { return "Do not use DFS for minimum-level answers when BFS first discovery is required." }
+        "Graph BFS" { return "Do not use DFS for unweighted shortest path or simultaneous spreading." }
+        "Graph DFS" { return "Do not use DFS when dependency order or shortest distance is the output." }
+        "Topological Sort" { return "Do not topologically sort undirected connectivity problems." }
+        "Stack" { return "Do not use a stack unless most-recent unresolved state is the invariant." }
+        "Heap" { return "Do not heapify when all you need is one linear scan or a full sorted list once." }
+        "Intervals/Greedy" { return "Do not call it greedy until sorting makes the local decision defensible." }
+        "Backtracking" { return "Do not backtrack when the output is only a count/minimum and states repeat." }
+        "Trie" { return "Do not build a Trie for one exact string lookup." }
+        "Dynamic Programming" { return "Do not write DP before defining state, transition, and base case." }
+        "Union Find" { return "Do not use DSU when direction, distance, or path details matter." }
+        "Greedy" { return "Do not use greedy without an exchange or dominance argument." }
+        "Math/Bit/String" { return "Do not simulate blindly when an algebra/string invariant explains the shortcut." }
+        "Design/LLD" { return "Do not code methods before naming operation invariants and complexity." }
+        default { return "Do not choose a pattern before naming required output, structure, constraints, and workload." }
+    }
+}
+
+function Get-HorizontalFamilies {
+    return @(
+        [pscustomobject]@{ FileName = "03_ARRAY_HASH_POINTERS.md"; Title = "Array, Hash, And Pointer Discrimination"; Categories = @("HashMap/HashSet", "Two Pointers", "Prefix/Suffix", "Core Basics"); Focus = "Lookup, complement, ends, and cumulative-state problems." },
+        [pscustomobject]@{ FileName = "04_SLIDING_WINDOW.md"; Title = "Sliding Window Discrimination"; Categories = @("Sliding Window"); Focus = "Contiguous region problems where validity can be repaired incrementally." },
+        [pscustomobject]@{ FileName = "05_BINARY_SEARCH.md"; Title = "Binary Search Discrimination"; Categories = @("Binary Search"); Focus = "Sorted-index and monotonic-answer problems." },
+        [pscustomobject]@{ FileName = "06_LINKED_LIST.md"; Title = "Linked List Pointer Discrimination"; Categories = @("Linked List"); Focus = "Identity, pointer rewiring, cycles, recency lists, and merge structures." },
+        [pscustomobject]@{ FileName = "07_TREE_DFS_BFS.md"; Title = "Tree DFS And BFS Discrimination"; Categories = @("Tree DFS", "Tree BFS"); Focus = "Subtree return contracts versus level-order queue contracts." },
+        [pscustomobject]@{ FileName = "08_GRAPH_DFS_BFS.md"; Title = "Graph DFS And BFS Discrimination"; Categories = @("Graph DFS", "Graph BFS"); Focus = "Component ownership versus shortest-path or level expansion." },
+        [pscustomobject]@{ FileName = "09_TOPO_UNION_FIND.md"; Title = "Topo Sort And Union-Find Discrimination"; Categories = @("Topological Sort", "Union Find"); Focus = "Directed dependency unlocking versus undirected component merging." },
+        [pscustomobject]@{ FileName = "10_STACK_HEAP.md"; Title = "Stack And Heap Discrimination"; Categories = @("Stack", "Heap"); Focus = "Most-recent unresolved candidate versus global priority frontier." },
+        [pscustomobject]@{ FileName = "11_INTERVALS_GREEDY.md"; Title = "Intervals And Greedy Discrimination"; Categories = @("Intervals/Greedy", "Greedy"); Focus = "Sorted interval decisions, local-choice proof, and weighted-counterexample boundaries." },
+        [pscustomobject]@{ FileName = "12_DYNAMIC_PROGRAMMING.md"; Title = "Dynamic Programming Discrimination"; Categories = @("Dynamic Programming"); Focus = "Repeated states plus choices: state, transition, base case, fill order." },
+        [pscustomobject]@{ FileName = "13_BACKTRACKING_TRIE.md"; Title = "Backtracking And Trie Discrimination"; Categories = @("Backtracking", "Trie"); Focus = "Generate/try/undo versus prefix-indexed pruning." },
+        [pscustomobject]@{ FileName = "14_MATH_BIT_STRING.md"; Title = "Math, Bit, And String Discrimination"; Categories = @("Math/Bit/String"); Focus = "Hidden algebra, bit, KMP/Z, and string contribution invariants." },
+        [pscustomobject]@{ FileName = "15_DESIGN_DATA_STRUCTURES.md"; Title = "Design Data Structure Discrimination"; Categories = @("Design/LLD"); Focus = "Operation contracts, object invariants, and backing-structure choice." }
+    )
+}
+
+function Get-HorizontalFileForCategory {
+    param(
+        [string] $Category,
+        [object[]] $Families
+    )
+
+    foreach ($family in $Families) {
+        if ($Category -in $family.Categories) {
+            return $family.FileName
+        }
+    }
+    return "03_ARRAY_HASH_POINTERS.md"
+}
+
+function Join-HorizontalSwitchSummary {
+    param(
+        [object[]] $Switches,
+        [int] $Limit = 2
+    )
+
+    return (@($Switches | Select-Object -First $Limit | ForEach-Object {
+        "$($_.Pattern): $($_.Mutation)"
+    }) -join "<br>")
+}
+
+function Build-HorizontalReadme {
+    param(
+        [object[]] $Rows,
+        [object[]] $Families
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# DSA Horizontal Mastery")
+    $lines.Add("")
+    $lines.Add("This layer trains pattern discrimination across the existing DSA10days problems without creating a 150-file encyclopedia.")
+    $lines.Add("")
+    $lines.Add('Source of truth remains `../../src/main/java/org/chijai`. This folder is a compact reasoning interface over the ranked cockpit and Java links.')
+    $lines.Add("")
+    $lines.Add("## What This Adds")
+    $lines.Add("")
+    $lines.Add("| Existing layer | Answers |")
+    $lines.Add("|---|---|")
+    $lines.Add('| `../interview/01_ZERO_TO_HERO_RANKED_TABLE.md` | What should I study first? |')
+    $lines.Add('| `../interview/patterns/` | How do I revise one pattern vertically? |')
+    $lines.Add('| `../../src/main/java/org/chijai/patterns` | What reusable Java frame does this pattern use? |')
+    $lines.Add('| `./` | Why this pattern, why not another, and what minimal mutation switches it? |')
+    $lines.Add("")
+    $lines.Add("## Study Flow")
+    $lines.Add("")
+    $lines.Add('1. Read `00_MASTER_MATRIX.md` for the navigation map.')
+    $lines.Add('2. Use `02_MUTATION_SWITCHBOARD.md` to learn pattern-switch triggers.')
+    $lines.Add("3. Open one family file only when that discrimination is weak.")
+    $lines.Add('4. Use `CROSSDRILL <problem>` when one problem keeps fooling you.')
+    $lines.Add("")
+    $lines.Add("## CROSSDRILL Command")
+    $lines.Add("")
+    $lines.Add("Windows:")
+    $lines.Add("")
+    $lines.Add('```bat')
+    $lines.Add('dsa-review\scripts\crossdrill.cmd "Two Sum"')
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("macOS/Linux:")
+    $lines.Add("")
+    $lines.Add('```bash')
+    $lines.Add('./dsa-review/scripts/crossdrill.sh "Two Sum"')
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("The command prints the full 3-loop drill for one problem: problem signal, winner pattern, important near-misses, minimal mutations, and rejection guard.")
+    $lines.Add("")
+    $lines.Add("## Files")
+    $lines.Add("")
+    $lines.Add("| File | Purpose |")
+    $lines.Add("|---|---|")
+    $lines.Add('| `00_MASTER_MATRIX.md` | Compact problems x patterns navigation table. |')
+    $lines.Add('| `01_CROSSDRILL_PROTOCOL.md` | How to run and speak the full 3-loop analysis. |')
+    $lines.Add('| `02_MUTATION_SWITCHBOARD.md` | Pattern-to-pattern switch rules. |')
+    foreach ($family in $Families) {
+        $lines.Add(('| `{0}` | {1} |' -f $family.FileName, $family.Focus))
+    }
+    $lines.Add("")
+    $lines.Add("## Constraint")
+    $lines.Add("")
+    $lines.Add("This folder intentionally stays under 21 human-facing Markdown files. If a new file does not improve discrimination, merge it into an existing family file.")
+    $lines.Add("")
+    $lines.Add("Generated ranked entries: $($Rows.Count)")
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalMasterMatrix {
+    param(
+        [object[]] $Rows,
+        [object[]] $Families
+    )
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# Horizontal Master Matrix")
+    $lines.Add("")
+    $lines.Add("Compact navigation for problem -> winner pattern -> important pattern switches. Use this to train unseen-problem discrimination from required output, structure, constraints, and workload.")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Winner | Why winner | Near-miss switches | Wrong-pattern guard | Java | LeetCode |")
+    $lines.Add("|---:|---|---|---|---|---|---|---|")
+    foreach ($row in $Rows) {
+        $winner = Get-DisplayCategory $row.Category
+        $switches = @(Get-HorizontalSwitches -Category $row.Category)
+        $switchSummary = Join-HorizontalSwitchSummary -Switches $switches
+        $java = New-Link "Java" $row.JavaLink
+        $lc = if ($row.LeetCodeLink) { New-Link "LC" $row.LeetCodeLink } else { "-" }
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category)) | $java | $lc |")
+    }
+    $lines.Add("")
+    $lines.Add("Total ranked entries: $($Rows.Count)")
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalCrossdrillProtocol {
+    param([object[]] $Rows)
+
+    $top = @($Rows | Sort-Object Rank | Select-Object -First 5 | ForEach-Object { $_.Title }) -join ", "
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# CROSSDRILL Protocol")
+    $lines.Add("")
+    $lines.Add("Use this when one problem keeps causing pattern confusion.")
+    $lines.Add("")
+    $lines.Add("## Command")
+    $lines.Add("")
+    $lines.Add('```bat')
+    $lines.Add('dsa-review\scripts\crossdrill.cmd "Minimum Window Substring"')
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add('```bash')
+    $lines.Add('./dsa-review/scripts/crossdrill.sh "Minimum Window Substring"')
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add('If several titles match, the command prints candidates. Use the exact title from `00_MASTER_MATRIX.md`.')
+    $lines.Add("")
+    $lines.Add("## Speak This Loop")
+    $lines.Add("")
+    $lines.Add('```text')
+    $lines.Add("Problem -> Patterns -> Mutation")
+    $lines.Add("WHY NOT NOW? -> WHAT IS MISSING? -> MINIMAL CHANGE -> NOW WHY DOES IT WORK?")
+    $lines.Add('```')
+    $lines.Add("")
+    $lines.Add("## Output Contract")
+    $lines.Add("")
+    $lines.Add("| Section | What must be said |")
+    $lines.Add("|---|---|")
+    $lines.Add("| Problem | Required output, input structure, constraints/workload signal. |")
+    $lines.Add("| Winner | The natural pattern and the invariant that makes it correct. |")
+    $lines.Add("| Near-misses | Patterns that almost fit, why they do not fit now, and the smallest mutation that makes them fit. |")
+    $lines.Add("| Tempting wrong patterns | Short rejection guard. |")
+    $lines.Add("| Irrelevant patterns | Aggregated, not listed one by one. |")
+    $lines.Add("| Close | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |")
+    $lines.Add("")
+    $lines.Add("## Examples To Start")
+    $lines.Add("")
+    $lines.Add("Top-ranked examples: $top.")
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalMutationSwitchboard {
+    param([object[]] $Families)
+
+    $categories = @($Families | ForEach-Object { $_.Categories } | Select-Object -Unique)
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# Mutation Switchboard")
+    $lines.Add("")
+    $lines.Add("Learn this file as pattern-switch grammar. For every near-miss, ask: why not now, what is missing, what minimal change makes it work, and why does it work after the change?")
+    $lines.Add("")
+    $lines.Add("| Current winner | Near pattern | Why not now | What is missing | Minimal change | Now why it works |")
+    $lines.Add("|---|---|---|---|---|---|")
+    foreach ($category in ($categories | Sort-Object { Get-CategoryWeight $_ }, { $_ })) {
+        foreach ($switch in @(Get-HorizontalSwitches -Category $category)) {
+            $lines.Add("| $(Escape-Md (Get-DisplayCategory $category)) | $(Escape-Md $switch.Pattern) | $(Escape-Md $switch.WhyNot) | $(Escape-Md $switch.Missing) | $(Escape-Md $switch.Mutation) | $(Escape-Md $switch.NowWhy) |")
+        }
+    }
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalFamilyMermaid {
+    param([object] $Family)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('```mermaid')
+    $lines.Add("flowchart TD")
+    $rootLabel = Escape-MermaidLabel $Family.Title
+    $lines.Add(('  Root["{0}"]' -f $rootLabel))
+    $index = 1
+    foreach ($category in $Family.Categories) {
+        $catId = "C{0:D2}" -f $index
+        $winnerLabel = Escape-MermaidLabel (Get-DisplayCategory $category)
+        $guardLabel = Escape-MermaidLabel (Get-HorizontalWrongPatternGuard -Category $category)
+        $lines.Add(('  Root --> {0}["{1}"]' -f $catId, $winnerLabel))
+        $lines.Add(('  {0} --> G{1:D2}["Guard<br/>{2}"]' -f $catId, $index, $guardLabel))
+        $switchIndex = 1
+        foreach ($switch in @(Get-HorizontalSwitches -Category $category | Select-Object -First 2)) {
+            $switchId = "C{0:D2}S{1:D2}" -f $index, $switchIndex
+            $switchLabel = Escape-MermaidLabel "$($switch.Pattern)<br/>$($switch.Mutation)"
+            $lines.Add(('  {0} --> {1}["{2}"]' -f $catId, $switchId, $switchLabel))
+            $switchIndex++
+        }
+        $index++
+    }
+    $lines.Add('```')
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalFamilyFile {
+    param(
+        [object] $Family,
+        [object[]] $Rows
+    )
+
+    $items = @($Rows | Where-Object { $_.Category -in $Family.Categories } | Sort-Object Rank)
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# $($Family.Title)")
+    $lines.Add("")
+    $lines.Add($Family.Focus)
+    $lines.Add("")
+    $lines.Add("Study goal: recognize when this family is the winner, reject the nearest wrong alternatives, and know the smallest requirement change that would switch the pattern.")
+    $lines.Add("")
+    $lines.Add("## Switch Map")
+    $lines.Add("")
+    $lines.Add((Build-HorizontalFamilyMermaid -Family $Family))
+    $lines.Add("")
+    $lines.Add("## Problems")
+    $lines.Add("")
+    $lines.Add("| Rank | Problem | Winner | Why winner | Near-miss mutation | Wrong-pattern guard | Java | LeetCode |")
+    $lines.Add("|---:|---|---|---|---|---|---|---|")
+    foreach ($row in $items) {
+        $switches = @(Get-HorizontalSwitches -Category $row.Category)
+        $switchSummary = Join-HorizontalSwitchSummary -Switches $switches -Limit 2
+        $winner = Get-DisplayCategory $row.Category
+        $java = New-Link "Java" $row.JavaLink
+        $lc = if ($row.LeetCodeLink) { New-Link "LC" $row.LeetCodeLink } else { "-" }
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category)) | $java | $lc |")
+    }
+    $lines.Add("")
+    $lines.Add("## Drill")
+    $lines.Add("")
+    $lines.Add("For each row, speak: required output -> structure -> constraint/workload -> winner -> why not nearest alternative -> minimal mutation -> new winner.")
+    $lines.Add("")
+    $lines.Add("Rows in this file: $($items.Count)")
+    return ($lines -join "`r`n")
+}
+
+function Build-HorizontalLayer {
+    param(
+        [object[]] $Rows,
+        [string] $OutDir
+    )
+
+    $families = @(Get-HorizontalFamilies)
+    if (-not (Test-Path -LiteralPath $OutDir)) {
+        New-Item -ItemType Directory -Path $OutDir | Out-Null
+    }
+    Get-ChildItem -LiteralPath $OutDir -File -Filter "*.md" | Remove-Item -Force
+
+    Write-TextFile -Path (Join-Path $OutDir "README.md") -Content (Build-HorizontalReadme -Rows $Rows -Families $families)
+    Write-TextFile -Path (Join-Path $OutDir "00_MASTER_MATRIX.md") -Content (Build-HorizontalMasterMatrix -Rows $Rows -Families $families)
+    Write-TextFile -Path (Join-Path $OutDir "01_CROSSDRILL_PROTOCOL.md") -Content (Build-HorizontalCrossdrillProtocol -Rows $Rows)
+    Write-TextFile -Path (Join-Path $OutDir "02_MUTATION_SWITCHBOARD.md") -Content (Build-HorizontalMutationSwitchboard -Families $families)
+    foreach ($family in $families) {
+        Write-TextFile -Path (Join-Path $OutDir $family.FileName) -Content (Build-HorizontalFamilyFile -Family $family -Rows $Rows)
+    }
+
+    return $families
+}
+
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $indexPath = Join-Path $repoRoot "dsa-review/notes/PROBLEM_PATTERN_INDEX.md"
 $outDir = Join-Path $repoRoot "dsa-review/interview"
+$horizontalDir = Join-Path $repoRoot "dsa-review/horizontal"
 
 if (-not (Test-Path -LiteralPath $indexPath)) {
     throw "Problem index not found: $indexPath"
@@ -3478,12 +3953,16 @@ foreach ($group in $patternGroups) {
     Write-TextFile -Path (Join-Path $patternDir $group.FileName) -Content (Build-PatternFile -Group $group)
 }
 
+$horizontalFamilies = @(Build-HorizontalLayer -Rows $rows -OutDir $horizontalDir)
+
 [pscustomobject]@{
     repoRoot = $repoRoot
     output = $outDir
+    horizontalOutput = $horizontalDir
     rankedEntries = $rows.Count
     leetcodeLinks = @($rows | Where-Object { $_.LeetCodeLink }).Count
     recursiveLeetCodeIndex = $leetcodeIndexRows.Count
     localOnlyEntries = @($rows | Where-Object { -not $_.LeetCodeLink }).Count
     patternFiles = $patternGroups.Count
+    horizontalFiles = $horizontalFamilies.Count + 4
 } | Format-List

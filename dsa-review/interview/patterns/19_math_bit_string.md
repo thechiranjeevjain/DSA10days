@@ -19,30 +19,30 @@ flowchart TD
   Invariant["INVARIANT<br/>Simulation is often slow or bug-prone; use the invariant encoded in arithmetic or bits."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Bit/string addition<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 195: Add Binary"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 186: Add Binary"]
   Invariant --> Sub02["SUB-PATTERN<br/>Contribution counting<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 197: Count Unique Characters of All Substrings of a Given String"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 188: Count Unique Characters of All Substrings of a Given String"]
   Invariant --> Sub03["SUB-PATTERN<br/>KMP / rolling hash<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 167: Longest Happy Prefix"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 158: Longest Happy Prefix"]
   Invariant --> Sub04["SUB-PATTERN<br/>KMP string matching<br/>3 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 109: Find The Index Of The First Occurrence In A String"]
-  Sub04 --> Sub04A02["ANCHOR<br/>rank 163: Repeated Substring Pattern"]
-  Sub04 --> Sub04A03["ANCHOR<br/>rank 199: Shortest Palindrome"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 101: Find The Index Of The First Occurrence In A String"]
+  Sub04 --> Sub04A02["ANCHOR<br/>rank 154: Repeated Substring Pattern"]
+  Sub04 --> Sub04A03["ANCHOR<br/>rank 190: Shortest Palindrome"]
   Invariant --> Sub05["SUB-PATTERN<br/>Math / sieve<br/>1 problem(s)"]
-  Sub05 --> Sub05A01["ANCHOR<br/>rank 196: Count Primes"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 187: Count Primes"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 109 | Phase 3 - Important | Find The Index Of The First Occurrence In A String | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/) | KMP reuses the longest proper prefix that is also a suffix after a mismatch. | Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch. |
-| 163 | Phase 5 - If Time | Repeated Substring Pattern | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/) | A repeated pattern exists when the final LPS leaves a block length that divides n. | Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0. |
-| 167 | Phase 5 - If Time | Longest Happy Prefix | KMP / rolling hash | [Java](../../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/) | The answer is the final LPS value: longest proper prefix that is also suffix. | Build LPS over the string and return substring(0, lps[n - 1]). |
-| 195 | Phase 5 - If Time | Add Binary | Bit/string addition | [Java](../../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/) | Add bits from right to left with carry, exactly like decimal addition. | Use i,j,carry; append (sum % 2), update carry=sum/2, reverse result. |
-| 196 | Phase 5 - If Time | Count Primes | Math / sieve | [Java](../../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LC](https://leetcode.com/problems/count-primes/) | Sieve marks multiples of each discovered prime starting at p*p. | Boolean isComposite; for p*p < n, mark multiples p*p, p*p+p, ...; count unmarked. |
-| 197 | Phase 5 - If Time | Count Unique Characters of All Substrings of a Given String | Contribution counting | [Java](../../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LC](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/) | Each character occurrence contributes by distance to the previous same char times distance to the next one. | Record previous and next positions for each occurrence, sum leftGap * rightGap contributions. |
-| 199 | Phase 5 - If Time | Shortest Palindrome | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/shortest-palindrome/) | Find the longest palindromic prefix, then prepend the reverse of the remaining suffix. | Compute LPS on combined string, reverse suffix from lps length, prepend it to s. |
+| 101 | Phase 3 - Important | Find The Index Of The First Occurrence In A String | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/) | KMP reuses the longest proper prefix that is also a suffix after a mismatch. | Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch. |
+| 154 | Phase 5 - If Time | Repeated Substring Pattern | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/) | A repeated pattern exists when the final LPS leaves a block length that divides n. | Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0. |
+| 158 | Phase 5 - If Time | Longest Happy Prefix | KMP / rolling hash | [Java](../../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/) | The answer is the final LPS value: longest proper prefix that is also suffix. | Build LPS over the string and return substring(0, lps[n - 1]). |
+| 186 | Phase 5 - If Time | Add Binary | Bit/string addition | [Java](../../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/) | Add bits from right to left with carry, exactly like decimal addition. | Use i,j,carry; append (sum % 2), update carry=sum/2, reverse result. |
+| 187 | Phase 5 - If Time | Count Primes | Math / sieve | [Java](../../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LC](https://leetcode.com/problems/count-primes/) | Sieve marks multiples of each discovered prime starting at p*p. | Boolean isComposite; for p*p < n, mark multiples p*p, p*p+p, ...; count unmarked. |
+| 188 | Phase 5 - If Time | Count Unique Characters of All Substrings of a Given String | Contribution counting | [Java](../../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LC](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/) | Each character occurrence contributes by distance to the previous same char times distance to the next one. | Record previous and next positions for each occurrence, sum leftGap * rightGap contributions. |
+| 190 | Phase 5 - If Time | Shortest Palindrome | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/shortest-palindrome/) | Find the longest palindromic prefix, then prepend the reverse of the remaining suffix. | Compute LPS on combined string, reverse suffix from lps length, prepend it to s. |
 
 ## Drill
 

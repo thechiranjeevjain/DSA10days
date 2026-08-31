@@ -30,7 +30,7 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day3/session1/MinimumWindowSubstring.java` | Sliding window / need-have | A |  |  |  | |
 | `day3/session2/prefix/suffix/NiceSubArrays.java` | Prefix/window counting | A |  |  |  | |
 | `day3/session2/prefix/suffix/ProductOfArrayExceptSelf.java` | Prefix/suffix | A |  |  |  | |
-| `day3/session3/FindAllAnagramsInAString.java` | Sliding window frequency | A |  |  |  | |
+| `day3/session1/FindAllAnagramsInAString.java` | Sliding window frequency | A |  |  |  | |
 | `day3/session3/ValidAnagram.java` | Frequency count | A |  |  |  | |
 | `day3/session3/ValidPalindrome.java` | Two pointers | A |  |  |  | |
 | `day4/LinkedList/session1/Intersection.java` | Linked list two pointers | A |  |  |  | |
@@ -45,7 +45,7 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day4/LinkedList/session4/MiddleOfLinkedList.java` | Fast/slow pointers | A |  |  |  | |
 | `day5/stack/session1/monotonic/DailyTemperatures.java` | Monotonic stack | A |  |  |  | |
 | `day5/stack/session1/monotonic/NextGreaterElement.java` | Monotonic stack | A |  |  |  | |
-| `day5/stack/session2/ContainerWithMostWater.java` | Two pointers | A |  |  |  | |
+| `day1/Arrays/session2/ContainerWithMostWater.java` | Two pointers | A |  |  |  | |
 | `day5/stack/session1/monotonic/LargestRectangle.java` | Monotonic stack | A |  |  |  | |
 | `day3/session2/prefix/suffix/TrappingRainwater.java` | Two pointers / stack | A |  |  |  | |
 | `day5/stack/session3/ValidParentheses.java` | Stack | A |  |  |  | |
@@ -77,7 +77,7 @@ These often appear, but they should come after Priority A is reliable.
 
 | File | Main pattern | ROI | Recall | Code | Variant | Notes |
 |---|---|---|---:|---:|---:|---|
-| `day1/Arrays/session1/KadaneMaxSubArray.java` | Kadane / DP | B |  |  |  | |
+| `day9/dp/session1/KadaneMaxSubArray.java` | Kadane / DP | B |  |  |  | |
 | `day1/Arrays/session1/SortColors.java` | Partition / Dutch flag | B |  |  |  | |
 | `day1/Arrays/session1/SpiralMatrix.java` | Matrix boundary traversal | B |  |  |  | |
 | `day1/Arrays/session3/StockSeries1.java` | Greedy / DP states | B |  |  |  | |

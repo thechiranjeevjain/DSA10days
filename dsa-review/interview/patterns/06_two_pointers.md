@@ -19,34 +19,28 @@ flowchart TD
   Invariant["INVARIANT<br/>Brute force tries pairs; sorting/order lets pointers eliminate impossible pairs."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Expand around center<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 112: Longest Palindromic Substring"]
-  Invariant --> Sub02["SUB-PATTERN<br/>Parity partition<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 113: Sort Array By Parity"]
-  Invariant --> Sub03["SUB-PATTERN<br/>Partition / Dutch flag<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 63: Sort Colors"]
-  Invariant --> Sub04["SUB-PATTERN<br/>Stable two-pointer compaction<br/>1 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 114: Move Zeroes"]
-  Invariant --> Sub05["SUB-PATTERN<br/>Two pointers<br/>2 problem(s)"]
-  Sub05 --> Sub05A01["ANCHOR<br/>rank 10: Valid Palindrome"]
-  Sub05 --> Sub05A02["ANCHOR<br/>rank 13: Container With Most Water"]
-  Invariant --> Sub06["SUB-PATTERN<br/>Two pointers / hash<br/>1 problem(s)"]
-  Sub06 --> Sub06A01["ANCHOR<br/>rank 12: Two Sum II - Input Array Is Sorted"]
-  Invariant --> Sub07["SUB-PATTERN<br/>Two pointers / stack<br/>1 problem(s)"]
-  Sub07 --> Sub07A01["ANCHOR<br/>rank 14: Trapping Rain Water"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 104: Longest Palindromic Substring"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Partition / Dutch flag<br/>1 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 59: Sort Colors"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Two pointers<br/>2 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 10: Valid Palindrome"]
+  Sub03 --> Sub03A02["ANCHOR<br/>rank 13: Container With Most Water"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Two pointers / hash<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 12: Two Sum II - Input Array Is Sorted"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Two pointers / stack<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 14: Trapping Rain Water"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 10 | Phase 1 - No Red Flags | Valid Palindrome | Two pointers | [Java](../../../src/main/java/org/chijai/day3/session3/ValidPalindrome.java) | [LC](https://leetcode.com/problems/valid-palindrome/) | Skip non-alphanumeric chars and compare normalized ends while pointers move inward. | Advance left/right past invalid chars, compare lowercase chars, stop when pointers cross. |
+| 10 | Phase 1 - No Red Flags | Valid Palindrome | Two pointers | [Java](../../../src/main/java/org/chijai/day3/session3/ValidPalindrome.java) | - | Skip non-alphanumeric chars and compare normalized ends while pointers move inward. | Advance left/right past invalid chars, compare lowercase chars, stop when pointers cross. |
 | 12 | Phase 1 - No Red Flags | Two Sum II - Input Array Is Sorted | Two pointers / hash | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/Three3Sum2Sum.java) | [LC](https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/) | Sorted input lets left/right shrink toward the target sum. | Compare nums[left] + nums[right] with target; move left if small, right if large. |
-| 13 | Phase 1 - No Red Flags | Container With Most Water | Two pointers | [Java](../../../src/main/java/org/chijai/day5/stack/session2/ContainerWithMostWater.java) | [LC](https://leetcode.com/problems/container-with-most-water/) | Area is limited by shorter wall, so move the shorter side inward. | Compute area at left/right, update max, move pointer with smaller height. |
+| 13 | Phase 1 - No Red Flags | Container With Most Water | Two pointers | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/ContainerWithMostWater.java) | - | Area is limited by shorter wall, so move the shorter side inward. | Compute area at left/right, update max, move pointer with smaller height. |
 | 14 | Phase 1 - No Red Flags | Trapping Rain Water | Two pointers / stack | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | [LC](https://leetcode.com/problems/trapping-rain-water/) | Water at a side depends on the smaller max boundary seen so far. | Move the side with lower height, update max, add max-height when bounded. |
-| 63 | Phase 2 - Strong Core | Sort Colors | Partition / Dutch flag | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/sort-colors/) | Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers. | Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1. |
-| 112 | Phase 4 - Secondary | Longest Palindromic Substring | Expand around center | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | Expand around every odd and even center and keep the longest span. | For each index, expand(i,i) and expand(i,i+1), update best start/length. |
-| 113 | Phase 4 - Secondary | Sort Array By Parity | Parity partition | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/sort-array-by-parity/) | Partition the array so the write/left side contains only values satisfying the parity condition. | Initialize pointers, compare current state, move the pointer whose movement is justified. |
-| 114 | Phase 4 - Secondary | Move Zeroes | Stable two-pointer compaction | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/move-zeroes/) | Compact nonzero values forward in order, then fill the remaining suffix with zeroes. | Initialize pointers, compare current state, move the pointer whose movement is justified. |
+| 59 | Phase 2 - Strong Core | Sort Colors | Partition / Dutch flag | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/sort-colors/) | Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers. | Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1. |
+| 104 | Phase 3 - Important | Longest Palindromic Substring | Expand around center | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | Expand around every odd and even center and keep the longest span. | For each index, expand(i,i) and expand(i,i+1), update best start/length. |
 
 ## Drill
 

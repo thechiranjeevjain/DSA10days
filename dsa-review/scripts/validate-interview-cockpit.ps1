@@ -4,6 +4,7 @@ $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $reviewRoot = Split-Path -Parent $scriptRoot
 $repoRoot = Split-Path -Parent $reviewRoot
 $interviewRoot = Join-Path $reviewRoot "interview"
+$horizontalRoot = Join-Path $reviewRoot "horizontal"
 
 function Fail {
     param([string] $Message)
@@ -320,8 +321,9 @@ foreach ($requiredExtensionPhrase in @("## Cutoff Rule", "## Day 8", "## Day 12"
     }
 }
 $extensionRankRows = @([regex]::Matches($extensionText, '(?m)^\| (?<rank>\d{3}) \|'))
-if ($extensionRankRows.Count -lt 60) {
-    Fail "expected extension plan to contain at least 60 ranked tail rows, found $($extensionRankRows.Count)"
+$expectedExtensionRows = [Math]::Max(0, $rankLines.Count - 150)
+if ($extensionRankRows.Count -ne $expectedExtensionRows) {
+    Fail "expected extension plan to contain $expectedExtensionRows ranked tail rows, found $($extensionRankRows.Count)"
 }
 
 $activeNinetyPath = Join-Path $interviewRoot "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md"
@@ -517,12 +519,131 @@ if ($dashboardText -notmatch 'Review-state matches') {
     Fail "review dashboard is missing dynamic review-state summary"
 }
 
+$requiredHorizontalFiles = @(
+    "README.md",
+    "00_MASTER_MATRIX.md",
+    "01_CROSSDRILL_PROTOCOL.md",
+    "02_MUTATION_SWITCHBOARD.md",
+    "03_ARRAY_HASH_POINTERS.md",
+    "04_SLIDING_WINDOW.md",
+    "05_BINARY_SEARCH.md",
+    "06_LINKED_LIST.md",
+    "07_TREE_DFS_BFS.md",
+    "08_GRAPH_DFS_BFS.md",
+    "09_TOPO_UNION_FIND.md",
+    "10_STACK_HEAP.md",
+    "11_INTERVALS_GREEDY.md",
+    "12_DYNAMIC_PROGRAMMING.md",
+    "13_BACKTRACKING_TRIE.md",
+    "14_MATH_BIT_STRING.md",
+    "15_DESIGN_DATA_STRUCTURES.md"
+)
+
+foreach ($name in $requiredHorizontalFiles) {
+    $path = Join-Path $horizontalRoot $name
+    if (-not (Test-Path -LiteralPath $path)) {
+        Fail "missing horizontal mastery file: $path"
+    }
+}
+
+$horizontalMdFiles = @(Get-ChildItem -LiteralPath $horizontalRoot -File -Filter "*.md")
+if ($horizontalMdFiles.Count -gt 21) {
+    Fail "horizontal mastery should stay under 21 human-facing Markdown files, found $($horizontalMdFiles.Count)"
+}
+
+$horizontalReadmeText = Get-Content -LiteralPath (Join-Path $horizontalRoot "README.md") -Raw
+foreach ($requiredHorizontalPhrase in @("DSA Horizontal Mastery", "CROSSDRILL", "under 21 human-facing Markdown files", "Why this pattern")) {
+    if ($horizontalReadmeText -notmatch [regex]::Escape($requiredHorizontalPhrase)) {
+        Fail "horizontal README is missing: $requiredHorizontalPhrase"
+    }
+}
+
+$crossdrillText = Get-Content -LiteralPath (Join-Path $horizontalRoot "01_CROSSDRILL_PROTOCOL.md") -Raw
+foreach ($requiredCrossdrillPhrase in @("Problem -> Patterns -> Mutation", "WHY NOT NOW?", "WHAT IS MISSING?", "MINIMAL CHANGE", "NOW WHY DOES IT WORK?")) {
+    if ($crossdrillText -notmatch [regex]::Escape($requiredCrossdrillPhrase)) {
+        Fail "CROSSDRILL protocol is missing: $requiredCrossdrillPhrase"
+    }
+}
+
+$switchboardText = Get-Content -LiteralPath (Join-Path $horizontalRoot "02_MUTATION_SWITCHBOARD.md") -Raw
+foreach ($requiredSwitchboardPhrase in @("Why not now", "What is missing", "Minimal change", "Now why it works")) {
+    if ($switchboardText -notmatch [regex]::Escape($requiredSwitchboardPhrase)) {
+        Fail "mutation switchboard is missing column/phrase: $requiredSwitchboardPhrase"
+    }
+}
+
+$horizontalMatrixPath = Join-Path $horizontalRoot "00_MASTER_MATRIX.md"
+$horizontalMatrixText = Get-Content -LiteralPath $horizontalMatrixPath -Raw
+$horizontalRows = @(Select-String -LiteralPath $horizontalMatrixPath -Pattern '^\| (?<rank>\d+) \|' | ForEach-Object { $_.Line })
+if ($horizontalRows.Count -ne $rankLines.Count) {
+    Fail "expected horizontal matrix to contain $($rankLines.Count) rows, found $($horizontalRows.Count)"
+}
+if ($horizontalMatrixText -notmatch 'Near-miss switches' -or $horizontalMatrixText -notmatch 'Wrong-pattern guard') {
+    Fail "horizontal master matrix is missing discrimination columns"
+}
+
+$horizontalRankSet = @{}
+foreach ($line in $horizontalRows) {
+    $cells = $line.Trim("|").Split("|") | ForEach-Object { $_.Trim() }
+    if ($cells.Count -lt 8 -or $cells[0] -notmatch '^\d+$') {
+        Fail "horizontal matrix row has unexpected shape: $line"
+    }
+    $rank = [int] $cells[0]
+    if ($horizontalRankSet.ContainsKey($rank)) {
+        Fail "duplicate rank $rank in horizontal matrix"
+    }
+    $horizontalRankSet[$rank] = $true
+    if (-not $rankedByRank.ContainsKey($rank)) {
+        Fail "horizontal matrix rank not found in ranked table: $rank"
+    }
+    if ($cells[1].Replace("\|", "|") -ne $rankedByRank[$rank].Title) {
+        Fail "horizontal matrix title mismatch for rank $rank"
+    }
+}
+for ($i = 1; $i -le $rankLines.Count; $i++) {
+    if (-not $horizontalRankSet.ContainsKey($i)) {
+        Fail "horizontal matrix missing rank $i"
+    }
+}
+
+$horizontalJavaMatches = @(Select-String -LiteralPath $horizontalMatrixPath -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
+$missingHorizontalJavaLinks = @()
+foreach ($line in $horizontalJavaMatches) {
+    foreach ($match in $line.Matches) {
+        $target = $match.Groups[1].Value
+        $fullPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $horizontalMatrixPath) $target))
+        if (-not (Test-Path -LiteralPath $fullPath)) {
+            $missingHorizontalJavaLinks += $target
+        }
+    }
+}
+if ($horizontalJavaMatches.Matches.Count -ne $rankLines.Count) {
+    Fail "expected one Java link per horizontal matrix row, found $($horizontalJavaMatches.Matches.Count)"
+}
+if ($missingHorizontalJavaLinks.Count -gt 0) {
+    Fail "missing horizontal Java links: $($missingHorizontalJavaLinks -join ', ')"
+}
+
+$horizontalFamilyFiles = @($horizontalMdFiles | Where-Object { $_.Name -match '^\d{2}_' -and $_.Name -notin @("00_MASTER_MATRIX.md", "01_CROSSDRILL_PROTOCOL.md", "02_MUTATION_SWITCHBOARD.md") })
+$horizontalFamilyRows = 0
+foreach ($file in $horizontalFamilyFiles) {
+    $text = Get-Content -LiteralPath $file.FullName -Raw
+    if ($text -notmatch '```mermaid' -or $text -notmatch '## Problems' -or $text -notmatch 'Near-miss mutation') {
+        Fail "horizontal family file is missing required sections: $($file.FullName)"
+    }
+    $horizontalFamilyRows += @(Select-String -LiteralPath $file.FullName -Pattern '^\| (?<rank>\d+) \|').Count
+}
+if ($horizontalFamilyRows -ne $rankLines.Count) {
+    Fail "expected horizontal family files to contain $($rankLines.Count) problem rows, found $horizontalFamilyRows"
+}
+
 $generatedAsciiFiles = @(
     $requiredFiles |
         Where-Object { $_ -ne "DSA_170_Brain_Map_FINAL.md" } |
         ForEach-Object { Get-Item -LiteralPath (Join-Path $interviewRoot $_) }
-) + $patternFiles
+) + $patternFiles + $horizontalMdFiles
 $allInterviewFiles = @(Get-ChildItem -LiteralPath $interviewRoot -Recurse -File)
+$allHorizontalFiles = @(Get-ChildItem -LiteralPath $horizontalRoot -Recurse -File)
 $nonAsciiFiles = @()
 $controlByteFiles = @()
 foreach ($file in $generatedAsciiFiles) {
@@ -539,7 +660,7 @@ foreach ($file in $generatedAsciiFiles) {
     }
 }
 
-foreach ($file in $allInterviewFiles) {
+foreach ($file in ($allInterviewFiles + $allHorizontalFiles)) {
     $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
     $hasControlByte = $false
     foreach ($byte in $bytes) {
@@ -572,6 +693,8 @@ if ($controlByteFiles.Count -gt 0) {
     localOnlyEntries = $localOnlyCount
     patternFiles = $patternFiles.Count
     patternRows = $patternProblemRows
+    horizontalFiles = $horizontalMdFiles.Count
+    horizontalRows = $horizontalRows.Count
     nonAsciiFiles = $nonAsciiFiles.Count
     controlByteFiles = $controlByteFiles.Count
 }

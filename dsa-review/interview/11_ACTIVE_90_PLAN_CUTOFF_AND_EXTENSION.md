@@ -48,7 +48,7 @@ The goal is not to finish every problem. The goal is to remove interview red fla
 | Ranks 1-50 inside current top 90 | 50 | Must be mostly GREEN. |
 | Ranks 51-90 inside current top 90 | 40 | GREEN/YELLOW is acceptable if top 50 is stable. |
 | Ranks 91-150 extension | 60 | Add only after top 90 gate passes. |
-| Ranks 151+ extension | 66 | Breadth and long-tail practice. |
+| Ranks 151+ extension | 57 | Breadth and long-tail practice. |
 
 ## Do Not Move The Current Plan
 

@@ -192,7 +192,7 @@ package org.chijai.day3.session1;
  */
 public class MinimumWindowSubstring {
 
-    static class MinimumWindowSubstring {
+    static class Optimal {
 
         public String minWindow(String s, String t) {
 
@@ -542,7 +542,7 @@ public class MinimumWindowSubstring {
     }
 
     private static void testMinimumWindow() {
-        MinimumWindowSubstring solver = new MinimumWindowSubstring();
+        Optimal solver = new Optimal();
 
         assertEquals("BANC",
                 solver.minWindow("ADOBECODEBANC", "ABC"),

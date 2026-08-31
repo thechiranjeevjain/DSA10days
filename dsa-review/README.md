@@ -10,6 +10,7 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 |---|---|
 | `interview/` | Before-company-call cockpit. Start here when an interview is near. Includes generated Mermaid mind maps. |
 | `interview/patterns/` | One generated Markdown file per pattern/category, still ordered by the current ranking heuristic, with a local Mermaid taxonomy map. |
+| `horizontal/` | Pattern-discrimination layer: compact master matrix, mutation switchboard, and CROSSDRILL protocol. |
 | `notes/` | Strategy docs, pre-Zoom checklist, drill system, and the problem-pattern index. |
 | `scripts/` | Commands for generating docs, validating links, random drills, and spaced-review actions. |
 | `solutions/` | Intentionally reserved. Java source stays in `../src/main/java/org/chijai`; this folder is not the source of truth. |
@@ -21,14 +22,15 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 3. For global order, use `interview/01_ZERO_TO_HERO_RANKED_TABLE.md`.
 4. For visual retrieval, use `interview/00_DSA_MIND_MAP.md`.
 5. For the complete recursive LeetCode source index, use `interview/07_LEETCODE_SOLVED_INDEX.md`.
-6. For structure decisions, use `interview/08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md`.
-7. If you are following the legacy 90-problem hourly plan, use `interview/11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md`.
-8. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
-9. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
-10. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-11. For weak-topic focus, open `interview/patterns/README.md`.
-12. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-13. After a miss, run the review command and mark the item honestly.
+6. For pattern discrimination and mutation practice, use `horizontal/README.md`.
+7. For structure decisions, use `interview/08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md`.
+8. If you are following the legacy 90-problem hourly plan, use `interview/11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md`.
+9. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
+10. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
+11. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
+12. For weak-topic focus, open `interview/patterns/README.md`.
+13. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+14. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 
@@ -40,6 +42,7 @@ Run commands from the repo root unless noted otherwise.
 | Rebuild cockpit docs | Windows: `dsa-review\scripts\build-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/build-interview-cockpit.sh` | Regenerates `interview/` and `interview/patterns/` from `notes/PROBLEM_PATTERN_INDEX.md` plus Java LeetCode metadata. |
 | Validate cockpit | Windows: `dsa-review\scripts\validate-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/validate-interview-cockpit.sh` | Checks ranked rows, Java links, LeetCode coverage, Mermaid maps, pattern files, ASCII output, and core interview text. |
 | Random drill | Windows: `dsa-review\scripts\drill.cmd -Priority A -Count 3`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority A -Count 3` | Active-recall prompt from the local problem index. Use `-Priority B`, `-Priority C`, or `-Priority All` when needed. |
+| One-problem horizontal drill | Windows: `dsa-review\scripts\crossdrill.cmd "Two Sum"`; macOS/Linux: `./dsa-review/scripts/crossdrill.sh "Two Sum"` | Generates the Problem -> Patterns -> Mutation reasoning loop for one matched problem. |
 | Random drill including design | Windows: `dsa-review\scripts\drill.cmd -Priority All -Count 5 -IncludeDesign`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority All -Count 5 -IncludeDesign` | Useful when the interview can mix DSA and design-flavored coding. |
 | Import into review state | Windows: `dsa-review\scripts\import-review.cmd`; macOS/Linux: `./dsa-review/scripts/import-review.sh` | Creates or refreshes local spaced-review items in `../review/review.json`. |
 | Today queue | Windows: `dsa-review\scripts\today.cmd`; macOS/Linux: `./dsa-review/scripts/today.sh` | Uses the external review engine through `scripts/review-os.ps1`. |

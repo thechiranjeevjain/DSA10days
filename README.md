@@ -13,9 +13,11 @@ The Java files under `src/main/java/org/chijai` are the source of truth. The `ds
 | Need complete LeetCode source index | `dsa-review/interview/07_LEETCODE_SOLVED_INDEX.md` |
 | Need one-line memory refresh | `dsa-review/interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md` |
 | Need spoken interview answers | `dsa-review/interview/03_CRISP_INTERVIEW_ANSWERS.md` |
+| Need pattern discrimination | `dsa-review/horizontal/README.md` |
 | Need pattern-focused revision | `dsa-review/interview/patterns/README.md` |
 | Need to audit the ranking | `dsa-review/interview/05_RANKING_METHODOLOGY_AND_AUDIT.md` |
 | Need a random active-recall drill | Windows: `dsa-review\scripts\drill.cmd -Priority A -Count 3`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority A -Count 3` |
+| Need one-problem horizontal drill | Windows: `dsa-review\scripts\crossdrill.cmd "Two Sum"`; macOS/Linux: `./dsa-review/scripts/crossdrill.sh "Two Sum"` |
 
 ## Interview Solve Rhythm
 
@@ -58,6 +60,7 @@ Run these from the repo root.
 | `src/main/java/org/chijai` | Original Java solutions and examples. Keep this as the source of truth. |
 | `dsa-review/interview` | Near-interview cockpit: ranked lists, recall prompts, crisp answers, time-boxed plans. |
 | `dsa-review/interview/patterns` | Per-pattern focused revision files generated from the ranked list. |
+| `dsa-review/horizontal` | Pattern discrimination layer: winner pattern, near-misses, minimal mutations, and CROSSDRILL protocol. |
 | `dsa-review/notes` | Strategy notes and source problem index used by the generator. |
 | `dsa-review/scripts` | Build, validate, random drill, and spaced-review helper commands. |
 | `review/review.json` | Local spaced-review state imported from this repo. |

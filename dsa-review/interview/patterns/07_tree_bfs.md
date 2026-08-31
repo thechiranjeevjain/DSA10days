@@ -19,7 +19,7 @@ flowchart TD
   Invariant["INVARIANT<br/>DFS can mix levels; BFS preserves level order for views, distances, and serialization."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Tree BFS / DFS<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 62: Binary Tree Right Side View"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 58: Binary Tree Right Side View"]
   Invariant --> Sub02["SUB-PATTERN<br/>Tree traversal<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 15: Binary Tree Level Order Traversal"]
 ```
@@ -29,7 +29,7 @@ flowchart TD
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
 | 15 | Phase 1 - No Red Flags | Binary Tree Level Order Traversal | Tree traversal | [Java](../../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeTraversal.java) | [LC](https://leetcode.com/problems/binary-tree-level-order-traversal/) | Capture queue size to process exactly one tree level at a time. | For each level, poll size nodes, collect values, enqueue children. |
-| 62 | Phase 2 - Strong Core | Binary Tree Right Side View | Tree BFS / DFS | [Java](../../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeSideView.java) | [LC](https://leetcode.com/problems/binary-tree-right-side-view/) | The last node seen at each BFS level is visible from the right. | For each level size, process nodes and record value when i == size - 1. |
+| 58 | Phase 2 - Strong Core | Binary Tree Right Side View | Tree BFS / DFS | [Java](../../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeSideView.java) | [LC](https://leetcode.com/problems/binary-tree-right-side-view/) | The last node seen at each BFS level is visible from the right. | For each level size, process nodes and record value when i == size - 1. |
 
 ## Drill
 

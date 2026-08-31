@@ -21,7 +21,7 @@ flowchart TD
   Invariant --> Sub01["SUB-PATTERN<br/>Prefix/suffix<br/>1 problem(s)"]
   Sub01 --> Sub01A01["ANCHOR<br/>rank 4: Product Of Array Except Self"]
   Invariant --> Sub02["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 53: Binary Subarrays With Sum"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 50: Binary Subarrays With Sum"]
 ```
 
 ## Problems
@@ -29,7 +29,7 @@ flowchart TD
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
 | 4 | Phase 1 - No Red Flags | Product Of Array Except Self | Prefix/suffix | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/ProductOfArrayExceptSelf.java) | [LC](https://leetcode.com/problems/product-of-array-except-self/) | Answer is product of everything left times everything right, no division needed. | Fill answer with left products, then multiply by running right product from the end. |
-| 53 | Phase 2 - Strong Core | Binary Subarrays With Sum | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/binary-subarrays-with-sum/) | For binary arrays, exact goal count can be atMost(goal) - atMost(goal-1). | Implement atMost(sum): expand right, shrink while sum > goal, add window length. |
+| 50 | Phase 2 - Strong Core | Binary Subarrays With Sum | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/binary-subarrays-with-sum/) | For binary arrays, exact goal count can be atMost(goal) - atMost(goal-1). | Implement atMost(sum): expand right, shrink while sum > goal, add window length. |
 
 ## Drill
 

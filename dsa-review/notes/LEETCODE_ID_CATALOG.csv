@@ -3,10 +3,13 @@ id,slug,title
 3,longest-substring-without-repeating-characters,Longest Substring Without Repeating Characters
 14,longest-common-prefix,Longest Common Prefix
 25,reverse-nodes-in-k-group,Reverse Nodes in k-Group
+37,sudoku-solver,Sudoku Solver
+51,n-queens,N-Queens
 55,jump-game,Jump Game
 70,climbing-stairs,Climbing Stairs
 72,edit-distance,Edit Distance
 75,sort-colors,Sort Colors
+76,minimum-window-substring,Minimum Window Substring
 84,largest-rectangle-in-histogram,Largest Rectangle in Histogram
 85,maximal-rectangle,Maximal Rectangle
 97,interleaving-string,Interleaving String
@@ -23,6 +26,7 @@ id,slug,title
 169,majority-element,Majority Element
 188,best-time-to-buy-and-sell-stock-iv,Best Time to Buy and Sell Stock IV
 198,house-robber,House Robber
+200,number-of-islands,Number of Islands
 204,count-primes,Count Primes
 207,course-schedule,Course Schedule
 208,implement-trie-prefix-tree,Implement Trie (Prefix Tree)
@@ -46,9 +50,11 @@ id,slug,title
 402,remove-k-digits,Remove K Digits
 410,split-array-largest-sum,Split Array Largest Sum
 421,maximum-xor-of-two-numbers-in-an-array,Maximum XOR of Two Numbers in an Array
+424,longest-repeating-character-replacement,Longest Repeating Character Replacement
 444,sequence-reconstruction,Sequence Reconstruction
 451,sort-characters-by-frequency,Sort Characters By Frequency
 516,longest-palindromic-subsequence,Longest Palindromic Subsequence
+543,diameter-of-binary-tree,Diameter of Binary Tree
 547,number-of-provinces,Number of Provinces
 583,delete-operation-for-two-strings,Delete Operation for Two Strings
 646,maximum-length-of-pair-chain,Maximum Length of Pair Chain
@@ -62,6 +68,7 @@ id,slug,title
 712,minimum-ascii-delete-sum-for-two-strings,Minimum ASCII Delete Sum for Two Strings
 714,best-time-to-buy-and-sell-stock-with-transaction-fee,Best Time to Buy and Sell Stock with Transaction Fee
 720,longest-word-in-dictionary,Longest Word in Dictionary
+733,flood-fill,Flood Fill
 746,min-cost-climbing-stairs,Min Cost Climbing Stairs
 763,partition-labels,Partition Labels
 785,is-graph-bipartite,Is Graph Bipartite?

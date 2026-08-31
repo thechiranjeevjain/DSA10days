@@ -19,14 +19,14 @@ flowchart TD
   Invariant["INVARIANT<br/>Repeated graph searches are expensive; union-find maintains components incrementally."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Union Find / graph<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 76: Accounts Merge"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 71: Accounts Merge"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 76 | Phase 3 - Important | Accounts Merge | Union Find / graph | [Java](../../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | [LC](https://leetcode.com/problems/accounts-merge/) | Represent components with parent links; union merges and failed union detects cycles. | Initialize parent/rank, find with compression, union by rank/size. |
+| 71 | Phase 3 - Important | Accounts Merge | Union Find / graph | [Java](../../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | [LC](https://leetcode.com/problems/accounts-merge/) | Represent components with parent links; union merges and failed union detects cycles. | Initialize parent/rank, find with compression, union by rank/size. |
 
 ## Drill
 
