@@ -1,4 +1,4 @@
-package org.chijai.day1.Arrays.session4.Intervals;
+package org.chijai.day9.dp.session1;
 
 public class GasStation {
 
