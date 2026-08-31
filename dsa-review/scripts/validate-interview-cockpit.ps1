@@ -583,6 +583,7 @@ if ($horizontalMatrixText -notmatch 'Near-miss switches' -or $horizontalMatrixTe
 }
 
 $horizontalRankSet = @{}
+$horizontalByTitle = @{}
 foreach ($line in $horizontalRows) {
     $cells = $line.Trim("|").Split("|") | ForEach-Object { $_.Trim() }
     if ($cells.Count -lt 8 -or $cells[0] -notmatch '^\d+$') {
@@ -598,6 +599,16 @@ foreach ($line in $horizontalRows) {
     }
     if ($cells[1].Replace("\|", "|") -ne $rankedByRank[$rank].Title) {
         Fail "horizontal matrix title mismatch for rank $rank"
+    }
+    $horizontalByTitle[$cells[1].Replace("\|", "|")] = [pscustomobject]@{
+        Rank = $rank
+        Problem = $cells[1].Replace("\|", "|")
+        Winner = $cells[2].Replace("\|", "|")
+        WhyWinner = $cells[3].Replace("\|", "|")
+        Switches = $cells[4].Replace("\|", "|")
+        Guard = $cells[5].Replace("\|", "|")
+        Java = $cells[6]
+        LeetCode = $cells[7]
     }
 }
 for ($i = 1; $i -le $rankLines.Count; $i++) {
@@ -622,6 +633,36 @@ if ($horizontalJavaMatches.Matches.Count -ne $rankLines.Count) {
 }
 if ($missingHorizontalJavaLinks.Count -gt 0) {
     Fail "missing horizontal Java links: $($missingHorizontalJavaLinks -join ', ')"
+}
+
+$expectedHorizontalSemantics = @(
+    @{ Title = "Merge K Sorted Lists"; Winner = "Heap / Priority Queue"; MustContain = "minimum among k heads"; MustNotContain = "node repeats/intersects" },
+    @{ Title = "Meeting Rooms II"; Winner = "Heap / Priority Queue"; MustContain = "active end"; MustNotContain = "Do not heap this" },
+    @{ Title = "Meeting Rooms"; Winner = "Intervals / Sorting Greedy"; MustContain = "output asks for room count"; MustNotContain = "Heap / Priority Queue" },
+    @{ Title = "First Unique Number"; Winner = "Design Data Structures"; MustContain = "first unique in arrival order"; MustNotContain = "node repeats/intersects" },
+    @{ Title = "Moving Average From Data Stream"; Winner = "Sliding Window"; MustContain = "fixed-window sum"; MustNotContain = "node repeats/intersects" },
+    @{ Title = "Design Circular Queue"; Winner = "Design Data Structures"; MustContain = "fixed-capacity FIFO"; MustNotContain = "most-recent unresolved" },
+    @{ Title = "Maximum XOR With an Element From Array"; Winner = "Trie"; MustContain = "nums <= mi"; MustNotContain = "word-prefix" },
+    @{ Title = "Maximum Genetic Difference Query"; Winner = "Trie"; MustContain = "current ancestors"; MustNotContain = "word-prefix" },
+    @{ Title = "Count Pairs With XOR in a Range"; Winner = "Trie"; MustContain = "less-than counts by bit"; MustNotContain = "word-prefix" },
+    @{ Title = "Path Sum III"; Winner = "Tree DFS / Recursion"; MustContain = "prefix counts on the current root path"; MustNotContain = "minimum-level answers" }
+)
+
+foreach ($expectation in $expectedHorizontalSemantics) {
+    if (-not $horizontalByTitle.ContainsKey($expectation.Title)) {
+        Fail "horizontal semantic audit missing title: $($expectation.Title)"
+    }
+    $row = $horizontalByTitle[$expectation.Title]
+    $combined = "$($row.Winner) $($row.WhyWinner) $($row.Switches) $($row.Guard)"
+    if ($row.Winner -ne $expectation.Winner) {
+        Fail "horizontal semantic audit winner mismatch for $($expectation.Title): expected '$($expectation.Winner)', found '$($row.Winner)'"
+    }
+    if ($combined -notmatch [regex]::Escape($expectation.MustContain)) {
+        Fail "horizontal semantic audit missing expected phrase for $($expectation.Title): $($expectation.MustContain)"
+    }
+    if ($combined -match [regex]::Escape($expectation.MustNotContain)) {
+        Fail "horizontal semantic audit still contains bad phrase for $($expectation.Title): $($expectation.MustNotContain)"
+    }
 }
 
 $horizontalFamilyFiles = @($horizontalMdFiles | Where-Object { $_.Name -match '^\d{2}_' -and $_.Name -notin @("00_MASTER_MATRIX.md", "01_CROSSDRILL_PROTOCOL.md", "02_MUTATION_SWITCHBOARD.md") })

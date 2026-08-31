@@ -5,6 +5,8 @@ import java.util.PriorityQueue;
 
 /**
  * Merge K Sorted Lists
+ * LeetCode 23
+ * https://leetcode.com/problems/merge-k-sorted-lists/
  *
  * Core retrieval:
  * K sorted frontiers -> repeatedly choose global minimum -> min-heap.

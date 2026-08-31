@@ -35,6 +35,9 @@ function ConvertTo-DisplayTitle {
         -replace "\bDp\b", "DP" `
         -replace "\bLca\b", "LCA" `
         -replace "\bBst\b", "BST" `
+        -replace "\bIi\b", "II" `
+        -replace "\bIii\b", "III" `
+        -replace "\bIv\b", "IV" `
         -replace "\bKmp\b", "KMP" `
         -replace "\bLru\b", "LRU" `
         -replace "\bXor\b", "XOR" `
@@ -526,6 +529,21 @@ function Get-ProblemOverride {
             hook = "Checking all pairs is O(n^2); bitwise trie preserves candidate prefixes cheaply."
             code = "Insert numbers by bits, then for each number walk preferred opposite bits and update max."
         }
+        "maximumxorwithanelementfromarray" = @{
+            recall = "Offline sort queries by limit; insert eligible numbers into a bitwise trie before maximizing XOR."
+            hook = "A plain trie over all numbers violates the limit; sorting queries makes eligibility monotonic."
+            code = "Sort nums and queries by mi, insert nums <= mi, answer each query by opposite-bit trie walk."
+        }
+        "maximumgeneticdifferencequery" = @{
+            recall = "DFS the tree while the current root-to-node path is stored in a bitwise trie."
+            hook = "Query candidates are ancestors only, so a global trie includes invalid values."
+            code = "On entering node insert value, answer attached queries, DFS children, then remove value."
+        }
+        "countpairswithxorinarange" = @{
+            recall = "Count pairs with XOR < bound using bitwise trie prefixes, then subtract low from high+1."
+            hook = "All-pairs XOR is O(n^2); bitwise prefixes count valid partners per bit."
+            code = "For each num, add countLessThan(high+1) - countLessThan(low), then insert num."
+        }
         "networkdelaytime" = @{
             recall = "Dijkstra keeps the next shortest unsettled node in a min-heap."
             hook = "Unweighted BFS is not valid with weighted edges; heap order settles shortest distances."
@@ -977,6 +995,11 @@ function Get-Category {
     $titleText = $Title.ToLowerInvariant()
 
     if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
+    if ($titleText -match "^merge k sorted lists$") { return "Heap" }
+    if ($titleText -match "^meeting rooms ii$") { return "Heap" }
+    if ($titleText -match "^meeting rooms?$") { return "Intervals/Greedy" }
+    if ($titleText -match "first unique number|design circular queue") { return "Design/LLD" }
+    if ($titleText -match "moving average from data stream") { return "Sliding Window" }
     if ($titleText -match "^two sum$") { return "HashMap/HashSet" }
     if ($titleText -match "^two sum ii") { return "Two Pointers" }
     if ($titleText -match "implement trie.*prefix tree|design add and search words|word search ii|maximum xor|hotel reviews|longest common prefix|longest word in dictionary|replace words|search suggestions system|short encoding of words") { return "Trie" }
@@ -1745,7 +1768,7 @@ function Get-IndexRows {
 
     $deduped = New-Object System.Collections.Generic.List[object]
     $seen = @{}
-    foreach ($row in ($rows | Sort-Object ImportanceWeight, CategoryWeight, PriorityWeight, @{ Expression = { if ($_.Slug) { 0 } else { 1 } } }, MatchScore, File, Title)) {
+    foreach ($row in ($rows | Sort-Object ImportanceWeight, CategoryWeight, MatchScore, PriorityWeight, @{ Expression = { if ($_.Slug) { 0 } else { 1 } } }, File, Title)) {
         $titleKey = "TITLE:" + (Get-NormalizedKey $row.Title)
         $sourceKey = if ($row.Slug) { "LC:" + $row.Slug } else { "LOCAL:" + $row.File }
         if ($seen.ContainsKey($sourceKey) -or $seen.ContainsKey($titleKey)) { continue }
@@ -3456,7 +3479,86 @@ function New-HorizontalSwitch {
 }
 
 function Get-HorizontalSwitches {
-    param([string] $Category)
+    param(
+        [string] $Category,
+        [string] $Title = ""
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "mergeksortedlists" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Linked List Pointers" -WhyNot "Pointer merge is required, but the repeated choice is among k current heads." -Missing "Only two current heads or one fixed merge boundary." -Mutation "Reduce k lists to exactly two sorted lists." -NowWhy "A dummy tail and two pointers pick the smaller head directly."),
+                (New-HorizontalSwitch -Pattern "Divide And Conquer" -WhyNot "It fits as an alternative, but the interview bottleneck is still repeated minimum-head selection." -Missing "A requirement to avoid extra heap space or emphasize pairwise merging." -Mutation "Ask for pairwise merging with recursion or no priority queue." -NowWhy "Balanced pair merges give O(N log k) without a heap.")
+            )
+        }
+        "meetingroomsii" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Intervals / Sorting Greedy" -WhyNot "Sorting is necessary but not sufficient; you must know the earliest active end time." -Missing "Only conflict existence instead of minimum resources." -Mutation "Ask whether a person can attend all meetings." -NowWhy "After sorting by start, only the previous end must be checked."),
+                (New-HorizontalSwitch -Pattern "Sweep Line" -WhyNot "Also valid, but less direct if you already have interval objects and need active rooms." -Missing "Separate start/end event counting." -Mutation "Represent every start as +1 and every end as -1." -NowWhy "Peak active events equals room count.")
+            )
+        }
+        "meetingrooms" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Heap" -WhyNot "No need to track all active meetings when the output is only conflict existence." -Missing "Minimum number of simultaneous rooms/resources." -Mutation "Ask for minimum meeting rooms." -NowWhy "Earliest finishing active meeting determines room reuse."),
+                (New-HorizontalSwitch -Pattern "Sweep Line" -WhyNot "Event counting is overkill for a yes/no overlap check." -Missing "Need maximum overlap count." -Mutation "Ask for the maximum number of concurrent meetings." -NowWhy "Peak event balance gives overlap count.")
+            )
+        }
+        "firstuniquenumber" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "Counts alone cannot answer first-in-order unique." -Missing "Arrival order among still-unique candidates." -Mutation "Ask only whether a value is unique at the end." -NowWhy "Frequency count is enough when order is not queried online."),
+                (New-HorizontalSwitch -Pattern "Queue / LinkedHashSet" -WhyNot "This is the backing structure, not the whole API design." -Missing "Operation contract for add and showFirstUnique." -Mutation "Make it a single batch query instead of a streaming object." -NowWhy "The design collapses to count then scan.")
+            )
+        }
+        "movingaveragefromdatastream" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Prefix/Suffix" -WhyNot "Prefix sums work for immutable arrays, but the stream window evicts old values." -Missing "Static range queries over an already-known array." -Mutation "Change stream calls into many fixed-range average queries on an array." -NowWhy "Prefix sums answer each range in O(1)."),
+                (New-HorizontalSwitch -Pattern "Design Data Structure" -WhyNot "The object API is simple; the core invariant is fixed-size window sum." -Missing "More operations such as reset, variable window size, or multiple keys." -Mutation "Add per-user moving averages or variable windows." -NowWhy "The API contract starts driving the backing structures.")
+            )
+        }
+        "designcircularqueue" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Stack" -WhyNot "Queue order is FIFO, not most-recent-first." -Missing "LIFO operation contract." -Mutation "Ask for stack using queues instead of circular queue." -NowWhy "Rotation/lazy transfer restores LIFO behavior."),
+                (New-HorizontalSwitch -Pattern "Linked List" -WhyNot "A linked list works, but fixed capacity asks for reusable slots." -Missing "Unbounded capacity or frequent middle removal." -Mutation "Remove fixed capacity and ask for a general queue." -NowWhy "Head/tail nodes avoid modulo arithmetic.")
+            )
+        }
+        "lrucache" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "A map finds keys but cannot evict least-recently-used by itself." -Missing "Recency order with O(1) move/remove." -Mutation "Remove eviction and ask for plain get/put." -NowWhy "Direct key lookup is enough."),
+                (New-HorizontalSwitch -Pattern "Linked List Pointers" -WhyNot "A list gives order but not O(1) key lookup." -Missing "Key-to-node addressability." -Mutation "Ask only to maintain recent order, not lookup by key." -NowWhy "Pointer moves are the main invariant.")
+            )
+        }
+        "pathsumiii" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Prefix/Suffix" -WhyNot "Prefix sum is inside the DFS path, not a flat array scan." -Missing "Ancestor path context and backtracking removal." -Mutation "Change the tree to an array subarray-sum problem." -NowWhy "A running prefix map over indices is enough."),
+                (New-HorizontalSwitch -Pattern "Tree DFS" -WhyNot "Plain DFS alone restarts work at every node." -Missing "Need to count all downward paths ending at current node efficiently." -Mutation "Ask only whether one root-to-leaf path equals target." -NowWhy "A simple path-sum DFS return/check is sufficient.")
+            )
+        }
+        "maximumxoroftwonumbersinanarray" {
+            return @(
+                (New-HorizontalSwitch -Pattern "HashSet Prefix Greedy" -WhyNot "It is a valid alternative, but it hides the candidate structure compared with bitwise trie." -Missing "Need only feasibility of each candidate prefix, not explicit partner walk." -Mutation "Ask for a proof-focused O(n) prefix-set solution." -NowWhy "Testing candidate XOR prefixes proves whether the bit can be set."),
+                (New-HorizontalSwitch -Pattern "Brute Force" -WhyNot "All pairs are clear but O(n^2)." -Missing "Small n or no performance pressure." -Mutation "Constrain n to a few hundred." -NowWhy "Pair enumeration becomes acceptable.")
+            )
+        }
+        "maximumxorwithanelementfromarray" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Plain Bitwise Trie" -WhyNot "Using all nums violates each query's mi limit." -Missing "Eligibility filter for nums <= mi." -Mutation "Remove the per-query limit." -NowWhy "Every number is always eligible for trie lookup."),
+                (New-HorizontalSwitch -Pattern "Sorting / Offline Queries" -WhyNot "Sorting alone orders eligibility but cannot maximize XOR." -Missing "Bitwise opposite-bit search among eligible values." -Mutation "Ask only for count of eligible values per query." -NowWhy "Sorted pointer scan is enough.")
+            )
+        }
+        "maximumgeneticdifferencequery" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Plain Bitwise Trie" -WhyNot "A global trie includes non-ancestor nodes." -Missing "Current root-to-node path membership." -Mutation "Ask maximum XOR with any node value in the whole tree." -NowWhy "Global trie membership is valid."),
+                (New-HorizontalSwitch -Pattern "Tree DFS" -WhyNot "DFS gives the active ancestor path but not fast XOR maximization." -Missing "Opposite-bit lookup over active ancestors." -Mutation "Ask only whether an ancestor with value x exists." -NowWhy "A set on the DFS path is enough.")
+            )
+        }
+        "countpairswithxorinarange" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Brute Force" -WhyNot "All pairs are easy to test but O(n^2)." -Missing "Small input or no pair-count workload pressure." -Mutation "Constrain n to a few hundred." -NowWhy "Direct pair enumeration is acceptable."),
+                (New-HorizontalSwitch -Pattern "HashMap/HashSet" -WhyNot "Exact complement lookup does not count all XOR values in a range." -Missing "Prefix counts by bit to count less-than bounds." -Mutation "Ask for pairs with XOR exactly k." -NowWhy "Each number has one target partner value.")
+            )
+        }
+    }
 
     switch ($Category) {
         "HashMap/HashSet" {
@@ -3595,7 +3697,26 @@ function Get-HorizontalSwitches {
 }
 
 function Get-HorizontalWrongPatternGuard {
-    param([string] $Category)
+    param(
+        [string] $Category,
+        [string] $Title = ""
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "mergeksortedlists" { return "Do not label this as pure linked-list merge; the hard part is selecting the minimum among k heads." }
+        "meetingroomsii" { return "Do not stop at sorted intervals; minimum rooms requires tracking active end times." }
+        "meetingrooms" { return "Do not heap this unless the output asks for room count or active resources." }
+        "firstuniquenumber" { return "Do not use counts alone; the query asks for first unique in arrival order." }
+        "movingaveragefromdatastream" { return "Do not recompute the average; maintain fixed-window sum and evict exactly one old value." }
+        "designcircularqueue" { return "Do not use stack reasoning; this is fixed-capacity FIFO with modulo head/tail arithmetic." }
+        "lrucache" { return "Do not use only a map or only a list; O(1) get/put/evict needs both." }
+        "pathsumiii" { return "Do not restart DFS from every node; keep prefix counts on the current root path." }
+        "maximumxoroftwonumbersinanarray" { return "Do not use word-prefix Trie language; this is a bitwise prefix decision from high bit to low bit." }
+        "maximumxorwithanelementfromarray" { return "Do not put every number in the trie; each query can use only nums <= mi." }
+        "maximumgeneticdifferencequery" { return "Do not use a global trie; only current ancestors are valid candidates." }
+        "countpairswithxorinarange" { return "Do not use exact-complement lookup; range XOR needs less-than counts by bit." }
+    }
 
     switch ($Category) {
         "HashMap/HashSet" { return "Do not force window/pointers unless contiguity or sorted elimination is explicit." }
@@ -3745,11 +3866,11 @@ function Build-HorizontalMasterMatrix {
     $lines.Add("|---:|---|---|---|---|---|---|---|")
     foreach ($row in $Rows) {
         $winner = Get-DisplayCategory $row.Category
-        $switches = @(Get-HorizontalSwitches -Category $row.Category)
+        $switches = @(Get-HorizontalSwitches -Category $row.Category -Title $row.Title)
         $switchSummary = Join-HorizontalSwitchSummary -Switches $switches
         $java = New-Link "Java" $row.JavaLink
         $lc = if ($row.LeetCodeLink) { New-Link "LC" $row.LeetCodeLink } else { "-" }
-        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category)) | $java | $lc |")
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category -Title $row.Title)) | $java | $lc |")
     }
     $lines.Add("")
     $lines.Add("Total ranked entries: $($Rows.Count)")
@@ -3871,12 +3992,12 @@ function Build-HorizontalFamilyFile {
     $lines.Add("| Rank | Problem | Winner | Why winner | Near-miss mutation | Wrong-pattern guard | Java | LeetCode |")
     $lines.Add("|---:|---|---|---|---|---|---|---|")
     foreach ($row in $items) {
-        $switches = @(Get-HorizontalSwitches -Category $row.Category)
+        $switches = @(Get-HorizontalSwitches -Category $row.Category -Title $row.Title)
         $switchSummary = Join-HorizontalSwitchSummary -Switches $switches -Limit 2
         $winner = Get-DisplayCategory $row.Category
         $java = New-Link "Java" $row.JavaLink
         $lc = if ($row.LeetCodeLink) { New-Link "LC" $row.LeetCodeLink } else { "-" }
-        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category)) | $java | $lc |")
+        $lines.Add("| $($row.Rank) | $(Escape-Md $row.Title) | $(Escape-Md $winner) | $(Escape-Md $row.InterviewHook) | $(Escape-Md $switchSummary) | $(Escape-Md (Get-HorizontalWrongPatternGuard -Category $row.Category -Title $row.Title)) | $java | $lc |")
     }
     $lines.Add("")
     $lines.Add("## Drill")

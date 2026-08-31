@@ -10,8 +10,11 @@ import java.util.List;
  *
  * Horizontal mastery:
  *      Meeting Rooms I  -> detect overlap
+ *      https://leetcode.com/problems/meeting-rooms/
  *      Merge Intervals  -> combine overlap
+ *      https://leetcode.com/problems/merge-intervals/
  *      Insert Interval  -> exploit already-sorted structure
+ *      https://leetcode.com/problems/insert-interval/
  *
  * MASTER ENGINE
  * -------------

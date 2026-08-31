@@ -2,10 +2,13 @@ id,slug,title
 1,two-sum,Two Sum
 3,longest-substring-without-repeating-characters,Longest Substring Without Repeating Characters
 14,longest-common-prefix,Longest Common Prefix
+23,merge-k-sorted-lists,Merge K Sorted Lists
 25,reverse-nodes-in-k-group,Reverse Nodes in k-Group
 37,sudoku-solver,Sudoku Solver
 51,n-queens,N-Queens
 55,jump-game,Jump Game
+56,merge-intervals,Merge Intervals
+57,insert-interval,Insert Interval
 70,climbing-stairs,Climbing Stairs
 72,edit-distance,Edit Distance
 75,sort-colors,Sort Colors
@@ -34,7 +37,10 @@ id,slug,title
 211,design-add-and-search-words-data-structure,Design Add and Search Words Data Structure
 212,word-search-ii,Word Search II
 215,kth-largest-element-in-an-array,Kth Largest Element in an Array
+230,kth-smallest-element-in-a-bst,Kth Smallest Element in a BST
 239,sliding-window-maximum,Sliding Window Maximum
+252,meeting-rooms,Meeting Rooms
+253,meeting-rooms-ii,Meeting Rooms II
 261,graph-valid-tree,Graph Valid Tree
 268,missing-number,Missing Number
 269,alien-dictionary,Alien Dictionary
@@ -51,8 +57,10 @@ id,slug,title
 410,split-array-largest-sum,Split Array Largest Sum
 421,maximum-xor-of-two-numbers-in-an-array,Maximum XOR of Two Numbers in an Array
 424,longest-repeating-character-replacement,Longest Repeating Character Replacement
+435,non-overlapping-intervals,Non-overlapping Intervals
 444,sequence-reconstruction,Sequence Reconstruction
 451,sort-characters-by-frequency,Sort Characters By Frequency
+452,minimum-number-of-arrows-to-burst-balloons,Minimum Number of Arrows to Burst Balloons
 516,longest-palindromic-subsequence,Longest Palindromic Subsequence
 543,diameter-of-binary-tree,Diameter of Binary Tree
 547,number-of-provinces,Number of Provinces
@@ -84,6 +92,7 @@ id,slug,title
 907,sum-of-subarray-minimums,Sum of Subarray Minimums
 940,distinct-subsequences-ii,Distinct Subsequences II
 973,k-closest-points-to-origin,K Closest Points to Origin
+1094,car-pooling,Car Pooling
 1136,parallel-courses,Parallel Courses
 1143,longest-common-subsequence,Longest Common Subsequence
 1203,sort-items-by-groups-respecting-dependencies,Sort Items by Groups Respecting Dependencies

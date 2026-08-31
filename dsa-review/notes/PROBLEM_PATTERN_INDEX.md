@@ -18,8 +18,8 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day1/Arrays/session1/RansomNote.java` | HashMap/frequency | A |  |  |  | |
 | `day1/Arrays/session2/MajorityElement.java` | Boyer-Moore / frequency | A |  |  |  | |
 | `day1/Arrays/session2/Three3Sum2Sum.java` | Two pointers / hash | A |  |  |  | |
-| `day1/Arrays/session4/Intervals/Intervals.java` | Intervals / merge | A |  |  |  | |
-| `day1/Arrays/session4/Intervals/MeetingRoom.java` | Intervals / heap | A |  |  |  | |
+| `day1/Arrays/session4/Intervals/IntervalSortByStart.java` | Intervals / merge | A |  |  |  | |
+| `day1/Arrays/session4/Intervals/IntervalActiveMinHeap.java` | Intervals / heap | A |  |  |  | |
 | `day2/session1/BinarySearch.java` | Binary search invariant | A |  |  |  | |
 | `day2/session1/SearchRange.java` | Binary search boundary | A |  |  |  | |
 | `day2/session2/AGGRCOW.java` | Binary search on answer | A |  |  |  | |
@@ -84,8 +84,8 @@ These often appear, but they should come after Priority A is reliable.
 | `day1/Arrays/session3/StockSeries2.java` | Stock DP variants | B |  |  |  | |
 | `day2/session3/MaximumProfitInJobScheduling.java` | DP + binary search | B |  |  |  | |
 | `day2/session3/TimeBasedKeyValueStore.java` | HashMap + binary search | B |  |  |  | |
-| `day1/Arrays/session4/Intervals/GasStation.java` | Greedy | B |  |  |  | |
-| `day1/Arrays/session4/Intervals/MinimumPlatforms.java` | Intervals / sorting | B |  |  |  | |
+| `day9/dp/session1/GasStation.java` | Greedy | B |  |  |  | |
+| `day1/Arrays/session4/Intervals/IntervalGreedyByEnd.java` | Intervals / sorting | B |  |  |  | |
 | `day3/session3/LongestPalindrome.java` | Hash/frequency | B |  |  |  | |
 | `day3/session3/LongestPalindromicSubstring.java` | Expand around center | B |  |  |  | |
 | `day3/session3/StringToIntegerAtoi.java` | Parsing / edge cases | B |  |  |  | |

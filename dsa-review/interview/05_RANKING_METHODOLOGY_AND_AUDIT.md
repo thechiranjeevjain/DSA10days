@@ -20,8 +20,8 @@ Use phase bands more than exact rank numbers:
 |---|---:|---|
 | Ranked rows generated | 207 | Rows came from [Problem Pattern Index](../notes/PROBLEM_PATTERN_INDEX.md) and Java LeetCode links. |
 | Java source missing | 0 | Should stay 0. |
-| LeetCode-linked rows | 189 | Rows that open LeetCode directly. |
-| Local-only rows | 18 | Repo-only or design rows without direct LeetCode source link. |
+| LeetCode-linked rows | 192 | Rows that open LeetCode directly. |
+| Local-only rows | 15 | Repo-only or design rows without direct LeetCode source link. |
 | Pattern files generated | 21 | One focused view per generated category. |
 | Pattern rows covered | 207 | Should match ranked rows so no problem disappears from pattern files. |
 | Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |
@@ -77,7 +77,7 @@ These checks make the ranking less scammy by catching obvious placement mistakes
 | Java links resolve | PASS | A review row must open its real Java source. |
 | Pattern files cover ranked rows | PASS | Pattern-specific review must not drop problems. |
 | Phase 1 avoids role-specific/design rows | PASS | The first 30 should remove broad DSA red flags, not niche extras. |
-| Top 40 has broad pattern coverage | PASS: 17 categories | Early prep should not be trapped inside one pattern family. |
+| Top 40 has broad pattern coverage | PASS: 16 categories | Early prep should not be trapped inside one pattern family. |
 | Top 40 contains core anchor problems | PASS | The obvious high-ROI anchors should not drift late. |
 | Design rows deferred from top 70 | PASS | Design-flavored rows are useful, but not first-pass DSA ROI. |
 | Weekly sprint generated from canonical rows | PASS | Sprint titles, patterns, and signals must match ranked/pattern data. |

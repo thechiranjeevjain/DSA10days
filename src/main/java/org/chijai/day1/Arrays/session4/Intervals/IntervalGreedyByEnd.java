@@ -9,7 +9,9 @@ import java.util.Comparator;
  * Horizontal mastery:
  *      Activity Selection         -> maximize compatible count
  *      Non-overlapping Intervals -> minimize removals
+ *      https://leetcode.com/problems/non-overlapping-intervals/
  *      Minimum Arrows            -> minimum points covering intervals
+ *      https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/
  *
  * MASTER ENGINE
  * -------------
