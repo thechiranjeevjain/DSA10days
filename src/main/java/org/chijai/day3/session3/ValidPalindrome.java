@@ -1,534 +1,245 @@
 package org.chijai.day3.session3;
 
-import java.util.Locale;
-
+/**
+ * 125. Valid Palindrome — Opposite-End Two Pointers V2
+ *
+ * Primary classification:
+ *
+ * twoPointers/
+ *   oppositeEnds/
+ *     ValidPalindrome.java
+ *
+ * Core reusable idea:
+ *
+ *     Compare the outermost relevant pair.
+ *     Once verified, discard it forever.
+ *
+ * One template to own:
+ *
+ *     skip irrelevant endpoints
+ *     -> compare valid pair
+ *     -> mismatch = fail
+ *     -> match = move both inward
+ */
 public class ValidPalindrome {
 
-/*
- * ================================================================
- * 2. 📘 PRIMARY PROBLEM
- * ================================================================
- *
- * Title:
- * Valid Palindrome
- *
- * Difficulty:
- * Easy
- *
- * Tags:
- * Two Pointers
- * String
- * Character Processing
- *
- * Problem Description
- * -------------------
- * A phrase is considered a palindrome after:
- *
- * 1. Converting every uppercase English letter into lowercase.
- * 2. Removing every non-alphanumeric character.
- *
- * Alphanumeric characters include:
- * - English letters
- * - Digits
- *
- * Return true if the resulting sequence reads the same from both
- * directions.
- *
- * Return false otherwise.
- *
- * Constraints
- * -----------
- * 1 <= s.length <= 2 * 10^5
- *
- * s consists of printable ASCII characters.
- *
- * Representative Examples
- * -----------------------
- *
- * Example 1
- *
- * Input:
- * "A man, a plan, a canal: Panama"
- *
- * Normalized:
- * amanaplanacanalpanama
- *
- * Output:
- * true
- *
- *
- * Example 2
- *
- * Input:
- * "race a car"
- *
- * Normalized:
- * raceacar
- *
- * Output:
- * false
- *
- *
- * Example 3
- *
- * Input:
- * " "
- *
- * Normalized:
- * ""
- *
- * Output:
- * true
- *
- * Official LeetCode
- * -----------------
- * https://leetcode.com/problems/valid-palindrome/
- */
-
-
-/*
- * ================================================================
- * 3. 🔵 CORE PATTERN OVERVIEW
- * ================================================================
- *
- * Pattern
- * -------
- * Opposing Two Pointers
- *
- * Archetype
- * ---------
- * Shrinking Search Space
- *
- * Core Invariant
- * --------------
- * Every time both pointers compare two valid characters,
- * all characters outside the current window have already
- * been verified to mirror each other.
- *
- * Therefore:
- *
- * answer ∈ current window
- *
- * Once a pair matches,
- *
- * search space shrinks inward.
- *
- * Why It Works
- * ------------
- * A palindrome is symmetric.
- *
- * The leftmost surviving character must equal the
- * rightmost surviving character.
- *
- * If they do not,
- * no later comparison can repair that mismatch.
- *
- * Recognition Signals
- * -------------------
- * Look for:
- *
- * ✓ compare both ends
- * ✓ ignore irrelevant characters
- * ✓ symmetry
- * ✓ shrink interval
- * ✓ no revisiting
- *
- * When To Use
- * -----------
- * - palindrome verification
- * - mirrored comparison
- * - checking symmetry
- * - validating strings after filtering
- *
- * When NOT To Use
- * ---------------
- * Do not use when:
- *
- * - arbitrary insertions are allowed
- * - edit distance is required
- * - order may change
- * - matching is not symmetric
- *
- * Comparison With Similar Patterns
- * --------------------------------
- *
- * Sliding Window
- * Tracks a moving contiguous region.
- *
- * Two Pointers (this problem)
- * Shrinks from opposite directions.
- *
- * Fast & Slow Pointer
- * One pointer discovers structure.
- * Here both pointers actively eliminate search space.
- *
- * Binary Search
- * Discards half based on ordering.
- * Here we discard only verified matching boundaries.
- */
-
-
-/*
- * ================================================================
- * 4. 🟢 MENTAL MODEL & INVARIANTS
- * ================================================================
- *
- * Mental Model
- * ------------
- * Imagine peeling identical layers from both sides.
- *
- * Non-alphanumeric characters are invisible.
- *
- * They never belong to the palindrome.
- *
- * Therefore they should never participate in comparison.
- *
- * Every iteration performs exactly one of two actions:
- *
- * 1.
- * Skip an invalid character.
- *
- * or
- *
- * 2.
- * Verify a symmetric pair.
- *
- *
- * ------------------------------------------------
- * Invariant 1
- * ------------------------------------------------
- *
- * Every character outside
- *
- * [left ... right]
- *
- * has already been processed correctly.
- *
- *
- * ------------------------------------------------
- * Invariant 2
- * ------------------------------------------------
- *
- * left always searches for the next valid character.
- *
- * It never moves backward.
- *
- *
- * ------------------------------------------------
- * Invariant 3
- * ------------------------------------------------
- *
- * right always searches for the previous valid character.
- *
- * It never moves forward.
- *
- *
- * ------------------------------------------------
- * Invariant 4
- * ------------------------------------------------
- *
- * Whenever both pointers stop,
- *
- * they both reference valid alphanumeric characters.
- *
- *
- * ------------------------------------------------
- * Invariant 5
- * ------------------------------------------------
- *
- * After a successful comparison,
- *
- * both characters are permanently verified.
- *
- * They never need reconsideration.
- *
- *
- * Variable Meaning
- * ----------------
- *
- * left
- * ----
- * First unchecked valid character from the beginning.
- *
- * right
- * -----
- * First unchecked valid character from the end.
- *
- *
- * Allowed Moves
- * -------------
- *
- * left++
- * while skipping punctuation
- *
- * right--
- * while skipping punctuation
- *
- * left++
- * right--
- * after a successful match
- *
- *
- * Forbidden Moves
- * ---------------
- *
- * Never compare punctuation.
- *
- * Never move both pointers before comparison.
- *
- * Never skip a valid character.
- *
- * Never compare without normalizing case.
- *
- *
- * Termination
- * -----------
- *
- * Eventually
- *
- * left >= right
- *
- * meaning every valid mirrored pair has been checked.
- *
- *
- * Correctness Intuition
- * ---------------------
- *
- * A palindrome fails immediately at its first unequal mirrored pair.
- *
- * Therefore the first mismatch is sufficient proof.
- *
- * If no mismatch exists,
- * every mirrored pair matches,
- * therefore the normalized string is a palindrome.
- *
- *
- * Why Naive Solutions Fail
- * ------------------------
- *
- * Naive Approach 1
- * Build another filtered string.
- *
- * Correct but consumes additional memory.
- *
- * This problem can be solved in O(1) auxiliary space.
- *
- *
- * Naive Approach 2
- * Compare original characters directly.
- *
- * Fails because punctuation participates.
- *
- * Example:
- *
- * "A,"
- *
- * should normalize to
- *
- * "a"
- *
- * which is valid.
- */
-
-
-/*
- * ================================================================
- * 5. 🔴 WHY WRONG SOLUTIONS FAIL
- * ================================================================
- *
- * Mistake 1
- * ---------
- * Forget lowercase conversion.
- *
- * Why It Looks Correct
- * --------------------
- * Most examples are already lowercase.
- *
- * Violated Invariant
- * ------------------
- * Equal letters must compare case-insensitively.
- *
- * Counterexample
- * --------------
- * "Aa"
- *
- * Expected:
- * true
- *
- * Incorrect:
- * false
- *
- *
- * ------------------------------------------------
- *
- * Mistake 2
- * ---------
- * Compare punctuation.
- *
- * Counterexample
- *
- * "a."
- *
- * Expected:
- * true
- *
- *
- * ------------------------------------------------
- *
- * Mistake 3
- * ---------
- * Move both pointers whenever one side is invalid.
- *
- * Why It Seems Reasonable
- * -----------------------
- * Programmer wants to keep symmetry.
- *
- * Actual Problem
- * --------------
- * One valid character gets skipped forever.
- *
- * Invariant Broken
- * ----------------
- * Every valid character must be matched exactly once.
- *
- *
- * ------------------------------------------------
- *
- * Mistake 4
- * ---------
- * Skip only left side first using if instead of repeated search.
- *
- * Counterexample
- *
- * "...,a"
- *
- * Multiple invalid symbols require repeated advancement.
- *
- *
- * ------------------------------------------------
- *
- * Interview Trap
- * --------------
- *
- * Candidate says:
- *
- * "I'll remove all punctuation first."
- *
- * That works,
- * but interviewer may ask:
- *
- * Can you solve it in-place with O(1) extra space?
- */
-
-
-/*
- * ================================================================
- * ⚙ IMPLEMENTATION BLUEPRINT
- * ================================================================
- *
- * Mechanical Typing Order
- * -----------------------
- *
- * Step 1
- *
- * Handle null if required.
- *
- * Step 2
- *
- * left = 0
- *
- * Step 3
- *
- * right = length - 1
- *
- * Step 4
- *
- * while(left < right)
- *
- * Step 5
- *
- * Skip invalid left characters.
- *
- * Step 6
- *
- * Skip invalid right characters.
- *
- * Step 7
- *
- * Compare lowercase versions.
- *
- * Step 8
- *
- * Return false immediately on mismatch.
- *
- * Step 9
- *
- * Move both pointers inward.
- *
- * Step 10
- *
- * Return true.
- */
-
-
-/*
- * ================================================================
- * 🧾 ULTRA-COMPACT PSEUDOCODE
- * ================================================================
- *
- * left ← start
- * right ← end
- *
- * while left < right
- *     skip invalid left
- *     skip invalid right
- *     compare normalized characters
- *     mismatch → false
- *     inward move
- *
- * return true
- */
     /*
-     * ================================================================
-     * 6. SOLUTION CLASSES
-     * ================================================================
+     * ============================================================
+     * 📘 PROBLEM
+     * ============================================================
+     *
+     * A phrase is a palindrome after:
+     *
+     * 1. ignoring non-alphanumeric characters
+     * 2. comparing letters case-insensitively
+     *
+     * Return true if the remaining sequence reads the same
+     * forward and backward.
+     *
+     * Examples:
+     *
+     * "A man, a plan, a canal: Panama" -> true
+     * "race a car"                     -> false
+     * " "                              -> true
      */
 
+    /*
+     * ============================================================
+     * 🧭 EXACT CLASSIFICATION
+     * ============================================================
+     *
+     * PRIMARY:
+     *
+     *     Two Pointers
+     *
+     * SUBTYPE:
+     *
+     *     Opposite-End Two Pointers
+     *
+     * ARCHETYPE:
+     *
+     *     Symmetric Pair Validation
+     *
+     * ------------------------------------------------------------
+     * DO NOT CONFUSE WITH
+     * ------------------------------------------------------------
+     *
+     * Container With Most Water
+     *
+     *     opposite ends
+     *     but only ONE endpoint is discarded using a dominance proof
+     *
+     * Two Sum II
+     *
+     *     opposite ends
+     *     comparison decides WHICH side to discard
+     *
+     * Valid Palindrome
+     *
+     *     opposite ends
+     *     valid matching pair lets BOTH endpoints disappear
+     *
+     * Sliding Window
+     *
+     *     maintains a dynamic contiguous window satisfying a predicate
+     *
+     * Binary Search
+     *
+     *     discards search space using sorted/monotonic order
+     */
 
     /*
-     * ================================================================
-     * Brute Force
-     * ================================================================
+     * ============================================================
+     * 🧠 CORE MENTAL MODEL
+     * ============================================================
      *
-     * Idea
-     * ----
-     * Build a normalized string by:
+     * Imagine peeling matching layers from both sides.
      *
-     * 1. Ignoring non-alphanumeric characters.
-     * 2. Converting letters to lowercase.
+     * Non-alphanumeric characters are invisible.
      *
-     * Then verify whether the normalized string is a palindrome.
+     * The next meaningful left character MUST match
+     * the next meaningful right character.
      *
-     * 🟢 Invariant
-     * ------------
-     * The normalized string contains exactly the characters that
-     * participate in the palindrome definition.
+     * ------------------------------------------------------------
+     * CORE INVARIANT
+     * ------------------------------------------------------------
      *
-     * Limitation
-     * ----------
-     * Requires O(n) extra memory.
+     * Everything OUTSIDE:
      *
-     * Complexity
-     * ----------
-     * Time  : O(n)
-     * Space : O(n)
+     *     [left ... right]
      *
-     * Interview Usefulness
-     * --------------------
-     * Excellent starting point.
-     * Easy to explain.
-     * Often followed by the interviewer asking for O(1) space.
+     * has already been processed correctly.
+     *
+     * ------------------------------------------------------------
+     * POINTER MEANING
+     * ------------------------------------------------------------
+     *
+     * left:
+     *
+     *     searches for the next unchecked valid character
+     *     from the beginning
+     *
+     * right:
+     *
+     *     searches for the next unchecked valid character
+     *     from the end
+     *
+     * ------------------------------------------------------------
+     * ALLOWED MOVES
+     * ------------------------------------------------------------
+     *
+     * invalid left
+     *     -> left++
+     *
+     * invalid right
+     *     -> right--
+     *
+     * matching valid pair
+     *     -> left++, right--
+     *
+     * mismatch
+     *     -> return false
+     *
+     * ------------------------------------------------------------
+     * ONE-LINER
+     * ------------------------------------------------------------
+     *
+     * "Skip noise, compare mirrors, peel inward."
      */
+
+    /*
+     * ============================================================
+     * ⚠️ IMPORTANT UNDERSTANDING
+     * ============================================================
+     *
+     * Never compare punctuation.
+     *
+     * Never skip a valid character.
+     *
+     * Never move BOTH pointers merely because ONE side is invalid.
+     *
+     * Example:
+     *
+     *     "a.,"
+     *
+     * If right points to punctuation:
+     *
+     *     only right moves.
+     *
+     * Moving left too would incorrectly discard the valid 'a'.
+     *
+     * ------------------------------------------------------------
+     *
+     * A mismatch is final.
+     *
+     * Why?
+     *
+     * The outermost remaining valid characters are forced
+     * to mirror each other.
+     *
+     * If they differ, no inner characters can repair that mismatch.
+     */
+
+    /*
+     * ============================================================
+     * 📈 APPROACH PROGRESSION
+     * ============================================================
+     *
+     * 1. BUILD NORMALIZED STRING
+     *
+     * Filter valid characters into a new StringBuilder,
+     * lowercase them, then compare from both ends.
+     *
+     * Time:
+     *
+     *     O(n)
+     *
+     * Space:
+     *
+     *     O(n)
+     *
+     * ------------------------------------------------------------
+     *
+     * 2. NORMALIZE CASE, FILTER LAZILY
+     *
+     * Convert the whole string to lowercase once.
+     *
+     * Then skip punctuation with two pointers.
+     *
+     * Time:
+     *
+     *     O(n)
+     *
+     * Space:
+     *
+     *     O(n)
+     *
+     * because lowercasing creates another String.
+     *
+     * ------------------------------------------------------------
+     *
+     * 3. OPTIMAL TWO POINTERS
+     *
+     * Do not build any normalized copy.
+     *
+     * Skip irrelevant characters lazily and compare
+     * case-insensitively only when needed.
+     *
+     * Time:
+     *
+     *     O(n)
+     *
+     * Extra space:
+     *
+     *     O(1)
+     */
+
+    /*
+     * ============================================================
+     * 🔴 SOLUTION 1 — NORMALIZED COPY
+     * ============================================================
+     */
+
     static class BruteForce {
 
         static boolean isPalindrome(String s) {
@@ -544,7 +255,9 @@ public class ValidPalindrome {
                 char c = s.charAt(i);
 
                 if (Character.isLetterOrDigit(c)) {
-                    normalized.append(Character.toLowerCase(c));
+                    normalized.append(
+                            Character.toLowerCase(c)
+                    );
                 }
             }
 
@@ -553,7 +266,8 @@ public class ValidPalindrome {
 
             while (left < right) {
 
-                if (normalized.charAt(left) != normalized.charAt(right)) {
+                if (normalized.charAt(left)
+                        != normalized.charAt(right)) {
                     return false;
                 }
 
@@ -565,42 +279,17 @@ public class ValidPalindrome {
         }
     }
 
-
     /*
-     * ================================================================
-     * Improved
-     * ================================================================
+     * ============================================================
+     * 🟡 SOLUTION 2 — LOWERCASE COPY + LAZY FILTER
+     * ============================================================
      *
-     * Idea
-     * ----
-     * Normalize the entire string once using lowercase,
-     * then perform manual ASCII filtering while comparing.
+     * This is mainly a progression step.
      *
-     * Compared with the brute-force approach,
-     * this avoids constructing a second filtered string.
-     *
-     * 🟢 Invariant
-     * ------------
-     * Every comparison occurs only between lowercase
-     * alphanumeric characters.
-     *
-     * Improvement
-     * -----------
-     * Avoids creating another string containing only valid
-     * characters.
-     *
-     * Complexity
-     * ----------
-     * Time  : O(n)
-     * Space : O(n)
-     *
-     * (The lowercase conversion itself creates another String.)
-     *
-     * Interview Usefulness
-     * --------------------
-     * Demonstrates understanding of pointer movement before
-     * introducing the fully optimal solution.
+     * It avoids building a filtered string,
+     * but still creates a lowercase copy.
      */
+
     static class Improved {
 
         static boolean isPalindrome(String s) {
@@ -609,22 +298,28 @@ public class ValidPalindrome {
                 return false;
             }
 
-            s = s.toLowerCase(Locale.ROOT);
+            String normalizedCase =
+                    s.toLowerCase(java.util.Locale.ROOT);
 
             int left = 0;
-            int right = s.length() - 1;
+            int right = normalizedCase.length() - 1;
 
             while (left < right) {
 
-                while (left < right && !isAsciiAlphaNumeric(s.charAt(left))) {
+                while (left < right
+                        && !Character.isLetterOrDigit(
+                                normalizedCase.charAt(left))) {
                     left++;
                 }
 
-                while (left < right && !isAsciiAlphaNumeric(s.charAt(right))) {
+                while (left < right
+                        && !Character.isLetterOrDigit(
+                                normalizedCase.charAt(right))) {
                     right--;
                 }
 
-                if (s.charAt(left) != s.charAt(right)) {
+                if (normalizedCase.charAt(left)
+                        != normalizedCase.charAt(right)) {
                     return false;
                 }
 
@@ -634,76 +329,16 @@ public class ValidPalindrome {
 
             return true;
         }
-
-        private static boolean isAsciiAlphaNumeric(char c) {
-
-            return (c >= 'a' && c <= 'z')
-                    || (c >= '0' && c <= '9');
-        }
     }
 
-
     /*
-     * ================================================================
-     * Optimal (Interview Preferred)
-     * ================================================================
+     * ============================================================
+     * 🏆 SOLUTION 3 — OPTIMAL O(1) EXTRA SPACE
+     * ============================================================
      *
-     * Idea
-     * ----
-     * Never build a filtered string.
-     *
-     * Instead,
-     * both pointers search lazily for the next valid character.
-     *
-     * Invalid characters simply disappear from the search space.
-     *
-     * 🟢 Primary Invariant
-     * --------------------
-     * Whenever the comparison executes,
-     * both pointers reference valid alphanumeric characters
-     * that have not been verified previously.
-     *
-     * Search Space
-     * ------------
-     * [left ... right]
-     *
-     * Everything outside this interval has already been proven
-     * symmetric.
-     *
-     * Discard Rule
-     * ------------
-     *
-     * Invalid left character
-     *      ->
-     *      discard only left.
-     *
-     * Invalid right character
-     *      ->
-     *      discard only right.
-     *
-     * Matching pair
-     *      ->
-     *      discard both.
-     *
-     * Mismatch
-     *      ->
-     *      terminate immediately.
-     *
-     * Correctness
-     * -----------
-     * Every valid character participates exactly once.
-     *
-     * No valid comparison is skipped.
-     *
-     * Complexity
-     * ----------
-     * Time  : O(n)
-     * Space : O(1)
-     *
-     * Interview Usefulness
-     * --------------------
-     * This is the expected optimal solution for the problem.
+     * THIS is the implementation to memorize.
      */
+
     static class Optimal {
 
         static boolean isPalindrome(String s) {
@@ -717,537 +352,367 @@ public class ValidPalindrome {
 
             while (left < right) {
 
-                char leftCharacter = s.charAt(left);
-                char rightCharacter = s.charAt(right);
+                char leftChar = s.charAt(left);
+                char rightChar = s.charAt(right);
 
-                // 🟢 Invariant:
-                // Left pointer always searches for the next
-                // unchecked valid character.
-                if (!Character.isLetterOrDigit(leftCharacter)) {
+                // Skip invalid left character only.
+                if (!Character.isLetterOrDigit(leftChar)) {
                     left++;
                     continue;
                 }
 
-                // 🟢 Invariant:
-                // Right pointer always searches for the previous
-                // unchecked valid character.
-                if (!Character.isLetterOrDigit(rightCharacter)) {
+                // Skip invalid right character only.
+                if (!Character.isLetterOrDigit(rightChar)) {
                     right--;
                     continue;
                 }
 
-                // 🔵 Both pointers now reference valid characters.
-                if (Character.toLowerCase(leftCharacter)
-                        != Character.toLowerCase(rightCharacter)) {
-
-                    // 🔴 First mismatch proves symmetry cannot exist.
+                // Both are valid -> compare normalized pair.
+                if (Character.toLowerCase(leftChar)
+                        != Character.toLowerCase(rightChar)) {
                     return false;
                 }
 
-                // 🟢 This mirrored pair is permanently verified.
+                // Pair verified -> peel inward.
                 left++;
                 right--;
             }
 
-            // 🟢 Every mirrored pair matched.
             return true;
         }
     }
 
-
-/*
- * ================================================================
- * 🟣 INTERVIEW ARTICULATION
- * ================================================================
- *
- * If asked,
- * explain the algorithm like this:
- *
- * "The search space is always the interval between the
- * two pointers.
- *
- * Characters outside that interval have already been
- * verified.
- *
- * Invalid characters are never compared because they are
- * not part of the normalized string.
- *
- * Whenever both pointers stop,
- * they reference the next valid mirrored pair.
- *
- * A mismatch immediately proves the string cannot be a
- * palindrome.
- *
- * Otherwise that pair is permanently verified and the
- * search space shrinks."
- *
- * In-place Feasibility
- * --------------------
- * Yes.
- *
- * No character movement is required.
- *
- * Streaming Feasibility
- * ---------------------
- * No.
- *
- * We require random access to both ends simultaneously.
- *
- * When NOT To Use
- * ---------------
- * Do not use this pattern if the comparison is no longer
- * symmetric or if characters may be reordered.
- */
-/*
- * ================================================================
- * 🎯 INTERVIEW RECALL SHEET
- * ================================================================
- *
- * Trigger
- * -------
- * Compare two ends while ignoring unwanted characters.
- *
- * Pattern
- * -------
- * Opposing Two Pointers
- *
- * Search Target
- * -------------
- * The next unmatched valid character on each side.
- *
- * Primary Invariant
- * -----------------
- * Everything outside the current window has already been
- * proven symmetric.
- *
- * Discard Rule
- * ------------
- * Invalid left
- *      -> left++
- *
- * Invalid right
- *      -> right--
- *
- * Matching pair
- *      -> left++, right--
- *
- * Mismatch
- *      -> return false
- *
- * Common Trap
- * -----------
- * Moving both pointers when only one side is invalid.
- *
- * Edge Cases
- * ----------
- * ✓ Empty normalized string
- * ✓ Only punctuation
- * ✓ Single character
- * ✓ Mixed uppercase/lowercase
- * ✓ Digits
- * ✓ Consecutive punctuation
- *
- * 30-Second One-Liner
- * -------------------
- * Skip invalid characters, compare lowercase valid
- * characters, shrink inward until the pointers cross.
- *
- * Re-Derivation Cue
- * -----------------
- * Ask:
- *
- * "Which two characters must match first?"
- *
- * Answer:
- *
- * The outermost remaining valid pair.
- */
-
-
-/*
- * ================================================================
- * 🔄 VARIATIONS & TWEAKS
- * ================================================================
- *
- * ------------------------------------------------
- * Variation 1
- * ------------------------------------------------
- *
- * Valid Palindrome II
- *
- * Change
- * ------
- * One deletion allowed.
- *
- * Reasoning Change
- * ----------------
- * First mismatch creates exactly two candidate search
- * spaces:
- *
- * skip left
- *
- * OR
- *
- * skip right
- *
- * The same two-pointer invariant remains inside each
- * candidate interval.
- *
- *
- * ------------------------------------------------
- * Variation 2
- * ------------------------------------------------
- *
- * Strict Palindrome
- *
- * No filtering.
- *
- * Pattern stays identical.
- *
- * Skip logic disappears.
- *
- *
- * ------------------------------------------------
- * Variation 3
- * ------------------------------------------------
- *
- * Linked List Palindrome
- *
- * Pattern changes.
- *
- * Reason
- * ------
- * Random access disappears.
- *
- * Need:
- *
- * Fast & Slow Pointer
- *
- * +
- *
- * Reverse second half.
- *
- *
- * ------------------------------------------------
- * Variation 4
- * ------------------------------------------------
- *
- * Unicode Normalization
- *
- * Pattern still works.
- *
- * Character normalization becomes more complicated.
- *
- * The invariant remains unchanged.
- *
- *
- * ------------------------------------------------
- * Pattern Boundary
- * ------------------------------------------------
- *
- * Works
- * -----
- *
- * ✓ Symmetric verification
- * ✓ Mirror comparison
- * ✓ Endpoint elimination
- *
- * Does Not Work
- * -------------
- *
- * ✗ Longest palindrome
- * ✗ Edit distance
- * ✗ Minimum insertions
- * ✗ Subsequence problems
- *
- * Those require different state definitions.
- */
-
-
-/*
- * ================================================================
- * 🧠 MASTERY CHECKLIST
- * ================================================================
- *
- * Q.
- * What is the invariant?
- *
- * A.
- * Everything outside the current window has already been
- * verified.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * What is the search target?
- *
- * A.
- * The next unchecked valid character from both ends.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * What is the discard rule?
- *
- * A.
- * Invalid characters disappear individually.
- * Matching valid characters disappear together.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Why does termination prove correctness?
- *
- * A.
- * Every mirrored valid pair has been checked exactly once.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Why does the naive solution consume more memory?
- *
- * A.
- * It explicitly constructs the normalized string.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Which edge cases should you mentally verify?
- *
- * A.
- * Empty normalization,
- * all punctuation,
- * single character,
- * digits,
- * uppercase letters,
- * repeated punctuation.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Are you debugging-ready?
- *
- * A.
- * Verify:
- *
- * 1. Skip logic.
- * 2. Lowercase comparison.
- * 3. Pointer movement.
- * 4. Early mismatch return.
- * 5. Pointer crossing.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Are you variant-ready?
- *
- * A.
- * Yes.
- *
- * Only the state transition changes.
- *
- * The shrinking-window invariant survives.
- *
- *
- * ------------------------------------------------
- *
- * Q.
- * Where does this pattern stop working?
- *
- * A.
- * When symmetry is no longer sufficient to determine
- * correctness.
- */
-
-
-/*
- * ================================================================
- * ⚫ PATTERN MAPPING
- * ================================================================
- *
- * Problem
- * -------------------------------
- * Valid Palindrome
- *
- * Pattern
- * -------------------------------
- * Opposing Two Pointers
- *
- * Search Space
- * -------------------------------
- * Current unchecked interval
- *
- * State
- * -------------------------------
- * (left, right)
- *
- * Transition
- * -------------------------------
- * Skip invalid
- * or
- * Verify mirrored pair
- *
- * Discard Rule
- * -------------------------------
- * Remove one invalid endpoint
- * or
- * remove one verified mirrored pair
- *
- * Correctness
- * -------------------------------
- * Every valid character is processed exactly once.
- *
- * Termination
- * -------------------------------
- * left >= right
- *
- * Complexity
- * -------------------------------
- * Time  : O(n)
- * Space : O(1)
- */
-
-
-/*
- * ================================================================
- * IMPLEMENTATION RECONSTRUCTION DRILL
- * ================================================================
- *
- * Without looking at the solution,
- * reconstruct it in this exact order:
- *
- * 1. Null check.
- *
- * 2. left = 0.
- *
- * 3. right = length - 1.
- *
- * 4. while (left < right)
- *
- * 5. Skip invalid left.
- *
- * 6. Skip invalid right.
- *
- * 7. Compare lowercase characters.
- *
- * 8. Return false on mismatch.
- *
- * 9. Move both pointers.
- *
- * 10. Return true.
- */
-
-
-/*
- * ================================================================
- * DEBUGGING CHECKLIST
- * ================================================================
- *
- * If the answer is wrong:
- *
- * □ Are punctuation characters skipped?
- *
- * □ Is lowercase conversion performed before comparison?
- *
- * □ Is only the invalid pointer advanced?
- *
- * □ Are both pointers advanced after a successful match?
- *
- * □ Is the comparison executed only after both pointers
- *   reference valid characters?
- *
- * □ Does the loop terminate using left < right?
- */
+    /*
+     * ============================================================
+     * 🎯 ONE TEMPLATE TO OWN
+     * ============================================================
+     *
+     * int left = 0;
+     * int right = n - 1;
+     *
+     * while (left < right) {
+     *
+     *     read leftChar
+     *     read rightChar
+     *
+     *     if left invalid:
+     *         left++
+     *         continue
+     *
+     *     if right invalid:
+     *         right--
+     *         continue
+     *
+     *     normalize + compare pair
+     *
+     *     mismatch:
+     *         return false
+     *
+     *     match:
+     *         left++
+     *         right--
+     * }
+     *
+     * return true;
+     *
+     * ------------------------------------------------------------
+     * REUSABLE QUESTION
+     * ------------------------------------------------------------
+     *
+     * "Which outermost remaining pair MUST satisfy the rule?"
+     */
 
     /*
-     * ================================================================
-     * 🧪 MAIN + SELF-VERIFYING TESTS
-     * ================================================================
+     * ============================================================
+     * 🔗 DIRECT SAME-PATTERN VARIANT — VALID PALINDROME II
+     * ============================================================
      *
-     * Run with assertions enabled:
+     * One deletion is allowed.
      *
-     * java -ea ValidPalindrome
+     * Same two-pointer invariant until the FIRST mismatch.
+     *
+     * At that mismatch there are exactly two useful possibilities:
+     *
+     *     skip left
+     *
+     * OR
+     *
+     *     skip right
+     *
+     * Then verify the remaining interval with the SAME
+     * palindrome helper.
      */
+
+    static class ValidPalindromeII {
+
+        static boolean validPalindrome(String s) {
+
+            int left = 0;
+            int right = s.length() - 1;
+
+            while (left < right) {
+
+                if (s.charAt(left) == s.charAt(right)) {
+                    left++;
+                    right--;
+                    continue;
+                }
+
+                return isStrictPalindrome(
+                        s,
+                        left + 1,
+                        right
+                ) || isStrictPalindrome(
+                        s,
+                        left,
+                        right - 1
+                );
+            }
+
+            return true;
+        }
+
+        private static boolean isStrictPalindrome(
+                String s,
+                int left,
+                int right) {
+
+            while (left < right) {
+
+                if (s.charAt(left) != s.charAt(right)) {
+                    return false;
+                }
+
+                left++;
+                right--;
+            }
+
+            return true;
+        }
+    }
+
+    /*
+     * ============================================================
+     * ♻️ REUSABILITY MAP — OPPOSITE-END TWO POINTERS
+     * ============================================================
+     *
+     * VALID PALINDROME
+     *
+     *     compare mirrored pair
+     *     match -> move BOTH
+     *
+     * ------------------------------------------------------------
+     *
+     * VALID PALINDROME II
+     *
+     *     same pair validation
+     *     first mismatch -> branch by skipping one endpoint
+     *
+     * ------------------------------------------------------------
+     *
+     * TWO SUM II
+     *
+     *     sum too small -> left++
+     *     sum too large -> right--
+     *
+     * ------------------------------------------------------------
+     *
+     * CONTAINER WITH MOST WATER
+     *
+     *     shorter wall is exhausted
+     *     -> discard shorter endpoint
+     *
+     * ------------------------------------------------------------
+     *
+     * SQUARES OF A SORTED ARRAY
+     *
+     *     compare magnitudes at both ends
+     *     place larger square from the back
+     *
+     * ------------------------------------------------------------
+     *
+     * 3SUM
+     *
+     *     fix one value
+     *     then reuse opposite-end two pointers
+     *
+     * ------------------------------------------------------------
+     * SHARED META-QUESTION
+     * ------------------------------------------------------------
+     *
+     * "After inspecting both ends,
+     *  which endpoint(s) can be permanently discarded?"
+     */
+
+    /*
+     * ============================================================
+     * 🔴 PATTERN BOUNDARIES
+     * ============================================================
+     *
+     * Works well for:
+     *
+     *     mirrored validation
+     *     sorted-pair search
+     *     endpoint elimination
+     *
+     * Does NOT directly solve:
+     *
+     *     Longest Palindromic Substring
+     *         -> expand around center / DP
+     *
+     *     Palindrome Linked List
+     *         -> fast/slow + reverse second half
+     *
+     *     Minimum insertions / edit distance
+     *         -> DP
+     *
+     *     Palindromic subsequence
+     *         -> interval DP
+     */
+
+    /*
+     * ============================================================
+     * ⚡ RECONSTRUCTION DRILL
+     * ============================================================
+     *
+     * 1. left = 0
+     *
+     * 2. right = n - 1
+     *
+     * 3. while left < right
+     *
+     * 4. read leftChar and rightChar
+     *
+     * 5. invalid left -> left++ -> continue
+     *
+     * 6. invalid right -> right-- -> continue
+     *
+     * 7. both valid -> normalize + compare
+     *
+     * 8. mismatch -> false
+     *
+     * 9. match -> move both
+     *
+     * 10. return true
+     */
+
+    /*
+     * ============================================================
+     * 🎯 INTERVIEW RECALL SHEET
+     * ============================================================
+     *
+     * TRIGGER:
+     *
+     *     symmetry / mirrored pair validation
+     *
+     * PATTERN:
+     *
+     *     Opposite-End Two Pointers
+     *
+     * INVARIANT:
+     *
+     *     everything outside [left, right]
+     *     has already been verified
+     *
+     * SKIP RULE:
+     *
+     *     irrelevant endpoint moves alone
+     *
+     * MATCH RULE:
+     *
+     *     matching pair moves together
+     *
+     * FAILURE:
+     *
+     *     first valid mismatch -> false
+     *
+     * ONE-LINER:
+     *
+     *     "Skip noise, compare mirrors, peel inward."
+     *
+     * COMPLEXITY:
+     *
+     *     O(n) time
+     *     O(1) extra space
+     *
+     * STREAMING:
+     *
+     *     not naturally one-pass streaming;
+     *     the algorithm needs access to both ends
+     */
+
+    /*
+     * ============================================================
+     * 🧪 SELF-VERIFYING TESTS
+     * ============================================================
+     */
+
+    private static void assertEquals(
+            boolean expected,
+            boolean actual,
+            String reason) {
+
+        if (expected != actual) {
+            throw new AssertionError(
+                    reason
+                    + "\nExpected: " + expected
+                    + "\nActual:   " + actual
+            );
+        }
+    }
 
     public static void main(String[] args) {
 
-        /*
-         * Happy path.
-         *
-         * Mixed case and punctuation should be ignored.
-         */
-        assert Optimal.isPalindrome("A man, a plan, a canal: Panama");
+        assertEquals(
+                true,
+                Optimal.isPalindrome(
+                        "A man, a plan, a canal: Panama"
+                ),
+                "Classic palindrome"
+        );
 
-        /*
-         * Representative negative example.
-         */
-        assert !Optimal.isPalindrome("race a car");
+        assertEquals(
+                false,
+                Optimal.isPalindrome("race a car"),
+                "Classic non-palindrome"
+        );
 
-        /*
-         * Empty normalized string.
-         */
-        assert Optimal.isPalindrome(" ");
+        assertEquals(
+                true,
+                Optimal.isPalindrome(" "),
+                "Empty normalized string"
+        );
 
-        /*
-         * Single character.
-         */
-        assert Optimal.isPalindrome("a");
+        assertEquals(
+                true,
+                Optimal.isPalindrome(".,:;!?"),
+                "Only punctuation"
+        );
 
-        /*
-         * Only punctuation.
-         */
-        assert Optimal.isPalindrome(".,:;!?");
+        assertEquals(
+                true,
+                Optimal.isPalindrome("Aa"),
+                "Case insensitive"
+        );
 
-        /*
-         * Digits also participate.
-         */
-        assert Optimal.isPalindrome("12321");
+        assertEquals(
+                true,
+                Optimal.isPalindrome("1,2,3,2,1"),
+                "Digits with punctuation"
+        );
 
-        /*
-         * Digits with punctuation.
-         */
-        assert Optimal.isPalindrome("1,2,3,2,1");
+        assertEquals(
+                false,
+                Optimal.isPalindrome("0P"),
+                "Digit-letter mismatch"
+        );
 
-        /*
-         * Mixed letters and digits.
-         */
-        assert Optimal.isPalindrome("A1b2B1a");
+        assertEquals(
+                false,
+                Optimal.isPalindrome(null),
+                "Null handling"
+        );
 
-        /*
-         * Case-insensitive comparison.
-         */
-        assert Optimal.isPalindrome("Aa");
-
-        /*
-         * Consecutive punctuation.
-         */
-        assert Optimal.isPalindrome("...Madam,,,,");
-
-        /*
-         * Immediate mismatch.
-         */
-        assert !Optimal.isPalindrome("ab");
-
-        /*
-         * Mismatch after skipping punctuation.
-         */
-        assert !Optimal.isPalindrome("a.,b");
-
-        /*
-         * Null handling.
-         */
-        assert !Optimal.isPalindrome(null);
-
-        /*
-         * Verify all implementations agree.
-         */
         String[] samples = {
                 "",
                 " ",
@@ -1270,31 +735,48 @@ public class ValidPalindrome {
 
         for (String sample : samples) {
 
-            boolean brute = BruteForce.isPalindrome(sample);
-            boolean improved = Improved.isPalindrome(sample);
-            boolean optimal = Optimal.isPalindrome(sample);
+            boolean brute =
+                    BruteForce.isPalindrome(sample);
 
-            assert brute == improved
-                    : "BruteForce and Improved disagree for: " + sample;
+            boolean improved =
+                    Improved.isPalindrome(sample);
 
-            assert improved == optimal
-                    : "Improved and Optimal disagree for: " + sample;
+            boolean optimal =
+                    Optimal.isPalindrome(sample);
+
+            assertEquals(
+                    brute,
+                    improved,
+                    "Brute and improved disagree: " + sample
+            );
+
+            assertEquals(
+                    improved,
+                    optimal,
+                    "Improved and optimal disagree: " + sample
+            );
         }
 
-        System.out.println("All assertions passed.");
-    }
+        assertEquals(
+                true,
+                ValidPalindromeII.validPalindrome("aba"),
+                "Palindrome II already valid"
+        );
 
-    /*
-     * ================================================================
-     * 🧘 FINAL CLOSURE STATEMENT
-     * ================================================================
-     *
-     * I understand the invariant.
-     *
-     * I can re-derive the solution.
-     *
-     * I can physically reconstruct the implementation under pressure.
-     *
-     * This chapter is complete.
-     */
+        assertEquals(
+                true,
+                ValidPalindromeII.validPalindrome("abca"),
+                "Palindrome II delete one"
+        );
+
+        assertEquals(
+                false,
+                ValidPalindromeII.validPalindrome("abc"),
+                "Palindrome II impossible"
+        );
+
+        System.out.println(
+                "All ValidPalindromeV4 tests passed."
+        );
+    }
 }

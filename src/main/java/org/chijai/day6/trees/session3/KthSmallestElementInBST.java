@@ -5,460 +5,29 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+/**
+ * Kth Smallest Element in a BST
+ *
+ * Canonical interview-study file:
+ *
+ * 1. Preferred interview solution
+ * 2. Ordered WHY blocks
+ * 3. 30-second recall card
+ * 4. Reusable master template
+ * 5. Approach progression
+ * 6. Follow-up / workload variations
+ * 7. Related / reinforcement problems
+ * 8. Self-verifying tests
+ *
+ * Core transfer idea:
+ *
+ *      BST inorder gives sorted order.
+ *
+ * Follow-up transfer idea:
+ *
+ *      STORE COUNTS -> SKIP WHOLE ORDERED REGIONS.
+ */
 public class KthSmallestElementInBST {
-
-    /*
-     * =========================================================================
-     * 2. 📘 PRIMARY PROBLEM
-     * =========================================================================
-     *
-     * Title:
-     * Kth Smallest Element in a BST
-     *
-     * Difficulty:
-     * Medium
-     *
-     * Tags:
-     * Binary Search Tree
-     * Binary Tree
-     * DFS
-     * Inorder Traversal
-     * Stack
-     *
-     * Problem Statement:
-     *
-     * Given the root of a Binary Search Tree (BST) and an integer k,
-     * return the kth smallest value (1-indexed) among all nodes.
-     *
-     * A BST satisfies:
-     *
-     * left subtree values  < node value
-     * right subtree values > node value
-     *
-     * Therefore an inorder traversal visits nodes in ascending order.
-     *
-     * Constraints:
-     *
-     * 1 <= k <= n <= 10^4
-     * 0 <= Node.val <= 10^4
-     *
-     * Examples:
-     *
-     * Example 1
-     *
-     *          3
-     *         / \
-     *        1   4
-     *         \
-     *          2
-     *
-     * inorder:
-     * 1 2 3 4
-     *
-     * k = 1
-     * answer = 1
-     *
-     * -------------------------------------------------------
-     *
-     * Example 2
-     *
-     *             5
-     *            /
-     *           3
-     *          / \
-     *         2   4
-     *        /
-     *       1
-     *
-     * inorder:
-     * 1 2 3 4 5 6
-     *
-     * k = 3
-     * answer = 3
-     *
-     * -------------------------------------------------------
-     *
-     * Follow-up:
-     *
-     * If insertions and deletions happen frequently while kth-smallest
-     * queries are also frequent, augment every node with subtree size.
-     * Then kth-smallest becomes an Order Statistic Tree query in O(height).
-     *
-     * Official:
-     * https://leetcode.com/problems/kth-smallest-element-in-a-bst/
-     */
-
-    /*
-     * =========================================================================
-     * 3. 🔵 CORE PATTERN OVERVIEW
-     * =========================================================================
-     *
-     * Pattern
-     * -------
-     * Inorder Traversal of BST
-     *
-     * Archetype
-     * ---------
-     * Ordered traversal exploiting BST structure.
-     *
-     * Core Invariant
-     * --------------
-     * Every node is visited strictly after every smaller element
-     * and before every larger element.
-     *
-     * Therefore:
-     *
-     * visit #1  -> smallest
-     * visit #2  -> second smallest
-     * ...
-     * visit #k  -> kth smallest
-     *
-     * Why It Works
-     * ------------
-     * The BST ordering property transforms inorder traversal into
-     * sorted-order traversal without explicitly sorting.
-     *
-     * Recognition Signals
-     * -------------------
-     * Look for:
-     *
-     * • BST
-     * • kth smallest
-     * • kth largest
-     * • sorted order
-     * • rank
-     * • predecessor
-     * • successor
-     *
-     * When To Use
-     * -----------
-     * Whenever the answer depends on sorted ordering of BST values.
-     *
-     * When NOT To Use
-     * ---------------
-     * General binary trees.
-     *
-     * Inorder of an arbitrary binary tree has no ordering guarantee.
-     *
-     * Comparison
-     * ----------
-     *
-     * Full sort:
-     * O(n log n)
-     *
-     * Copy inorder list:
-     * O(n)
-     *
-     * Early-stop inorder:
-     * O(H + k) average
-     * O(n) worst case
-     *
-     * Order Statistic Tree:
-     * O(log n) on balanced trees after augmentation.
-     */
-
-    /*
-     * =========================================================================
-     * 4. 🟢 MENTAL MODEL & INVARIANTS
-     * =========================================================================
-     *
-     * Mental Model
-     * ------------
-     *
-     * Imagine every BST node already standing in a perfectly sorted queue.
-     *
-     * Inorder traversal simply walks through that invisible queue.
-     *
-     * We never create the queue.
-     *
-     * We merely visit nodes in exactly that order.
-     *
-     * ------------------------------------------------------------
-     * Primary Invariant
-     * ------------------------------------------------------------
-     *
-     * Before visiting a node,
-     * every smaller value has already been visited.
-     *
-     * After visiting a node,
-     * every larger value is still unvisited.
-     *
-     * This invariant is guaranteed by:
-     *
-     * Left
-     * Node
-     * Right
-     *
-     * ------------------------------------------------------------
-     * Counting Invariant
-     * ------------------------------------------------------------
-     *
-     * visitCount ==
-     * number of smallest elements already processed.
-     *
-     * Therefore:
-     *
-     * visitCount == k
-     *
-     * immediately identifies the answer.
-     *
-     * No additional comparisons are required.
-     *
-     * ------------------------------------------------------------
-     * Stack Invariant (Iterative)
-     * ------------------------------------------------------------
-     *
-     * The stack stores ancestors whose:
-     *
-     * left subtree has been completely processed,
-     * node itself has not yet been processed.
-     *
-     * Therefore the top of stack is always
-     * the next inorder node.
-     *
-     * This single invariant explains:
-     *
-     * push
-     * pop
-     * move right
-     *
-     * ------------------------------------------------------------
-     * Recursive Invariant
-     * ------------------------------------------------------------
-     *
-     * Every recursive frame promises:
-     *
-     * "I will completely process this subtree in sorted order."
-     *
-     * The parent never needs to know internal details.
-     *
-     * ------------------------------------------------------------
-     * Variable Meaning
-     * ------------------------------------------------------------
-     *
-     * current
-     * -------
-     * Current traversal pointer.
-     *
-     * stack
-     * -----
-     * Ancestors waiting to be visited.
-     *
-     * k
-     * -
-     * Remaining nodes before reaching answer.
-     *
-     * When k becomes zero,
-     * current node is the answer.
-     *
-     * ------------------------------------------------------------
-     * Allowed State Transitions
-     * ------------------------------------------------------------
-     *
-     * current -> left
-     *
-     * push ancestor
-     *
-     * pop ancestor
-     *
-     * visit node
-     *
-     * current -> right
-     *
-     * These transitions preserve sorted order.
-     *
-     * ------------------------------------------------------------
-     * Forbidden Moves
-     * ------------------------------------------------------------
-     *
-     * Visit before entire left subtree.
-     *
-     * Ignore left subtree.
-     *
-     * Visit right before node.
-     *
-     * Skip decrementing k after visit.
-     *
-     * Continue traversal after answer if early stopping
-     * is intended.
-     *
-     * ------------------------------------------------------------
-     * Termination
-     * ------------------------------------------------------------
-     *
-     * Recursive:
-     *
-     * null subtree.
-     *
-     * Iterative:
-     *
-     * current == null
-     * AND
-     * stack empty.
-     *
-     * Early-stop version:
-     *
-     * k == 0.
-     *
-     * ------------------------------------------------------------
-     * Why Naive Solutions Fail
-     * ------------------------------------------------------------
-     *
-     * Sorting all values ignores BST ordering.
-     *
-     * Priority queues waste memory.
-     *
-     * BFS order has no relationship with sorted order.
-     *
-     * DFS preorder/postorder destroy rank ordering.
-     */
-
-    /*
-     * =========================================================================
-     * 5. 🔴 WHY WRONG SOLUTIONS FAIL
-     * =========================================================================
-     *
-     * Mistake 1
-     * ---------
-     * Using preorder traversal.
-     *
-     * Why it seems correct:
-     *
-     * Every node is still visited once.
-     *
-     * Violated Invariant:
-     *
-     * Smaller elements are not guaranteed first.
-     *
-     * Counterexample:
-     *
-     *      2
-     *     /
-     *    1
-     *
-     * preorder:
-     * 2 1
-     *
-     * sorted:
-     * 1 2
-     *
-     * ----------------------------------------
-     *
-     * Mistake 2
-     * ---------
-     * Forgetting to decrement k exactly
-     * when visiting the node.
-     *
-     * Why it seems correct:
-     *
-     * Traversal still completes.
-     *
-     * Broken invariant:
-     *
-     * visitCount no longer equals processed rank.
-     *
-     * ----------------------------------------
-     *
-     * Mistake 3
-     * ---------
-     * Decrement before left subtree.
-     *
-     * Rank shifts by one.
-     *
-     * ----------------------------------------
-     *
-     * Mistake 4
-     * ---------
-     * Visiting node twice because right transition
-     * is implemented incorrectly.
-     *
-     * Symptom:
-     *
-     * Duplicate ranks.
-     *
-     * ----------------------------------------
-     *
-     * Interview Trap
-     * --------------
-     *
-     * Candidate memorizes inorder
-     * but cannot explain why it produces sorted order.
-     *
-     * Strong answer:
-     *
-     * "BST guarantees every left value is smaller and every right
-     * value is larger, therefore Left-Node-Right is identical to
-     * reading the sorted sequence."
-     */
-
-    /*
-     * =========================================================================
-     * ⚙️ IMPLEMENTATION BLUEPRINT
-     * =========================================================================
-     *
-     * Mechanical Typing Order
-     *
-     * 1.
-     * Create stack.
-     *
-     * 2.
-     * current = root.
-     *
-     * 3.
-     * Outer loop:
-     *
-     * while(current != null || !stack.isEmpty())
-     *
-     * 4.
-     * Push entire left chain.
-     *
-     * 5.
-     * Pop.
-     *
-     * 6.
-     * Visit node.
-     *
-     * 7.
-     * Decrement k.
-     *
-     * 8.
-     * If k == 0
-     * return value.
-     *
-     * 9.
-     * Move to right subtree.
-     *
-     * 10.
-     * Continue.
-     *
-     * Debugging Flow
-     * --------------
-     *
-     * Wrong order?
-     * Verify left chain.
-     *
-     * Wrong answer?
-     * Verify decrement timing.
-     *
-     * Infinite loop?
-     * Verify current = current.right.
-     */
-
-    /*
-     * =========================================================================
-     * 🧾 ULTRA-COMPACT PSEUDOCODE
-     * =========================================================================
-     *
-     * stack
-     * current=root
-     *
-     * while current or stack
-     *     go left
-     *     visit
-     *     decrement k
-     *     if k==0 return
-     *     go right
-     */
 
     static class TreeNode {
         int val;
@@ -478,115 +47,318 @@ public class KthSmallestElementInBST {
 
     /*
      * =========================================================================
-     * 6. SOLUTION CLASSES
+     * 1. PREFERRED INTERVIEW SOLUTION
+     * =========================================================================
+     *
+     * Trigger:
+     * BST + kth smallest / rank / sorted-order question.
+     *
+     * Pattern:
+     * Iterative inorder traversal with early stopping.
+     *
+     * Time : O(H + k), O(n) worst case
+     * Space: O(H)
+     */
+    static class Preferred {
+
+        int kthSmallest(TreeNode root, int k) {
+
+            TreeNode current = root;
+            Deque<TreeNode> stack = new ArrayDeque<>();
+
+            while (current != null || !stack.isEmpty()) {
+
+                while (current != null) {
+                    stack.push(current);
+                    current = current.left;
+                }
+
+                TreeNode node = stack.pop();
+                k--;
+
+                if (k == 0) {
+                    return node.val;
+                }
+
+                current = node.right;
+            }
+
+            throw new IllegalArgumentException("k must be a valid 1-indexed rank.");
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 2. WHY? — MATCH THE CODE IN THE SAME ORDER
      * =========================================================================
      */
 
-    static class BruteForce {
+    /*
+     * WHY 1 — Why inorder?
+     *
+     * BST property:
+     *
+     *      every LEFT value < NODE < every RIGHT value
+     *
+     * Therefore:
+     *
+     *      LEFT -> NODE -> RIGHT
+     *
+     * visits values in ascending order.
+     *
+     * So the kth smallest value is simply the kth inorder VISIT.
+     */
 
-        /*
-         * Idea
-         * ----
-         * Store complete inorder traversal into a list.
-         *
-         * Invariant
-         * ---------
-         * List remains fully sorted because inorder of BST
-         * is sorted.
-         *
-         * Limitation
-         * ----------
-         * Visits every node even when k is very small.
-         *
-         * Complexity
-         * ----------
-         * Time : O(n)
-         * Space: O(n)
-         *
-         * Interview Usefulness
-         * --------------------
-         * Excellent stepping stone before optimizing.
-         */
+    /*
+     * WHY 2 — Why the inner "go left" loop?
+     *
+     * Before we may visit a node, every smaller value in its left subtree
+     * must be processed.
+     *
+     * Pushing the entire left chain postpones ancestors until their
+     * smaller candidates are exhausted.
+     */
 
-        public int kthSmallest(TreeNode root, int k) {
-            List<Integer> inorder = new ArrayList<>();
-            dfs(root, inorder);
-            return inorder.get(k - 1);
+    /*
+     * WHY 3 — Why is stack.pop() the next smallest?
+     *
+     * After current becomes null, there is no unprocessed node farther left.
+     *
+     * The stack top is therefore the smallest node whose:
+     *
+     *      left subtree is finished
+     *      node itself is still unvisited
+     *
+     * KEY INVARIANT:
+     *
+     *      POP = NEXT SMALLEST UNVISITED BST NODE.
+     */
+
+    /*
+     * WHY 4 — Why decrement k exactly after pop?
+     *
+     * Rank advances when a node is VISITED, not when it is discovered,
+     * pushed, or when traversal enters its subtree.
+     *
+     *      pop node
+     *      k--
+     *
+     * means:
+     *
+     *      "one more smallest element has now been consumed."
+     */
+
+    /*
+     * WHY 5 — Why return when k == 0?
+     *
+     * k is 1-indexed.
+     *
+     * After exactly k inorder visits, the current node has sorted rank k.
+     * Every future inorder node is larger, so no later work can change
+     * the answer.
+     */
+
+    /*
+     * WHY 6 — Why current = node.right?
+     *
+     * Inorder is:
+     *
+     *      LEFT -> NODE -> RIGHT
+     *
+     * After popping node:
+     *
+     *      LEFT is complete
+     *      NODE is complete
+     *
+     * so the only unfinished part owned by node is RIGHT.
+     *
+     * The next loop again walks to the leftmost node inside that right subtree.
+     */
+
+    /*
+     * WHY 7 — Why the outer OR condition?
+     *
+     *      current != null
+     *
+     * means there is a subtree we can descend into.
+     *
+     *      !stack.isEmpty()
+     *
+     * means there are deferred ancestors still waiting to be visited.
+     *
+     * Traversal is finished only when BOTH are empty.
+     */
+
+    /*
+     * =========================================================================
+     * 3. 30-SECOND RECALL CARD
+     * =========================================================================
+     *
+     * TRIGGER
+     * -------
+     * BST + kth smallest / rank.
+     *
+     * PATTERN
+     * -------
+     * Inorder = sorted order.
+     *
+     * CORE INVARIANT
+     * --------------
+     * POP = next smallest unvisited node.
+     *
+     * MECHANICS
+     * ---------
+     * go LEFT
+     * -> POP / VISIT
+     * -> k--
+     * -> k == 0 ? answer
+     * -> go RIGHT
+     *
+     * COMPLEXITY
+     * ----------
+     * O(H + k) time, O(H) space.
+     *
+     * FOLLOW-UP CUE
+     * -------------
+     * Frequent rank queries?
+     *
+     * STORE COUNTS SO YOU CAN SKIP WHOLE REGIONS.
+     */
+
+    /*
+     * =========================================================================
+     * 4. REUSABLE MASTER TEMPLATE — ITERATIVE INORDER
+     * =========================================================================
+     *
+     * Use this whenever you need sorted-order processing in a BST.
+     *
+     *      Deque<TreeNode> stack = new ArrayDeque<>();
+     *      TreeNode current = root;
+     *
+     *      while (current != null || !stack.isEmpty()) {
+     *
+     *          while (current != null) {
+     *              stack.push(current);
+     *              current = current.left;
+     *          }
+     *
+     *          TreeNode node = stack.pop();
+     *
+     *          // PROCESS node here
+     *
+     *          current = node.right;
+     *      }
+     *
+     * Transfer problems:
+     *
+     * kth smallest       -> count PROCESS calls
+     * kth largest        -> reverse left/right
+     * BST iterator       -> pause between PROCESS calls
+     * validate BST       -> compare current with previous
+     * recover BST        -> detect inorder inversions
+     * range reporting    -> process only wanted sorted values
+     */
+
+    /*
+     * =========================================================================
+     * 5. APPROACH PROGRESSION
+     * =========================================================================
+     *
+     * A. Extract all values + sort
+     * ---------------------------
+     * Time : O(n log n)
+     * Space: O(n)
+     *
+     * Works even if you forget the BST advantage,
+     * but wastes the ordering already encoded by the tree.
+     *
+     * B. Full inorder list
+     * --------------------
+     * Time : O(n)
+     * Space: O(n)
+     *
+     * Better:
+     * BST gives sorted order without sorting.
+     *
+     * Still wasteful:
+     * materializes every value even if k is tiny.
+     *
+     * C. Recursive inorder + early stop
+     * ---------------------------------
+     * Time : O(H + k), worst O(n)
+     * Space: O(H) recursion
+     *
+     * D. Iterative inorder + early stop — PREFERRED
+     * ------------------------------------------------
+     * Time : O(H + k), worst O(n)
+     * Space: O(H)
+     *
+     * Same asymptotics as recursive early-stop,
+     * but explicit state and no recursion-depth concern.
+     *
+     * E. Morris inorder
+     * -----------------
+     * Auxiliary space: O(1)
+     *
+     * Important nuance:
+     * Morris temporarily rewires tree pointers.
+     *
+     * A naive early return may leave temporary threads behind.
+     * A safe implementation that guarantees restoration can continue
+     * traversal after finding the answer, making it O(n) time.
+     */
+
+    static class FullInorderList {
+
+        int kthSmallest(TreeNode root, int k) {
+            List<Integer> values = new ArrayList<>();
+            inorder(root, values);
+            return values.get(k - 1);
         }
 
-        private void dfs(TreeNode node, List<Integer> inorder) {
+        private void inorder(TreeNode node, List<Integer> values) {
             if (node == null) {
                 return;
             }
 
-            dfs(node.left, inorder);
-
-            // Invariant: values are appended in ascending order.
-            inorder.add(node.val);
-
-            dfs(node.right, inorder);
+            inorder(node.left, values);
+            values.add(node.val);
+            inorder(node.right, values);
         }
     }
 
-    static class Improved {
-
-
-        /*
-         * Idea
-         * ----
-         * Perform inorder traversal recursively, but stop immediately
-         * after visiting the kth node instead of storing the entire order.
-         *
-         * Invariant
-         * ---------
-         * visitedCount always equals the number of smallest elements
-         * already processed.
-         *
-         * Improvement
-         * -----------
-         * Eliminates the O(n) list.
-         * Can terminate early when k is reached.
-         *
-         * Complexity
-         * ----------
-         * Time : O(H + k) average, O(n) worst case
-         * Space: O(H) recursion stack
-         *
-         * Interview Usefulness
-         * --------------------
-         * Demonstrates understanding that inorder order is enough;
-         * materializing the traversal is unnecessary.
-         */
+    static class RecursiveEarlyStop {
 
         private int remaining;
-        private int answer;
-        private boolean found;
+        private Integer answer;
 
-        public int kthSmallest(TreeNode root, int k) {
+        int kthSmallest(TreeNode root, int k) {
             remaining = k;
-            found = false;
+            answer = null;
             inorder(root);
+
+            if (answer == null) {
+                throw new IllegalArgumentException("k must be a valid 1-indexed rank.");
+            }
+
             return answer;
         }
 
         private void inorder(TreeNode node) {
-
-            if (node == null || found) {
+            if (node == null || answer != null) {
                 return;
             }
 
             inorder(node.left);
 
-            if (found) {
+            if (answer != null) {
                 return;
             }
 
-            // Invariant: every smaller value has already been visited.
             remaining--;
 
             if (remaining == 0) {
                 answer = node.val;
-                found = true;
                 return;
             }
 
@@ -594,476 +366,943 @@ public class KthSmallestElementInBST {
         }
     }
 
-    static class Optimal {
+    static class MorrisTraversalSafe {
 
         /*
-         * Idea
-         * ----
-         * Simulate recursive inorder traversal using an explicit stack.
+         * O(1) auxiliary space.
          *
-         * The traversal stops exactly when the kth node is visited.
+         * We deliberately DO NOT return immediately when kth is found,
+         * because outstanding Morris threads may still exist.
          *
-         * Core Invariant
-         * --------------
-         * Every node inside the stack has:
+         * We remember the answer and finish traversal so every temporary
+         * pointer is restored.
          *
-         * 1. its left subtree completely processed
-         * 2. itself not yet processed
-         *
-         * Therefore the top of the stack is always the next
-         * inorder node.
-         *
-         * Correctness
-         * -----------
-         * Left subtree is exhausted before visiting a node.
-         * Node is visited before exploring its right subtree.
-         * Thus visit order is exactly the sorted order.
-         *
-         * Complexity
-         * ----------
-         * Time : O(H + k) average
-         * Time : O(n) worst case
-         * Space: O(H)
-         *
-         * Interview Usefulness
-         * --------------------
-         * Preferred implementation because:
-         *
-         * • avoids recursion depth limits
-         * • exposes traversal mechanics clearly
-         * • naturally supports early stopping
+         * Time : O(n)
+         * Space: O(1)
          */
+        int kthSmallest(TreeNode root, int k) {
 
-        public int kthSmallest(TreeNode root, int k) {
-
-            Deque<TreeNode> stack = new ArrayDeque<>();
             TreeNode current = root;
+            Integer answer = null;
+
+            while (current != null) {
+
+                if (current.left == null) {
+
+                    if (answer == null && --k == 0) {
+                        answer = current.val;
+                    }
+
+                    current = current.right;
+                    continue;
+                }
+
+                TreeNode predecessor = current.left;
+
+                while (predecessor.right != null && predecessor.right != current) {
+                    predecessor = predecessor.right;
+                }
+
+                if (predecessor.right == null) {
+                    predecessor.right = current;
+                    current = current.left;
+                } else {
+                    predecessor.right = null;
+
+                    if (answer == null && --k == 0) {
+                        answer = current.val;
+                    }
+
+                    current = current.right;
+                }
+            }
+
+            if (answer == null) {
+                throw new IllegalArgumentException("k must be a valid 1-indexed rank.");
+            }
+
+            return answer;
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 6. FOLLOW-UP MASTER IDEA
+     * =========================================================================
+     *
+     * Original solution:
+     *
+     *      visit values sequentially until rank k
+     *
+     * Follow-up optimization:
+     *
+     *      know HOW MANY values live in a region
+     *      -> skip that whole region in one decision
+     *
+     * This same idea appears in:
+     *
+     *      Order Statistic Tree -> subtree counts
+     *      Fenwick Tree         -> prefix frequency counts
+     *      Segment Tree         -> interval frequency counts
+     *
+     * UNIFYING PATTERN:
+     *
+     *      STORE COUNTS -> SKIP WHOLE ORDERED REGIONS.
+     */
+
+    /*
+     * =========================================================================
+     * 7. FOLLOW-UP VARIATION A — MANY QUERIES, STATIC TREE
+     * =========================================================================
+     *
+     * Workload:
+     *
+     *      tree almost never changes
+     *      kthSmallest is asked many times
+     *
+     * Best simple trade-off:
+     *
+     *      preprocess inorder once
+     *      cache sorted values
+     *
+     * Build : O(n)
+     * Query : O(1)
+     * Space : O(n)
+     *
+     * Update:
+     * expensive because cache becomes stale.
+     *
+     * Important lesson:
+     *
+     * If data is static, preprocessing can beat a more sophisticated
+     * O(log n) dynamic data structure.
+     */
+
+    static class StaticKthIndex {
+
+        private final List<Integer> sorted = new ArrayList<>();
+
+        StaticKthIndex(TreeNode root) {
+            build(root);
+        }
+
+        int kthSmallest(int k) {
+            if (k < 1 || k > sorted.size()) {
+                throw new IllegalArgumentException("k out of range.");
+            }
+
+            return sorted.get(k - 1);
+        }
+
+        private void build(TreeNode node) {
+            if (node == null) {
+                return;
+            }
+
+            build(node.left);
+            sorted.add(node.val);
+            build(node.right);
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 8. FOLLOW-UP VARIATION B — FREQUENT QUERIES + INSERT/DELETE
+     * =========================================================================
+     *
+     * Standard interview answer:
+     *
+     *      augment each BST node with subtreeSize
+     *
+     * For current node:
+     *
+     *      leftSize = size(current.left)
+     *
+     * Then:
+     *
+     *      leftSize + 1 = current node's rank inside this subtree.
+     *
+     * Decision:
+     *
+     *      k <= leftSize
+     *          -> answer is LEFT
+     *
+     *      k == leftSize + 1
+     *          -> current node is answer
+     *
+     *      k > leftSize + 1
+     *          -> skip LEFT + NODE
+     *          -> k -= leftSize + 1
+     *          -> go RIGHT
+     *
+     * This is binary-search-like rank navigation.
+     *
+     * Complexity:
+     *
+     *      Query  O(H)
+     *      Insert O(H)
+     *      Delete O(H)
+     *
+     * If the tree is balanced:
+     *
+     *      H = O(log n)
+     *
+     * so all become O(log n).
+     *
+     * CRITICAL NUANCE:
+     *
+     * Merely storing subtreeSize does NOT guarantee O(log n).
+     * The tree must also stay balanced:
+     *
+     *      AVL
+     *      Red-Black Tree
+     *      Treap
+     *      another balanced BST
+     *
+     * The implementation below demonstrates augmentation and maintenance,
+     * but does not perform rotations itself.
+     */
+
+    static class OrderStatisticBST {
+
+        static class Node {
+            int val;
+            int size = 1;
+            Node left;
+            Node right;
+
+            Node(int val) {
+                this.val = val;
+            }
+        }
+
+        private Node root;
+
+        void insert(int val) {
+            root = insert(root, val);
+        }
+
+        void delete(int val) {
+            root = delete(root, val);
+        }
+
+        int kthSmallest(int k) {
+            if (k < 1 || k > size(root)) {
+                throw new IllegalArgumentException("k out of range.");
+            }
+
+            Node current = root;
+
+            while (current != null) {
+
+                int leftSize = size(current.left);
+
+                if (k == leftSize + 1) {
+                    return current.val;
+                }
+
+                if (k <= leftSize) {
+                    current = current.left;
+                } else {
+                    k -= leftSize + 1;
+                    current = current.right;
+                }
+            }
+
+            throw new IllegalStateException("Unreachable for valid k.");
+        }
+
+        int size() {
+            return size(root);
+        }
+
+        private Node insert(Node node, int val) {
+
+            if (node == null) {
+                return new Node(val);
+            }
+
+            if (val < node.val) {
+                node.left = insert(node.left, val);
+            } else if (val > node.val) {
+                node.right = insert(node.right, val);
+            } else {
+                throw new IllegalArgumentException("This demo BST expects unique values.");
+            }
+
+            refresh(node);
+            return node;
+        }
+
+        private Node delete(Node node, int val) {
+
+            if (node == null) {
+                return null;
+            }
+
+            if (val < node.val) {
+                node.left = delete(node.left, val);
+            } else if (val > node.val) {
+                node.right = delete(node.right, val);
+            } else {
+
+                if (node.left == null) {
+                    return node.right;
+                }
+
+                if (node.right == null) {
+                    return node.left;
+                }
+
+                Node successor = min(node.right);
+                node.val = successor.val;
+                node.right = delete(node.right, successor.val);
+            }
+
+            refresh(node);
+            return node;
+        }
+
+        private Node min(Node node) {
+            while (node.left != null) {
+                node = node.left;
+            }
+            return node;
+        }
+
+        private void refresh(Node node) {
+            node.size = 1 + size(node.left) + size(node.right);
+        }
+
+        private int size(Node node) {
+            return node == null ? 0 : node.size;
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 9. FOLLOW-UP VARIATION C — VALUES COME FROM A SMALL / BOUNDED DOMAIN
+     * =========================================================================
+     *
+     * Example:
+     *
+     *      0 <= value <= 10^4
+     *
+     * If the tree shape itself is irrelevant and we mainly need:
+     *
+     *      insert(value)
+     *      delete(value)
+     *      kthSmallest(k)
+     *
+     * store FREQUENCIES by value instead.
+     *
+     * Fenwick Tree supports:
+     *
+     *      point frequency update
+     *      prefix count
+     *      kth by cumulative frequency
+     *
+     * Complexity:
+     *
+     *      update      O(log M)
+     *      kthSmallest O(log M)
+     *      space       O(M)
+     *
+     * where M is the value domain size.
+     *
+     * This naturally supports duplicates because frequency may exceed 1.
+     */
+
+    static class FenwickOrderStatistic {
+
+        private final int[] tree;
+        private int count;
+
+        FenwickOrderStatistic(int maxValue) {
+            tree = new int[maxValue + 2];
+        }
+
+        void insert(int value) {
+            add(value, 1);
+            count++;
+        }
+
+        void delete(int value) {
+            if (frequency(value) <= 0) {
+                throw new IllegalArgumentException("Value does not exist.");
+            }
+
+            add(value, -1);
+            count--;
+        }
+
+        int kthSmallest(int k) {
+
+            if (k < 1 || k > count) {
+                throw new IllegalArgumentException("k out of range.");
+            }
+
+            int index = 0;
+            int step = Integer.highestOneBit(tree.length - 1);
+
+            while (step != 0) {
+
+                int next = index + step;
+
+                if (next < tree.length && tree[next] < k) {
+                    index = next;
+                    k -= tree[next];
+                }
+
+                step >>= 1;
+            }
+
+            // Fenwick index = value + 1.
+            // index is the final prefix position strictly before the target,
+            // so the corresponding 0-based value is also index.
+            return index;
+        }
+
+        int frequency(int value) {
+            return prefix(value) - prefix(value - 1);
+        }
+
+        private void add(int value, int delta) {
+
+            int index = value + 1;
+
+            while (index < tree.length) {
+                tree[index] += delta;
+                index += index & -index;
+            }
+        }
+
+        private int prefix(int value) {
+
+            if (value < 0) {
+                return 0;
+            }
+
+            int index = Math.min(value + 1, tree.length - 1);
+            int sum = 0;
+
+            while (index > 0) {
+                sum += tree[index];
+                index -= index & -index;
+            }
+
+            return sum;
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 10. FOLLOW-UP VARIATION D — NEED RANGE COUNTS TOO
+     * =========================================================================
+     *
+     * Segment Tree stores:
+     *
+     *      count of values inside each value interval
+     *
+     * kth query:
+     *
+     *      if left interval has >= k values
+     *          descend left
+     *      else
+     *          k -= leftCount
+     *          descend right
+     *
+     * Same transfer pattern again:
+     *
+     *      COUNT -> SKIP.
+     *
+     * Prefer Segment Tree over Fenwick when you also want richer interval
+     * information or range operations.
+     *
+     * Complexity:
+     *
+     *      point update O(log M)
+     *      kth query    O(log M)
+     *      range count  O(log M)
+     */
+
+    static class SegmentTreeOrderStatistic {
+
+        private final int size;
+        private final int[] tree;
+        private int count;
+
+        SegmentTreeOrderStatistic(int maxValue) {
+
+            int powerOfTwo = 1;
+
+            while (powerOfTwo <= maxValue) {
+                powerOfTwo <<= 1;
+            }
+
+            size = powerOfTwo;
+            tree = new int[size << 1];
+        }
+
+        void insert(int value) {
+            update(value, 1);
+            count++;
+        }
+
+        void delete(int value) {
+
+            if (rangeCount(value, value) == 0) {
+                throw new IllegalArgumentException("Value does not exist.");
+            }
+
+            update(value, -1);
+            count--;
+        }
+
+        int kthSmallest(int k) {
+
+            if (k < 1 || k > count) {
+                throw new IllegalArgumentException("k out of range.");
+            }
+
+            int node = 1;
+
+            while (node < size) {
+
+                int left = node << 1;
+
+                if (tree[left] >= k) {
+                    node = left;
+                } else {
+                    k -= tree[left];
+                    node = left + 1;
+                }
+            }
+
+            return node - size;
+        }
+
+        int rangeCount(int leftValue, int rightValue) {
+
+            int left = leftValue + size;
+            int right = rightValue + size;
+            int answer = 0;
+
+            while (left <= right) {
+
+                if ((left & 1) == 1) {
+                    answer += tree[left++];
+                }
+
+                if ((right & 1) == 0) {
+                    answer += tree[right--];
+                }
+
+                left >>= 1;
+                right >>= 1;
+            }
+
+            return answer;
+        }
+
+        private void update(int value, int delta) {
+
+            int index = value + size;
+            tree[index] += delta;
+            index >>= 1;
+
+            while (index > 0) {
+                tree[index] = tree[index << 1] + tree[(index << 1) + 1];
+                index >>= 1;
+            }
+        }
+    }
+
+    /*
+     * =========================================================================
+     * 11. FOLLOW-UP VARIATION E — DUPLICATES
+     * =========================================================================
+     *
+     * Standard LeetCode BST interpretation usually assumes strict ordering,
+     * but real ordered multisets may contain duplicates.
+     *
+     * Instead of one node per occurrence, an augmented node can store:
+     *
+     *      value
+     *      frequency
+     *      subtreeCount
+     *
+     * where subtreeCount counts TOTAL ELEMENTS, not just distinct nodes.
+     *
+     * Rank logic becomes:
+     *
+     *      leftCount = total elements in left subtree
+     *
+     *      if k <= leftCount
+     *          go left
+     *
+     *      else if k <= leftCount + frequency
+     *          current value is answer
+     *
+     *      else
+     *          k -= leftCount + frequency
+     *          go right
+     *
+     * Same invariant.
+     * Only "node contributes 1" changes to "node contributes frequency".
+     */
+
+    /*
+     * =========================================================================
+     * 12. FOLLOW-UP VARIATION F — INSERTIONS ONLY
+     * =========================================================================
+     *
+     * Easier than full insert/delete maintenance.
+     *
+     * During insertion:
+     *
+     *      every ancestor on the insertion path gains one descendant
+     *
+     * so refresh subtreeSize while recursion unwinds.
+     *
+     * Still remember:
+     *
+     *      augmentation gives O(H), NOT automatically O(log n).
+     *
+     * A skewed ordinary BST can still have H = n.
+     */
+
+    /*
+     * =========================================================================
+     * 13. FOLLOW-UP VARIATION G — MORRIS VS ORDER-STATISTIC AUGMENTATION
+     * =========================================================================
+     *
+     * These solve DIFFERENT bottlenecks.
+     *
+     * Morris:
+     *
+     *      objective -> reduce traversal SPACE
+     *      result    -> O(1) auxiliary space
+     *      still     -> sequential traversal
+     *
+     * Subtree size:
+     *
+     *      objective -> reduce QUERY TIME
+     *      result    -> skip whole subtrees
+     *
+     * Do not confuse:
+     *
+     *      space optimization
+     *
+     * with
+     *
+     *      rank-query optimization.
+     */
+
+    /*
+     * =========================================================================
+     * 14. WORKLOAD DECISION CARD
+     * =========================================================================
+     *
+     * ONE / OCCASIONAL kth QUERY
+     * --------------------------
+     * Iterative inorder.
+     *
+     *      O(H + k) time
+     *      O(H) space
+     *
+     * MANY QUERIES + STATIC TREE
+     * --------------------------
+     * Cache full inorder array/list.
+     *
+     *      O(n) build
+     *      O(1) query
+     *
+     * MANY QUERIES + FREQUENT BST INSERT/DELETE
+     * -----------------------------------------
+     * Balanced BST + subtree sizes.
+     *
+     *      O(log n) query/update
+     *
+     * SMALL / BOUNDED VALUE DOMAIN
+     * ----------------------------
+     * Fenwick Tree.
+     *
+     *      O(log M) query/update
+     *
+     * NEED RANGE COUNTS / RICHER INTERVAL OPERATIONS
+     * -----------------------------------------------
+     * Segment Tree.
+     *
+     *      O(log M) query/update/range count
+     *
+     * DUPLICATES
+     * ----------
+     * frequency + subtreeCount
+     * or frequency structure such as Fenwick / Segment Tree.
+     */
+
+    /*
+     * =========================================================================
+     * 15. BINARY-SEARCH CONNECTION
+     * =========================================================================
+     *
+     * Binary search:
+     *
+     *      compare target with middle
+     *      -> discard half
+     *
+     * Order Statistic BST:
+     *
+     *      leftSize + 1 = current rank
+     *      compare k with current rank
+     *      -> discard a whole subtree
+     *
+     * The analogy becomes strongest when the BST is balanced:
+     *
+     *      height = O(log n)
+     *
+     * Mental model:
+     *
+     *      subtree size turns a BST into something
+     *      you can "binary-search by rank".
+     */
+
+    /*
+     * =========================================================================
+     * 16. RELATED / REINFORCEMENT PROBLEMS
+     * =========================================================================
+     *
+     * Keep these because they train the SAME invariant from different angles.
+     *
+     * 1. Kth Largest in BST
+     * ---------------------
+     * SAME:
+     * ordered BST traversal + rank counting.
+     *
+     * DIFFERENCE:
+     * reverse inorder:
+     *
+     *      RIGHT -> NODE -> LEFT
+     *
+     * 2. BST Iterator
+     * ---------------
+     * SAME:
+     * stack top is next smallest.
+     *
+     * DIFFERENCE:
+     * traversal is paused and resumed across next() calls.
+     *
+     * 3. Validate BST
+     * ---------------
+     * SAME:
+     * inorder should be sorted.
+     *
+     * DIFFERENCE:
+     * instead of counting visits, compare current with previous.
+     *
+     * 4. Recover BST
+     * --------------
+     * SAME:
+     * inorder is expected to be sorted.
+     *
+     * DIFFERENCE:
+     * detect inversions caused by two swapped nodes.
+     *
+     * 5. Rank of a Value / Count Smaller
+     * ----------------------------------
+     * SAME:
+     * subtree counts encode order statistics.
+     *
+     * DIFFERENCE:
+     * ask "what is this value's rank?" instead of "what value has rank k?"
+     *
+     * 6. Dynamic Median / Quantiles
+     * -----------------------------
+     * SAME:
+     * median is just a rank query:
+     *
+     *      k ~= n / 2
+     *
+     * DIFFERENCE:
+     * repeated updates make augmentation / frequency structures valuable.
+     */
+
+    static class KthLargest {
+
+        int kthLargest(TreeNode root, int k) {
+
+            TreeNode current = root;
+            Deque<TreeNode> stack = new ArrayDeque<>();
 
             while (current != null || !stack.isEmpty()) {
 
-                // Invariant:
-                // Every push postpones visiting until all smaller
-                // elements have been processed.
+                while (current != null) {
+                    stack.push(current);
+                    current = current.right;
+                }
+
+                TreeNode node = stack.pop();
+
+                if (--k == 0) {
+                    return node.val;
+                }
+
+                current = node.left;
+            }
+
+            throw new IllegalArgumentException("k must be valid.");
+        }
+    }
+
+    static class BSTIterator {
+
+        private final Deque<TreeNode> stack = new ArrayDeque<>();
+
+        BSTIterator(TreeNode root) {
+            pushLeft(root);
+        }
+
+        boolean hasNext() {
+            return !stack.isEmpty();
+        }
+
+        int next() {
+
+            TreeNode node = stack.pop();
+            pushLeft(node.right);
+            return node.val;
+        }
+
+        private void pushLeft(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
+            }
+        }
+    }
+
+    static class ValidateBST {
+
+        boolean isValidBST(TreeNode root) {
+
+            Deque<TreeNode> stack = new ArrayDeque<>();
+            TreeNode current = root;
+            Long previous = null;
+
+            while (current != null || !stack.isEmpty()) {
+
                 while (current != null) {
                     stack.push(current);
                     current = current.left;
                 }
 
-                current = stack.pop();
+                TreeNode node = stack.pop();
 
-                // Invariant:
-                // current is now the smallest unvisited node.
-                k--;
-
-                if (k == 0) {
-                    return current.val;
+                if (previous != null && node.val <= previous) {
+                    return false;
                 }
 
-                // Discard the processed node forever.
-                // Remaining candidates exist only in the right subtree
-                // or among deferred ancestors.
-                current = current.right;
+                previous = (long) node.val;
+                current = node.right;
             }
 
-            throw new IllegalArgumentException(
-                    "Input guarantees 1 <= k <= number of nodes.");
+            return true;
         }
     }
 
-/*
- * =========================================================================
- * 🟣 INTERVIEW ARTICULATION
- * =========================================================================
- *
- * Explain the Invariant
- * ---------------------
- *
- * The BST property guarantees:
- *
- * left subtree
- * <
- * node
- * <
- * right subtree.
- *
- * Therefore inorder traversal naturally enumerates
- * elements in ascending order.
- *
- * ------------------------------------------------------------
- * Explain the Search Target
- * ------------------------------------------------------------
- *
- * We are not searching by value.
- *
- * We are searching by visitation rank.
- *
- * The kth visit is exactly the kth smallest.
- *
- * ------------------------------------------------------------
- * Explain the Discard Rule
- * ------------------------------------------------------------
- *
- * Once a node has been visited,
- * neither the node nor its left subtree
- * can ever contain the answer again.
- *
- * They are permanently discarded.
- *
- * ------------------------------------------------------------
- * Explain Correctness
- * ------------------------------------------------------------
- *
- * Every node is visited only after all smaller nodes.
- *
- * Therefore visit number equals sorted rank.
- *
- * When visit number reaches k,
- * that node must be the kth smallest.
- *
- * ------------------------------------------------------------
- * Explain Termination
- * ------------------------------------------------------------
- *
- * The traversal terminates immediately after visiting
- * the kth node.
- *
- * No later node can change the answer because every later
- * node is strictly larger.
- *
- * ------------------------------------------------------------
- * In-place Feasibility
- * --------------------
- *
- * No.
- *
- * Traversal still requires either:
- *
- * recursion stack
- * or
- * explicit stack.
- *
- * Morris Traversal can reduce auxiliary space to O(1),
- * but temporarily modifies tree links.
- *
- * ------------------------------------------------------------
- * Streaming Feasibility
- * ---------------------
- *
- * Yes.
- *
- * Nodes are processed one at a time.
- *
- * The algorithm never requires future values.
- *
- * ------------------------------------------------------------
- * When NOT To Use
- * ------------------------------------------------------------
- *
- * If the tree is not a BST,
- * inorder traversal is not sorted.
- *
- * If frequent insert/delete operations are followed by
- * many kth-order queries,
- * augment nodes with subtree sizes instead.
- */
-
-/*
- * =========================================================================
- * 🎯 INTERVIEW RECALL SHEET
- * =========================================================================
- *
- * Trigger
- * -------
- * BST + kth/order/rank.
- *
- * Pattern
- * -------
- * Inorder traversal.
- *
- * Invariant
- * ---------
- * Inorder visits nodes in increasing order.
- *
- * Search Target
- * -------------
- * kth visitation.
- *
- * Discard Rule
- * ------------
- * Visited node and its left subtree are finished forever.
- *
- * Common Trap
- * -----------
- * Decrementing k before visiting the node.
- *
- * Edge Cases
- * ----------
- * Single node.
- * k = 1.
- * Completely skewed tree.
- * Balanced tree.
- *
- * One-liner
- * ---------
- * kth smallest equals kth inorder visit.
- *
- * Re-derivation Cue
- * -----------------
- * BST already stores sorted order implicitly.
- */
-
     /*
      * =========================================================================
-     * 🔄 VARIATIONS & TWEAKS
+     * 17. COMMON INTERVIEW TRAPS
      * =========================================================================
      *
-     * ------------------------------------------------------------
-     * Variation 1
-     * kth Largest
-     * ------------------------------------------------------------
+     * TRAP 1
+     * ------
+     * Decrementing k while PUSHING.
      *
-     * Pattern
-     * -------
-     * Reverse inorder traversal.
+     * Wrong:
+     * push order is not inorder visit order.
      *
-     * Right
-     * Node
-     * Left
+     * Correct:
+     * decrement exactly when node is popped / visited.
      *
-     * Invariant
-     * ---------
-     * Every larger element is processed before the current node.
+     * TRAP 2
+     * ------
+     * Thinking inorder sorts every binary tree.
      *
-     * Reasoning Change
-     * ----------------
-     * Only traversal direction changes.
+     * False:
+     * only BST ordering makes inorder sorted.
      *
-     * Correctness remains identical.
+     * TRAP 3
+     * ------
+     * Saying augmented BST is automatically O(log n).
      *
-     * ------------------------------------------------------------
-     * Variation 2
-     * BST Iterator
-     * ------------------------------------------------------------
+     * False:
+     * query is O(H).
+     * You need balancing to guarantee H = O(log n).
      *
-     * Pattern
-     * -------
-     * Lazy inorder traversal.
+     * TRAP 4
+     * ------
+     * Returning early from naive Morris traversal.
      *
-     * Invariant
-     * ---------
-     * Stack top is always the next smallest element.
+     * Risk:
+     * temporary predecessor threads may remain,
+     * mutating/corrupting the original tree.
      *
-     * Instead of stopping after k,
-     * expose:
+     * TRAP 5
+     * ------
+     * Using TreeMap and claiming kth is O(log n).
      *
-     * hasNext()
-     * next()
+     * Java TreeMap keeps keys ordered,
+     * but does not expose subtree sizes / rank selection.
      *
-     * ------------------------------------------------------------
-     * Variation 3
-     * Validate BST
-     * ------------------------------------------------------------
+     * A plain TreeMap still needs iteration across keys/counts
+     * unless you build additional rank metadata.
      *
-     * Pattern
-     * -------
-     * Inorder traversal.
+     * TRAP 6
+     * ------
+     * Using a sophisticated dynamic structure for static data.
      *
-     * Invariant
-     * ---------
-     * Previously visited value must always be smaller
-     * than the current value.
+     * If the tree never changes and queries are extremely frequent:
      *
-     * Pattern changes from:
+     *      inorder cache -> O(1) query
      *
-     * counting
-     *
-     * to
-     *
-     * ordering verification.
-     *
-     * ------------------------------------------------------------
-     * Variation 4
-     * Recover BST
-     * ------------------------------------------------------------
-     *
-     * Pattern
-     * -------
-     * Inorder traversal.
-     *
-     * Invariant
-     * ---------
-     * Sorted order should never decrease.
-     *
-     * First inversion identifies one misplaced node.
-     * Second inversion identifies the other.
-     *
-     * ------------------------------------------------------------
-     * Variation 5
-     * Morris Traversal
-     * ------------------------------------------------------------
-     *
-     * Pattern
-     * -------
-     * Threaded inorder traversal.
-     *
-     * Invariant
-     * ---------
-     * Temporary links always restore the original tree.
-     *
-     * Advantages
-     * ----------
-     * O(1) auxiliary space.
-     *
-     * Drawback
-     * --------
-     * More difficult to implement correctly under interview pressure.
-     *
-     * ------------------------------------------------------------
-     * Variation 6
-     * Frequently Updated BST
-     * ------------------------------------------------------------
-     *
-     * Follow-up Solution
-     * ------------------
-     *
-     * Store:
-     *
-     * subtreeSize
-     *
-     * inside every node.
-     *
-     * During insertion/deletion,
-     * update subtree sizes while returning.
-     *
-     * Query Logic
-     * -----------
-     *
-     * leftSize =
-     * size(left subtree)
-     *
-     * if k <= leftSize
-     *     go left
-     *
-     * else if k == leftSize + 1
-     *     current node
-     *
-     * else
-     *     k -= leftSize + 1
-     *     go right
-     *
-     * Balanced Tree Complexity
-     * ------------------------
-     *
-     * Insert:
-     * O(log n)
-     *
-     * Delete:
-     * O(log n)
-     *
-     * kth Query:
-     * O(log n)
-     *
-     * This is the standard Order Statistic Tree idea.
-     *
-     * ------------------------------------------------------------
-     * Pattern Boundary
-     * ------------------------------------------------------------
-     *
-     * If ordering information does not exist,
-     * inorder traversal provides no ranking guarantee.
-     *
-     * Examples:
-     *
-     * arbitrary binary tree
-     * heap
-     * graph
+     * may be simpler and faster.
      */
 
     /*
      * =========================================================================
-     * 🧠 MASTERY CHECKLIST
+     * 18. FINAL MASTER INVARIANTS
      * =========================================================================
      *
-     * □ What is the Pattern?
+     * BASE PROBLEM
+     * ------------
      *
-     * Inorder traversal of a BST.
+     *      INORDER = SORTED ORDER.
      *
-     * ------------------------------------------------------------
+     *      POP = NEXT SMALLEST.
      *
-     * □ What is the primary Invariant?
+     * DYNAMIC FOLLOW-UP
+     * -----------------
      *
-     * Every visited node has already seen every smaller value.
+     *      LEFT COUNT + NODE CONTRIBUTION = CURRENT RANK.
      *
-     * ------------------------------------------------------------
+     * GENERAL ORDER-STATISTIC TRANSFER
+     * --------------------------------
      *
-     * □ What is the Search Target?
+     *      STORE COUNTS -> SKIP WHOLE ORDERED REGIONS.
      *
-     * kth inorder visitation.
+     * WORKLOAD PRINCIPLE
+     * ------------------
      *
-     * ------------------------------------------------------------
+     *      Static data:
+     *          preprocess aggressively.
      *
-     * □ What is the Discard Rule?
+     *      Dynamic data:
+     *          maintain metadata incrementally.
      *
-     * After visiting a node,
-     * its left subtree and itself are permanently finished.
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Why is the answer correct?
-     *
-     * Because inorder traversal of a BST is exactly
-     * the sorted order.
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Why does the algorithm terminate?
-     *
-     * Either:
-     *
-     * • kth node is found
-     *
-     * or
-     *
-     * • traversal finishes.
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Why does the naive approach fail?
-     *
-     * It ignores the ordering already encoded by the BST.
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Which edge cases should be verified?
-     *
-     * • one node
-     * • smallest element
-     * • largest element
-     * • skewed tree
-     * • balanced tree
-     * • k equals number of nodes
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Can I debug this under pressure?
-     *
-     * Verify:
-     *
-     * 1. push left chain
-     * 2. pop exactly once
-     * 3. decrement exactly on visit
-     * 4. move to right subtree
-     *
-     * ------------------------------------------------------------
-     *
-     * □ Am I ready for variants?
-     *
-     * Reverse inorder
-     * BST iterator
-     * Validate BST
-     * Recover BST
-     * Morris traversal
-     * Order Statistic Tree
+     *      Bounded value domain:
+     *          index by value/frequency instead of tree shape.
      */
 
     private static TreeNode n(int value) {
@@ -1075,205 +1314,168 @@ public class KthSmallestElementInBST {
     }
 
     private static TreeNode exampleOneTree() {
-
         return n(
                 3,
-                n(
-                        1,
-                        null,
-                        n(2)
-                ),
+                n(1, null, n(2)),
                 n(4)
         );
     }
 
     private static TreeNode exampleTwoTree() {
-
         return n(
                 5,
                 n(
                         3,
-                        n(
-                                2,
-                                n(1),
-                                null
-                        ),
+                        n(2, n(1), null),
                         n(4)
                 ),
                 n(6)
         );
     }
 
-    private static TreeNode singleNodeTree() {
-        return n(42);
-    }
-
-    private static TreeNode leftSkewedTree() {
-
+    private static TreeNode invalidBST() {
         return n(
                 5,
-                n(
-                        4,
-                        n(
-                                3,
-                                n(
-                                        2,
-                                        n(1),
-                                        null
-                                ),
-                                null
-                        ),
-                        null
-                ),
-                null
+                n(1),
+                n(4, n(3), n(6))
         );
     }
 
-    private static TreeNode rightSkewedTree() {
-
-        return n(
-                1,
-                null,
-                n(
-                        2,
-                        null,
-                        n(
-                                3,
-                                null,
-                                n(
-                                        4,
-                                        null,
-                                        n(5)
-                                )
-                        )
-                )
-        );
-    }
-
+    /*
+     * =========================================================================
+     * 19. SELF-VERIFYING TESTS
+     * =========================================================================
+     *
+     * Run with assertions enabled:
+     *
+     *      java -ea ...
+     */
     public static void main(String[] args) {
 
-        BruteForce brute = new BruteForce();
-        Improved improved = new Improved();
-        Optimal optimal = new Optimal();
+        Preferred preferred = new Preferred();
+        FullInorderList full = new FullInorderList();
+        RecursiveEarlyStop recursive = new RecursiveEarlyStop();
+        MorrisTraversalSafe morris = new MorrisTraversalSafe();
 
-        /*
-         * Representative Example 1
-         *
-         * inorder = 1 2 3 4
-         *
-         * kth(1) = 1
-         */
-        assert brute.kthSmallest(exampleOneTree(), 1) == 1
-                : "Brute force failed on representative example 1.";
+        TreeNode tree1 = exampleOneTree();
 
-        assert improved.kthSmallest(exampleOneTree(), 1) == 1
-                : "Recursive early-stop failed on representative example 1.";
+        assert preferred.kthSmallest(tree1, 1) == 1;
+        assert preferred.kthSmallest(tree1, 2) == 2;
+        assert preferred.kthSmallest(tree1, 3) == 3;
+        assert preferred.kthSmallest(tree1, 4) == 4;
 
-        assert optimal.kthSmallest(exampleOneTree(), 1) == 1
-                : "Iterative inorder failed on representative example 1.";
+        TreeNode tree2 = exampleTwoTree();
 
-        /*
-         * Representative Example 2
-         *
-         * inorder = 1 2 3 4 5 6
-         *
-         * kth(3) = 3
-         */
-        assert brute.kthSmallest(exampleTwoTree(), 3) == 3
-                : "Brute force failed on representative example 2.";
-
-        assert improved.kthSmallest(exampleTwoTree(), 3) == 3
-                : "Recursive early-stop failed on representative example 2.";
-
-        assert optimal.kthSmallest(exampleTwoTree(), 3) == 3
-                : "Iterative inorder failed on representative example 2.";
-
-        /*
-         * Edge Case
-         *
-         * Single node tree.
-         */
-        assert brute.kthSmallest(singleNodeTree(), 1) == 42
-                : "Single-node tree failed.";
-
-        assert improved.kthSmallest(singleNodeTree(), 1) == 42
-                : "Recursive single-node case failed.";
-
-        assert optimal.kthSmallest(singleNodeTree(), 1) == 42
-                : "Iterative single-node case failed.";
-
-        /*
-         * Boundary Condition
-         *
-         * Smallest element in a left-skewed BST.
-         */
-        assert optimal.kthSmallest(leftSkewedTree(), 1) == 1
-                : "Failed to find smallest element in left-skewed tree.";
-
-        /*
-         * Boundary Condition
-         *
-         * Largest element by asking for the final rank.
-         */
-        assert optimal.kthSmallest(leftSkewedTree(), 5) == 5
-                : "Failed to find largest element.";
-
-        /*
-         * Interview Trap
-         *
-         * Right-skewed trees should still produce sorted order.
-         */
-        assert optimal.kthSmallest(rightSkewedTree(), 4) == 4
-                : "Right-skewed traversal ordering is incorrect.";
-
-        /*
-         * Verify every rank in the representative tree.
-         *
-         * inorder = 1 2 3 4 5 6
-         */
         int[] expected = {1, 2, 3, 4, 5, 6};
 
-        for (int i = 0; i < expected.length; i++) {
+        for (int k = 1; k <= expected.length; k++) {
 
-            int k = i + 1;
+            int answer = expected[k - 1];
 
-            assert brute.kthSmallest(exampleTwoTree(), k) == expected[i]
-                    : "Brute force rank verification failed for k = " + k;
-
-            assert improved.kthSmallest(exampleTwoTree(), k) == expected[i]
-                    : "Recursive rank verification failed for k = " + k;
-
-            assert optimal.kthSmallest(exampleTwoTree(), k) == expected[i]
-                    : "Iterative rank verification failed for k = " + k;
+            assert preferred.kthSmallest(tree2, k) == answer;
+            assert full.kthSmallest(tree2, k) == answer;
+            assert recursive.kthSmallest(tree2, k) == answer;
+            assert morris.kthSmallest(tree2, k) == answer;
         }
 
-        /*
-         * Cross-validation.
-         *
-         * Every implementation should agree on every valid rank.
-         */
-        TreeNode validationTree = exampleTwoTree();
+        // Morris must leave the tree usable after every query.
+        assert preferred.kthSmallest(tree2, 3) == 3;
+        assert preferred.kthSmallest(tree2, 6) == 6;
 
-        for (int k = 1; k <= 6; k++) {
+        StaticKthIndex index = new StaticKthIndex(tree2);
 
-            int a = brute.kthSmallest(validationTree, k);
-            int b = improved.kthSmallest(validationTree, k);
-            int c = optimal.kthSmallest(validationTree, k);
+        assert index.kthSmallest(1) == 1;
+        assert index.kthSmallest(3) == 3;
+        assert index.kthSmallest(6) == 6;
 
-            assert a == b : "Brute and recursive implementations disagree.";
-            assert b == c : "Recursive and iterative implementations disagree.";
+        OrderStatisticBST orderStatisticBST = new OrderStatisticBST();
+
+        for (int value : new int[]{5, 3, 6, 2, 4, 1}) {
+            orderStatisticBST.insert(value);
         }
 
-        System.out.println("All assertions passed. Enable assertions with -ea during execution.");
+        assert orderStatisticBST.size() == 6;
+        assert orderStatisticBST.kthSmallest(1) == 1;
+        assert orderStatisticBST.kthSmallest(3) == 3;
+        assert orderStatisticBST.kthSmallest(6) == 6;
+
+        orderStatisticBST.delete(3);
+
+        assert orderStatisticBST.size() == 5;
+        assert orderStatisticBST.kthSmallest(1) == 1;
+        assert orderStatisticBST.kthSmallest(3) == 4;
+        assert orderStatisticBST.kthSmallest(5) == 6;
+
+        FenwickOrderStatistic fenwick = new FenwickOrderStatistic(10_000);
+
+        for (int value : new int[]{5, 3, 6, 2, 4, 1, 3, 3}) {
+            fenwick.insert(value);
+        }
+
+        // Sorted multiset: 1, 2, 3, 3, 3, 4, 5, 6
+        assert fenwick.kthSmallest(1) == 1;
+        assert fenwick.kthSmallest(3) == 3;
+        assert fenwick.kthSmallest(5) == 3;
+        assert fenwick.kthSmallest(8) == 6;
+
+        fenwick.delete(3);
+
+        // Now: 1, 2, 3, 3, 4, 5, 6
+        assert fenwick.kthSmallest(5) == 4;
+
+        SegmentTreeOrderStatistic segment = new SegmentTreeOrderStatistic(10_000);
+
+        for (int value : new int[]{5, 3, 6, 2, 4, 1, 3, 3}) {
+            segment.insert(value);
+        }
+
+        assert segment.kthSmallest(1) == 1;
+        assert segment.kthSmallest(5) == 3;
+        assert segment.kthSmallest(8) == 6;
+        assert segment.rangeCount(2, 4) == 5;
+
+        segment.delete(3);
+
+        assert segment.kthSmallest(5) == 4;
+        assert segment.rangeCount(2, 4) == 4;
+
+        KthLargest kthLargest = new KthLargest();
+
+        assert kthLargest.kthLargest(tree2, 1) == 6;
+        assert kthLargest.kthLargest(tree2, 3) == 4;
+
+        BSTIterator iterator = new BSTIterator(tree2);
+
+        for (int value : expected) {
+            assert iterator.hasNext();
+            assert iterator.next() == value;
+        }
+
+        assert !iterator.hasNext();
+
+        ValidateBST validator = new ValidateBST();
+
+        assert validator.isValidBST(tree2);
+        assert !validator.isValidBST(invalidBST());
+
+        System.out.println("All assertions passed.");
     }
 }
 
 /*
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
-*/
+ * =========================================================================
+ * FINAL RE-DERIVATION
+ * =========================================================================
+ *
+ * If I forget everything:
+ *
+ * 1. BST inorder is sorted.
+ * 2. Therefore kth smallest = kth inorder visit.
+ * 3. Iterative inorder:
+ *      push left chain -> pop -> process -> go right.
+ * 4. POP is the next smallest unvisited node.
+ * 5. For frequent dynamic rank queries:
+ *      store counts so whole ordered regions can be skipped.
+ *
+ * That one chain re-derives the entire chapter.
+ */

@@ -1,535 +1,871 @@
 package org.chijai.day1.Arrays.session2;
 
-// ============================================================================
-// 📘 MajorityElementII_TextbookChapter.java
-// A complete, IntelliJ-ready, single-file DSA textbook chapter
-// Problem: Majority Element II (elements appearing more than ⌊n/3⌋ times)
-// Pattern: Extended Boyer–Moore Voting (k = 2 counters)
-// ============================================================================
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * Majority Element Family — V3
+ *
+ * Learning order:
+ *
+ * 1. Obvious counting solution (HashMap)
+ * 2. Mathematical observation: > n/k => at most k - 1 winners
+ * 3. Boyer-Moore n/2 — simplest cancellation case
+ * 4. Boyer-Moore n/3 — primary problem
+ * 5. Generic n/k — Misra-Gries
+ * 6. Proof + interview recall
+ * 7. Self-verifying tests
+ *
+ * Motto:
+ * Learn one invariant, one code shape, reuse everywhere.
+ */
 public class MajorityElement {
 
-    // ============================
-    // 🔵 CORE PATTERN OVERVIEW
-    // ============================
     /*
-        🔵 Pattern Name:
-        Boyer–Moore Voting Algorithm (Generalized to k counters)
+     * ============================================================
+     * 📘 PRIMARY PROBLEM — MAJORITY ELEMENT II
+     * ============================================================
+     *
+     * Given int[] nums, return all elements appearing more than
+     * floor(n / 3) times.
+     *
+     * Example:
+     *
+     * nums = [1,1,1,3,3,2,2,2]
+     *
+     * answer = [1,2]
+     *
+     * Desired optimal complexity:
+     *
+     * Time  : O(n)
+     * Space : O(1)
+     */
 
-        🔵 Core Idea:
-        When searching for elements appearing more than ⌊n/(k+1)⌋ times,
-        we only need k counters. All other elements can be "paired out"
-        against these counters and safely discarded.
-
-        🔵 Why It Works:
-        Each "pair-out" operation removes (k+1) distinct elements.
-        An element that truly appears more than ⌊n/(k+1)⌋ times
-        cannot be completely eliminated by such cancellations.
-        Therefore, it must survive as a candidate.
-
-        🔵 When to Use:
-        - Frequency threshold problems with fixed denominator (n/2, n/3, n/4, …)
-        - When O(1) space is required
-        - When streaming-friendly, single-pass candidate detection is needed
-
-        🧭 Pattern Recognition Signals:
-        - Problem asks for elements appearing "more than ⌊n/x⌋ times"
-        - x is small and fixed
-        - Output size is bounded (≤ x − 1)
-        - HashMap solution is obvious but space-inefficient
-    */
-
-    // ----------------------------
-    // 🟢 MENTAL MODEL & INVARIANTS
-    // ----------------------------
     /*
-        🟢 Mental Model (Think in cancellations, not counts):
-        Imagine removing groups of (k+1) *distinct* elements repeatedly.
-        What remains at the end are only possible heavy hitters.
+     * ============================================================
+     * 1. OBVIOUS BASELINE — HASHMAP
+     * ============================================================
+     *
+     * First thought:
+     *
+     * "I need frequencies."
+     *
+     * So count everybody.
+     *
+     * This is already O(n) time.
+     * Boyer-Moore improves SPACE, not asymptotic time.
+     *
+     * Running frequency is monotonic:
+     *
+     * threshold = 3
+     *
+     * count:
+     * 1  2  3  4  5 ...
+     * F  F  F  T  T ...
+     *          ↑
+     *      first crossing
+     *
+     * Therefore record exactly when:
+     *
+     *     count == threshold + 1
+     *
+     * Why not:
+     *
+     *     count > threshold
+     *
+     * Because once the predicate becomes true, it stays true:
+     *
+     * threshold = 3
+     *
+     * count:
+     * 1  2  3  4  5  6
+     * F  F  F  T  T  T
+     *          ↑
+     *      first true
+     *
+     * If we used count > threshold and added every time,
+     * the same winner would be added repeatedly at counts
+     * 4, 5, 6, ...
+     *
+     * threshold + 1 is the exact FALSE -> TRUE boundary.
+     *
+     * This is the same monotonic-boundary idea used in binary
+     * search, except here we encounter the boundary naturally
+     * while scanning, so no binary search is needed.
+     *
+     * No second map scan is required because freq[num] is the
+     * ACTUAL frequency seen so far.
+     */
 
-        For Majority Element II:
-        - Threshold = ⌊n/3⌋
-        - Maximum possible answers = 2
-        - Therefore, we maintain 2 candidates + 2 counters
+    static class HashMapNBy3 {
 
-        🟢 Invariants (MUST always hold):
-        1. At any point, count1 and count2 represent relative dominance,
-           not actual frequencies.
-        2. candidate1 and candidate2 are the only possible survivors
-           after all valid pair-outs.
-        3. If both counters are non-zero and current number matches neither,
-           one unit of dominance is removed from BOTH candidates.
-        4. Order of checks preserves identity before replacement.
-
-        🟢 Role of Every Variable:
-        - candidate1, candidate2:
-            Current surviving identities after cancellations
-        - count1, count2:
-            Relative dominance scores
-        - num:
-            Current stream element being processed
-
-        🟢 Termination Logic:
-        - First pass finds *potential* candidates only
-        - Second pass verifies actual frequency against ⌊n/3⌋
-
-        🟢 Forbidden Actions:
-        - ❌ Using HashMap without justification
-        - ❌ Skipping the verification pass
-        - ❌ Replacing candidate before checking equality
-        - ❌ Treating counts as final frequencies
-
-        🟢 Why Common Alternatives Are Inferior:
-        - Sorting: O(n log n), unnecessary
-        - HashMap: O(n) space, violates constraint
-        - Brute force: O(n²), not scalable
-    */
-
-    // ============================================================
-    // PRIMARY PROBLEM — SOLUTION CLASSES
-    // ============================================================
-
-    // ------------------------------------------------------------
-    // 🔹 Brute Force Approach
-    // ------------------------------------------------------------
-    static class BruteForceSolution {
-        /*
-            🔵 Core Idea:
-            Count frequency of every element using nested loops.
-
-            🔵 Limitation Fixed by Next Approach:
-            Eliminates quadratic time.
-
-            ⏱ Time Complexity: O(n²)
-            🧠 Space Complexity: O(1)
-            🎯 Interview-Preferred: ❌ No (too slow)
-        */
         public List<Integer> majorityElement(int[] nums) {
-            List<Integer> result = new ArrayList<>();
-            int n = nums.length;
 
-            for (int i = 0; i < n; i++) {
-                int count = 0;
-                for (int j = 0; j < n; j++) {
-                    if (nums[j] == nums[i]) count++;
-                }
-                if (count > n / 3 && !result.contains(nums[i])) {
-                    result.add(nums[i]);
-                }
-            }
-            return result;
-        }
-    }
+            Map<Integer, Integer> freq = new HashMap<>();
+            List<Integer> ans = new ArrayList<>();
 
-    // ------------------------------------------------------------
-    // 🔹 Improved Approach (HashMap)
-    // ------------------------------------------------------------
-    static class HashMapSolution {
-        /*
-            🔵 Core Idea:
-            Count frequencies using a map.
-
-            🔵 Limitation Fixed by Next Approach:
-            Reduces space from O(n) to O(1).
-
-            ⏱ Time Complexity: O(n)
-            🧠 Space Complexity: O(n)
-            🎯 Interview-Preferred: ⚠️ Only if space allowed
-        */
-        public List<Integer> majorityElement(int[] nums) {
-            java.util.Map<Integer, Integer> frequency = new java.util.HashMap<>();
-            for (int num : nums) {
-                frequency.put(num, frequency.getOrDefault(num, 0) + 1);
-            }
-
-            List<Integer> result = new ArrayList<>();
-            for (var entry : frequency.entrySet()) {
-                if (entry.getValue() > nums.length / 3) {
-                    result.add(entry.getKey());
-                }
-            }
-            return result;
-        }
-    }
-
-    // ------------------------------------------------------------
-    // 🔹 Optimal Approach (Extended Boyer–Moore)
-    // ------------------------------------------------------------
-
-    static class OptimalBoyerMooreSolution {
-        /*
-            🔵 Core Idea:
-            Maintain two candidates and cancel out triples.
-
-            🔵 What Limitation It Fixes:
-            Removes extra space while keeping linear time.
-
-            ⏱ Time Complexity: O(n)
-            🧠 Space Complexity: O(1)
-            🎯 Interview-Preferred: ✅ YES
-        */
-        public List<Integer> majorityElement(int[] nums) {
-            int candidate1 = 0, candidate2 = 0;
-            int count1 = 0, count2 = 0;
+            int threshold = nums.length / 3;
 
             for (int num : nums) {
 
-                // 🟡 Why this order exists:
-                // Equality must be checked BEFORE zero-count replacement
-                // Otherwise, we risk overwriting a valid candidate.
+                int count = freq.merge(num, 1, Integer::sum);
 
+                // Add exactly once, at the false -> true boundary.
+                if (count == threshold + 1) {
+                    ans.add(num);
+                }
+            }
+
+            return ans;
+        }
+    }
+
+    /*
+     * Same HashMap idea for > n/2.
+     *
+     * There can be only one answer, so return immediately
+     * when a value crosses the threshold.
+     */
+    static class HashMapNBy2 {
+
+        public int majorityElement(int[] nums) {
+
+            Map<Integer, Integer> freq = new HashMap<>();
+
+            int threshold = nums.length / 2;
+
+            for (int num : nums) {
+
+                int count = freq.merge(num, 1, Integer::sum);
+
+                if (count == threshold + 1) {
+                    return num;
+                }
+            }
+
+            // LeetCode 169 guarantees a majority exists.
+            throw new IllegalArgumentException("No majority element");
+        }
+    }
+
+    /*
+     * ============================================================
+     * 2. THE MATHEMATICAL BRIDGE
+     * ============================================================
+     *
+     * Why can we possibly replace a HashMap with only a few slots?
+     *
+     * Because the threshold limits how many winners can exist.
+     *
+     * ------------------------------------------------------------
+     * > n/2
+     * ------------------------------------------------------------
+     *
+     * At most 1 winner.
+     *
+     * Two values each occurring > n/2 would together require
+     * more than n array positions.
+     *
+     * ------------------------------------------------------------
+     * > n/3
+     * ------------------------------------------------------------
+     *
+     * At most 2 winners.
+     *
+     * Three values each occurring > n/3 would require:
+     *
+     * > n/3 + > n/3 + > n/3
+     * > n
+     *
+     * impossible.
+     *
+     * ------------------------------------------------------------
+     * General rule
+     * ------------------------------------------------------------
+     *
+     * > n/k
+     *
+     * => at most k - 1 winners.
+     *
+     * This tells us the maximum number of candidate slots needed.
+     */
+
+    /*
+     * ============================================================
+     * 3. BOYER-MOORE > n/2 — LEARN CANCELLATION HERE FIRST
+     * ============================================================
+     *
+     * One possible winner
+     * -> one candidate slot.
+     *
+     * Mental model:
+     *
+     * candidate + different value
+     *             ↓
+     *           CANCEL
+     *
+     * count is NOT actual frequency.
+     *
+     * count = uncancelled support.
+     *
+     * If a true majority occupies > half the array,
+     * there are fewer non-majority elements than majority elements.
+     *
+     * Therefore all majority copies cannot be cancelled.
+     *
+     * Standard family-wide code order:
+     *
+     * MATCH EXISTING
+     * -> FILL EMPTY
+     * -> CANCEL
+     */
+
+    static class BoyerMooreNBy2 {
+
+        public int majorityElement(int[] nums) {
+
+            int candidate = 0;
+            int count = 0;
+
+            for (int num : nums) {
+
+                if (num == candidate) {
+                    count++;
+
+                } else if (count == 0) {
+                    candidate = num;
+                    count = 1;
+
+                } else {
+                    count--;
+                }
+            }
+
+            // LeetCode 169 guarantees a majority exists.
+            return candidate;
+        }
+    }
+
+    /*
+     * ============================================================
+     * 4. BOYER-MOORE > n/3 — PRIMARY OPTIMAL SOLUTION
+     * ============================================================
+     *
+     * At most 2 winners
+     * -> keep 2 candidate slots.
+     *
+     * Same exact thought process:
+     *
+     * 1. MATCH EXISTING
+     * 2. FILL EMPTY SLOT
+     * 3. OTHERWISE CANCEL
+     *
+     * When both slots are active and num matches neither:
+     *
+     * candidate1
+     * candidate2
+     * num
+     *
+     * are THREE distinct values.
+     *
+     * Conceptually delete one copy of all three.
+     *
+     * The incoming num is discarded implicitly,
+     * while:
+     *
+     * count1--;
+     * count2--;
+     *
+     * represent deleting one copy of the two stored candidates.
+     */
+
+    static class BoyerMooreNBy3 {
+
+        public List<Integer> majorityElement(int[] nums) {
+
+            int candidate1 = 0;
+            int candidate2 = 0;
+
+            int count1 = 0;
+            int count2 = 0;
+
+            // PASS 1 — find possible survivors.
+            for (int num : nums) {
+
+                // 1. MATCH EXISTING
                 if (num == candidate1) {
                     count1++;
+
                 } else if (num == candidate2) {
                     count2++;
+
+                // 2. FILL EMPTY SLOT
                 } else if (count1 == 0) {
                     candidate1 = num;
                     count1 = 1;
+
                 } else if (count2 == 0) {
                     candidate2 = num;
                     count2 = 1;
+
+                // 3. THIRD DISTINCT VALUE -> CANCEL
                 } else {
-                    // ❌ INTERVIEW TRAP:
-                    // Forgetting this step breaks cancellation invariant
                     count1--;
                     count2--;
                 }
             }
 
-            // Verification pass (MANDATORY)
+            // PASS 2 — verify actual frequencies.
             count1 = 0;
             count2 = 0;
+
             for (int num : nums) {
-                if (num == candidate1) count1++;
-                else if (num == candidate2) count2++;
+                if (num == candidate1) {
+                    count1++;
+                } else if (num == candidate2) {
+                    count2++;
+                }
             }
 
-            List<Integer> result = new ArrayList<>();
+            List<Integer> ans = new ArrayList<>();
             int threshold = nums.length / 3;
 
-            if (count1 > threshold) result.add(candidate1);
-            if (count2 > threshold) result.add(candidate2);
+            if (count1 > threshold) {
+                ans.add(candidate1);
+            }
 
-            return result;
+            if (count2 > threshold) {
+                ans.add(candidate2);
+            }
+
+            return ans;
         }
     }
 
-    /**
-     * ---------------------------------------------------------------------------
-     * Why this order is mandatory (Algorithm Invariant)
-     * ---------------------------------------------------------------------------
+    /*
+     * ============================================================
+     * WHY ORDER MATTERS FOR n/3
+     * ============================================================
      *
-     * Order:
+     * MATCH must happen before EMPTY-SLOT replacement.
      *
-     *     Equality
-     *         ↓
-     *     Replacement
-     *         ↓
-     *     Cancellation
+     * Example:
      *
-     * Always ask:
+     * candidate1 = 5, count1 = 0
+     * candidate2 = 8, count2 = 3
+     * num = 8
      *
-     *     1. Is this number already one of my candidates?
-     *              ↓
-     *     2. If not, is there an empty candidate slot?
-     *              ↓
-     *     3. Otherwise, cancel one vote from both candidates.
+     * Wrong order:
      *
-     * ---------------------------------------------------------------------------
-     * Intuition
-     * ---------------------------------------------------------------------------
+     * if (count1 == 0) ...
      *
-     * Think of each candidate slot as a person.
+     * would set:
      *
-     *     Candidate 1
-     *     Candidate 2
+     * candidate1 = 8
      *
-     * When a new number arrives, the FIRST question is:
+     * giving:
      *
-     *     "Do I already know you?"
+     * candidate1 = 8
+     * candidate2 = 8
      *
-     * If YES:
-     *     → Increase that candidate's vote.
+     * Both slots now track the same value.
      *
-     * Only if the answer is NO , for both the candidates , do we ask:
+     * Correct order first sees:
      *
-     *     "Is there an empty seat?"
+     * num == candidate2
      *
-     * If YES:
-     *     → Seat this new candidate.
+     * and increments count2.
      *
-     * If both seats are occupied:
-     *     → Cancel one vote from each candidate.
+     * ------------------------------------------------------------
+     * n/2 nuance
+     * ------------------------------------------------------------
      *
-     * ---------------------------------------------------------------------------
-     * Why Equality Must Be Checked Before Replacement
-     * ---------------------------------------------------------------------------
+     * With only one slot, duplicate-slot corruption cannot happen.
      *
-     * Suppose:
-     *
-     *     candidate1 = 5, count1 = 0
-     *     candidate2 = 8, count2 = 3
-     *
-     * Incoming number = 8
-     *
-     * Correct:
-     *
-     *     num == candidate2
-     *     → count2++
-     *
-     * Wrong (checking count == 0 first):
-     *
-     *     candidate1 = 8
-     *     count1 = 1
-     *
-     * Now:
-     *
-     *     candidate1 = 8
-     *     candidate2 = 8
-     *
-     * Both candidate slots contain the same value.
-     * The algorithm can no longer track two different potential majority
-     * candidates, so the fundamental Boyer-Moore invariant is broken.
-     * ---------------------------------------------------------------------------
+     * But using MATCH -> EMPTY -> CANCEL there too gives us
+     * one reusable family-wide coding style.
      */
 
-    /**
-     * ---------------------------------------------------------------------------
-     * Key Insight
-     * ---------------------------------------------------------------------------
+    /*
+     * ============================================================
+     * WHY BOYER-MOORE NEEDS PASS 2
+     * ============================================================
      *
-     * The difference is not the Boyer-Moore algorithm itself—it is the number
-     * of candidate slots being maintained.
+     * This is a crucial distinction:
      *
-     * n/2 Majority Vote (One Candidate)
-     * ---------------------------------
-     * There is only one candidate slot.
+     * HashMap counters:
      *
-     *     count == 0
+     *     ACTUAL frequencies
      *
-     * means the only slot is inactive (empty). Since there is no second candidate
-     * to compare against, replacing first or checking equality first both preserve
-     * the algorithm's invariant.
+     * Boyer-Moore counters:
      *
-     * n/3 Majority Vote (Two Candidates)
-     * ----------------------------------
-     * There are two independent candidate slots.
+     *     UNCANCELLED support after elimination
      *
-     *     count1 == 0
+     * ------------------------------------------------------------
+     * PASS 1 ONLY FINDS SUSPECTS
+     * ------------------------------------------------------------
      *
-     * only means Candidate 1's slot is available. It does NOT mean the incoming
-     * number isn't already being tracked by Candidate 2.
+     * After Boyer-Moore pass 1, we know:
      *
-     * Therefore, equality checks must always happen before replacement.
-     * Otherwise, both candidate slots can end up storing the same value,
-     * breaking the invariant that the algorithm tracks up to two distinct
-     * potential majority candidates.
-     * ---------------------------------------------------------------------------
+     *     every real > n/3 winner
+     *     MUST be among candidate1 / candidate2
+     *
+     * But we do NOT know:
+     *
+     *     every surviving candidate
+     *     actually occurs > n/3 times
+     *
+     * Example:
+     *
+     * nums = [1, 2, 3, 4]
+     *
+     * n = 4
+     * threshold = floor(4 / 3) = 1
+     *
+     * No value occurs more than once,
+     * so the correct answer is [].
+     *
+     * Yet Boyer-Moore can still finish with surviving candidates.
+     *
+     * Therefore survivors must be counted again for real.
+     *
+     * ------------------------------------------------------------
+     * WHY NOT KEEP ACTUAL COUNTS DURING PASS 1?
+     * ------------------------------------------------------------
+     *
+     * Because candidates can change.
+     *
+     * Suppose value 7 appeared earlier while it was NOT one of
+     * the active candidates.
+     *
+     * Later, 7 becomes a candidate.
+     *
+     * Its earlier occurrences are already forgotten.
+     *
+     * To preserve exact historical counts for every value,
+     * we would need:
+     *
+     *     value -> frequency
+     *
+     * which is exactly a HashMap.
+     *
+     * So the trade-off is:
+     *
+     *     ONE PASS + exact frequencies
+     *     -> HashMap
+     *     -> O(n) extra space
+     *
+     *     O(1) EXTRA SPACE
+     *     -> Boyer-Moore candidate discovery
+     *     -> second verification pass
+     *
+     * Two passes are still:
+     *
+     *     O(n) + O(n) = O(n)
+     *
+     * ------------------------------------------------------------
+     * WHY n/2 SOMETIMES NEEDS NO VERIFICATION
+     * ------------------------------------------------------------
+     *
+     * LeetCode 169 guarantees that a > n/2 majority exists.
+     *
+     * Therefore:
+     *
+     *     true majority must survive
+     *     +
+     *     some majority is guaranteed to exist
+     *
+     * so the surviving candidate can be returned directly.
+     *
+     * If existence were NOT guaranteed,
+     * n/2 Boyer-Moore would also need a verification pass.
+     *
+     * ------------------------------------------------------------
+     * REUSABLE RULE
+     * ------------------------------------------------------------
+     *
+     * Boyer-Moore pass 1:
+     *
+     *     CANDIDATE DISCOVERY
+     *
+     * Is existence guaranteed?
+     *
+     *     YES -> candidate may be returned directly
+     *            if the problem guarantees uniqueness/existence
+     *
+     *     NO  -> VERIFY actual frequency in pass 2
      */
 
-    // ============================================================================
-    // 🧠 CORE INTUITION — WHY BOYER–MOORE (n/3) WORKS
-    // ============================================================================
     /*
-    🔵 Key Fact:
-    If an element appears more than ⌊n/3⌋ times, there can be at most TWO such elements.
-    Three distinct elements each > n/3 would together exceed n.
+     * ============================================================
+     * 5. GENERIC > n/k — MISRA-GRIES
+     * ============================================================
+     *
+     * Generalized Boyer-Moore is usually called Misra-Gries.
+     *
+     * > n/k
+     *
+     * => at most k - 1 winners
+     *
+     * therefore maintain at most k - 1 candidate counters.
+     *
+     * For every incoming num:
+     *
+     * MATCH EXISTING
+     * -> increment
+     *
+     * else EMPTY SLOT
+     * -> insert with count 1
+     *
+     * else
+     * -> num is the kth distinct active value
+     * -> decrement every stored counter
+     * -> remove zero counters
+     *
+     * Then verify the surviving candidates.
+     *
+     * Complexity:
+     *
+     * Time  : O(n * k) in this straightforward implementation
+     * Space : O(k)
+     *
+     * For fixed small k, this is O(n) time and O(1) extra space.
+     */
 
-    🔵 Cancellation / Pair-Out Model:
-    Think of the array as a voting process.
-    Whenever we see THREE distinct numbers, we can remove one vote from each.
-    Such removal never eliminates a true > n/3 element completely.
+    static class MisraGriesNByK {
 
-    🔵 Algorithm Intuition:
-    • Maintain TWO candidates and TWO counters
-    • If number matches a candidate → reinforce it
-    • If a counter is zero → claim that slot
-    • If it matches neither and both slots are full → cancel all three
+        public List<Integer> majorityElement(int[] nums, int k) {
 
-    This simulates repeatedly deleting groups of 3 distinct elements.
-    Counters track RELATIVE dominance, not actual frequency.
-
-    🔴 CRITICAL ORDER INVARIANT (COMMON BUG):
-    Equality checks MUST come before checking count == 0.
-
-    ❌ If count == 0 is checked first:
-    → A valid surviving candidate may be overwritten
-    → Cancellation invariant breaks
-
-    🧠 Mental Rule:
-    “Is this number already someone I’m tracking?”
-    Only if the answer is NO may a candidate be replaced.
-    */
-
-
-    // ============================================================
-    // 🟣 INTERVIEW ARTICULATION & FOLLOW-UPS
-    // ============================================================
-    /*
-        🟣 Why the Optimal Approach Works:
-        Any element appearing more than ⌊n/3⌋ times cannot be fully canceled.
-
-        🟣 Which Invariant Guarantees Correctness:
-        At most 2 elements can exceed ⌊n/3⌋ frequency.
-
-        🟣 What Breaks If Order Changes:
-        Checking count == 0 before equality can replace a valid candidate,
-        destroying the cancellation guarantee.
-
-        🟣 Can It Be Done In-Place?
-        Yes. Only constant extra variables used.
-
-        🟣 Can It Handle Streaming Input?
-        Candidate detection: YES
-        Verification: Requires second pass or stored data.
-
-        🟣 When Should This Pattern NOT Be Used?
-        - Variable thresholds
-        - Large k values
-        - When exact frequencies are required mid-stream
-
-        🟣 How to Explain Without Code:
-        "Repeatedly remove groups of three distinct numbers.
-         Any number that appears too frequently cannot be fully removed."
-    */
-
-    // ============================================================
-    // 🔄 VARIATIONS & TWEAKS — COMPLETE COVERAGE
-    // ============================================================
-    /*
-        🟢 Invariant-Preserving Changes:
-        - Extend to n/4 using 3 counters
-
-        🟡 Reasoning-Only Changes:
-        - Different explanation metaphors (voting, cancellation, balance)
-
-        🔴 Pattern-Break Signals:
-        - Asking for top-k frequent elements
-        - Threshold depends on input dynamically
-    */
-
-    // ============================================================
-    // ⚫ PATTERN REINFORCEMENT PROBLEMS
-    // ============================================================
-
-    // ------------------------------------------------------------
-    // ⚫ Reinforcement 1 — Majority Element (n/2)
-    // ------------------------------------------------------------
-    static class MajorityElementNBy2 {
-        /*
-            🔵 Problem:
-            Find element appearing more than ⌊n/2⌋ times.
-
-            ⚫ SAME PATTERN AS PRIMARY PROBLEM BECAUSE:
-            Threshold-based heavy hitter detection.
-
-            🟢 Key Invariant:
-            One element survives all pair-outs.
-
-            🟡 What Changes:
-            Only one candidate + one counter.
-        */
-        public int majorityElement(int[] nums) {
-            int candidate = 0, count = 0;
-            for (int num : nums) {
-                if (count == 0) candidate = num;
-                count += (num == candidate) ? 1 : -1;
+            if (k < 2) {
+                throw new IllegalArgumentException("k must be >= 2");
             }
-            return candidate;
+
+            Map<Integer, Integer> candidates = new HashMap<>();
+
+            // PASS 1 — cancellation.
+            for (int num : nums) {
+
+                // 1. MATCH EXISTING
+                if (candidates.containsKey(num)) {
+                    candidates.put(num, candidates.get(num) + 1);
+                    continue;
+                }
+
+                // 2. FILL EMPTY SLOT
+                if (candidates.size() < k - 1) {
+                    candidates.put(num, 1);
+                    continue;
+                }
+
+                // 3. kth DISTINCT VALUE -> CANCEL EVERY ACTIVE SLOT
+                Iterator<Map.Entry<Integer, Integer>> it =
+                        candidates.entrySet().iterator();
+
+                while (it.hasNext()) {
+
+                    Map.Entry<Integer, Integer> entry = it.next();
+                    int newCount = entry.getValue() - 1;
+
+                    if (newCount == 0) {
+                        it.remove();
+                    } else {
+                        entry.setValue(newCount);
+                    }
+                }
+            }
+
+            // PASS 2 — actual frequencies of survivors only.
+            Map<Integer, Integer> actual = new HashMap<>();
+
+            for (int candidate : candidates.keySet()) {
+                actual.put(candidate, 0);
+            }
+
+            for (int num : nums) {
+                if (actual.containsKey(num)) {
+                    actual.put(num, actual.get(num) + 1);
+                }
+            }
+
+            List<Integer> ans = new ArrayList<>();
+            int threshold = nums.length / k;
+
+            for (Map.Entry<Integer, Integer> entry : actual.entrySet()) {
+                if (entry.getValue() > threshold) {
+                    ans.add(entry.getKey());
+                }
+            }
+
+            return ans;
         }
     }
 
-    // ------------------------------------------------------------
-    // ⚫ Reinforcement 2 — Elements Appearing More Than n/4 Times
-    // ------------------------------------------------------------
-    static class MajorityElementNBy4 {
-        /*
-            Uses 3 counters.
-            Same cancellation logic.
-        */
-        public List<Integer> majorityElement(int[] nums) {
-            int[] candidates = new int[3];
-            int[] counts = new int[3];
+    /*
+     * ============================================================
+     * 6. PROOF — COMMON-SENSE INTERVIEW VERSION
+     * ============================================================
+     *
+     * For n/3:
+     *
+     * We repeatedly cancel groups of 3 distinct values.
+     *
+     * Suppose X really occurs f > n/3 times.
+     *
+     * One cancellation can remove at most ONE X.
+     *
+     * Completely removing all f copies of X would require
+     * at least f cancellation groups.
+     *
+     * Each group contains 3 elements.
+     *
+     * So that would require at least:
+     *
+     * 3f > n
+     *
+     * total elements.
+     *
+     * Impossible.
+     *
+     * Therefore X cannot disappear completely.
+     * It must survive as candidate1 or candidate2.
+     *
+     * ------------------------------------------------------------
+     * IMPORTANT LOGIC DIRECTION
+     * ------------------------------------------------------------
+     *
+     * PASS 1 proves:
+     *
+     * TRUE WINNER -> MUST BE A SURVIVOR
+     *
+     * It does NOT prove:
+     *
+     * SURVIVOR -> MUST BE A TRUE WINNER
+     *
+     * Hence verification.
+     */
 
-            for (int num : nums) {
-                boolean matched = false;
-                for (int i = 0; i < 3; i++) {
-                    if (counts[i] > 0 && candidates[i] == num) {
-                        counts[i]++;
-                        matched = true;
-                        break;
-                    }
-                }
-                if (matched) continue;
+    /*
+     * ============================================================
+     * HASHMAP VS BOYER-MOORE
+     * ============================================================
+     *
+     * HashMap
+     * -------
+     *
+     * Counts everyone.
+     *
+     * Time  : O(n)
+     * Space : O(n)
+     *
+     * Easier to write and reason about.
+     *
+     * ------------------------------------------------------------
+     *
+     * Boyer-Moore / Misra-Gries
+     * -------------------------
+     *
+     * Keeps only possible survivors.
+     *
+     * Time  : O(n) for fixed k
+     * Space : O(1) for fixed k
+     *
+     * Useful when interviewer asks:
+     *
+     * "Can you reduce the extra space?"
+     *
+     * ------------------------------------------------------------
+     *
+     * Core optimization insight:
+     *
+     * We do not need to remember everybody.
+     *
+     * Prove what information can be safely cancelled / forgotten.
+     */
 
-                for (int i = 0; i < 3; i++) {
-                    if (counts[i] == 0) {
-                        candidates[i] = num;
-                        counts[i] = 1;
-                        matched = true;
-                        break;
-                    }
-                }
-                if (!matched) {
-                    for (int i = 0; i < 3; i++) counts[i]--;
-                }
-            }
+    /*
+     * ============================================================
+     * 🎯 INTERVIEW RECALL
+     * ============================================================
+     *
+     * Trigger:
+     *
+     * "more than n/k times"
+     * + small fixed k
+     * + O(1) / bounded extra space desired
+     *
+     * ------------------------------------------------------------
+     *
+     * FACT:
+     *
+     * > n/k -> at most k - 1 winners
+     *
+     * ------------------------------------------------------------
+     *
+     * CODE:
+     *
+     * MATCH EXISTING
+     * -> FILL EMPTY
+     * -> CANCEL
+     *
+     * ------------------------------------------------------------
+     *
+     * COUNTERS:
+     *
+     * uncancelled support,
+     * NOT actual frequencies
+     *
+     * ------------------------------------------------------------
+     *
+     * VERIFY:
+     *
+     * mandatory unless the problem guarantees the surviving
+     * candidate is a true majority, as LeetCode 169 does.
+     *
+     * ------------------------------------------------------------
+     *
+     * FAMILY:
+     *
+     * > n/2
+     * 1 candidate
+     * cancel 2 distinct
+     *
+     * > n/3
+     * 2 candidates
+     * cancel 3 distinct
+     *
+     * > n/k
+     * k - 1 candidates
+     * cancel k distinct
+     *
+     * ------------------------------------------------------------
+     *
+     * ONE-LINER:
+     *
+     * "The algorithm is not counting winners;
+     *  it is eliminating losers."
+     */
 
-            List<Integer> result = new ArrayList<>();
-            for (int i = 0; i < 3; i++) {
-                int actualCount = 0;
-                for (int num : nums) if (num == candidates[i]) actualCount++;
-                if (actualCount > nums.length / 4) result.add(candidates[i]);
-            }
-            return result;
+    /*
+     * ============================================================
+     * 🧪 SELF-VERIFYING TESTS
+     * ============================================================
+     */
+
+    private static void assertSameElements(List<Integer> expected,
+                                           List<Integer> actual,
+                                           String reason) {
+
+        if (expected.size() != actual.size()
+                || !expected.containsAll(actual)
+                || !actual.containsAll(expected)) {
+
+            throw new AssertionError(
+                    reason +
+                    "\nExpected: " + expected +
+                    "\nActual:   " + actual
+            );
         }
     }
 
-    // ============================================================
-    // 🟢 LEARNING VERIFICATION
-    // ============================================================
-    /*
-        ✅ You’ve mastered this if:
-        - You can explain why only k counters are needed
-        - You remember order of condition checks
-        - You never forget verification pass
+    private static void assertEquals(int expected,
+                                     int actual,
+                                     String reason) {
 
-        🐞 Bugs to Debug Intentionally:
-        - Swap equality and zero-count checks
-        - Remove verification pass
+        if (expected != actual) {
+            throw new AssertionError(
+                    reason +
+                    "\nExpected: " + expected +
+                    "\nActual:   " + actual
+            );
+        }
+    }
 
-        🔍 Pattern Recognition:
-        "More than ⌊n/x⌋" + small x → Boyer–Moore generalized
-    */
+    private static void assertNBy3(List<Integer> expected, int[] nums) {
 
-    // ============================================================
-    // 🧪 main() METHOD + TESTS (MUST BE LAST)
-    // ============================================================
+        assertSameElements(
+                expected,
+                new HashMapNBy3().majorityElement(nums),
+                "HashMap n/3 failed"
+        );
+
+        assertSameElements(
+                expected,
+                new BoyerMooreNBy3().majorityElement(nums),
+                "Boyer-Moore n/3 failed"
+        );
+
+        assertSameElements(
+                expected,
+                new MisraGriesNByK().majorityElement(nums, 3),
+                "Generic Misra-Gries k=3 failed"
+        );
+    }
+
     public static void main(String[] args) {
-        OptimalBoyerMooreSolution solution = new OptimalBoyerMooreSolution();
 
-        // 🟡 Core case
-        System.out.println(solution.majorityElement(new int[]{3, 2, 3}));
-        // Expected: [3]
+        // --------------------------------------------------------
+        // n/2
+        // --------------------------------------------------------
 
-        // 🟡 Single element (INTERVIEW TRAP)
-        System.out.println(solution.majorityElement(new int[]{1}));
-        // Expected: [1]
+        int[] majorityHalf = {2, 2, 1, 1, 1, 2, 2};
 
-        // 🟡 Two elements
-        System.out.println(solution.majorityElement(new int[]{1, 2}));
-        // Expected: [1, 2]
+        assertEquals(
+                2,
+                new HashMapNBy2().majorityElement(majorityHalf),
+                "HashMap n/2 failed"
+        );
 
-        // 🟡 Duplicate-heavy input
-        System.out.println(solution.majorityElement(new int[]{1,1,1,3,3,2,2,2}));
-        // Expected: [1, 2]
+        assertEquals(
+                2,
+                new BoyerMooreNBy2().majorityElement(majorityHalf),
+                "Boyer-Moore n/2 failed"
+        );
 
-        // 🟡 Edge: all identical
-        System.out.println(solution.majorityElement(new int[]{5,5,5,5}));
-        // Expected: [5]
+        // --------------------------------------------------------
+        // n/3
+        // --------------------------------------------------------
+
+        assertNBy3(
+                List.of(3),
+                new int[]{3, 2, 3}
+        );
+
+        assertNBy3(
+                List.of(1),
+                new int[]{1}
+        );
+
+        assertNBy3(
+                List.of(1, 2),
+                new int[]{1, 2}
+        );
+
+        assertNBy3(
+                List.of(1, 2),
+                new int[]{1, 1, 1, 3, 3, 2, 2, 2}
+        );
+
+        assertNBy3(
+                List.of(),
+                new int[]{1, 2, 3, 4}
+        );
+
+        // --------------------------------------------------------
+        // generic n/4
+        // --------------------------------------------------------
+
+        assertSameElements(
+                List.of(1, 2, 3),
+                new MisraGriesNByK().majorityElement(
+                        new int[]{1,1,1,1,2,2,2,2,3,3,3,3,4},
+                        4
+                ),
+                "Generic Misra-Gries k=4 failed"
+        );
+
+        System.out.println("All MajorityElementV3 assertions passed.");
     }
 }

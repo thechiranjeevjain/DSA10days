@@ -1,33 +1,35 @@
 package org.chijai.day6.trees.session3;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 /**
  * ============================================================================
- * BalancedBinaryTree
+ * BinaryTree.java
  * ============================================================================
  *
- * This file groups several closely related Binary Tree DFS/BFS height problems.
+ * PRIMARY ANCHOR
+ *   110. Balanced Binary Tree
  *
- * Primary Problem:
- *      Balanced Binary Tree
+ * CLOSE REINFORCEMENT
+ *   104. Maximum Depth of Binary Tree
+ *   111. Minimum Depth of Binary Tree
+ *   543. Diameter of Binary Tree
+ *   124. Binary Tree Maximum Path Sum
+ *   687. Longest Univalue Path
  *
- * Related Problems:
- *      Maximum Depth of Binary Tree
- *      Minimum Depth of Binary Tree
- *      Diameter of Binary Tree
+ * MASTER FAMILY
+ *   Bottom-Up / Postorder Tree DP
  *
- * Java Version:
- *      Java 17
+ * Java 17 | IntelliJ-ready | self-verifying with assertions
  */
 public class BinaryTree {
 
     /*==========================================================================
-        Basic Binary Tree Definition
+        BASIC TREE DEFINITION
      ==========================================================================*/
 
     static class TreeNode {
-
         int val;
         TreeNode left;
         TreeNode right;
@@ -44,570 +46,176 @@ public class BinaryTree {
     }
 
     /*==========================================================================
-        2. 📘 PRIMARY PROBLEM
+        PRIMARY PROBLEM — 110. BALANCED BINARY TREE
+        Preferred interview solution
      ==========================================================================*/
 
-/*
- * -------------------------------------------------------------------------
- * Title
- * -------------------------------------------------------------------------
- *
- * Balanced Binary Tree
- *
- * Difficulty
- *
- * Easy
- *
- * Tags
- *
- * Tree
- * Binary Tree
- * DFS
- * Bottom-Up DFS
- * Height Computation
- * Divide and Conquer
- *
- * -------------------------------------------------------------------------
- * Problem
- * -------------------------------------------------------------------------
- *
- * Given the root of a binary tree,
- * determine whether the tree is height balanced.
- *
- * A binary tree is height balanced if for EVERY node:
- *
- *      | height(left) - height(right) | <= 1
- *
- * Every subtree must also satisfy the same property.
- *
- * -------------------------------------------------------------------------
- * Constraints
- * -------------------------------------------------------------------------
- *
- * Number of nodes:
- *      [0, 5000]
- *
- * Node values:
- *      [-10^4, 10^4]
- *
- * -------------------------------------------------------------------------
- * Example 1
- * -------------------------------------------------------------------------
- *
- *          3
- *         / \
- *        9  20
- *          /  \
- *         15   7
- *
- * Output:
- *      true
- *
- * Explanation:
- *
- * Every node differs in height by at most one.
- *
- * -------------------------------------------------------------------------
- * Example 2
- * -------------------------------------------------------------------------
- *
- *              1
- *             / \
- *            2   2
- *           / \
- *          3   3
- *         / \
- *        4   4
- *
- * Output:
- *      false
- *
- * Explanation:
- *
- * The root becomes heavily left skewed.
- *
- * -------------------------------------------------------------------------
- * Official Link
- * -------------------------------------------------------------------------
- *
- * https://leetcode.com/problems/balanced-binary-tree/
- *
- */
+    static class BalancedBinaryTree {
 
-    /*==========================================================================
-        3. 🔵 CORE PATTERN OVERVIEW
-     ==========================================================================*/
+        public boolean isBalanced(TreeNode root) {
+            return heightOrFailure(root) != -1;
+        }
 
-/*
- * Pattern
- * -------
- *
- * Bottom-Up Tree Dynamic Programming
- *
- * Archetype
- * ---------
- *
- * Postorder DFS
- *
- * Children compute information.
- *
- * Parent consumes it exactly once.
- *
- * -------------------------------------------------------------------------
- * Core Invariant
- * -------------------------------------------------------------------------
- *
- * Every recursive call returns COMPLETE information about
- * the subtree rooted at that node.
- *
- * Parent never recomputes descendants.
- *
- * -------------------------------------------------------------------------
- * Why It Works
- * -------------------------------------------------------------------------
- *
- * Height depends on children.
- *
- * Therefore children must be solved first.
- *
- * That naturally becomes:
- *
- *      Left
- *      Right
- *      Current
- *
- * which is exactly Postorder DFS.
- *
- * -------------------------------------------------------------------------
- * Recognition Signals
- * -------------------------------------------------------------------------
- *
- * If a parent needs:
- *
- *      height
- *      size
- *      diameter
- *      balance
- *      subtree information
- *
- * computed from both children,
- * Bottom-Up DFS is usually the correct pattern.
- *
- * -------------------------------------------------------------------------
- * Use This Pattern When
- * -------------------------------------------------------------------------
- *
- * Parent depends on child summaries.
- *
- * Entire subtree information is required.
- *
- * Information naturally aggregates upward.
- *
- * -------------------------------------------------------------------------
- * Avoid This Pattern When
- * -------------------------------------------------------------------------
- *
- * Searching for one node.
- *
- * Root-to-leaf path decisions only.
- *
- * Level-order processing.
- *
- * Streaming over levels.
- *
- * -------------------------------------------------------------------------
- * Comparison
- * -------------------------------------------------------------------------
- *
- * Top-Down DFS
- *
- *      Parent pushes state downward.
- *
- * Bottom-Up DFS
- *
- *      Children return state upward.
- *
- * BFS
- *
- *      Processes tree level by level.
- *
- * Binary Search
- *
- *      Shrinks ordered search space.
- *
- * Bottom-Up DFS
- *
- *      Compresses subtree information.
- */
+        private int heightOrFailure(TreeNode node) {
 
-    /*==========================================================================
-        4. 🟢 MENTAL MODEL & INVARIANTS
-     ==========================================================================*/
+            if (node == null) {
+                return 0;
+            }
 
-/*
- * Mental Model
- * ------------
- *
- * Imagine every subtree mailing one sealed envelope upward.
- *
- * The envelope contains:
- *
- *      "My height."
- *
- * or
- *
- *      "Impossible.
- *       I am already unbalanced."
- *
- * Parents never inspect grandchildren directly.
- *
- * They trust the envelopes.
- *
- * -------------------------------------------------------------------------
- * Primary Invariant
- * -------------------------------------------------------------------------
- *
- * helper(node) returns exactly one of two meanings.
- *
- * Case 1
- *
- *      height >= 0
- *
- * Means:
- *
- *      subtree is balanced
- *      returned value equals subtree height
- *
- * Case 2
- *
- *      -1
- *
- * Means:
- *
- *      subtree is already unbalanced
- *
- * Once -1 appears,
- * correctness no longer requires computing real heights.
- *
- * -------------------------------------------------------------------------
- * Variable Meanings
- * -------------------------------------------------------------------------
- *
- * leftHeight
- *
- *      complete result from left subtree
- *
- * rightHeight
- *
- *      complete result from right subtree
- *
- * difference
- *
- *      current node balance factor
- *
- * -------------------------------------------------------------------------
- * Allowed State Transition
- * -------------------------------------------------------------------------
- *
- * left
- *      ↓
- * right
- *      ↓
- * verify
- *      ↓
- * compute height
- *      ↓
- * return upward
- *
- * -------------------------------------------------------------------------
- * Forbidden Transition
- * -------------------------------------------------------------------------
- *
- * Parent asking descendants for height repeatedly.
- *
- * Example:
- *
- *      maxDepth(left)
- *      maxDepth(right)
- *      recursively repeat everywhere
- *
- * This duplicates work.
- *
- * -------------------------------------------------------------------------
- * Early Failure Invariant
- * -------------------------------------------------------------------------
- *
- * Once one subtree returns -1,
- * every ancestor MUST return -1.
- *
- * No further balancing work is meaningful.
- *
- * -------------------------------------------------------------------------
- * Termination
- * -------------------------------------------------------------------------
- *
- * Null node returns height zero.
- *
- * Every recursive path eventually reaches null.
- *
- * Therefore recursion always terminates.
- *
- * -------------------------------------------------------------------------
- * Correctness Intuition
- * -------------------------------------------------------------------------
- *
- * Every node verifies exactly one local property:
- *
- *      children balanced
- *
- * AND
- *
- *      height difference <= 1
- *
- * Since every subtree satisfies this recursively,
- * the entire tree is balanced.
- *
- * -------------------------------------------------------------------------
- * Why Naive Solution Fails
- * -------------------------------------------------------------------------
- *
- * Naive recursion repeatedly computes heights.
- *
- * Example:
- *
- *              A
- *             /
- *            B
- *           /
- *          C
- *
- * Height(C)
- * is recomputed from multiple ancestors.
- *
- * Large skewed trees become O(N²).
- *
- * Bottom-Up DFS computes every subtree exactly once.
- */
+            int leftHeight = heightOrFailure(node.left);
+            if (leftHeight == -1) {
+                return -1;
+            }
 
-    /*==========================================================================
-        5. 🔴 WHY WRONG SOLUTIONS FAIL
-     ==========================================================================*/
+            int rightHeight = heightOrFailure(node.right);
+            if (rightHeight == -1) {
+                return -1;
+            }
 
-/*
- * Mistake 1
- * ---------
- *
- * Compute height separately for every node.
- *
- * Looks correct.
- *
- * Violated invariant:
- *
- *      Parent recomputes descendant information.
- *
- * Complexity explodes.
- *
- * -------------------------------------------------------------------------
- * Mistake 2
- * -------------------------------------------------------------------------
- *
- * Only compare root heights.
- *
- * Counterexample:
- *
- * Root balanced.
- *
- * Grandchild unbalanced.
- *
- * Root alone cannot certify the entire tree.
- *
- * -------------------------------------------------------------------------
- * Mistake 3
- * -------------------------------------------------------------------------
- *
- * Ignore early failure.
- *
- * Continue computing heights even after imbalance found.
- *
- * Correct answer survives,
- * but unnecessary work is performed.
- *
- * -------------------------------------------------------------------------
- * Mistake 4
- * -------------------------------------------------------------------------
- *
- * Return zero instead of -1 on failure.
- *
- * Height and failure become indistinguishable.
- *
- * Parent loses correctness information.
- *
- * -------------------------------------------------------------------------
- * Interview Trap
- * -------------------------------------------------------------------------
- *
- * Interviewer:
- *
- * "Can you avoid recomputing heights?"
- *
- * Expected insight:
- *
- * Merge
- *
- *      balance check
- *
- * and
- *
- *      height computation
- *
- * into one DFS.
- */
+            if (Math.abs(leftHeight - rightHeight) > 1) {
+                return -1;
+            }
 
-    /*==========================================================================
-        ⚙️ IMPLEMENTATION BLUEPRINT
-     ==========================================================================*/
+            return 1 + Math.max(leftHeight, rightHeight);
+        }
+    }
 
     /*
-     * Mechanical Typing Order
+     * WHY 1 — Why postorder?
      * -----------------------
+     * Current node cannot know its height/balance until BOTH children
+     * have already returned their summaries.
      *
-     * Step 1
+     *      LEFT -> RIGHT -> CURRENT
      *
-     * Create public API.
+     * Important refinement:
      *
-     *      isBalanced(root)
+     * The naive solution was ALSO using postorder inside maxDepth().
+     * The optimization is not "discover postorder".
      *
-     * Step 2
+     * It is:
      *
-     * Call helper(root).
+     *      ONE postorder traversal returns COMPLETE subtree information.
+     */
+
+    /*
+     * WHY 2 — Why return height?
+     * ---------------------------
+     * Parent needs child heights to evaluate:
      *
-     * Step 3
+     *      |leftHeight - rightHeight| <= 1
      *
-     * Compare returned value with sentinel.
+     * So height is the natural quantity that flows upward.
+     */
+
+    /*
+     * WHY 3 — Why -1?
+     * ----------------
+     * We need to communicate TWO facts:
      *
-     *      != -1
+     *      1. subtree height
+     *      2. whether subtree is already unbalanced
      *
-     * Step 4
+     * Sentinel compression:
      *
-     * Implement helper().
+     *      0,1,2,... -> balanced + actual height
+     *      -1        -> unbalanced
      *
-     * Step 5
+     * One return value now carries everything the parent needs.
+     */
+
+    /*
+     * WHY 4 — Why early-return on -1?
+     * --------------------------------
+     * Once a descendant is unbalanced, no ancestor can repair it.
+     * Real heights no longer matter; only failure propagation matters.
+     */
+
+    /*
+     * WHY 5 — Why is this O(N)?
+     * --------------------------
+     * Every node is processed once.
+     * No ancestor starts a fresh maxDepth() traversal over the same subtree.
      *
-     * Base case.
+     * Time  : O(N)
+     * Space : O(H) recursion stack
+     */
+
+    /*==========================================================================
+        30-SECOND RECALL CARD
+     ==========================================================================*/
+
+    /*
+     * BALANCED TREE
      *
+     * Trigger:
+     *      Every node must satisfy a property based on child heights.
+     *
+     * Pattern:
+     *      Bottom-up postorder DFS.
+     *
+     * Return invariant:
+     *      >= 0 -> balanced subtree height
+     *      -1   -> subtree already unbalanced
+     *
+     * Mechanical order:
      *      null -> 0
+     *      left
+     *      left failed?
+     *      right
+     *      right failed?
+     *      abs(left-right) > 1?
+     *      return 1 + max(left,right)
      *
-     * Step 6
-     *
-     * Solve left subtree.
-     *
-     * Step 7
-     *
-     * Early exit if left failed.
-     *
-     * Step 8
-     *
-     * Solve right subtree.
-     *
-     * Step 9
-     *
-     * Early exit if right failed.
-     *
-     * Step 10
-     *
-     * Compute balance factor.
-     *
-     * Step 11
-     *
-     * If imbalance:
-     *
-     *      return -1
-     *
-     * Step 12
-     *
-     * Otherwise:
-     *
-     *      return
-     *
-     *      1 + max(leftHeight, rightHeight)
-     *
-     * Entire algorithm is reconstructed from these twelve steps.
+     * One-liner:
+     *      Merge height computation and balance validation into ONE traversal.
      */
 
     /*==========================================================================
-        🧾 ULTRA-COMPACT PSEUDOCODE
+        REUSABLE MASTER TEMPLATE — POSTORDER TREE DP
      ==========================================================================*/
 
     /*
-     * helper(node)
+     * The strongest question is NOT merely:
      *
-     * if null
-     *      return 0
+     *      "Should I use postorder?"
      *
-     * left = helper(left)
-     * if failed
-     *      return failure
+     * Ask:
      *
-     * right = helper(right)
-     * if failed
-     *      return failure
+     *      Q1. What information does my PARENT need from me?
+     *      Q2. What COMPLETE answer can I construct HERE using both children?
      *
-     * if difference > 1
-     *      return failure
+     * Generic skeleton:
      *
-     * return height
+     *      State dfs(node) {
+     *          if (node == null) return BASE;
+     *
+     *          State left  = dfs(node.left);
+     *          State right = dfs(node.right);
+     *
+     *          // optional:
+     *          // update a complete/local/global answer using BOTH children
+     *
+     *          return something parent can legally extend/use;
+     *      }
+     *
+     * Critical distinction:
+     *
+     *      RETURN TO PARENT
+     *          often only ONE extendable branch / compressed subtree summary
+     *
+     *      LOCAL/GLOBAL CANDIDATE
+     *          may combine BOTH children
+     *
+     * This distinction drives Diameter, Maximum Path Sum,
+     * Longest Univalue Path, and many advanced tree-DP problems.
      */
 
     /*==========================================================================
-        6. SOLUTION CLASSES
+        APPROACH PROGRESSION — BALANCED TREE
      ==========================================================================*/
 
-    /*==========================================================================
-        Brute Force
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * Every node independently asks:
-     *
-     *      What is my left height?
-     *
-     *      What is my right height?
-     *
-     * Then recursively verifies children.
-     *
-     * Invariant
-     * ---------
-     *
-     * Heights are always correct.
-     *
-     * Limitation
-     * ----------
-     *
-     * Same subtree height is recomputed many times.
-     *
-     * Interview Usefulness
-     * --------------------
-     *
-     * Excellent starting solution.
-     *
-     * Naturally motivates optimization.
-     *
-     * Complexity
-     * ----------
-     *
-     * Balanced tree:
-     *
-     *      O(N log N)
-     *
-     * Worst skewed tree:
-     *
-     *      O(N²)
-     */
-
-    static class BruteForceBalanced {
+    static class BalancedBruteForce {
 
         public boolean isBalanced(TreeNode root) {
 
@@ -636,61 +244,30 @@ public class BinaryTree {
         }
     }
 
-    /*==========================================================================
-        Improved
-     ==========================================================================*/
-
     /*
-     * Idea
-     * ----
+     * BRUTE-FORCE DIAGNOSIS
      *
-     * Height and balance travel upward together.
+     * Correctness:
+     *      Correct, because it checks EVERY node.
      *
-     * Instead of computing height twice,
-     * return one combined state.
+     * But:
+     *      maxDepth() is itself postorder,
+     *      then isBalanced(child) starts more traversals.
      *
-     * Invariant
-     * ---------
+     * Worst skewed tree:
      *
-     * Every recursive return already contains
-     * everything the parent needs.
+     *      N + (N-1) + (N-2) + ... -> O(N^2)
      *
-     * Improvement
-     * -----------
-     *
-     * Eliminates repeated height computation.
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *      O(N)
-     *
-     * Space:
-     *      O(H)
-     *
-     * Interview Usefulness
-     * --------------------
-     *
-     * Good stepping stone before introducing
-     * sentinel optimization.
+     * Balanced tree:
+     *      O(N log N)
      */
 
-    static class ImprovedBalanced {
+    static class BalancedWithResult {
 
-        static class Result {
-
-            boolean balanced;
-            int height;
-
-            Result(boolean balanced, int height) {
-                this.balanced = balanced;
-                this.height = height;
-            }
-        }
+        record Result(boolean balanced, int height) {}
 
         public boolean isBalanced(TreeNode root) {
-            return dfs(root).balanced;
+            return dfs(root).balanced();
         }
 
         private Result dfs(TreeNode node) {
@@ -703,635 +280,66 @@ public class BinaryTree {
             Result right = dfs(node.right);
 
             boolean balanced =
-                    left.balanced
-                            && right.balanced
-                            && Math.abs(left.height - right.height) <= 1;
+                    left.balanced()
+                            && right.balanced()
+                            && Math.abs(left.height() - right.height()) <= 1;
 
-            int height = 1 + Math.max(left.height, right.height);
+            int height = 1 + Math.max(left.height(), right.height());
 
             return new Result(balanced, height);
         }
     }
 
-    /*==========================================================================
-        Optimal (Interview Preferred)
-     ==========================================================================*/
-
     /*
-     * Idea
-     * ----
+     * Result-object version is conceptually explicit:
      *
-     * Replace Result object with one integer.
+     *      return (balanced, height)
      *
-     * Non-negative:
+     * Sentinel version compresses the same state into one int:
      *
-     *      subtree height
+     *      height OR -1
      *
-     * -1:
-     *
-     *      imbalance detected
-     *
-     * Invariant
-     * ---------
-     *
-     * Every return value has exactly one meaning:
-     *
-     *      height
-     *
-     * OR
-     *
-     *      failure
-     *
-     * Never both.
-     *
-     * Correctness
-     * -----------
-     *
-     * Each subtree is solved exactly once.
-     *
-     * Every ancestor trusts returned information.
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *
-     *      O(N)
-     *
-     * Space:
-     *
-     *      O(H)
-     *
-     * Interview Usefulness
-     * --------------------
-     *
-     * This is the standard optimal solution.
-     */
-
-    static class OptimalBalanced {
-
-        public boolean isBalanced(TreeNode root) {
-
-            return heightOrFailure(root) != -1;
-        }
-
-        private int heightOrFailure(TreeNode node) {
-
-            // Invariant: empty subtree has height zero.
-            if (node == null) {
-                return 0;
-            }
-
-            int leftHeight = heightOrFailure(node.left);
-
-            // Invariant: failure propagates upward immediately.
-            if (leftHeight == -1) {
-                return -1;
-            }
-
-            int rightHeight = heightOrFailure(node.right);
-
-            // Correctness: ancestor need not inspect children again.
-            if (rightHeight == -1) {
-                return -1;
-            }
-
-            // Invariant: local balance must hold.
-            if (Math.abs(leftHeight - rightHeight) > 1) {
-                return -1;
-            }
-
-            // Height is returned only for balanced subtrees.
-            return 1 + Math.max(leftHeight, rightHeight);
-        }
-    }
-
-    /*==========================================================================
-        🟣 INTERVIEW ARTICULATION
-     ==========================================================================*/
-
-/*
- * Invariant
- * ---------
- *
- * Every recursive call returns either:
- *
- *      subtree height
- *
- * or
- *
- *      failure sentinel.
- *
- * Discard Rule
- * ------------
- *
- * Once a subtree is unbalanced,
- * every ancestor immediately propagates failure.
- *
- * Correctness
- * -----------
- *
- * Every node validates exactly one local condition using
- * already-correct child summaries.
- *
- * Since every subtree satisfies the invariant,
- * the whole tree satisfies it.
- *
- * Termination
- * -----------
- *
- * Recursion always reaches null leaves.
- *
- * In-place Feasibility
- * --------------------
- *
- * Yes.
- *
- * Only recursion stack is used.
- *
- * Streaming Feasibility
- * ---------------------
- *
- * No.
- *
- * Parent depends on both completed child computations.
- *
- * When NOT to Use
- * ---------------
- *
- * Pure search problems.
- *
- * Level-order problems.
- *
- * Ordered tree search.
- */
-
-    /*==========================================================================
-        🎯 INTERVIEW RECALL SHEET
-     ==========================================================================*/
-
-    /*
-     * Trigger
-     * -------
-     *
-     * Parent decision depends on information from BOTH children.
-     *
-     * Pattern
-     * -------
-     *
-     * Bottom-Up Postorder DFS
-     *
-     * Search Target
-     * -------------
-     *
-     * Return subtree height while simultaneously detecting imbalance.
-     *
-     * Invariant
-     * ---------
-     *
-     * Return value:
-     *
-     *      >= 0  -> subtree height
-     *
-     *      -1    -> subtree already unbalanced
-     *
-     * Discard Rule
-     * ------------
-     *
-     * Once -1 appears,
-     * stop caring about heights.
-     * Only propagate failure.
-     *
-     * Common Trap
-     * -----------
-     *
-     * Calling maxDepth() separately for every node.
-     *
-     * Edge Cases
-     * ----------
-     *
-     * null tree
-     *
-     * single node
-     *
-     * completely skewed tree
-     *
-     * perfect tree
-     *
-     * imbalance deep inside subtree
-     *
-     * One-liner
-     * ---------
-     *
-     * Merge height computation with balance validation.
-     *
-     * Re-derivation Cue
-     * -----------------
-     *
-     * Ask:
-     *
-     * "What information would my parent like to know?"
-     *
-     * Answer:
-     *
-     * Only height,
-     * unless I already know balancing is impossible.
+     * Both are O(N).
      */
 
     /*==========================================================================
-        🔄 VARIATIONS & TWEAKS
+        RELATED 1 — 104. MAXIMUM DEPTH OF BINARY TREE
      ==========================================================================*/
-
-    /*
-     * Variant
-     * -------
-     *
-     * Return Pair(height, balanced)
-     *
-     * Works because parent still receives complete subtree summary.
-     *
-     * -------------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Sentinel value (-1)
-     *
-     * Removes object allocation.
-     *
-     * Same invariant.
-     *
-     * -------------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Diameter
-     *
-     * Return:
-     *
-     *      height
-     *
-     * Update:
-     *
-     *      global diameter
-     *
-     * Invariant remains:
-     *
-     * Children solved before parent.
-     *
-     * -------------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Maximum Depth
-     *
-     * Return only height.
-     *
-     * No balance validation.
-     *
-     * -------------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Minimum Depth
-     *
-     * Same recursive skeleton.
-     *
-     * Different transition.
-     *
-     * Need special handling when one child is absent.
-     *
-     * -------------------------------------------------------------
-     *
-     * Pattern Break
-     * -------------
-     *
-     * Breadth-first traversal.
-     *
-     * Heights of subtrees are unavailable while traversing levels.
-     *
-     * Therefore this invariant cannot be maintained.
-     */
-
-    /*==========================================================================
-        🧠 MASTERY CHECKLIST
-     ==========================================================================*/
-
-    /*
-     * □ Can I state the invariant?
-     *
-     *      Every subtree returns either height or failure.
-     *
-     * □ Can I identify the search target?
-     *
-     *      Height with embedded balance information.
-     *
-     * □ Can I explain the discard rule?
-     *
-     *      Failure propagates upward immediately.
-     *
-     * □ Can I explain termination?
-     *
-     *      Null nodes terminate recursion.
-     *
-     * □ Can I explain naive failure?
-     *
-     *      Repeated height computation.
-     *
-     * □ Can I list edge cases?
-     *
-     *      Empty tree
-     *      One node
-     *      Skew tree
-     *      Perfect tree
-     *
-     * □ Can I debug confidently?
-     *
-     *      Inspect returned heights before parent combines them.
-     *
-     * □ Can I adapt this to Diameter?
-     *
-     *      Yes.
-     *
-     * □ Can I identify pattern boundary?
-     *
-     *      Parent consumes child summaries exactly once.
-     */
-
-    /*==========================================================================
-        ==========================================================================
-            RELATED PROBLEM 1
-            Maximum Depth of Binary Tree
-        ==========================================================================
-     ==========================================================================*/
-
-    /*
-     * -------------------------------------------------------------------------
-     * Title
-     * -------------------------------------------------------------------------
-     *
-     * Maximum Depth of Binary Tree
-     *
-     * Difficulty
-     *
-     * Easy
-     *
-     * Tags
-     *
-     * Tree
-     * DFS
-     * Recursion
-     * Binary Tree
-     *
-     * -------------------------------------------------------------------------
-     * Problem
-     * -------------------------------------------------------------------------
-     *
-     * Return the maximum depth of the tree.
-     *
-     * Depth is the number of nodes along the longest path
-     * from the root to any leaf.
-     *
-     * -------------------------------------------------------------------------
-     * Official Link
-     * -------------------------------------------------------------------------
-     *
-     * https://leetcode.com/problems/maximum-depth-of-binary-tree/
-     */
-
-    /*
-     * Pattern
-     * -------
-     *
-     * Bottom-Up DFS
-     *
-     * Invariant
-     * ---------
-     *
-     * maxDepth(node)
-     * always returns the height of that subtree.
-     *
-     * Transition
-     * ----------
-     *
-     * height =
-     *
-     *      1 + max(leftHeight, rightHeight)
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *
-     *      O(N)
-     *
-     * Space:
-     *
-     *      O(H)
-     */
 
     static class MaximumDepth {
 
         public int maxDepth(TreeNode root) {
 
-            // Invariant: empty subtree contributes height zero.
             if (root == null) {
                 return 0;
             }
 
             int leftHeight = maxDepth(root.left);
-
             int rightHeight = maxDepth(root.right);
 
-            // Parent height equals one plus taller child.
             return 1 + Math.max(leftHeight, rightHeight);
         }
     }
 
-    /*==========================================================================
-        Maximum Depth Recall Sheet
-     ==========================================================================*/
-
-/*
- * Trigger
- * -------
- *
- * Parent needs taller child.
- *
- * Invariant
- * ---------
- *
- * Every call returns subtree height.
- *
- * Transition
- * ----------
- *
- * 1 + max(left, right)
- *
- * Edge Cases
- * ----------
- *
- * null
- *
- * single node
- *
- * skewed tree
- *
- * perfect tree
- *
- * Interview One-liner
- * -------------------
- *
- * Height naturally forms a postorder recurrence.
- */
-
-    /*==========================================================================
-        ==========================================================================
-            RELATED PROBLEM 2
-            Minimum Depth of Binary Tree
-        ==========================================================================
-     ==========================================================================*/
-
-/*
- * -------------------------------------------------------------------------
- * Title
- * -------------------------------------------------------------------------
- *
- * Minimum Depth of Binary Tree
- *
- * Difficulty
- *
- * Easy
- *
- * -------------------------------------------------------------------------
- * Problem
- * -------------------------------------------------------------------------
- *
- * Return the shortest distance from root
- * to any leaf node.
- *
- * A leaf has:
- *
- *      left == null
- *      right == null
- *
- * -------------------------------------------------------------------------
- * Important Observation
- * -------------------------------------------------------------------------
- *
- * This problem is NOT simply:
- *
- *      1 + min(left, right)
- *
- * because a missing child is NOT a valid path.
- */
-
-    /*==========================================================================
-        🔵 CORE PATTERN OVERVIEW
-     ==========================================================================*/
-
     /*
-     * Pattern
-     * -------
+     * Transfer:
      *
-     * Recursive Bottom-Up DFS
+     * Parent needs:
+     *      subtree height
      *
-     * and
+     * No global answer.
+     * No failure state.
      *
-     * Level Order BFS
+     * return = 1 + max(left,right)
      *
-     * -------------------------------------------------------------------------
-     * Recognition Signals
-     * -------------------------------------------------------------------------
-     *
-     * DFS
-     *
-     *      Compute minimum depth using recursive subtree summaries.
-     *
-     * BFS
-     *
-     *      Stop immediately after the first leaf.
-     *
-     * -------------------------------------------------------------------------
-     * Interview Preference
-     * -------------------------------------------------------------------------
-     *
-     * If asked for the minimum distance to a leaf,
-     * BFS is usually preferred because it naturally discovers
-     * the nearest leaf first.
+     * Time O(N), Space O(H)
      */
 
     /*==========================================================================
-        🟢 MENTAL MODEL
+        RELATED 2 — 111. MINIMUM DEPTH OF BINARY TREE
      ==========================================================================*/
 
-    /*
-     * Recursive Mental Model
-     * ----------------------
-     *
-     * Every subtree returns:
-     *
-     *      minimum depth to a leaf.
-     *
-     * Missing child does NOT represent
-     * a valid root-to-leaf path.
-     *
-     * Therefore:
-     *
-     *      if one side is missing,
-     *      we must continue through the existing side.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * BFS Mental Model
-     * ----------------
-     *
-     * Expand tree level by level.
-     *
-     * The first encountered leaf
-     * is mathematically guaranteed
-     * to have minimum depth.
-     *
-     * Therefore traversal terminates immediately.
-     */
-
-    /*==========================================================================
-        Recursive Solution
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * Handle missing-child cases explicitly.
-     *
-     * Transition
-     * ----------
-     *
-     * if one child absent
-     *
-     *      use the other child
-     *
-     * otherwise
-     *
-     *      take minimum
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *
-     *      O(N)
-     *
-     * Space:
-     *
-     *      O(H)
-     */
-
-    static class MinimumDepthRecursive {
+    static class MinimumDepthDfs {
 
         public int minDepth(TreeNode root) {
 
@@ -1340,38 +348,18 @@ public class BinaryTree {
             }
 
             int leftDepth = minDepth(root.left);
-
             int rightDepth = minDepth(root.right);
 
-            // Missing child cannot terminate a path.
+            // A missing child is NOT a valid root-to-leaf path.
             if (leftDepth == 0 || rightDepth == 0) {
-                return leftDepth + rightDepth + 1;
+                return 1 + leftDepth + rightDepth;
             }
 
             return 1 + Math.min(leftDepth, rightDepth);
         }
     }
 
-    /*==========================================================================
-        BFS Using Two Queues
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * Maintain:
-     *
-     * node
-     *
-     * and
-     *
-     * corresponding depth.
-     *
-     * The first leaf reached is the answer.
-     */
-
-    static class MinimumDepthBfsTwoQueues {
+    static class MinimumDepthBfs {
 
         public int minDepth(TreeNode root) {
 
@@ -1379,86 +367,7 @@ public class BinaryTree {
                 return 0;
             }
 
-            Queue<TreeNode> nodes = new LinkedList<>();
-            Queue<Integer> depths = new LinkedList<>();
-
-            nodes.offer(root);
-            depths.offer(1);
-
-            while (!nodes.isEmpty()) {
-
-                TreeNode node = nodes.poll();
-
-                int depth = depths.poll();
-
-                // First discovered leaf has minimum depth.
-                if (node.left == null && node.right == null) {
-                    return depth;
-                }
-
-                if (node.left != null) {
-                    nodes.offer(node.left);
-                    depths.offer(depth + 1);
-                }
-
-                if (node.right != null) {
-                    nodes.offer(node.right);
-                    depths.offer(depth + 1);
-                }
-            }
-
-            return 0;
-        }
-    }
-
-    /*==========================================================================
-        BFS Using One Queue (Interview Preferred)
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * Traverse level by level.
-     *
-     * External depth variable tracks current layer.
-     *
-     * Invariant
-     * ---------
-     *
-     * Before each outer iteration,
-     * every node currently inside the queue
-     * belongs to exactly one depth.
-     *
-     * Therefore once a leaf is encountered,
-     * no shallower leaf can exist.
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *
-     *      O(N)
-     *
-     * Space:
-     *
-     *      O(W)
-     *
-     * where
-     *
-     *      W = maximum width of tree.
-     */
-
-    static class MinimumDepthBfsOptimal {
-
-        public int minDepth(TreeNode root) {
-
-            if (root == null) {
-                return 0;
-            }
-
-            Queue<TreeNode> queue = new LinkedList<>();
-
+            Queue<TreeNode> queue = new ArrayDeque<>();
             queue.offer(root);
 
             int depth = 1;
@@ -1467,23 +376,20 @@ public class BinaryTree {
 
                 int levelSize = queue.size();
 
-                // Invariant:
-                // Every node processed below belongs to the same depth.
                 for (int i = 0; i < levelSize; i++) {
 
-                    TreeNode current = queue.poll();
+                    TreeNode node = queue.poll();
 
-                    // First leaf discovered is globally optimal.
-                    if (current.left == null && current.right == null) {
+                    if (node.left == null && node.right == null) {
                         return depth;
                     }
 
-                    if (current.left != null) {
-                        queue.offer(current.left);
+                    if (node.left != null) {
+                        queue.offer(node.left);
                     }
 
-                    if (current.right != null) {
-                        queue.offer(current.right);
+                    if (node.right != null) {
+                        queue.offer(node.right);
                     }
                 }
 
@@ -1494,909 +400,463 @@ public class BinaryTree {
         }
     }
 
-    /*==========================================================================
-        🟣 INTERVIEW ARTICULATION
-     ==========================================================================*/
-
-/*
- * Recursive Invariant
- * -------------------
- *
- * Every subtree returns minimum depth to a leaf.
- *
- * Missing child is not a completed path.
- *
- * ---------------------------------------------------------
- *
- * BFS Invariant
- * -------------
- *
- * Queue always stores exactly one tree level.
- *
- * ---------------------------------------------------------
- *
- * Correctness
- * -----------
- *
- * BFS explores increasing depths.
- *
- * Therefore first discovered leaf
- * must be globally closest.
- *
- * ---------------------------------------------------------
- *
- * When BFS Wins
- * -------------
- *
- * Very shallow answer.
- *
- * Huge deep subtree elsewhere.
- *
- * BFS exits immediately.
- *
- * DFS may unnecessarily traverse
- * almost the entire deep subtree.
- *
- * ---------------------------------------------------------
- *
- * Pattern Boundary
- * ----------------
- *
- * Need nearest node?
- *
- * Think BFS first.
- */
-
-    /*==========================================================================
-        🎯 INTERVIEW RECALL SHEET
-     ==========================================================================*/
-
     /*
-     * Trigger
-     * -------
+     * Minimum-depth trap:
      *
-     * Find nearest leaf.
+     *      return 1 + min(left,right)
      *
-     * Pattern
-     * -------
+     * is WRONG when one child is missing.
      *
-     * BFS
+     * Example:
      *
-     * Search Target
-     * -------------
+     *      1
+     *       \
+     *        2
      *
-     * First leaf encountered.
+     * left depth = 0 does NOT mean root reached a leaf.
      *
-     * Invariant
-     * ---------
-     *
-     * Queue contains one complete level.
-     *
-     * Discard Rule
-     * ------------
-     *
-     * Ignore deeper levels once a leaf appears.
-     *
-     * Edge Cases
-     * ----------
-     *
-     * Empty tree
-     *
-     * Root is leaf
-     *
-     * Only left child
-     *
-     * Only right child
-     *
-     * Extremely skewed tree
-     *
-     * One-liner
-     * ---------
-     *
-     * First leaf seen by BFS is the minimum depth.
+     * For "nearest leaf", BFS is often the cleanest interview choice:
+     * first leaf reached is globally minimum depth.
      */
 
     /*==========================================================================
-        🔄 VARIATIONS
+        RELATED 3 — 543. DIAMETER OF BINARY TREE
+        Closest "return one thing, update another" anchor
      ==========================================================================*/
 
-    /*
-     * Variant
-     * -------
-     *
-     * N-ary Tree
-     *
-     * Same BFS invariant.
-     *
-     * ---------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Nearest Exit
-     *
-     * First destination discovered by BFS.
-     *
-     * ---------------------------------------------------------
-     *
-     * Variant
-     * -------
-     *
-     * Multi-source BFS
-     *
-     * Start queue with several roots.
-     *
-     * ---------------------------------------------------------
-     *
-     * Pattern Break
-     * -------------
-     *
-     * Longest path.
-     *
-     * BFS no longer stops at first leaf.
-     */
-
-    /*==========================================================================
-        🧠 MASTERY CHECKLIST
-     ==========================================================================*/
-
-    /*
-     * □ Why can't we use
-     *      1 + min(left,right)?
-     *
-     * Because a missing child is not a valid path.
-     *
-     * □ Why is BFS optimal?
-     *
-     * It explores increasing depths.
-     *
-     * □ What is queue invariant?
-     *
-     * One level at a time.
-     *
-     * □ Earliest stopping point?
-     *
-     * First leaf.
-     *
-     * □ Complexity?
-     *
-     * O(N)
-     */
-
-    /*==========================================================================
-        ==========================================================================
-            RELATED PROBLEM 3
-            Diameter of Binary Tree
-        ==========================================================================
-     ==========================================================================*/
-
-    /*
-     * -------------------------------------------------------------------------
-     * Title
-     * -------------------------------------------------------------------------
-     *
-     * Diameter of Binary Tree
-     *
-     * Difficulty
-     *
-     * Easy
-     *
-     * Tags
-     *
-     * Tree
-     * DFS
-     * Dynamic Programming on Trees
-     *
-     * -------------------------------------------------------------------------
-     * Problem
-     * -------------------------------------------------------------------------
-     *
-     * Return the length (in edges)
-     * of the longest path between any two nodes.
-     *
-     * The path:
-     *
-     *      may
-     *
-     * or
-     *
-     *      may not
-     *
-     * pass through the root.
-     *
-     * -------------------------------------------------------------------------
-     * Official Link
-     * -------------------------------------------------------------------------
-     *
-     * https://leetcode.com/problems/diameter-of-binary-tree/
-     */
-
-    /*==========================================================================
-        🔵 CORE PATTERN OVERVIEW
-     ==========================================================================*/
-
-    /*
-     * Pattern
-     * -------
-     *
-     * Bottom-Up DFS
-     *
-     * Height Aggregation
-     *
-     * -------------------------------------------------------------------------
-     * Core Invariant
-     * -------------------------------------------------------------------------
-     *
-     * Every recursive call returns
-     * subtree height.
-     *
-     * During return,
-     * parent computes
-     * local diameter candidate.
-     *
-     * -------------------------------------------------------------------------
-     * Key Formula
-     * -------------------------------------------------------------------------
-     *
-     * height(node)
-     *
-     * =
-     *
-     * 1 + max(leftHeight, rightHeight)
-     *
-     * ---------------------------------------------------------
-     *
-     * diameterThroughNode
-     *
-     * =
-     *
-     * leftHeight + rightHeight
-     *
-     * because heights count nodes,
-     * while diameter counts edges.
-     *
-     * -------------------------------------------------------------------------
-     * Recognition Signal
-     * -------------------------------------------------------------------------
-     *
-     * Global answer depends on
-     * every node,
-     * not only the root.
-     */
-
-    /*==========================================================================
-        🟢 MENTAL MODEL
-     ==========================================================================*/
-
-    /*
-     * Imagine every node acting as
-     * the center of a possible longest path.
-     *
-     * Every node asks:
-     *
-     * "If the longest path passes through me,
-     * how long would it be?"
-     *
-     * That answer requires only:
-     *
-     * left height
-     *
-     * and
-     *
-     * right height.
-     *
-     * Therefore:
-     *
-     * children first,
-     * parent afterwards.
-     *
-     * Postorder naturally appears.
-     */
-
-    /*==========================================================================
-        Brute Force
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * For every node:
-     *
-     * compute left height
-     *
-     * compute right height
-     *
-     * recursively inspect children.
-     *
-     * Limitation
-     * ----------
-     *
-     * Heights repeatedly recomputed.
-     *
-     * Complexity
-     * ----------
-     *
-     * O(N²)
-     */
-
-    static class DiameterBruteForce {
-
-        public int diameter(TreeNode root) {
-
-            if (root == null) {
-                return 0;
-            }
-
-            int throughRoot =
-                    height(root.left)
-                            + height(root.right);
-
-            int left =
-                    diameter(root.left);
-
-            int right =
-                    diameter(root.right);
-
-            return Math.max(
-                    throughRoot,
-                    Math.max(left, right));
-        }
-
-        private int height(TreeNode node) {
-
-            if (node == null) {
-                return 0;
-            }
-
-            return 1 + Math.max(
-                    height(node.left),
-                    height(node.right));
-        }
-    }
-
-    /*==========================================================================
-        Optimal
-     ==========================================================================*/
-
-    /*
-     * Idea
-     * ----
-     *
-     * Compute height exactly once.
-     *
-     * Update global diameter
-     * while returning height.
-     *
-     * Invariant
-     * ---------
-     *
-     * height(node)
-     *
-     * always returns subtree height.
-     *
-     * globalDiameter
-     *
-     * always stores
-     * best answer found so far.
-     *
-     * Complexity
-     * ----------
-     *
-     * Time:
-     *
-     * O(N)
-     *
-     * Space:
-     *
-     * O(H)
-     */
-
-    static class DiameterOptimal {
+    static class DiameterOfBinaryTree {
 
         private int diameter;
 
         public int diameterOfBinaryTree(TreeNode root) {
-
             diameter = 0;
-
             height(root);
-
             return diameter;
         }
+
         private int height(TreeNode node) {
 
-            // Invariant: empty subtree contributes zero height.
             if (node == null) {
                 return 0;
             }
 
             int leftHeight = height(node.left);
-
             int rightHeight = height(node.right);
 
-            // Every node is evaluated as the possible turning point
-            // of the longest path.
             diameter = Math.max(diameter, leftHeight + rightHeight);
 
-            // Parent only needs subtree height.
             return 1 + Math.max(leftHeight, rightHeight);
         }
     }
 
-    /*==========================================================================
-        🟣 INTERVIEW ARTICULATION
-     ==========================================================================*/
+    /*
+     * DIAMETER — THREE THINKING TRAPS
+     *
+     * Mistake 1:
+     * ----------
+     *      return height(root.left) + height(root.right)
+     *
+     * This checks only the path THROUGH THE ROOT.
+     *
+     * Actual diameter may live entirely inside a lower subtree.
+     * Therefore EVERY node must be evaluated as a possible turning point.
+     *
+     *
+     * Mistake 2:
+     * ----------
+     * Mixing:
+     *
+     *      what I RETURN upward
+     *
+     * with
+     *
+     *      what COMPLETE answer I can form here.
+     *
+     * At node X:
+     *
+     *               parent
+     *                 ^
+     *                 |
+     *                 X
+     *                / \
+     *               L   R
+     *
+     * Return to parent:
+     *
+     *      1 + max(leftHeight, rightHeight)
+     *
+     * Only ONE arm can continue upward.
+     *
+     * Local complete path through X:
+     *
+     *      leftHeight + rightHeight
+     *
+     * BOTH arms can meet at X.
+     *
+     * MEMORY:
+     *
+     *      RETURN = ONE branch
+     *      ANSWER = may combine TWO branches
+     *
+     *
+     * Mistake 3:
+     * ----------
+     * Mixing node count with edge count.
+     *
+     * Our height convention:
+     *
+     *      null -> 0
+     *      leaf -> 1
+     *
+     * Therefore:
+     *
+     *      path in NODES = left + right + 1
+     *      path in EDGES = left + right
+     *
+     * LeetCode 543 asks for EDGES.
+     */
 
-/*
- * Invariant
- * ---------
- *
- * Every recursive call returns subtree height.
- *
- * Parent immediately has enough information
- * to evaluate diameter passing through itself.
- *
- * ---------------------------------------------------------
- *
- * Search Space
- * ------------
- *
- * Every node is a candidate turning point.
- *
- * ---------------------------------------------------------
- *
- * Transition
- * ----------
- *
- * diameterThroughNode
- *
- * =
- *
- * leftHeight + rightHeight
- *
- * ---------------------------------------------------------
- *
- * Correctness
- * -----------
- *
- * Since every node is examined once,
- * every possible turning point is considered.
- *
- * Therefore the maximum recorded value
- * equals the global diameter.
- *
- * ---------------------------------------------------------
- *
- * Termination
- * -----------
- *
- * DFS eventually reaches null children.
- *
- * ---------------------------------------------------------
- *
- * In-place Feasibility
- * --------------------
- *
- * Yes.
- *
- * Only recursion stack and one integer are used.
- */
+    static class DiameterBruteForce {
 
-    /*==========================================================================
-        🎯 INTERVIEW RECALL SHEET
-     ==========================================================================*/
+        public int diameterOfBinaryTree(TreeNode root) {
 
-/*
- * Trigger
- * -------
- *
- * Longest path anywhere in tree.
- *
- * Pattern
- * -------
- *
- * Bottom-Up DFS
- *
- * Search Target
- * -------------
- *
- * Global maximum over every node.
- *
- * Invariant
- * ---------
- *
- * DFS returns height.
- *
- * Global variable stores best diameter.
- *
- * Transition
- * ----------
- *
- * diameter =
- * max(diameter,
- * leftHeight + rightHeight)
- *
- * Return
- * ------
- *
- * 1 + max(leftHeight, rightHeight)
- *
- * Edge Cases
- * ----------
- *
- * Empty tree
- *
- * One node
- *
- * Chain
- *
- * Perfect tree
- *
- * One-liner
- * ---------
- *
- * Height flows upward.
- * Diameter is updated sideways.
- */
+            if (root == null) {
+                return 0;
+            }
 
-    /*==========================================================================
-        🔄 VARIATIONS
-     ==========================================================================*/
+            int throughRoot = height(root.left) + height(root.right);
+            int leftDiameter = diameterOfBinaryTree(root.left);
+            int rightDiameter = diameterOfBinaryTree(root.right);
 
-/*
- * Variant
- * -------
- *
- * Diameter in N-ary Tree
- *
- * Keep the two largest child heights.
- *
- * ---------------------------------------------------------
- *
- * Variant
- * -------
- *
- * Maximum Path Sum
- *
- * Replace heights with gains.
- *
- * ---------------------------------------------------------
- *
- * Variant
- * -------
- *
- * Longest Univalue Path
- *
- * Height contributes only if values match.
- *
- * ---------------------------------------------------------
- *
- * Variant
- * -------
- *
- * Tree DP
- *
- * Return one quantity upward,
- * update another globally.
- */
+            return Math.max(
+                    throughRoot,
+                    Math.max(leftDiameter, rightDiameter)
+            );
+        }
 
-    /*==========================================================================
-        🧠 MASTERY CHECKLIST
-     ==========================================================================*/
+        private int height(TreeNode node) {
 
-/*
- * □ What does DFS return?
- *
- * Height.
- *
- * □ What is global state?
- *
- * Best diameter.
- *
- * □ Why update before returning?
- *
- * Parent only needs height,
- * but current node can evaluate
- * the complete path through itself.
- *
- * □ Complexity?
- *
- * O(N)
- *
- * □ Pattern?
- *
- * Bottom-Up Tree DP.
- */
+            if (node == null) {
+                return 0;
+            }
 
-    /*==========================================================================
-        ==========================================================================
-            PATTERN MAPPING
-        ==========================================================================
-     ==========================================================================*/
-
-/*
- * Problem                           Return Value          Global State
- * -------------------------------------------------------------------------
- * Balanced Tree                     Height / -1           None
- *
- * Maximum Depth                     Height               None
- *
- * Minimum Depth (DFS)               Minimum Depth        None
- *
- * Minimum Depth (BFS)               Queue Levels         None
- *
- * Diameter                          Height              Diameter
- *
- * Longest Univalue Path             Height              Answer
- *
- * Maximum Path Sum                  Gain                Answer
- *
- * Binary Tree Cameras               Camera State        Cameras
- *
- * -------------------------------------------------------------------------
- *
- * Common Theme
- *
- * Parent consumes child summaries exactly once.
- */
-
-    /*==========================================================================
-        DEBUGGING GUIDE
-     ==========================================================================*/
-
-/*
- * Balanced Tree
- * -------------
- *
- * Print:
- *
- * node value
- * left height
- * right height
- * returned value
- *
- * If a balanced subtree returns -1,
- * sentinel propagation is incorrect.
- *
- * ---------------------------------------------------------
- *
- * Maximum Depth
- * -------------
- *
- * Height should increase by exactly one
- * when returning to parent.
- *
- * ---------------------------------------------------------
- *
- * Minimum Depth
- * -------------
- *
- * Verify:
- *
- * missing child
- *
- * does not incorrectly become depth zero answer.
- *
- * ---------------------------------------------------------
- *
- * Diameter
- * --------
- *
- * Ensure:
- *
- * diameter uses
- *
- * leftHeight + rightHeight
- *
- * not
- *
- * returned height.
- */
-
-    /*==========================================================================
-        COMMON INTERVIEW MISTAKES ACROSS ALL PROBLEMS
-     ==========================================================================*/
+            return 1 + Math.max(height(node.left), height(node.right));
+        }
+    }
 
     /*
-     * 🔴 Mistake 1
+     * Diameter brute force is CORRECT but may be O(N^2)
+     * because height is recomputed for many overlapping subtrees.
      *
-     * Mixing node count and edge count.
+     * Optimal version computes:
      *
-     * Maximum Depth
-     *      counts nodes.
+     *      child heights once
+     *      local diameter immediately
+     *      returns only the height parent needs
      *
-     * Diameter
-     *      counts edges.
-     *
-     * ---------------------------------------------------------
-     *
-     * 🔴 Mistake 2
-     *
-     * Using
-     *
-     *      1 + min(left,right)
-     *
-     * for Minimum Depth.
-     *
-     * Missing children are not valid root-to-leaf paths.
-     *
-     * ---------------------------------------------------------
-     *
-     * 🔴 Mistake 3
-     *
-     * Recomputing subtree height repeatedly.
-     *
-     * Always ask:
-     *
-     * Can height travel upward once?
-     *
-     * ---------------------------------------------------------
-     *
-     * 🔴 Mistake 4
-     *
-     * Forgetting early propagation
-     * of failure sentinel (-1).
-     *
-     * ---------------------------------------------------------
-     *
-     * 🔴 Mistake 5
-     *
-     * Updating diameter after return.
-     *
-     * Diameter must be computed
-     * before parent loses access
-     * to both child heights.
+     * Time O(N), Space O(H)
      */
 
     /*==========================================================================
-        UNIFIED RE-DERIVATION FRAMEWORK
+        RELATED 4 — 124. BINARY TREE MAXIMUM PATH SUM
+        Closest cousin to Diameter
      ==========================================================================*/
 
+    static class BinaryTreeMaximumPathSum {
+
+        private int best;
+
+        public int maxPathSum(TreeNode root) {
+            best = Integer.MIN_VALUE;
+            maxGain(root);
+            return best;
+        }
+
+        private int maxGain(TreeNode node) {
+
+            if (node == null) {
+                return 0;
+            }
+
+            int leftGain = Math.max(0, maxGain(node.left));
+            int rightGain = Math.max(0, maxGain(node.right));
+
+            best = Math.max(
+                    best,
+                    node.val + leftGain + rightGain
+            );
+
+            return node.val + Math.max(leftGain, rightGain);
+        }
+    }
+
     /*
-     * Whenever a tree problem appears,
-     * mentally answer these questions.
+     * EXACT SAME SKELETON AS DIAMETER
      *
-     * ---------------------------------------------------------
+     * Diameter:
      *
-     * Question 1
+     *      return to parent
+     *          1 + max(leftHeight,rightHeight)
      *
-     * What information does my parent need?
+     *      local/global candidate
+     *          leftHeight + rightHeight
      *
-     * ---------------------------------------------------------
+     * Maximum Path Sum:
      *
-     * Question 2
+     *      return to parent
+     *          node.val + max(leftGain,rightGain)
      *
-     * Can children compute it independently?
+     *      local/global candidate
+     *          node.val + leftGain + rightGain
      *
-     * ---------------------------------------------------------
+     * Difference:
      *
-     * Question 3
+     *      Negative branches hurt the sum,
+     *      so clamp them:
      *
-     * Should I return it upward?
+     *          Math.max(0, childGain)
      *
-     * ---------------------------------------------------------
+     * RECOGNITION:
      *
-     * Question 4
-     *
-     * Is there a global answer
-     * that should be updated
-     * while returning?
-     *
-     * ---------------------------------------------------------
-     *
-     * Question 5
-     *
-     * Can failure be encoded
-     * inside the return value?
-     *
-     * ---------------------------------------------------------
-     *
-     * Most interview tree DP problems
-     * reduce to answering these questions.
+     *      Final path may start/end anywhere.
+     *      Parent can extend only ONE side.
+     *      Current node may combine BOTH sides.
      */
 
     /*==========================================================================
-        TREE PATTERN DECISION TABLE
+        RELATED 5 — 687. LONGEST UNIVALUE PATH
      ==========================================================================*/
 
+    static class LongestUnivaluePath {
+
+        private int best;
+
+        public int longestUnivaluePath(TreeNode root) {
+            best = 0;
+            sameValueArm(root);
+            return best;
+        }
+
+        private int sameValueArm(TreeNode node) {
+
+            if (node == null) {
+                return 0;
+            }
+
+            int leftArm = sameValueArm(node.left);
+            int rightArm = sameValueArm(node.right);
+
+            int extendLeft = 0;
+            int extendRight = 0;
+
+            if (node.left != null && node.left.val == node.val) {
+                extendLeft = 1 + leftArm;
+            }
+
+            if (node.right != null && node.right.val == node.val) {
+                extendRight = 1 + rightArm;
+            }
+
+            best = Math.max(best, extendLeft + extendRight);
+
+            return Math.max(extendLeft, extendRight);
+        }
+    }
+
     /*
-     * Need                       Pattern
-     * ---------------------------------------------------------
-     * Height                     Bottom-Up DFS
+     * Again:
      *
-     * Balance                    Bottom-Up DFS
+     *      RETURN upward = ONE same-value arm
+     *      LOCAL answer  = LEFT arm + RIGHT arm
      *
-     * Diameter                   Bottom-Up DFS
+     * Difference from Diameter:
      *
-     * Subtree Sum                Bottom-Up DFS
+     * A child arm is usable only when:
      *
-     * Maximum Gain               Bottom-Up DFS
+     *      child.val == node.val
      *
-     * Nearest Node               BFS
-     *
-     * Level Order                BFS
-     *
-     * Zigzag                     BFS
-     *
-     * Serialize                  DFS/BFS
-     *
-     * Search BST                 BST Traversal
-     *
-     * Root-to-Leaf Path          Top-Down DFS
+     * So the familiar tree-DP skeleton stays,
+     * but the edge is conditionally allowed.
      */
 
     /*==========================================================================
-        IMPLEMENTATION MUSCLE MEMORY
+        ADVANCED TRANSFER PROBLEMS
      ==========================================================================*/
 
     /*
-     * Balanced Tree
-     * -------------
+     * 333. Largest BST Subtree
+     * ------------------------
      *
-     * helper(node)
+     * Parent needs MORE THAN ONE scalar.
      *
-     * null -> 0
+     * Return a record/state such as:
      *
-     * left
+     *      isBST
+     *      min
+     *      max
+     *      size
      *
-     * fail?
+     * Lesson:
+     *      If one int cannot summarize the subtree,
+     *      return a structured state object/record.
      *
-     * right
      *
-     * fail?
+     * 968. Binary Tree Cameras
+     * ------------------------
      *
-     * difference?
+     * Child returns a STATE rather than a numeric height:
      *
-     * fail?
+     *      NEEDS_CAMERA
+     *      HAS_CAMERA
+     *      COVERED
      *
-     * return height
+     * Lesson:
+     *      Postorder means "children summarize first";
+     *      the summary does not have to be height.
      *
-     * ---------------------------------------------------------
      *
-     * Maximum Depth
+     * N-ary Tree Diameter
+     * -------------------
      *
-     * null
+     * Parent may have many children.
      *
-     * left
+     * Return:
+     *      largest child arm
      *
-     * right
+     * Local candidate:
+     *      largest arm + second-largest arm
      *
-     * return
-     *
-     * 1 + max
-     *
-     * ---------------------------------------------------------
-     *
-     * Minimum Depth
-     *
-     * null
-     *
-     * recurse
-     *
-     * missing child?
-     *
-     * use other side
-     *
-     * else
-     *
-     * min
-     *
-     * ---------------------------------------------------------
-     *
-     * Diameter
-     *
-     * recurse left
-     *
-     * recurse right
-     *
-     * update answer
-     *
-     * return height
+     * Same exact "return one / combine best two" idea.
      */
 
     /*==========================================================================
-        HELPER METHODS FOR TESTING
+        PATTERN COMPARISON — WHAT FLOWS UP VS WHAT IS COMPLETED HERE
+     ==========================================================================*/
+
+    /*
+     * Problem                     RETURN TO PARENT             LOCAL / GLOBAL USE
+     * -------------------------------------------------------------------------------
+     * Maximum Depth               height                       none
+     *
+     * Balanced Tree               height OR -1                 validate difference
+     *
+     * Diameter                    best ONE height arm           combine BOTH heights
+     *
+     * Maximum Path Sum            best ONE sum arm              combine BOTH gains
+     *
+     * Longest Univalue Path       best ONE same-value arm       combine BOTH valid arms
+     *
+     * Largest BST Subtree         BST metadata                  update largest BST
+     *
+     * Binary Tree Cameras         coverage state                place/count cameras
+     */
+
+    /*==========================================================================
+        TREE-DP RECOGNITION FLOW
+     ==========================================================================*/
+
+    /*
+     * New tree question:
+     *
+     * 1. Does current node depend on completed child information?
+     *
+     *      YES -> strongly consider POSTORDER.
+     *
+     * 2. What exactly must each child RETURN?
+     *
+     *      height?
+     *      sum/gain?
+     *      boolean?
+     *      min/max/size?
+     *      enum-like state?
+     *
+     * 3. Can the final/local answer use BOTH children?
+     *
+     *      YES -> compute/update it at the CURRENT node.
+     *
+     * 4. Can BOTH branches legally continue upward?
+     *
+     *      Usually NO for simple paths.
+     *
+     *      Then:
+     *          local answer may use both
+     *          return only best one
+     *
+     * 5. Is there failure/impossibility?
+     *
+     *      Consider:
+     *          sentinel
+     *          record/state
+     *
+     * 6. Am I accidentally recomputing a subtree?
+     *
+     *      If yes, ask whether the child can return that information once.
+     */
+
+    /*==========================================================================
+        CRITICAL DIFFERENCES: DFS / BFS / TOP-DOWN
+     ==========================================================================*/
+
+    /*
+     * Bottom-Up Postorder
+     * -------------------
+     * Children -> parent.
+     *
+     * Use when:
+     *      subtree summary determines parent.
+     *
+     *
+     * Top-Down DFS
+     * ------------
+     * Parent -> children.
+     *
+     * Use when:
+     *      current path/state is carried downward.
+     *
+     * Examples:
+     *      root-to-leaf path sum
+     *      path construction
+     *      depth carried from root
+     *
+     *
+     * BFS
+     * ---
+     * Level by level.
+     *
+     * Use when:
+     *      nearest node / minimum unweighted distance
+     *      level order
+     *      first valid level
+     */
+
+    /*==========================================================================
+        COMMON INTERVIEW MISTAKES
+     ==========================================================================*/
+
+    /*
+     * 1. Checking only the root when property must hold globally.
+     *
+     * 2. Seeing postorder but still starting repeated subtree traversals.
+     *
+     * 3. Not distinguishing:
+     *      RETURN TO PARENT
+     *      vs
+     *      COMPLETE ANSWER AT CURRENT NODE.
+     *
+     * 4. Returning both branches upward for a path that cannot branch.
+     *
+     * 5. Mixing nodes and edges.
+     *
+     * 6. Forgetting that null may mean:
+     *      height 0
+     * but NOT necessarily
+     *      a valid root-to-leaf endpoint.
+     *
+     * 7. Using a scalar return when parent actually needs multiple facts.
+     */
+
+    /*==========================================================================
+        TEST HELPERS
      ==========================================================================*/
 
     private static TreeNode n(int value) {
@@ -2408,255 +868,146 @@ public class BinaryTree {
     }
 
     private static TreeNode balancedExample() {
-
         return n(
                 3,
                 n(9),
-                n(
-                        20,
-                        n(15),
-                        n(7)
-                )
+                n(20, n(15), n(7))
         );
     }
 
-    private static TreeNode unbalancedExample() {
+    private static TreeNode deepUnbalancedButRootLooksBalanced() {
 
+        /*
+         *          1
+         *         / \
+         *        2   2
+         *       /     \
+         *      3       3
+         *     /         \
+         *    4           4
+         *
+         * Root:
+         *      left height  = 3
+         *      right height = 3
+         *
+         * Root itself looks balanced.
+         *
+         * But each node 2 has child-height difference 2.
+         */
         return n(
                 1,
-                n(
-                        2,
-                        n(
-                                3,
-                                n(4),
-                                n(4)
-                        ),
-                        n(3)
-                ),
-                n(2)
+                n(2, n(3, n(4), null), null),
+                n(2, null, n(3, null, n(4)))
         );
     }
 
     private static TreeNode diameterExample() {
-
         return n(
                 1,
-                n(
-                        2,
-                        n(4),
-                        n(5)
-                ),
+                n(2, n(4), n(5)),
                 n(3)
         );
     }
 
-    private static TreeNode singleNode() {
-        return n(1);
+    private static TreeNode diameterNotThroughRoot() {
+
+        /*
+         *         1
+         *        /
+         *       2
+         *      / \
+         *     3   4
+         *    /
+         *   5
+         *  /
+         * 6
+         *
+         * Longest path:
+         *      6-5-3-2-4
+         *
+         * Diameter = 4 edges.
+         * It does NOT pass through root 1.
+         */
+        return n(
+                1,
+                n(
+                        2,
+                        n(3, n(5, n(6), null), null),
+                        n(4)
+                ),
+                null
+        );
     }
 
-    private static TreeNode emptyTree() {
-        return null;
+    private static TreeNode maximumPathSumExample() {
+        return n(
+                -10,
+                n(9),
+                n(20, n(15), n(7))
+        );
     }
 
-        /*==========================================================================
-        🧪 MAIN + SELF-VERIFYING TESTS
+    private static TreeNode univalueExample() {
+        return n(
+                5,
+                n(4, n(1), n(1)),
+                n(5, null, n(5))
+        );
+    }
+
+    /*==========================================================================
+        MAIN + SELF-VERIFYING TESTS
      ==========================================================================*/
 
     public static void main(String[] args) {
 
-        /*
-         * Run with:
-         *
-         *      java -ea BalancedBinaryTree
-         *
-         * Assertions must be enabled.
-         */
+        BalancedBinaryTree balanced = new BalancedBinaryTree();
 
-        OptimalBalanced balancedSolver = new OptimalBalanced();
+        assert balanced.isBalanced(balancedExample());
+        assert balanced.isBalanced(null);
+        assert balanced.isBalanced(n(1));
+        assert !balanced.isBalanced(deepUnbalancedButRootLooksBalanced());
 
-        /*
-         * ---------------------------------------------------------------------
-         * Balanced Binary Tree
-         * ---------------------------------------------------------------------
-         */
+        BalancedBruteForce bruteBalanced = new BalancedBruteForce();
+        assert bruteBalanced.isBalanced(balancedExample());
+        assert !bruteBalanced.isBalanced(deepUnbalancedButRootLooksBalanced());
 
-        // Happy path: perfectly balanced example.
-        assert balancedSolver.isBalanced(balancedExample());
+        BalancedWithResult pairBalanced = new BalancedWithResult();
+        assert pairBalanced.isBalanced(balancedExample());
+        assert !pairBalanced.isBalanced(deepUnbalancedButRootLooksBalanced());
 
-        // Interview example containing deep imbalance.
-        assert !balancedSolver.isBalanced(unbalancedExample());
+        MaximumDepth maxDepth = new MaximumDepth();
+        assert maxDepth.maxDepth(null) == 0;
+        assert maxDepth.maxDepth(n(1)) == 1;
+        assert maxDepth.maxDepth(balancedExample()) == 3;
 
-        // Empty tree is balanced by definition.
-        assert balancedSolver.isBalanced(emptyTree());
+        MinimumDepthDfs minDepthDfs = new MinimumDepthDfs();
+        MinimumDepthBfs minDepthBfs = new MinimumDepthBfs();
 
-        // Single node is always balanced.
-        assert balancedSolver.isBalanced(singleNode());
+        assert minDepthDfs.minDepth(balancedExample()) == 2;
+        assert minDepthBfs.minDepth(balancedExample()) == 2;
 
-        /*
-         * ---------------------------------------------------------------------
-         * Maximum Depth
-         * ---------------------------------------------------------------------
-         */
+        TreeNode oneSided = n(1, null, n(2, null, n(3)));
+        assert minDepthDfs.minDepth(oneSided) == 3;
+        assert minDepthBfs.minDepth(oneSided) == 3;
 
-        MaximumDepth maxDepthSolver = new MaximumDepth();
+        DiameterOfBinaryTree diameter = new DiameterOfBinaryTree();
+        assert diameter.diameterOfBinaryTree(null) == 0;
+        assert diameter.diameterOfBinaryTree(n(1)) == 0;
+        assert diameter.diameterOfBinaryTree(diameterExample()) == 3;
+        assert diameter.diameterOfBinaryTree(diameterNotThroughRoot()) == 4;
 
-        // Representative LeetCode example.
-        assert maxDepthSolver.maxDepth(balancedExample()) == 3;
+        DiameterBruteForce diameterBrute = new DiameterBruteForce();
+        assert diameterBrute.diameterOfBinaryTree(diameterNotThroughRoot()) == 4;
 
-        // Boundary: empty tree.
-        assert maxDepthSolver.maxDepth(emptyTree()) == 0;
+        BinaryTreeMaximumPathSum maxPathSum = new BinaryTreeMaximumPathSum();
+        assert maxPathSum.maxPathSum(maximumPathSumExample()) == 42;
+        assert maxPathSum.maxPathSum(n(-3)) == -3;
 
-        // Boundary: one node.
-        assert maxDepthSolver.maxDepth(singleNode()) == 1;
+        LongestUnivaluePath univalue = new LongestUnivaluePath();
+        assert univalue.longestUnivaluePath(univalueExample()) == 2;
+        assert univalue.longestUnivaluePath(n(1)) == 0;
 
-        /*
-         * ---------------------------------------------------------------------
-         * Minimum Depth (Recursive)
-         * ---------------------------------------------------------------------
-         */
-
-        MinimumDepthRecursive recursiveMinDepth =
-                new MinimumDepthRecursive();
-
-        // Shortest path ends at node 9.
-        assert recursiveMinDepth.minDepth(balancedExample()) == 2;
-
-        // Empty tree.
-        assert recursiveMinDepth.minDepth(emptyTree()) == 0;
-
-        // Single node.
-        assert recursiveMinDepth.minDepth(singleNode()) == 1;
-
-        /*
-         * ---------------------------------------------------------------------
-         * Minimum Depth (BFS)
-         * ---------------------------------------------------------------------
-         */
-
-        MinimumDepthBfsOptimal bfsMinDepth =
-                new MinimumDepthBfsOptimal();
-
-        // BFS should stop at first discovered leaf.
-        assert bfsMinDepth.minDepth(balancedExample()) == 2;
-
-        // Empty tree.
-        assert bfsMinDepth.minDepth(emptyTree()) == 0;
-
-        // One node.
-        assert bfsMinDepth.minDepth(singleNode()) == 1;
-
-        /*
-         * ---------------------------------------------------------------------
-         * Diameter
-         * ---------------------------------------------------------------------
-         */
-
-        DiameterOptimal diameterSolver =
-                new DiameterOptimal();
-
-        // LeetCode representative example.
-        assert diameterSolver.diameterOfBinaryTree(
-                diameterExample()) == 3;
-
-        // Diameter of empty tree.
-        assert diameterSolver.diameterOfBinaryTree(
-                emptyTree()) == 0;
-
-        // Diameter of single node is zero edges.
-        assert diameterSolver.diameterOfBinaryTree(
-                singleNode()) == 0;
-
-        /*
-         * ---------------------------------------------------------------------
-         * Edge Case:
-         * Completely Left Skewed Tree
-         * ---------------------------------------------------------------------
-         */
-
-        TreeNode skew =
-                n(
-                        1,
-                        n(
-                                2,
-                                n(
-                                        3,
-                                        n(4),
-                                        null
-                                ),
-                                null
-                        ),
-                        null
-                );
-
-        // Should be unbalanced.
-        assert !balancedSolver.isBalanced(skew);
-
-        // Height counts nodes.
-        assert maxDepthSolver.maxDepth(skew) == 4;
-
-        // Only one root-to-leaf path exists.
-        assert recursiveMinDepth.minDepth(skew) == 4;
-
-        // Longest path uses all edges.
-        assert diameterSolver.diameterOfBinaryTree(skew) == 3;
-
-        /*
-         * ---------------------------------------------------------------------
-         * Edge Case:
-         * Perfect Binary Tree
-         * ---------------------------------------------------------------------
-         */
-
-        TreeNode perfect =
-                n(
-                        1,
-                        n(
-                                2,
-                                n(4),
-                                n(5)
-                        ),
-                        n(
-                                3,
-                                n(6),
-                                n(7)
-                        )
-                );
-
-        assert balancedSolver.isBalanced(perfect);
-
-        assert maxDepthSolver.maxDepth(perfect) == 3;
-
-        assert recursiveMinDepth.minDepth(perfect) == 3;
-
-        assert diameterSolver.diameterOfBinaryTree(perfect) == 4;
-
-        /*
-         * ---------------------------------------------------------------------
-         * Edge Case:
-         * One Missing Child
-         * ---------------------------------------------------------------------
-         */
-
-        TreeNode oneSide =
-                n(
-                        1,
-                        null,
-                        n(
-                                2,
-                                null,
-                                n(3)
-                        )
-                );
-
-        // Important interview trap for minimum depth.
-        assert recursiveMinDepth.minDepth(oneSide) == 3;
-
-        assert bfsMinDepth.minDepth(oneSide) == 3;
-
-        /*
-         * All tests passed if execution reaches here.
-         */
         System.out.println("All assertions passed.");
     }
-
 }

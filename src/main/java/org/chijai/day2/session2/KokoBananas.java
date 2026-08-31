@@ -310,6 +310,92 @@ public class KokoBananas {
      * Optimal Solution (Interview-Preferred)
      * ---------------------------------------------------------------
      */
+
+    /*
+     * BINARY SEARCH ON ANSWER — QUICK RECALL
+     *
+     * Koko:
+     * speed → [1, maxPile]
+     * hours = 0             // no hours spent yet
+     *
+     * 1 = smallest meaningful speed:
+     *     minimum legal speed is 1 banana/hour.
+     *
+     * maxPile = largest useful speed:
+     *     Koko can eat from only ONE pile per hour.
+     *     At speed = maxPile, every individual pile takes at most 1 hour.
+     *     Going faster cannot make any pile take less than 1 hour.
+     *
+     *
+     * Ship:
+     * capacity → [maxWeight, sumWeight]
+     * days = 1              // start on Day 1
+     *
+     * maxWeight = smallest meaningful capacity:
+     *     every indivisible package must fit by itself.
+     *     Cannot ship half of one package today and half tomorrow.
+     *
+     * sumWeight = largest useful capacity:
+     *     no restriction prevents carrying all packages together.
+     *     Capacity = total weight can ship everything in 1 day.
+     *
+     *
+     * Split:
+     * maxSum → [maxElement, totalSum]
+     * pieces = 1            // first partition already exists
+     *
+     * maxElement = smallest meaningful maxSum:
+     *     every element must belong to some partition,
+     *     so the allowed maximum cannot be below the largest element.
+     *
+     * totalSum = largest useful maxSum:
+     *     the entire array can be one partition.
+     *
+     *
+     * Bouquet:
+     * day → [minBloom, maxBloom]
+     * bouquets = 0                  // no bouquet completed yet
+     * consecutiveFlowers = 0        // current adjacent bloomed streak
+     *
+     * minBloom = smallest meaningful day:
+     *     before the earliest bloom day, no flower is available.
+     *
+     * maxBloom = largest useful day:
+     *     by the latest bloom day, every flower has bloomed,
+     *     so searching beyond it cannot make more flowers available.
+     *
+     * Two constraints:
+     *
+     *     k = LOCAL requirement:
+     *         number of ADJACENT bloomed flowers needed for ONE bouquet.
+     *
+     *         consecutiveFlowers == k
+     *                 → one bouquet completed
+     *                 → bouquets++
+     *                 → consecutiveFlowers = 0
+     *
+     *     m = GLOBAL requirement:
+     *         total number of bouquets we need.
+     *
+     *         bouquets >= m
+     *                 → candidate day is feasible.
+     *
+     * Adjacency:
+     *     array indices represent flower positions.
+     *     Adjacent flowers = consecutive indices with no gap.
+     *
+     *     ✓ ✓ ✗ ✓ ✓
+     *
+     *     An unbloomed flower breaks the streak:
+     *         consecutiveFlowers = 0
+     *
+     *     We cannot form one bouquet using flowers across that gap.
+     *
+     *
+     * Bounds:
+     * smallest meaningful candidate → largest useful candidate.
+     */
+
     static class Optimal {
 
         /*
@@ -800,17 +886,32 @@ public class KokoBananas {
             int bouquets = 0;
             int flowers = 0;
 
+            // Array indices represent flower positions in the garden.
+            // Adjacent flowers = consecutive indices with no gap.
             for (int d : bloomDay) {
+
+                // Has this flower bloomed by the candidate day?
                 if (d <= day) {
+
+                    // Current streak of consecutive bloomed flowers.
                     flowers++;
+
+                    // k adjacent bloomed flowers complete one bouquet.
                     if (flowers == k) {
                         bouquets++;
-                        flowers = 0;
+                        flowers = 0;   // these flowers are now consumed
                     }
+
                 } else {
+
+                    // An unbloomed flower breaks adjacency.
+                    // We cannot form one bouquet across this gap.
+                    // Reset the streak of consecutive bloomed flowers.
                     flowers = 0;
                 }
             }
+
+            // At least m bouquets means this candidate day is feasible.
             return bouquets >= m;
         }
     }

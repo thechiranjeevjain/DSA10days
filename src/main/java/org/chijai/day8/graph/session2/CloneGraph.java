@@ -809,7 +809,192 @@ static class Improved {
         }
     }
 
-/**
+    /*
+     * =====================================================================================
+     * 🧠 DFS RECURSION VISUALIZATION — GRAPH VS RECURSION TREE
+     * =====================================================================================
+     *
+     * IMPORTANT:
+     *
+     * The ORIGINAL structure is a GRAPH and may contain cycles.
+     *
+     * Example:
+     *
+     *      A ----- B
+     *      |       |
+     *      |       |
+     *      D ----- C
+     *
+     * But recursive execution forms a CALL TREE.
+     *
+     * Suppose DFS starts from A:
+     *
+     * cloneGraph(A)
+     * │
+     * ├── cloneGraph(B)
+     * │   │
+     * │   ├── cloneGraph(A)
+     * │   │       ↓
+     * │   │   already in map
+     * │   │   return A'          ← STOP branch
+     * │   │
+     * │   └── cloneGraph(C)
+     * │       │
+     * │       ├── cloneGraph(B)
+     * │       │       ↓
+     * │       │   already mapped
+     * │       │   return B'      ← STOP branch
+     * │       │
+     * │       └── cloneGraph(D)
+     * │           │
+     * │           ├── cloneGraph(A)
+     * │           │       ↓
+     * │           │   return A'  ← STOP
+     * │           │
+     * │           └── cloneGraph(C)
+     * │                   ↓
+     * │               return C'  ← STOP
+     * │
+     * └── cloneGraph(D)
+     *         ↓
+     *     already mapped
+     *     return D'              ← STOP
+     *
+     *
+     * Compact recursion tree:
+     *
+     *              A
+     *            /   \
+     *           B     D✓
+     *         /   \
+     *       A✓     C
+     *             / \
+     *           B✓   D
+     *               / \
+     *             A✓   C✓
+     *
+     * ✓ = node already exists in oldToNew,
+     *     so recursion DOES NOT expand further.
+     *
+     *
+     * =====================================================================================
+     * 🔑 CORE RECURSION RULE
+     * =====================================================================================
+     *
+     * FIRST VISIT:
+     *
+     *      CREATE
+     *        ↓
+     *      MAP IT
+     *        ↓
+     *      EXPLORE neighbors
+     *
+     *
+     * REVISIT:
+     *
+     *      Already mapped?
+     *          ↓
+     *      Return existing clone
+     *          ↓
+     *      STOP this recursion branch
+     *
+     *
+     * Therefore:
+     *
+     *      FIRST VISIT  → EXPANDS
+     *      REVISIT      → RETURNS
+     *
+     *
+     * =====================================================================================
+     * 🟢 CRITICAL ORDERING INVARIANT
+     * =====================================================================================
+     *
+     * The clone MUST be registered BEFORE recursively exploring neighbors.
+     *
+     * Correct:
+     *
+     *      Node clone = new Node(node.val);
+     *      oldToNew.put(node, clone);       // REGISTER FIRST
+     *
+     *      for (Node neighbor : node.neighbors) {
+     *          clone.neighbors.add(cloneGraph(neighbor));
+     *      }
+     *
+     *
+     * Why?
+     *
+     * Consider cycle:
+     *
+     *      A → B
+     *      ↑   ↓
+     *      └───┘
+     *
+     * Execution:
+     *
+     *      clone(A)
+     *          create A'
+     *          map A → A'
+     *
+     *          clone(B)
+     *              create B'
+     *              map B → B'
+     *
+     *              clone(A)
+     *                  A already mapped
+     *                  return A'
+     *
+     * The cycle terminates.
+     *
+     *
+     * WRONG ORDER:
+     *
+     *      CREATE
+     *        ↓
+     *      RECURSE
+     *        ↓
+     *      MAP
+     *
+     * Then for A ↔ B:
+     *
+     *      A
+     *       → B
+     *          → A
+     *             → B
+     *                → A
+     *                   → ...
+     *
+     * Infinite recursion, because A was not registered before recursion returned to it.
+     *
+     *
+     * =====================================================================================
+     * 🧠 MENTAL MODEL
+     * =====================================================================================
+     *
+     * Do NOT think:
+     *
+     *      "The graph became a tree."
+     *
+     * Think:
+     *
+     *      "The graph remains cyclic,
+     *       but recursion creates a call tree.
+     *
+     *       HashMap turns every revisit into a leaf."
+     *
+     *
+     * One-line memory anchor:
+     *
+     *      CREATE → MAP → EXPLORE
+     *
+     * And:
+     *
+     *      FIRST VISIT EXPANDS.
+     *      REVISIT RETURNS.
+     */
+
+
+
+    /**
  * =========================================================================
  * 🟣 INTERVIEW ARTICULATION
  * =========================================================================

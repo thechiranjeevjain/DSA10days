@@ -1,470 +1,25 @@
 package org.chijai.day8.graph.session2;
+
 import java.util.*;
 
 /*
 ====================================================================================================
-📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
+LEETCODE 785 — IS GRAPH BIPARTITE?
 ====================================================================================================
 
-LeetCode 785. Is Graph Bipartite?
-
-Difficulty: Medium
-
-Tags:
-- Graph
-- Breadth-First Search
-- Depth-First Search
-- Union Find
-
-Official Link:
-https://leetcode.com/problems/is-graph-bipartite/description/
-
-Problem Statement:
-
-There is an undirected graph with n nodes, where each node is numbered between 0 and n - 1.
-You are given a 2D array graph, where graph[u] is an array of nodes that node u is adjacent to.
-
-More formally, for each v in graph[u], there is an undirected edge between node u and node v.
-
-The graph has the following properties:
-
-• There are no self-edges (graph[u] does not contain u).
-• There are no parallel edges (graph[u] does not contain duplicate values).
-• If v is in graph[u], then u is in graph[v] (the graph is undirected).
-• The graph may not be connected, meaning there may be two nodes u and v such that there is no path between them.
-
-A graph is bipartite if the nodes can be partitioned into two independent sets A and B
-such that every edge in the graph connects a node in set A and a node in set B.
-
-Return true if and only if it is bipartite.
-
-Examples:
-
-Example 1:
-
-Input:
-graph = [[1,2,3],[0,2],[0,1,3],[0,2]]
-
-Output:
-false
-
-Explanation:
-There is no way to partition the nodes into two independent sets such that every edge
-connects a node in one and a node in the other.
-
-Example 2:
-
-Input:
-graph = [[1,3],[0,2],[1,3],[0,2]]
-
-Output:
-true
-
-Explanation:
-We can partition the nodes into two sets: {0, 2} and {1, 3}.
-
-Constraints:
-
-graph.length == n
-1 <= n <= 100
-0 <= graph[u].length < n
-0 <= graph[u][i] <= n - 1
-graph[u] does not contain u.
-All the values of graph[u] are unique.
-If graph[u] contains v, then graph[v] contains u.
-
-====================================================================================================
-🔵 CORE PATTERN OVERVIEW
-====================================================================================================
-
-Pattern Name:
-Graph Two-Coloring / Bipartite Validation
-
-Problem Archetype:
-Constraint propagation on graph edges.
-
-Core Invariant:
-Every edge must connect nodes having opposite colors.
-
-Equivalent invariant:
-For every edge (u, v):
-
-color[u] != color[v]
-
-Why It Works:
-If every edge connects opposite colors, the graph can be split into two valid partitions.
-If even one edge connects same-colored nodes, bipartition becomes impossible.
-
-This converts the problem into:
-"Can we consistently assign alternating colors across every connected component?"
-
-When To Use:
-Use this pattern when:
-• graph edges represent incompatibility/confplement/opposite grouping
-• alternating assignment is required
-• odd-cycle detection matters
-• constraints are pairwise
-
-Recognition Signals:
-• "Divide into 2 groups"
-• "No adjacent nodes together"
-• "Enemies/friends/opposite teams"
-• "Scheduling conflicts"
-• "Alternating layers"
-• "Odd cycle detection"
-
-Key Observation:
-A graph is bipartite IF AND ONLY IF:
-it contains NO odd-length cycle.
-
-Differences vs Similar Patterns:
-
-1. Graph Traversal vs Bipartite Check
-Traversal only visits nodes.
-Bipartite validation additionally propagates color constraints.
-
-2. DFS Cycle Detection vs Bipartite
-Cycle detection asks:
-"Does a cycle exist?"
-
-Bipartite asks:
-"Does an odd cycle exist?"
-
-3. Union Find vs Coloring
-Union Find groups components.
-Coloring propagates parity/opposite constraints.
-
-4. Tree Validation vs Bipartite
-Trees are ALWAYS bipartite.
-General graphs may contain odd cycles.
-
-====================================================================================================
-🟢 MENTAL MODEL & INVARIANTS
-====================================================================================================
-
-Mental Model:
-
-Imagine every edge is a command:
-
-"If node u is RED,
-then neighbor v MUST be BLUE."
-
-Every traversal step propagates this forced opposite-color constraint.
-
-We are not "choosing freely" after initialization.
-We are verifying consistency of constraints.
-
-Core State:
-
-color[i] meaning:
-0  -> unvisited/uncolored
-1  -> RED
--1 -> BLUE
-
-Primary Invariant:
-
-For every processed edge (u, v):
-
-color[u] = -color[v]
-
-If violated once:
-graph is NOT bipartite.
-
-Traversal Invariant:
-
-Before processing neighbors of current node:
-current node already has a valid fixed color.
-
-Neighbor Handling Rules:
-
-Case 1:
-neighbor uncolored
-
-→ assign opposite color
-→ continue traversal
-
-Case 2:
-neighbor already colored opposite
-
-→ valid edge
-→ continue
-
-Case 3:
-neighbor already colored SAME
-
-→ invariant broken
-→ return false immediately
-
-Connected Component Invariant:
-
-The graph may be disconnected.
-
-Therefore:
-every unvisited node may start a NEW independent bipartite coloring process.
-
-Allowed Moves:
-✅ Assign opposite color
-✅ Revisit already correctly colored node
-✅ Start BFS/DFS from unvisited component
-
-Forbidden Moves:
-❌ Recolor already colored node differently
-❌ Ignore same-color conflict
-❌ Assume graph connected
-
-Termination Logic:
-
-Traversal ends when:
-• every node processed
-OR
-• first invariant violation discovered
-
-Why Naive Approaches Fail:
-
-Naive Mistake:
-"Every graph without triangle is bipartite."
-
-Wrong.
-
-Counterexample:
-5-cycle:
-0-1-2-3-4-0
-
-No triangle exists.
-Still NOT bipartite because cycle length is odd.
-
-Another Mistake:
-Only checking local neighbors without propagation.
-
-Bipartite validity is GLOBAL consistency propagation.
-
-Variable Meanings:
-
-queue:
-frontier for BFS constraint propagation
-
-node:
-current validated node
-
-neighbor:
-must receive opposite color
-
-color[]:
-global consistency memory
-
-Why Odd Cycles Break Everything:
-
-Start with:
-0 -> RED
-
-Then propagate around odd cycle:
-
-1 -> BLUE
-2 -> RED
-3 -> BLUE
-...
-Eventually same node demands BOTH colors.
-
-Contradiction.
-
-That contradiction manifests as:
-adjacent same-colored nodes.
-
-====================================================================================================
-🔴 WHY WRONG SOLUTIONS FAIL
-====================================================================================================
-
-❌ Wrong Approach #1:
-Check only immediate neighbors of start node.
-
-Why it seems correct:
-Local alternation appears enough.
-
-Invariant violation:
-Bipartite property is global across paths.
-
-Counterexample:
-
-0---1
-|   |
-3---2
-
-Need propagation around full cycle.
-
-Interviewer Trap:
-Candidate forgets deeper-level conflicts.
-
-----------------------------------------------------------------------------------------------------
-
-❌ Wrong Approach #2:
-Run BFS from node 0 only.
-
-Why it seems correct:
-Traversal works on connected graphs.
-
-Invariant violation:
-Disconnected components remain unchecked.
-
-Counterexample:
-
-Component 1:
-0-1
-
-Component 2:
-2-3-4-2 (odd cycle)
-
-Starting only from 0 misses invalid component.
-
-----------------------------------------------------------------------------------------------------
-
-❌ Wrong Approach #3:
-Use visited[] without colors[].
-
-Why it seems correct:
-Traversal already prevents revisits.
-
-Invariant violation:
-Need parity/opposite relationship memory.
-
-Visited alone cannot detect:
-same-level conflict.
-
-----------------------------------------------------------------------------------------------------
-
-❌ Wrong Approach #4:
-Recolor node when conflict appears.
-
-Why it seems correct:
-Trying to "fix" assignment greedily.
-
-Invariant violation:
-Earlier propagated constraints become invalid.
-
-Color assignment becomes inconsistent globally.
-
-----------------------------------------------------------------------------------------------------
-
-❌ Wrong Approach #5:
-Detect ALL cycles and reject cyclic graphs.
-
-Why it seems correct:
-Odd cycles are bad.
-
-Invariant violation:
-Even cycles are completely valid.
-
-Counterexample:
-
-0-1-2-3-0
-
-Even cycle.
-Perfectly bipartite.
-
-====================================================================================================
-⚙️ HOW TO PHYSICALLY ASSEMBLE THE CODE
-====================================================================================================
-
-🛠️ IMPLEMENTATION BLUEPRINT (BFS VERSION)
-
-Mechanical Typing Order:
-
-1. Function signature
-
-boolean isBipartite(int[][] graph)
-
-----------------------------------------------------------------------------------------------------
-
-2. Create color array
-
-int n = graph.length;
-int[] color = new int[n];
-
-0 means uncolored.
-
-----------------------------------------------------------------------------------------------------
-
-3. Iterate all nodes
-
-for each node:
-    if uncolored:
-        start BFS
-
-This handles disconnected components.
-
-----------------------------------------------------------------------------------------------------
-
-4. Initialize BFS
-
-Queue<Integer> queue = new LinkedList<>();
-
-Assign initial color:
-color[start] = 1
-
-Push into queue.
-
-----------------------------------------------------------------------------------------------------
-
-5. BFS loop skeleton
-
-while queue not empty:
-    pop current node
-
-----------------------------------------------------------------------------------------------------
-
-6. Process neighbors
-
-for neighbor in graph[node]:
-
-----------------------------------------------------------------------------------------------------
-
-7. Unvisited neighbor case
-
-if color[neighbor] == 0:
-
-assign opposite color:
-color[neighbor] = -color[node]
-
-push neighbor
-
-----------------------------------------------------------------------------------------------------
-
-8. Conflict case
-
-else if color[neighbor] == color[node]:
-
-return false immediately
-
-----------------------------------------------------------------------------------------------------
-
-9. Finish traversal
-
-If all components processed safely:
-return true
-
-====================================================================================================
-🧾 ULTRA-COMPACT PSEUDOCODE (MEMORY SCAFFOLD)
-====================================================================================================
-
-color[] = uncolored
-
-for each node:
-    if uncolored:
-        assign color
-        BFS
-
-        while queue:
-            pop node
-
-            for neighbor:
-                if uncolored:
-                    assign opposite
-                else if same color:
-                    return false
-
-return true
-
-====================================================================================================
-6️⃣ PRIMARY PROBLEM — SOLUTION CLASSES
+PATTERN:
+Graph traversal + two-coloring
+
+CORE INVARIANT:
+Every edge must connect opposite colors.
+
+STATE:
+ 0  = unvisited
+ 1  = color A
+-1  = color B
+
+TIME:  O(V + E)
+SPACE: O(V)
 ====================================================================================================
 */
 
@@ -472,484 +27,380 @@ public class GraphBipartite {
 
     /*
     ================================================================================================
-    BRUTE FORCE SOLUTION
+    ⭐ PRIMARY INTERVIEW SOLUTION — BFS
     ================================================================================================
 
-    Core Idea:
-    Try all possible 2-color assignments.
+    Recall:
 
-    Invariant Enforced:
-    Every edge must connect opposite sets.
+        FOR every node
+            if already colored → skip
 
-    Limitation Fixed Later:
-    Exponential exploration is unnecessary because graph constraints propagate deterministically.
+            start BFS for this component
 
-    Time Complexity:
-    O(2^V * E)
+            WHILE queue not empty
+                FOR every neighbor
+                    uncolored → assign opposite color
+                    same color → false
 
-    Space Complexity:
-    O(V)
-
-    Interview Preference:
-    ❌ Never preferred.
-    Only useful pedagogically to understand search space.
+        true
+    ================================================================================================
     */
-    static class BruteForceBacktrackingSolution {
-
-        public boolean isBipartite(int[][] graph) {
-            int n = graph.length;
-
-            int[] color = new int[n];
-
-            return backtrack(graph, color, 0);
-        }
-
-        private boolean backtrack(int[][] graph, int[] color, int node) {
-
-            // All nodes assigned successfully.
-            if (node == graph.length) {
-                return isValid(graph, color);
-            }
-
-            // Try RED.
-            color[node] = 1;
-
-            if (backtrack(graph, color, node + 1)) {
-                return true;
-            }
-
-            // Try BLUE.
-            color[node] = -1;
-
-            if (backtrack(graph, color, node + 1)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        private boolean isValid(int[][] graph, int[] color) {
-
-            for (int node = 0; node < graph.length; node++) {
-
-                for (int neighbor : graph[node]) {
-
-                    // Every edge must connect opposite colors.
-                    if (color[node] == color[neighbor]) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
-    /*
-    ================================================================================================
-    IMPROVED SOLUTION — DFS TWO COLORING
-    ================================================================================================
-
-    Core Idea:
-    Use DFS to propagate opposite-color constraints.
-
-    Invariant:
-    Adjacent nodes must always have opposite colors.
-
-    Limitation Fixed:
-    Avoids exponential assignments by deterministic propagation.
-
-    Time Complexity:
-    O(V + E)
-
-    Space Complexity:
-    O(V) recursion stack
-
-    Interview Preference:
-    ✅ Good
-    But recursion depth may worry some interviewers in larger constraints.
-    */
-    static class DFSTwoColoringSolution {
+    static class Solution {
 
         public boolean isBipartite(int[][] graph) {
 
-            int n = graph.length;
-
-            int[] color = new int[n];
-
-            // Graph may be disconnected.
-            for (int node = 0; node < n; node++) {
-
-                if (color[node] != 0) {
-                    continue;
-                }
-
-                // Start new component with arbitrary color.
-                if (!dfs(graph, color, node, 1)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private boolean dfs(int[][] graph, int[] color, int node, int currentColor) {
-
-            color[node] = currentColor;
-
-            for (int neighbor : graph[node]) {
-
-                // Neighbor uncolored -> force opposite color.
-                if (color[neighbor] == 0) {
-
-                    if (!dfs(graph, color, neighbor, -currentColor)) {
-                        return false;
-                    }
-                }
-
-                // Same color on both ends -> invariant broken.
-                else if (color[neighbor] == currentColor) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-
-    /*
-    ================================================================================================
-    OPTIMAL SOLUTION — BFS TWO COLORING (INTERVIEW PREFERRED)
-    ================================================================================================
-
-    Core Idea:
-    BFS propagates alternating parity/color constraints level-by-level.
-
-    Core Invariant:
-    Every traversed edge connects opposite colors.
-
-    Why This Is Interview Preferred:
-    • iterative
-    • stable
-    • easy to reason about
-    • avoids recursion depth concerns
-    • naturally exposes invariant propagation
-
-    Time Complexity:
-    O(V + E)
-
-    Space Complexity:
-    O(V)
-    */
-    static class BFSOptimalSolution {
-
-        public boolean isBipartite(int[][] graph) {
-
-            // Handle empty graph defensively.
             if (graph == null) {
-                return true;
+                return false;
             }
 
             int n = graph.length;
-
-            /*
-             color meanings:
-             0  -> uncolored
-             1  -> RED
-             -1 -> BLUE
-            */
             int[] color = new int[n];
 
-            // Graph may contain multiple disconnected components.
             for (int start = 0; start < n; start++) {
 
-                // Already processed inside earlier traversal.
                 if (color[start] != 0) {
                     continue;
                 }
 
-                Queue<Integer> queue = new LinkedList<>();
+                Deque<Integer> queue = new ArrayDeque<>();
 
-                // Arbitrarily assign initial color.
                 color[start] = 1;
-
                 queue.offer(start);
 
                 while (!queue.isEmpty()) {
 
-                    int node = queue.poll();
+                    int current = queue.poll();
 
-                    // Current node already satisfies all previous constraints.
-                    for (int neighbor : graph[node]) {
+                    for (int next : graph[current]) {
 
-                        // Unvisited neighbor -> assign opposite color.
-                        if (color[neighbor] == 0) {
-
-                            // Invariant:
-                            // Every edge connects opposite colors.
-                            color[neighbor] = -color[node];
-
-                            queue.offer(neighbor);
+                        if (color[next] == 0) {
+                            color[next] = -color[current];
+                            queue.offer(next);
                         }
-
-                        // Conflict:
-                        // Adjacent nodes cannot share same color.
-                        else if (color[neighbor] == color[node]) {
-
-                            // Odd-cycle contradiction discovered.
+                        else if (color[next] == color[current]) {
                             return false;
                         }
                     }
                 }
             }
 
-            // Every edge satisfied bipartite invariant.
             return true;
         }
     }
 
     /*
     ================================================================================================
-    🟣 INTERVIEW ARTICULATION (NO CODE)
+    WHY THE PRIMARY CODE IS SHAPED THIS WAY
     ================================================================================================
+    */
 
-    Verbal Explanation:
-
-    "I model bipartite validation as a graph coloring problem.
-
-    The invariant is:
-    every edge must connect nodes of opposite colors.
-
-    I traverse each connected component using BFS or DFS.
-    Whenever I visit an uncolored neighbor,
-    I assign the opposite color.
-
-    If I ever encounter an edge connecting same-colored nodes,
-    that means constraints became contradictory,
-    which implies an odd cycle exists,
-    so the graph is not bipartite."
-
+    /*
+    ------------------------------------------------------------------------------------------------
+    1. graph.length YES — graph[0].length AS "COLUMNS" NO
     ------------------------------------------------------------------------------------------------
 
-    Discard Logic Equivalent:
-
-    In binary search:
-    invalid half discarded.
+    int[][] does NOT automatically mean rectangular matrix.
 
     Here:
-    invalid coloring immediately terminates traversal.
 
+        graph.length
+        → number of vertices
+
+        graph[i]
+        → adjacency list of vertex i
+
+        graph[i].length
+        → number of neighbors of vertex i
+
+    Example:
+
+        graph = [[], [3], [], [1], []]
+
+        graph.length    = 5
+        graph[0].length = 0
+
+    That does NOT mean the graph is empty.
+    It only means vertex 0 is isolated.
+
+    Compare:
+
+        GRID:
+            image.length     → rows
+            image[0].length  → columns
+
+        GRAPH ADJACENCY LIST:
+            graph.length     → nodes
+            graph[i].length  → degree of node i
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    2. WHY THE OUTER FOR LOOP?
     ------------------------------------------------------------------------------------------------
 
-    Correctness Guarantee:
+    The graph may be disconnected.
 
-    Every reachable node receives exactly one parity-consistent color.
+        0 -- 1       2 -- 3       4
 
-    Since all edges are checked:
-    if no contradiction exists,
-    a valid partition exists.
+    BFS started from 0 can only reach {0, 1}.
 
+    Therefore:
+
+        OUTER FOR
+        → finds the next unvisited component
+
+        BFS / DFS
+        → completely explores that component
+
+    Reusable rule:
+
+        FOR every node
+            if already seen → skip
+            otherwise start a new component traversal
+
+    Mental model:
+
+        SCAN → START → EXPLORE
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    3. WHY QUEUE? WHY NOT STACK?
     ------------------------------------------------------------------------------------------------
 
-    What Breaks If Changed?
+    Queue is only the traversal mechanism.
 
-    If we remove:
-    color[neighbor] == color[node]
+        Queue     → BFS
+        Stack     → iterative DFS
+        Recursion → recursive DFS
 
-    then odd-cycle conflicts go undetected.
+    ALL work for bipartite checking.
 
-    If we skip disconnected components:
-    invalid subgraphs may remain unchecked.
+    Do NOT memorize:
 
+        Bipartite = Queue
+
+    Memorize:
+
+        Bipartite
+        = traversal
+        + opposite-color propagation
+        + contradiction detection
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    4. WHY A NEW QUEUE INSIDE EACH COMPONENT?
     ------------------------------------------------------------------------------------------------
 
-    In-Place Feasibility:
+    Conceptually:
 
-    Yes.
-    We only maintain:
-    • queue/stack
-    • color array
+        ONE COMPONENT
+        → ONE BFS
+        → ONE WORKLIST
 
+    Could the queue be declared outside the outer loop?
+
+        Yes.
+
+    After each full BFS it is empty.
+
+    Keeping it inside gives cleaner ownership:
+    the queue belongs to the traversal of that component.
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    5. WHY WHILE(queue not empty) INSTEAD OF ONLY A SIMPLE FOR LOOP?
     ------------------------------------------------------------------------------------------------
 
-    Streaming Feasibility:
+    A simple:
 
-    Limited.
+        for (int i = 0; i < n; i++)
 
-    Full correctness requires remembering prior color assignments.
+    follows node-number order:
 
+        0, 1, 2, 3...
+
+    Graph traversal must follow ACTUAL EDGES.
+
+    The queue stores newly discovered nodes whose neighbors still need processing.
+
+    Therefore:
+
+        WHILE queue not empty
+        → keep processing discovered reachable work
+        → until this component is exhausted
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    6. WHY THE INNER FOR LOOP?
     ------------------------------------------------------------------------------------------------
 
-    When NOT To Use This Pattern:
+        for (int next : graph[current])
 
-    Do NOT use:
-    • directed graph SCC problems
-    • weighted shortest path
-    • topological ordering
-    • arbitrary k-coloring
+    THIS is what follows actual graph edges.
 
-    This pattern specifically solves:
-    binary parity constraints.
+    Distinguish the three levels:
 
+        OUTER FOR
+        → FIND a disconnected component
+
+        WHILE + QUEUE
+        → TRAVERSE that component
+
+        INNER FOR
+        → FOLLOW current node's neighbors
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    7. WHY color[next] = -color[current]?
+    ------------------------------------------------------------------------------------------------
+
+    Every edge requires opposite colors.
+
+        current =  1  → next = -1
+        current = -1  → next =  1
+
+    So:
+
+        color[next] = -color[current];
+
+    is the complete propagation rule.
+    ------------------------------------------------------------------------------------------------
+    */
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    8. WHY CHECK AN ALREADY-COLORED NEIGHBOR?
+    ------------------------------------------------------------------------------------------------
+
+    An already-colored node may have been reached through another path.
+
+    We do NOT recolor it.
+    We validate consistency.
+
+        UNVISITED → DISCOVER
+        VISITED   → VALIDATE
+
+    If:
+
+        color[next] == color[current]
+
+    then an edge connects equal colors.
+
+    Bipartite invariant is broken → return false.
+
+    This is how an odd-cycle contradiction eventually appears.
+    ------------------------------------------------------------------------------------------------
+    */
 
     /*
     ================================================================================================
-    🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
+    30-SECOND RECALL
     ================================================================================================
 
-    Pattern Trigger:
-    "Split graph into 2 groups with no internal edges."
+    TRIGGER:
+    Split nodes into two groups so connected/conflicting nodes are separated.
 
-    Core Invariant:
+    PATTERN:
+    BFS / DFS + two-coloring
+
+    INVARIANT:
     Every edge connects opposite colors.
 
-    Search Target:
-    Detect coloring contradiction.
+    MASTER FLOW:
 
-    Discard Rule:
-    Same-color adjacent nodes => impossible => return false.
+        SCAN
+        → find an unvisited component
 
-    Common Trap:
-    Forgetting disconnected components.
+        START
+        → color its first node
+        → add it to worklist
 
-    Edge Cases:
-    • isolated nodes
-    • disconnected graph
-    • even cycle
-    • odd cycle
+        EXPLORE
+        → traverse neighbors
 
-    Interview One-Liner:
-    "Bipartite checking is simply parity propagation across edges."
+            uncolored
+            → assign opposite
 
-    Re-Derivation Cue:
-    "Neighbor must always be opposite color."
+            already colored same
+            → contradiction
 
-    Memory Compression:
+    ONE-LINER:
 
-    color node
-    BFS/DFS neighbors
-    assign opposite
-    detect same-color conflict
-    process all components
-
-    ================================================================================================
-    🔄 VARIATIONS & TWEAKS
-    ================================================================================================
-
-    Variation #1:
-    DFS instead of BFS
-
-    Invariant Status:
-    SAME invariant.
-
-    Only traversal order changes.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #2:
-    Union Find Approach
-
-    Idea:
-    All neighbors of a node must belong to opposite partition from node.
-
-    Modified reasoning:
-    Group neighbors together.
-
-    Invariant still preserved indirectly.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #3:
-    Detect Odd Cycle Explicitly
-
-    Observation:
-    Graph is bipartite iff no odd cycle exists.
-
-    BFS level parity can detect this.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #4:
-    Directed Graph
-
-    Pattern Break Signal:
-    Bipartite definition fundamentally assumes undirected constraints.
-
-    Need problem reinterpretation.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #5:
-    K-Coloring Instead of 2-Coloring
-
-    Pattern Break:
-    Opposite-color invariant no longer sufficient.
-
-    Problem becomes significantly harder.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #6:
-    Tree Graph
-
-    Observation:
-    Every tree is automatically bipartite.
-
-    Why?
-    Trees contain no cycles,
-    therefore cannot contain odd cycles.
-
-    ------------------------------------------------------------------------------------------------
-
-    Variation #7:
-    Self Edge Present
-
-    Example:
-    0 -> 0
-
-    Immediate failure because:
-    node would need opposite color from itself.
-
-    ================================================================================================
-    ⚫ REINFORCEMENT PROBLEMS
+        "Scan every disconnected component, propagate opposite colors along edges,
+         and fail if an edge ever connects equal colors."
     ================================================================================================
     */
 
     /*
     ================================================================================================
-    REINFORCEMENT PROBLEM #1
-    Possible Bipartition
-    LeetCode 886
+    REUSABLE DISCONNECTED-GRAPH MASTER TEMPLATE
     ================================================================================================
 
-    Problem Summary:
+        state[]
 
-    Given n people and dislike pairs,
-    determine if they can be split into 2 groups such that
-    no disliked pair exists inside same group.
+        for every start:
 
-    Key Mapping:
-    people -> nodes
-    dislikes -> edges
+            if already seen:
+                continue
 
-    SAME invariant:
-    adjacent nodes must have opposite colors.
+            initialize new component
+            mark start
+            add start to worklist
 
-    Example:
+            while worklist not empty:
 
-    n = 4
-    dislikes = [[1,2],[1,3],[2,4]]
+                current = remove
 
-    Valid split:
-    {1,4} and {2,3}
+                for each neighbor:
 
-    Edge Cases:
-    • disconnected people groups
-    • isolated nodes
-    • odd dislike cycle
+                    if unseen:
+                        assign / mark state
+                        add
 
-    Interview Trap:
-    Nodes are 1-indexed.
+                    problem-specific validation
+
+    Across related problems, usually only THREE things change:
+
+        1. STATE
+        2. HOW NEIGHBORS ARE FOUND
+        3. PROBLEM-SPECIFIC ACTION / VALIDATION
+    ================================================================================================
+    */
+
+    /*
+    ================================================================================================
+    REINFORCEMENT PROBLEM #1 — POSSIBLE BIPARTITION
+    LEETCODE 886
+    ================================================================================================
+
+    SAME AS BIPARTITE:
+        outer component scan
+        BFS / DFS
+        +1 / -1 coloring
+        same-color conflict
+
+    DIFFERENCE:
+        input is given as dislike EDGE PAIRS,
+        so we first BUILD the adjacency list.
+
+    Mapping:
+
+        person     → node
+        dislike    → undirected edge
+
+    This is the closest direct transfer problem.
+    ================================================================================================
     */
     static class PossibleBipartitionSolution {
 
@@ -963,42 +414,37 @@ public class GraphBipartite {
 
             for (int[] edge : dislikes) {
 
-                int u = edge[0];
-                int v = edge[1];
+                int a = edge[0];
+                int b = edge[1];
 
-                graph[u].add(v);
-                graph[v].add(u);
+                graph[a].add(b);
+                graph[b].add(a);
             }
 
             int[] color = new int[n + 1];
 
-            for (int person = 1; person <= n; person++) {
+            for (int start = 1; start <= n; start++) {
 
-                if (color[person] != 0) {
+                if (color[start] != 0) {
                     continue;
                 }
 
-                Queue<Integer> queue = new LinkedList<>();
+                Deque<Integer> queue = new ArrayDeque<>();
 
-                color[person] = 1;
-
-                queue.offer(person);
+                color[start] = 1;
+                queue.offer(start);
 
                 while (!queue.isEmpty()) {
 
                     int current = queue.poll();
 
-                    for (int neighbor : graph[current]) {
+                    for (int next : graph[current]) {
 
-                        if (color[neighbor] == 0) {
-
-                            color[neighbor] = -color[current];
-
-                            queue.offer(neighbor);
+                        if (color[next] == 0) {
+                            color[next] = -color[current];
+                            queue.offer(next);
                         }
-
-                        else if (color[neighbor] == color[current]) {
-
+                        else if (color[next] == color[current]) {
                             return false;
                         }
                     }
@@ -1010,52 +456,441 @@ public class GraphBipartite {
     }
 
     /*
-    🟣 Interview Articulation:
+    ================================================================================================
+    REINFORCEMENT PROBLEM #2 — NUMBER OF PROVINCES
+    LEETCODE 547
+    ================================================================================================
 
-    "This is structurally identical to bipartite graph checking.
-    Dislikes become undirected edges.
-    The invariant remains:
-    disliked people must belong to opposite groups."
+    SAME SKELETON:
+        outer scan
+        start traversal when unseen
+        exhaust one component
+
+    CHANGE:
+        state is boolean visited[]
+        new component means provinces++
+
+    IMPORTANT INPUT DIFFERENCE:
+        this one IS an adjacency MATRIX.
+
+        isConnected[i][j] == 1
+        → edge exists between i and j
+
+    Compare carefully:
+
+        Bipartite input:
+            graph[current]
+            → direct list of neighbors
+
+        Provinces input:
+            scan all possible neighbor indices
+            → check matrix[current][neighbor]
+    ================================================================================================
     */
+    static class NumberOfProvincesSolution {
+
+        public int findCircleNum(int[][] isConnected) {
+
+            int n = isConnected.length;
+            boolean[] visited = new boolean[n];
+
+            int provinces = 0;
+
+            for (int start = 0; start < n; start++) {
+
+                if (visited[start]) {
+                    continue;
+                }
+
+                provinces++;
+
+                Deque<Integer> queue = new ArrayDeque<>();
+
+                visited[start] = true;
+                queue.offer(start);
+
+                while (!queue.isEmpty()) {
+
+                    int current = queue.poll();
+
+                    for (int next = 0; next < n; next++) {
+
+                        if (isConnected[current][next] == 1 && !visited[next]) {
+                            visited[next] = true;
+                            queue.offer(next);
+                        }
+                    }
+                }
+            }
+
+            return provinces;
+        }
+    }
 
     /*
     ================================================================================================
-    REINFORCEMENT PROBLEM #2
-    Course Schedule (Invariant Adaptation)
-    LeetCode 207
+    REINFORCEMENT PROBLEM #3 — NUMBER OF ISLANDS
+    LEETCODE 200
     ================================================================================================
 
-    Problem Summary:
+    SAME COMPONENT PATTERN:
 
-    Determine if all courses can be completed given prerequisites.
+        scan every possible node/cell
+
+        unseen valid node
+        → new component
+        → BFS / DFS until component exhausted
+
+    DIFFERENCE:
+
+        graph nodes are IMPLICIT grid cells.
+
+        We do not have:
+            graph[current]
+
+        We GENERATE neighbors using directions.
+
+    Mapping:
+
+        graph vertex     → grid cell
+        graph edge       → adjacent land cell
+        component count  → island count
+    ================================================================================================
+    */
+    static class NumberOfIslandsSolution {
+
+        private static final int[][] DIRECTIONS = {
+                {1, 0},
+                {-1, 0},
+                {0, 1},
+                {0, -1}
+        };
+
+        public int numIslands(char[][] grid) {
+
+            if (grid == null || grid.length == 0) {
+                return 0;
+            }
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            int islands = 0;
+
+            for (int row = 0; row < rows; row++) {
+
+                for (int col = 0; col < cols; col++) {
+
+                    if (grid[row][col] != '1') {
+                        continue;
+                    }
+
+                    islands++;
+
+                    Deque<int[]> queue = new ArrayDeque<>();
+
+                    grid[row][col] = '0';
+                    queue.offer(new int[]{row, col});
+
+                    while (!queue.isEmpty()) {
+
+                        int[] current = queue.poll();
+
+                        for (int[] direction : DIRECTIONS) {
+
+                            int nextRow = current[0] + direction[0];
+                            int nextCol = current[1] + direction[1];
+
+                            if (nextRow < 0 || nextRow >= rows ||
+                                nextCol < 0 || nextCol >= cols ||
+                                grid[nextRow][nextCol] != '1') {
+                                continue;
+                            }
+
+                            grid[nextRow][nextCol] = '0';
+                            queue.offer(new int[]{nextRow, nextCol});
+                        }
+                    }
+                }
+            }
+
+            return islands;
+        }
+    }
+
+    /*
+    ================================================================================================
+    REINFORCEMENT PROBLEM #4 — FLOOD FILL
+    LEETCODE 733
+    ================================================================================================
+
+    SAME:
+        traverse connected neighbors
+        mark as soon as discovered
+        queue / stack / recursion all possible
+
+    KEY DIFFERENCE:
+        one starting source is GIVEN.
+
+    Therefore we do NOT need:
+
+        for every node:
+            if unseen:
+                start traversal
+
+    We only traverse the component containing (sr, sc).
+
+    REUSABLE DFS PREDICATE:
+
+        not originalColor
+        → stop
+
+        originalColor
+        → paint + explore
 
     Important:
-    NOT bipartite.
+        if originalColor == newColor,
+        return before DFS/BFS starts.
+    ================================================================================================
+    */
+    static class FloodFillSolution {
 
-    But still graph constraint propagation.
+        public int[][] floodFill(int[][] image, int sr, int sc, int color) {
 
-    Invariant Mapping:
-    Instead of opposite colors,
-    invariant becomes:
-    no directed cycle.
+            int originalColor = image[sr][sc];
 
-    Key Example:
+            if (originalColor == color) {
+                return image;
+            }
 
-    numCourses = 2
-    prerequisites = [[1,0]]
+            dfs(image, sr, sc, originalColor, color);
 
-    Valid.
+            return image;
+        }
 
-    numCourses = 2
-    prerequisites = [[1,0],[0,1]]
+        private void dfs(
+                int[][] image,
+                int row,
+                int col,
+                int originalColor,
+                int newColor
+        ) {
 
-    Invalid cycle.
+            if (row < 0 || row >= image.length ||
+                col < 0 || col >= image[0].length ||
+                image[row][col] != originalColor) {
+                return;
+            }
 
-    Interview Insight:
-    Helps distinguish:
-    undirected odd-cycle problems
-    vs
-    directed cycle problems.
+            image[row][col] = newColor;
+
+            dfs(image, row + 1, col, originalColor, newColor);
+            dfs(image, row - 1, col, originalColor, newColor);
+            dfs(image, row, col + 1, originalColor, newColor);
+            dfs(image, row, col - 1, originalColor, newColor);
+        }
+    }
+
+    /*
+    ================================================================================================
+    REINFORCEMENT PROBLEM #5 — CLONE GRAPH
+    LEETCODE 133
+    ================================================================================================
+
+    SAME:
+        traverse actual neighbors
+        need memory to avoid reprocessing cycles
+
+    DIFFERENCE:
+        state is NOT boolean visited[]
+        and NOT color[].
+
+        state becomes:
+
+            Map<OriginalNode, CloneNode>
+
+    Why?
+
+        We need both:
+            "already visited?"
+        AND:
+            "where is its clone?"
+
+    Critical invariant:
+
+        register clone BEFORE exploring neighbors.
+
+    Otherwise a cycle can recurse forever.
+    ================================================================================================
+    */
+    static class CloneGraphSolution {
+
+        static class Node {
+
+            int val;
+            List<Node> neighbors = new ArrayList<>();
+
+            Node(int val) {
+                this.val = val;
+            }
+        }
+
+        public Node cloneGraph(Node node) {
+
+            if (node == null) {
+                return null;
+            }
+
+            Map<Node, Node> oldToNew = new HashMap<>();
+
+            return dfs(node, oldToNew);
+        }
+
+        private Node dfs(Node node, Map<Node, Node> oldToNew) {
+
+            if (oldToNew.containsKey(node)) {
+                return oldToNew.get(node);
+            }
+
+            Node clone = new Node(node.val);
+
+            oldToNew.put(node, clone);
+
+            for (Node neighbor : node.neighbors) {
+                clone.neighbors.add(dfs(neighbor, oldToNew));
+            }
+
+            return clone;
+        }
+    }
+
+    /*
+    ================================================================================================
+    REINFORCEMENT PROBLEM #6 — GRAPH VALID TREE
+    LEETCODE 261
+    ================================================================================================
+
+    SAME:
+        graph traversal
+        visited state
+        connectivity reasoning
+
+    DIFFERENCE IN QUESTION:
+
+        Bipartite:
+            every edge must connect opposite colors
+
+        Valid Tree:
+            graph must be connected AND acyclic
+
+    Very useful distinction:
+
+        TREE
+        → no cycles at all
+
+        BIPARTITE
+        → even cycles are allowed
+        → odd cycles are forbidden
+
+    Shortcut:
+
+        an undirected graph with n nodes is a tree iff:
+            edges == n - 1
+            AND
+            all n nodes are connected
+    ================================================================================================
+    */
+    static class GraphValidTreeSolution {
+
+        public boolean validTree(int n, int[][] edges) {
+
+            if (n == 0) {
+                return false;
+            }
+
+            if (edges.length != n - 1) {
+                return false;
+            }
+
+            List<Integer>[] graph = new ArrayList[n];
+
+            for (int i = 0; i < n; i++) {
+                graph[i] = new ArrayList<>();
+            }
+
+            for (int[] edge : edges) {
+
+                int a = edge[0];
+                int b = edge[1];
+
+                graph[a].add(b);
+                graph[b].add(a);
+            }
+
+            boolean[] visited = new boolean[n];
+
+            Deque<Integer> queue = new ArrayDeque<>();
+            queue.offer(0);
+            visited[0] = true;
+
+            int visitedCount = 0;
+
+            while (!queue.isEmpty()) {
+
+                int current = queue.poll();
+                visitedCount++;
+
+                for (int next : graph[current]) {
+
+                    if (!visited[next]) {
+                        visited[next] = true;
+                        queue.offer(next);
+                    }
+                }
+            }
+
+            return visitedCount == n;
+        }
+    }
+
+    /*
+    ================================================================================================
+    REINFORCEMENT PROBLEM #7 — COURSE SCHEDULE
+    LEETCODE 207
+    ================================================================================================
+
+    RELATED BECAUSE:
+        graph traversal / graph state / cycle reasoning
+
+    BUT NOT THE SAME FAMILY.
+
+    Course Schedule:
+        DIRECTED graph
+        prerequisite ordering
+        detect directed cycle
+
+    Preferred reusable pattern:
+        Kahn's Algorithm / Topological Sort
+
+    State changes:
+
+        Bipartite:
+            color[]
+
+        Course Schedule:
+            indegree[]
+
+    Worklist meaning changes:
+
+        Bipartite queue:
+            discovered component nodes waiting to process
+
+        Kahn queue:
+            courses whose remaining indegree is ZERO
+
+    Pattern boundary matters:
+        do not force the bipartite template onto every graph problem.
+    ================================================================================================
     */
     static class CourseScheduleSolution {
 
@@ -1075,16 +910,15 @@ public class GraphBipartite {
                 int prerequisite = edge[1];
 
                 graph[prerequisite].add(course);
-
                 indegree[course]++;
             }
 
-            Queue<Integer> queue = new LinkedList<>();
+            Deque<Integer> queue = new ArrayDeque<>();
 
-            for (int i = 0; i < numCourses; i++) {
+            for (int course = 0; course < numCourses; course++) {
 
-                if (indegree[i] == 0) {
-                    queue.offer(i);
+                if (indegree[course] == 0) {
+                    queue.offer(course);
                 }
             }
 
@@ -1093,7 +927,6 @@ public class GraphBipartite {
             while (!queue.isEmpty()) {
 
                 int current = queue.poll();
-
                 completed++;
 
                 for (int next : graph[current]) {
@@ -1111,145 +944,32 @@ public class GraphBipartite {
     }
 
     /*
-    🟣 Interview Articulation:
-
-    "This problem is NOT bipartite because edges are directed.
-    The invariant changes from parity consistency
-    to acyclic dependency ordering."
-    */
-
-    /*
     ================================================================================================
-    REINFORCEMENT PROBLEM #3
-    Graph Valid Tree
-    LeetCode 261
+    REINFORCEMENT PROBLEM #8 — REDUNDANT CONNECTION
+    LEETCODE 684
     ================================================================================================
 
-    Problem Summary:
+    RELATED:
+        undirected graph
+        cycle reasoning
 
-    Determine whether graph forms a valid tree.
+    DIFFERENCE:
 
-    Tree Properties:
-    • connected
-    • acyclic
+        Bipartite asks:
+            "Does an ODD-cycle contradiction exist?"
 
-    Invariant Mapping:
+        Redundant Connection asks:
+            "Which edge creates ANY cycle?"
 
-    Tree => automatically bipartite.
+    Preferred pattern:
+        Union Find
 
-    But this problem asks stricter constraints.
+    Reusable Union Find invariant:
 
-    Example:
-
-    n = 5
-    edges = [[0,1],[0,2],[0,3],[1,4]]
-
-    valid tree -> true
-
-    Edge Cases:
-    • disconnected graph
-    • extra edge causing cycle
-
-    Interview Trap:
-    Candidate checks only cycle OR only connectivity.
-    Need BOTH.
-    */
-    static class GraphValidTreeSolution {
-
-        public boolean validTree(int n, int[][] edges) {
-
-            // Tree with n nodes must contain exactly n - 1 edges.
-            if (edges.length != n - 1) {
-                return false;
-            }
-
-            List<Integer>[] graph = new ArrayList[n];
-
-            for (int i = 0; i < n; i++) {
-                graph[i] = new ArrayList<>();
-            }
-
-            for (int[] edge : edges) {
-
-                int u = edge[0];
-                int v = edge[1];
-
-                graph[u].add(v);
-                graph[v].add(u);
-            }
-
-            boolean[] visited = new boolean[n];
-
-            Queue<Integer> queue = new LinkedList<>();
-
-            queue.offer(0);
-
-            visited[0] = true;
-
-            int visitedCount = 0;
-
-            while (!queue.isEmpty()) {
-
-                int node = queue.poll();
-
-                visitedCount++;
-
-                for (int neighbor : graph[node]) {
-
-                    if (!visited[neighbor]) {
-
-                        visited[neighbor] = true;
-
-                        queue.offer(neighbor);
-                    }
-                }
-            }
-
-            return visitedCount == n;
-        }
-    }
-
-    /*
-    🟣 Interview Articulation:
-
-    "All trees are bipartite,
-    but not all bipartite graphs are trees.
-
-    Bipartite allows even cycles.
-    Trees allow no cycles."
-    */
-
-    /*
+        if find(a) == find(b)
+        → a and b were already connected
+        → adding this edge creates a cycle
     ================================================================================================
-    🧩 RELATED PROBLEMS
-    ================================================================================================
-    */
-
-    /*
-    ================================================================================================
-    RELATED PROBLEM #1
-    Redundant Connection
-    LeetCode 684
-    ================================================================================================
-
-    Problem Summary:
-
-    Find extra edge creating cycle in undirected graph.
-
-    Invariant Relationship:
-    Modified invariant.
-
-    Instead of:
-    opposite parity consistency
-
-    We care about:
-    cycle creation.
-
-    Preferred Pattern:
-    Union Find.
-
-    Edge Case:
-    Last edge causing cycle must be returned.
     */
     static class RedundantConnectionSolution {
 
@@ -1268,13 +988,13 @@ public class GraphBipartite {
                 }
             }
 
-            int find(int x) {
+            int find(int node) {
 
-                if (parent[x] != x) {
-                    parent[x] = find(parent[x]);
+                if (parent[node] != node) {
+                    parent[node] = find(parent[node]);
                 }
 
-                return parent[x];
+                return parent[node];
             }
 
             boolean union(int a, int b) {
@@ -1287,19 +1007,13 @@ public class GraphBipartite {
                 }
 
                 if (rank[rootA] < rank[rootB]) {
-
                     parent[rootA] = rootB;
                 }
-
                 else if (rank[rootA] > rank[rootB]) {
-
                     parent[rootB] = rootA;
                 }
-
                 else {
-
                     parent[rootB] = rootA;
-
                     rank[rootA]++;
                 }
 
@@ -1309,11 +1023,11 @@ public class GraphBipartite {
 
         public int[] findRedundantConnection(int[][] edges) {
 
-            UnionFind uf = new UnionFind(edges.length);
+            UnionFind unionFind = new UnionFind(edges.length);
 
             for (int[] edge : edges) {
 
-                if (!uf.union(edge[0], edge[1])) {
+                if (!unionFind.union(edge[0], edge[1])) {
                     return edge;
                 }
             }
@@ -1323,569 +1037,346 @@ public class GraphBipartite {
     }
 
     /*
-    🟣 Interview Note:
+    ================================================================================================
+    RELATED-PATTERN TRANSFER TABLE
+    ================================================================================================
 
-    "This problem detects cycle formation directly.
-    Bipartite instead detects parity contradiction."
+    Problem                  State                     Outer Scan?   Neighbor Source        Core Goal
+    ------------------------------------------------------------------------------------------------
+    Bipartite                color[]                   YES           adjacency list        opposite color
+    Possible Bipartition     color[]                   YES           built adjacency list  opposite color
+    Provinces                visited[]                 YES           matrix row            count components
+    Number of Islands        grid mutation/visited     YES           4 directions          count components
+    Flood Fill               image mutation            NO            4 directions          mutate one component
+    Clone Graph              Map<old,new>              usually NO*   node.neighbors        copy topology
+    Valid Tree               visited[]                 NO**          adjacency list        connected + acyclic
+    Course Schedule          indegree[]                different     directed adjacency    topological completion
+    Redundant Connection     parent[] / rank[]         N/A           edge list             detect cycle edge
+
+    * Clone Graph starts from the supplied node and clones what is reachable from it.
+    ** With the n-1 edge-count shortcut, one traversal from node 0 is enough to verify connectivity.
+
+    High-value recognition rule:
+
+        SAME "graph" does NOT mean SAME pattern.
+
+    First ask:
+
+        What STATE must survive across visits?
+        What does the WORKLIST represent?
+        What condition makes the answer fail/succeed?
+    ================================================================================================
     */
 
     /*
     ================================================================================================
-    RELATED PROBLEM #2
-    Number of Provinces
-    LeetCode 547
+    USEFUL ALTERNATIVE — DFS TWO-COLORING
     ================================================================================================
 
-    Problem Summary:
+    SAME invariant.
+    Only traversal mechanism changes.
 
-    Count connected components.
+    Do not learn separate BFS and DFS bipartite algorithms.
 
-    Same or Modified Invariant?
-    Modified.
+    Learn ONE rule:
 
-    We only care about reachability,
-    not opposite coloring.
+        uncolored neighbor
+        → opposite color
 
-    Edge Case:
-    isolated nodes count as provinces.
+        already-colored same-color neighbor
+        → fail
+    ================================================================================================
     */
-    static class NumberOfProvincesSolution {
+    static class DFSSolution {
 
-        public int findCircleNum(int[][] isConnected) {
+        public boolean isBipartite(int[][] graph) {
 
-            int n = isConnected.length;
+            if (graph == null) {
+                return false;
+            }
 
-            boolean[] visited = new boolean[n];
+            int[] color = new int[graph.length];
 
-            int provinces = 0;
+            for (int start = 0; start < graph.length; start++) {
 
-            for (int city = 0; city < n; city++) {
+                if (color[start] != 0) {
+                    continue;
+                }
 
-                if (!visited[city]) {
+                color[start] = 1;
 
-                    provinces++;
-
-                    bfs(isConnected, visited, city);
+                if (!dfs(graph, color, start)) {
+                    return false;
                 }
             }
 
-            return provinces;
+            return true;
         }
 
-        private void bfs(int[][] graph, boolean[] visited, int start) {
+        private boolean dfs(int[][] graph, int[] color, int current) {
 
-            Queue<Integer> queue = new LinkedList<>();
+            for (int next : graph[current]) {
 
-            queue.offer(start);
+                if (color[next] == 0) {
 
-            visited[start] = true;
+                    color[next] = -color[current];
 
-            while (!queue.isEmpty()) {
-
-                int node = queue.poll();
-
-                for (int neighbor = 0; neighbor < graph.length; neighbor++) {
-
-                    if (graph[node][neighbor] == 1 && !visited[neighbor]) {
-
-                        visited[neighbor] = true;
-
-                        queue.offer(neighbor);
+                    if (!dfs(graph, color, next)) {
+                        return false;
                     }
                 }
+                else if (color[next] == color[current]) {
+
+                    return false;
+                }
             }
+
+            return true;
         }
     }
 
     /*
-    🟣 Interview Note:
+    ================================================================================================
+    COMMON TRAPS
+    ================================================================================================
 
-    "Traversal structure is same as bipartite BFS,
-    but invariant changed from color consistency
-    to component discovery."
-    */
+    1. Start only from node 0
+       → disconnected components can be missed.
 
+    2. Treat graph[0].length as number of columns
+       → adjacency list is not a rectangular grid.
 
-    /*
-================================================================================================
-RELATED PROBLEM #3
-Clone Graph
-LeetCode 133
-================================================================================================
+    3. Return false when graph[0].length == 0
+       → isolated node 0 is perfectly legal.
 
-Problem Summary:
+    4. Use only visited[]
+       → remembers reachability but not color/parity.
 
-Deep copy an undirected graph.
+    5. Reject every cycle
+       → even cycles are bipartite.
 
-Same or Modified Invariant?
-Modified.
+    6. Recolor an already-colored node
+       → breaks previously established constraints.
 
-We preserve:
-structural equivalence.
+    7. Think BFS is mandatory
+       → DFS works with the same invariant.
 
-Instead of:
-opposite-color consistency.
+    8. See int[][] and assume one representation
+       → int[][] can represent grid, adjacency matrix, adjacency lists, or edge pairs.
 
-Key Edge Case:
-cycles causing infinite recursion if not memoized.
-*/
-    static class CloneGraphSolution {
-
-        static class Node {
-
-            public int val;
-            public List<Node> neighbors;
-
-            public Node() {
-                val = 0;
-                neighbors = new ArrayList<>();
-            }
-
-            public Node(int val) {
-                this.val = val;
-                neighbors = new ArrayList<>();
-            }
-
-            public Node(int val, ArrayList<Node> neighbors) {
-                this.val = val;
-                this.neighbors = neighbors;
-            }
-        }
-
-        public Node cloneGraph(Node node) {
-
-            if (node == null) {
-                return null;
-            }
-
-            Map<Node, Node> map = new HashMap<>();
-
-            return dfs(node, map);
-        }
-
-        private Node dfs(Node node, Map<Node, Node> map) {
-
-            if (map.containsKey(node)) {
-                return map.get(node);
-            }
-
-            Node clone = new Node(node.val);
-
-            map.put(node, clone);
-
-            for (Node neighbor : node.neighbors) {
-
-                clone.neighbors.add(dfs(neighbor, map));
-            }
-
-            return clone;
-        }
-    }
-
-    /*
-    🟣 Interview Note:
-
-    "Clone Graph preserves topology.
-    Bipartite checking preserves parity consistency."
+    9. See "graph" and force one universal graph template
+       → the state/invariant determines the pattern.
+    ================================================================================================
     */
 
     /*
     ================================================================================================
-    🧠 MASTERY CHECKLIST
-    ================================================================================================
-
-    Q1. What is the invariant?
-
-    Every edge must connect opposite-colored nodes.
-
-    ------------------------------------------------------------------------------------------------
-
-    Q2. What is the search target?
-
-    Detect contradiction:
-    adjacent nodes having same color.
-
-    ------------------------------------------------------------------------------------------------
-
-    Q3. What is the discard/failure rule?
-
-    If color[u] == color[v] for any edge,
-    graph cannot be bipartite.
-
-    ------------------------------------------------------------------------------------------------
-
-    Q4. What is termination logic?
-
-    Traverse all connected components.
-    Return false immediately on first contradiction.
-
-    ------------------------------------------------------------------------------------------------
-
-    Q5. Why does naive approach fail?
-
-    Local checking misses global parity conflicts.
-
-    ------------------------------------------------------------------------------------------------
-
-    Q6. What edge cases must be remembered?
-
-    • disconnected graph
-    • isolated nodes
-    • odd cycle
-    • even cycle
-    • single node
-    • empty adjacency list
-
-    ------------------------------------------------------------------------------------------------
-
-    Q7. Debugging Readiness
-
-    If output wrong:
-    verify:
-    • disconnected component traversal
-    • opposite-color assignment
-    • conflict detection
-    • queue/stack processing
-
-    ------------------------------------------------------------------------------------------------
-
-    Q8. Variant Readiness
-
-    Can adapt to:
-    • BFS
-    • DFS
-    • Union Find parity
-    • odd-cycle detection
-
-    ------------------------------------------------------------------------------------------------
-
-    Q9. Pattern Boundary
-
-    This pattern solves:
-    binary parity constraints.
-
-    NOT:
-    • weighted shortest path
-    • directed DAG ordering
-    • arbitrary k-coloring
-    • MST problems
-
-    ================================================================================================
-    🧪 SELF-VERIFYING TEST UTILITIES
+    SELF-VERIFYING TEST UTILITIES
     ================================================================================================
     */
 
-    static void assertTrue(boolean condition, String message) {
+    private static void assertTrue(boolean condition, String message) {
 
         if (!condition) {
-            throw new RuntimeException("Assertion failed: " + message);
+            throw new AssertionError("Expected true: " + message);
         }
     }
 
-    static void assertFalse(boolean condition, String message) {
+    private static void assertFalse(boolean condition, String message) {
 
         if (condition) {
-            throw new RuntimeException("Assertion failed: " + message);
+            throw new AssertionError("Expected false: " + message);
         }
     }
 
-    static void assertEquals(int expected, int actual, String message) {
+    private static void assertEquals(int expected, int actual, String message) {
 
         if (expected != actual) {
-
-            throw new RuntimeException(
-                    "Assertion failed: " + message
-                            + " | expected = " + expected
-                            + " | actual = " + actual
+            throw new AssertionError(
+                    message
+                    + " | expected = " + expected
+                    + ", actual = " + actual
             );
         }
     }
 
-    static void assertArrayEquals(int[] expected, int[] actual, String message) {
+    private static void assertArrayEquals(int[] expected, int[] actual, String message) {
 
         if (!Arrays.equals(expected, actual)) {
+            throw new AssertionError(
+                    message
+                    + " | expected = " + Arrays.toString(expected)
+                    + ", actual = " + Arrays.toString(actual)
+            );
+        }
+    }
 
-            throw new RuntimeException(
-                    "Assertion failed: " + message
-                            + " | expected = " + Arrays.toString(expected)
-                            + " | actual = " + Arrays.toString(actual)
+    private static void assertMatrixEquals(int[][] expected, int[][] actual, String message) {
+
+        if (!Arrays.deepEquals(expected, actual)) {
+            throw new AssertionError(
+                    message
+                    + " | expected = " + Arrays.deepToString(expected)
+                    + ", actual = " + Arrays.deepToString(actual)
             );
         }
     }
 
     /*
     ================================================================================================
-    🧪 PRIMARY PROBLEM TESTS
+    PRIMARY PROBLEM TESTS
     ================================================================================================
     */
 
-    static void runPrimaryProblemTests() {
+    private static void runPrimaryTests() {
 
-        BFSOptimalSolution solver = new BFSOptimalSolution();
+        Solution bfs = new Solution();
+        DFSSolution dfs = new DFSSolution();
 
-        /*
-        --------------------------------------------------------------------------------------------
-        Happy Path:
-        Simple even cycle.
-        Valid bipartite graph.
-        --------------------------------------------------------------------------------------------
-        */
-        int[][] graph1 = {
+        int[][] evenCycle = {
                 {1, 3},
                 {0, 2},
                 {1, 3},
                 {0, 2}
         };
 
-        assertTrue(
-                solver.isBipartite(graph1),
-                "Even cycle should be bipartite"
-        );
+        assertTrue(bfs.isBipartite(evenCycle), "even cycle BFS");
+        assertTrue(dfs.isBipartite(evenCycle), "even cycle DFS");
 
 
-
-        /*
-        --------------------------------------------------------------------------------------------
-        Interview Trap:
-        Odd cycle.
-        */
-
-        int[][] graph2 = {
-                {1, 2, 3},
+        int[][] triangle = {
+                {1, 2},
                 {0, 2},
-                {0, 1, 3},
-                {0, 2}
+                {0, 1}
         };
 
-        assertFalse(
-                solver.isBipartite(graph2),
-                "Odd cycle should NOT be bipartite"
-        );
+        assertFalse(bfs.isBipartite(triangle), "triangle BFS");
+        assertFalse(dfs.isBipartite(triangle), "triangle DFS");
+
 
         /*
-        --------------------------------------------------------------------------------------------
-        Boundary Case:
-        Single isolated node.
-        --------------------------------------------------------------------------------------------
-        */
-        int[][] graph3 = {
-                {}
-        };
+        Valid component + disconnected odd-cycle component.
 
-        assertTrue(
-                solver.isBipartite(graph3),
-                "Single node graph should be bipartite"
-        );
-
-        /*
-        --------------------------------------------------------------------------------------------
-        Disconnected graph:
-        One component valid, another invalid.
-        Must still return false.
-        --------------------------------------------------------------------------------------------
+        Proves why the outer loop is required.
         */
-        int[][] graph4 = {
+        int[][] disconnectedOddCycle = {
                 {1},
                 {0},
-
                 {3, 4},
                 {2, 4},
                 {2, 3}
         };
 
         assertFalse(
-                solver.isBipartite(graph4),
-                "Disconnected graph with odd cycle component should fail"
+                bfs.isBipartite(disconnectedOddCycle),
+                "disconnected odd-cycle component BFS"
         );
 
+        assertFalse(
+                dfs.isBipartite(disconnectedOddCycle),
+                "disconnected odd-cycle component DFS"
+        );
+
+
         /*
-        --------------------------------------------------------------------------------------------
-        Tree graph:
-        Every tree is bipartite.
-        --------------------------------------------------------------------------------------------
+        Regression case from discussion:
+
+            [[], [3], [], [1], []]
+
+        graph[0].length == 0 only means node 0 is isolated.
         */
-        int[][] graph5 = {
+        int[][] isolatedFirstNode = {
+                {},
+                {3},
+                {},
+                {1},
+                {}
+        };
+
+        assertTrue(
+                bfs.isBipartite(isolatedFirstNode),
+                "isolated first node BFS"
+        );
+
+        assertTrue(
+                dfs.isBipartite(isolatedFirstNode),
+                "isolated first node DFS"
+        );
+
+
+        int[][] isolatedNodes = {
+                {},
+                {},
+                {}
+        };
+
+        assertTrue(bfs.isBipartite(isolatedNodes), "all isolated BFS");
+        assertTrue(dfs.isBipartite(isolatedNodes), "all isolated DFS");
+
+
+        int[][] tree = {
                 {1, 2},
                 {0, 3},
                 {0},
                 {1}
         };
 
-        assertTrue(
-                solver.isBipartite(graph5),
-                "Trees are always bipartite"
-        );
+        assertTrue(bfs.isBipartite(tree), "tree BFS");
+        assertTrue(dfs.isBipartite(tree), "tree DFS");
 
-        /*
-        --------------------------------------------------------------------------------------------
-        Empty adjacency lists.
-        Multiple isolated nodes.
-        --------------------------------------------------------------------------------------------
-        */
-        int[][] graph6 = {
-                {},
-                {},
+
+        int[][] singleNode = {
                 {}
         };
 
-        assertTrue(
-                solver.isBipartite(graph6),
-                "All isolated nodes should be bipartite"
-        );
+        assertTrue(bfs.isBipartite(singleNode), "single node BFS");
+        assertTrue(dfs.isBipartite(singleNode), "single node DFS");
 
-        /*
-        --------------------------------------------------------------------------------------------
-        Long even chain.
-        Tests propagation stability.
-        --------------------------------------------------------------------------------------------
-        */
-        int[][] graph7 = {
-                {1},
-                {0, 2},
-                {1, 3},
-                {2, 4},
-                {3, 5},
-                {4}
-        };
 
-        assertTrue(
-                solver.isBipartite(graph7),
-                "Linear chain should be bipartite"
-        );
+        int[][] empty = {};
 
-        /*
-        --------------------------------------------------------------------------------------------
-        Triangle graph.
-        Smallest odd cycle.
-        --------------------------------------------------------------------------------------------
-        */
-        int[][] graph8 = {
-                {1, 2},
-                {0, 2},
-                {0, 1}
-        };
+        assertTrue(bfs.isBipartite(empty), "empty graph BFS");
+        assertTrue(dfs.isBipartite(empty), "empty graph DFS");
 
-        assertFalse(
-                solver.isBipartite(graph8),
-                "Triangle graph should fail bipartite validation"
-        );
-
-        System.out.println("✅ Primary problem tests passed.");
+        System.out.println("✅ Primary Bipartite tests passed.");
     }
 
     /*
     ================================================================================================
-    🧪 REINFORCEMENT PROBLEM TESTS
+    REINFORCEMENT TESTS
     ================================================================================================
     */
 
-    static void runPossibleBipartitionTests() {
+    private static void runPossibleBipartitionTests() {
 
         PossibleBipartitionSolution solver = new PossibleBipartitionSolution();
 
-        int[][] dislikes1 = {
+        int[][] valid = {
                 {1, 2},
                 {1, 3},
                 {2, 4}
         };
 
         assertTrue(
-                solver.possibleBipartition(4, dislikes1),
-                "Valid dislike partition should succeed"
+                solver.possibleBipartition(4, valid),
+                "possible bipartition valid case"
         );
 
-        int[][] dislikes2 = {
+        int[][] invalid = {
                 {1, 2},
                 {1, 3},
                 {2, 3}
         };
 
         assertFalse(
-                solver.possibleBipartition(3, dislikes2),
-                "Odd conflict cycle should fail"
+                solver.possibleBipartition(3, invalid),
+                "possible bipartition odd cycle"
         );
 
         System.out.println("✅ Possible Bipartition tests passed.");
     }
 
-    static void runCourseScheduleTests() {
-
-        CourseScheduleSolution solver = new CourseScheduleSolution();
-
-        int[][] prerequisites1 = {
-                {1, 0}
-        };
-
-        assertTrue(
-                solver.canFinish(2, prerequisites1),
-                "Simple dependency chain should succeed"
-        );
-
-        int[][] prerequisites2 = {
-                {1, 0},
-                {0, 1}
-        };
-
-        assertFalse(
-                solver.canFinish(2, prerequisites2),
-                "Directed cycle should fail"
-        );
-
-        System.out.println("✅ Course Schedule tests passed.");
-    }
-
-    static void runGraphValidTreeTests() {
-
-        GraphValidTreeSolution solver = new GraphValidTreeSolution();
-
-        int[][] edges1 = {
-                {0, 1},
-                {0, 2},
-                {0, 3},
-                {1, 4}
-        };
-
-        assertTrue(
-                solver.validTree(5, edges1),
-                "Connected acyclic graph should be valid tree"
-        );
-
-        int[][] edges2 = {
-                {0, 1},
-                {1, 2},
-                {2, 3},
-                {1, 3},
-                {1, 4}
-        };
-
-        assertFalse(
-                solver.validTree(5, edges2),
-                "Cycle should invalidate tree"
-        );
-
-        System.out.println("✅ Graph Valid Tree tests passed.");
-    }
-
-    static void runRedundantConnectionTests() {
-
-        RedundantConnectionSolution solver = new RedundantConnectionSolution();
-
-        int[][] edges1 = {
-                {1, 2},
-                {1, 3},
-                {2, 3}
-        };
-
-        assertArrayEquals(
-                new int[]{2, 3},
-                solver.findRedundantConnection(edges1),
-                "Last edge creating cycle should be returned"
-        );
-
-        System.out.println("✅ Redundant Connection tests passed.");
-    }
-
-    static void runNumberOfProvincesTests() {
+    private static void runProvinceTests() {
 
         NumberOfProvincesSolution solver = new NumberOfProvincesSolution();
 
@@ -1898,7 +1389,7 @@ cycles causing infinite recursion if not memoized.
         assertEquals(
                 2,
                 solver.findCircleNum(matrix1),
-                "Should detect two connected provinces"
+                "two provinces"
         );
 
         int[][] matrix2 = {
@@ -1910,46 +1401,251 @@ cycles causing infinite recursion if not memoized.
         assertEquals(
                 3,
                 solver.findCircleNum(matrix2),
-                "All isolated cities should form separate provinces"
+                "three isolated provinces"
         );
 
         System.out.println("✅ Number Of Provinces tests passed.");
     }
 
+    private static void runIslandTests() {
+
+        NumberOfIslandsSolution solver = new NumberOfIslandsSolution();
+
+        char[][] grid = {
+                {'1', '1', '0', '0'},
+                {'1', '0', '0', '1'},
+                {'0', '0', '1', '1'}
+        };
+
+        assertEquals(
+                2,
+                solver.numIslands(grid),
+                "two islands"
+        );
+
+        System.out.println("✅ Number Of Islands tests passed.");
+    }
+
+    private static void runFloodFillTests() {
+
+        FloodFillSolution solver = new FloodFillSolution();
+
+        int[][] image = {
+                {1, 1, 1},
+                {1, 1, 0},
+                {1, 0, 1}
+        };
+
+        int[][] expected = {
+                {2, 2, 2},
+                {2, 2, 0},
+                {2, 0, 1}
+        };
+
+        assertMatrixEquals(
+                expected,
+                solver.floodFill(image, 1, 1, 2),
+                "flood fill connected component"
+        );
+
+        int[][] sameColor = {
+                {1, 1},
+                {1, 0}
+        };
+
+        int[][] sameExpected = {
+                {1, 1},
+                {1, 0}
+        };
+
+        assertMatrixEquals(
+                sameExpected,
+                solver.floodFill(sameColor, 0, 0, 1),
+                "flood fill originalColor == newColor"
+        );
+
+        System.out.println("✅ Flood Fill tests passed.");
+    }
+
+    private static void runCloneGraphTests() {
+
+        CloneGraphSolution.Node one = new CloneGraphSolution.Node(1);
+        CloneGraphSolution.Node two = new CloneGraphSolution.Node(2);
+
+        one.neighbors.add(two);
+        two.neighbors.add(one);
+
+        CloneGraphSolution solver = new CloneGraphSolution();
+        CloneGraphSolution.Node clone = solver.cloneGraph(one);
+
+        assertTrue(clone != one, "clone must be a different object");
+        assertEquals(1, clone.val, "clone root value");
+        assertEquals(1, clone.neighbors.size(), "clone root neighbor count");
+        assertEquals(2, clone.neighbors.get(0).val, "clone neighbor value");
+        assertTrue(
+                clone.neighbors.get(0) != two,
+                "neighbor must also be deeply cloned"
+        );
+        assertTrue(
+                clone.neighbors.get(0).neighbors.get(0) == clone,
+                "cycle should point back to cloned root"
+        );
+
+        System.out.println("✅ Clone Graph tests passed.");
+    }
+
+    private static void runValidTreeTests() {
+
+        GraphValidTreeSolution solver = new GraphValidTreeSolution();
+
+        int[][] valid = {
+                {0, 1},
+                {0, 2},
+                {0, 3},
+                {1, 4}
+        };
+
+        assertTrue(
+                solver.validTree(5, valid),
+                "valid tree"
+        );
+
+        int[][] invalid = {
+                {0, 1},
+                {1, 2},
+                {2, 3},
+                {1, 3},
+                {1, 4}
+        };
+
+        assertFalse(
+                solver.validTree(5, invalid),
+                "cycle / too many edges should fail tree"
+        );
+
+        System.out.println("✅ Graph Valid Tree tests passed.");
+    }
+
+    private static void runCourseScheduleTests() {
+
+        CourseScheduleSolution solver = new CourseScheduleSolution();
+
+        assertTrue(
+                solver.canFinish(
+                        2,
+                        new int[][]{{1, 0}}
+                ),
+                "simple course dependency"
+        );
+
+        assertFalse(
+                solver.canFinish(
+                        2,
+                        new int[][]{{1, 0}, {0, 1}}
+                ),
+                "course cycle"
+        );
+
+        System.out.println("✅ Course Schedule tests passed.");
+    }
+
+    private static void runRedundantConnectionTests() {
+
+        RedundantConnectionSolution solver = new RedundantConnectionSolution();
+
+        int[][] edges = {
+                {1, 2},
+                {1, 3},
+                {2, 3}
+        };
+
+        assertArrayEquals(
+                new int[]{2, 3},
+                solver.findRedundantConnection(edges),
+                "redundant connection"
+        );
+
+        System.out.println("✅ Redundant Connection tests passed.");
+    }
+
     /*
     ================================================================================================
-    🧪 MAIN
+    FINAL RETENTION CARD
+    ================================================================================================
+
+    PRIMARY BIPARTITE:
+
+        OUTER FOR
+        → find disconnected component
+
+        QUEUE / STACK / RECURSION
+        → traverse that component
+
+        INNER FOR
+        → follow actual edges
+
+        UNCOLORED
+        → opposite color
+
+        ALREADY COLORED SAME
+        → false
+
+
+    MASTER GRAPH TRANSFER QUESTIONS:
+
+        1. What STATE must I remember?
+        2. How do I get NEIGHBORS?
+        3. Do I need an OUTER component scan?
+        4. What does the WORKLIST mean?
+        5. What condition is the problem asking me to VALIDATE?
+
+
+    CORE DISTINCTIONS:
+
+        Bipartite
+        → odd-cycle / parity contradiction
+
+        Components / Provinces / Islands
+        → reachability groups
+
+        Flood Fill
+        → mutate one supplied component
+
+        Clone Graph
+        → old → new mapping
+
+        Valid Tree
+        → connected + acyclic
+
+        Course Schedule
+        → directed topological dependency
+
+        Redundant Connection
+        → any undirected cycle edge
+
+
+    ONE SENTENCE:
+
+        "Graph traversal is the skeleton; the remembered state and invariant determine the problem."
     ================================================================================================
     */
 
     public static void main(String[] args) {
 
-        runPrimaryProblemTests();
+        runPrimaryTests();
 
         runPossibleBipartitionTests();
-
+        runProvinceTests();
+        runIslandTests();
+        runFloodFillTests();
+        runCloneGraphTests();
+        runValidTreeTests();
         runCourseScheduleTests();
-
-        runGraphValidTreeTests();
-
         runRedundantConnectionTests();
-
-        runNumberOfProvincesTests();
 
         System.out.println();
         System.out.println("================================================================================");
-        System.out.println("ALL TESTS PASSED");
+        System.out.println("✅ ALL GraphBipartiteV3 TESTS PASSED");
         System.out.println("================================================================================");
-
-        /*
-        ============================================================================================
-        🧘 FINAL CLOSURE STATEMENT
-        ============================================================================================
-
-        I understand the invariant.
-        I can re-derive the solution.
-        I can physically reconstruct the implementation under pressure.
-        This chapter is complete.
-        */
     }
 }
