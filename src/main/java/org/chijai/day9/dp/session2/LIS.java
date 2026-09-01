@@ -1,838 +1,1039 @@
 package org.chijai.day9.dp.session2;
 
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * ============================================================================
- * 📘 PRIMARY PROBLEM — LONGEST INCREASING SUBSEQUENCE
+ * LONGEST INCREASING SUBSEQUENCE — HIGH-ROI INTERVIEW FILE
  * ============================================================================
  *
- * LeetCode: 300
- * Link:
- * https://leetcode.com/problems/longest-increasing-subsequence/
+ * LeetCode 300
  *
- * Difficulty: Medium
- *
- * Tags:
- * Dynamic Programming
- * Binary Search
- * Greedy
- * Array
- *
+ * GOAL OF THIS FILE
  * ----------------------------------------------------------------------------
- * FULL OFFICIAL LEETCODE STATEMENT
- * ----------------------------------------------------------------------------
+ * Do NOT try to memorize every LIS trick.
  *
- * Given an integer array nums, return the length of the longest strictly
- * increasing subsequence.
+ * Learn one reusable interview machine deeply:
  *
- * A subsequence is a sequence that can be derived from an array by deleting
- * some or no elements without changing the order of the remaining elements.
+ *      BEST CHAIN ENDING AT i
  *
- * Example 1:
+ * Then reuse it whenever a problem says:
  *
- * Input: nums = [10,9,2,5,3,7,101,18]
- * Output: 4
- * Explanation:
- * The longest increasing subsequence is [2,3,7,101],
- * therefore the length is 4.
+ *      "Choose items in order and build the best valid chain."
  *
- * Example 2:
+ * DERIVATION / ANTI-FREEZE:
+ *      brute-force recursion -> memoization
  *
- * Input: nums = [0,1,0,3,2,3]
- * Output: 4
+ * PRIMARY / PRESSURE-SAFE REUSABLE SOLUTION:
+ *      O(n^2) ending-at-i DP
  *
- * Example 3:
- *
- * Input: nums = [7,7,7,7,7,7,7]
- * Output: 1
- *
- * Constraints:
- *
- * 1 <= nums.length <= 2500
- * -10^4 <= nums[i] <= 10^4
- *
- * Follow up:
- * Can you come up with an algorithm that runs in O(n log(n)) time complexity?
+ * FOLLOW-UP / RECOGNIZE + EXPLAIN:
+ *      O(n log n) tails + binary search
  *
  * ============================================================================
- * 🔵 CORE PATTERN OVERVIEW
+ * 30-SECOND PRESSURE RECONSTRUCTION
  * ============================================================================
  *
- * Pattern Name:
- * Longest Increasing Subsequence (LIS)
+ * See:
+ *      subsequence + ordering rule + maximize length
  *
- * Problem Archetype:
- * "Best subsequence ending somewhere"
+ * Ask:
+ *      "If nums[i] MUST be the last element,
+ *       where could I have come from?"
  *
- * Core Pattern Families:
+ * State:
+ *      dp[i] = best valid subsequence ending EXACTLY at i
  *
- * 1. DP over previous states
- * 2. Greedy + Binary Search optimization
+ * Predecessor:
+ *      every earlier j
  *
- * ----------------------------------------------------------------------------
- * 🟢 CORE INVARIANT (O(n²) DP)
- * ----------------------------------------------------------------------------
- *
- * dp[i] =
- * length of the longest strictly increasing subsequence
- * that MUST end at index i.
+ * Valid transition for LIS:
+ *      nums[j] < nums[i]
  *
  * Transition:
+ *      dp[i] = max(dp[i], dp[j] + 1)
  *
- * For every previous index j:
+ * Base:
+ *      1
  *
- * if nums[j] < nums[i]
- * then nums[i] can extend subsequence ending at j.
+ * Answer:
+ *      max(dp)
  *
- * So:
+ * MEMORY HOOK:
  *
- * dp[i] = max(dp[i], dp[j] + 1)
+ *      END AT i
+ *      LOOK LEFT
+ *      VALID PREDECESSOR
+ *      EXTEND
  *
- * ----------------------------------------------------------------------------
- * 🟢 CORE INVARIANT (O(n log n))
- * ----------------------------------------------------------------------------
- *
- * tails[len] =
- * smallest possible tail value of any increasing subsequence
- * of length (len + 1).
- *
- * Why smaller tail matters:
- *
- * Smaller tail leaves more future extension possibilities.
- *
- * Example:
- *
- * subsequence tail = 4 is better than tail = 10
- * for same subsequence length.
- *
- * ----------------------------------------------------------------------------
- * WHY THIS WORKS
- * ----------------------------------------------------------------------------
- *
- * We aggressively keep future options open.
- *
- * We do NOT store actual subsequences.
- *
- * We only preserve the BEST tail candidate for each length.
- *
- * ----------------------------------------------------------------------------
- * WHEN TO USE THIS PATTERN
- * ----------------------------------------------------------------------------
- *
- * Use when:
- *
- * - subsequence problems appear
- * - ordering matters
- * - strict/non-strict comparison exists
- * - "best extendable sequence" language appears
- * - optimization over prior states exists
- *
- * ----------------------------------------------------------------------------
- * RECOGNITION SIGNALS
- * ----------------------------------------------------------------------------
- *
- * - "longest increasing"
- * - "subsequence"
- * - extend previous valid states
- * - order preserved
- * - skipping allowed
- *
- * ----------------------------------------------------------------------------
- * DIFFERENCE VS SUBARRAY
- * ----------------------------------------------------------------------------
- *
- * Subsequence:
- * elements can be skipped.
- *
- * Subarray:
- * must remain contiguous.
- *
- * LIS is subsequence DP — NOT sliding window.
- *
- * ============================================================================
- * 🟢 MENTAL MODEL & INVARIANTS
- * ============================================================================
- *
- * ----------------------------------------------------------------------------
- * 🧠 MENTAL MODEL (DP VERSION)
- * ----------------------------------------------------------------------------
- *
- * Think:
- *
- * "If I force nums[i] to be the LAST element,
- * what is the best subsequence I can build?"
- *
- * Every earlier smaller number is a candidate parent.
- *
- * ----------------------------------------------------------------------------
- * 🧠 MENTAL MODEL (GREEDY + BINARY SEARCH)
- * ----------------------------------------------------------------------------
- *
- * We maintain:
- *
- * tails[k] =
- * smallest tail for subsequence length (k + 1).
- *
- * We are NOT constructing final LIS directly.
- *
- * We are maintaining:
- *
- * "best future-expandable representatives"
- *
- * ----------------------------------------------------------------------------
- * 🟢 ALL INVARIANTS
- * ----------------------------------------------------------------------------
- *
- * DP Invariant:
- *
- * dp[i] always stores correct LIS ending at i.
- *
- * Greedy Invariants:
- *
- * 1. tails[] is sorted.
- *
- * 2. tails[len] stores minimal possible tail value.
- *
- * 3. Replacing a larger tail with smaller tail NEVER hurts.
- *
- * 4. tails size equals LIS length found so far.
- *
- * ----------------------------------------------------------------------------
- * VARIABLE MEANINGS
- * ----------------------------------------------------------------------------
- *
- * dp[i]
- * LIS ending exactly at i.
- *
- * tails[pos]
- * smallest tail for subsequence length pos + 1.
- *
- * size
- * current LIS length discovered.
- *
- * ----------------------------------------------------------------------------
- * ALLOWED MOVES
- * ----------------------------------------------------------------------------
- *
- * DP:
- * extend from smaller previous value.
- *
- * Greedy:
- * replace first >= current number.
- *
- * ----------------------------------------------------------------------------
- * FORBIDDEN MOVES
- * ----------------------------------------------------------------------------
- *
- * Strictly increasing means:
- *
- * nums[j] < nums[i]
- *
- * NOT:
- *
- * nums[j] <= nums[i]
- *
- * ----------------------------------------------------------------------------
- * TERMINATION LOGIC
- * ----------------------------------------------------------------------------
- *
- * DP:
- * answer = max(dp[i])
- *
- * Greedy:
- * answer = size
- *
- * ----------------------------------------------------------------------------
- * WHY NAIVE APPROACHES FAIL
- * ----------------------------------------------------------------------------
- *
- * Greedy local extension fails.
- *
- * Example:
- *
- * [3, 4, 1, 2]
- *
- * If we greedily keep 3,4:
- * future extension becomes weak.
- *
- * Better future comes from:
- * 1,2
- *
- * ============================================================================
- * 🔴 WHY WRONG SOLUTIONS FAIL
- * ============================================================================
- *
- * ----------------------------------------------------------------------------
- * WRONG IDEA 1
- * ----------------------------------------------------------------------------
- *
- * "Always extend current increasing sequence."
- *
- * Fails because:
- * local growth ≠ globally optimal subsequence.
- *
- * Counterexample:
- *
- * [10,9,2,5,3,7,101,18]
- *
- * ----------------------------------------------------------------------------
- * WRONG IDEA 2
- * ----------------------------------------------------------------------------
- *
- * Use <= instead of <.
- *
- * Violates:
- * strictly increasing invariant.
- *
- * Counterexample:
- *
- * [7,7,7]
- *
- * Correct answer:
- * 1
- *
- * Wrong answer:
- * 3
- *
- * ----------------------------------------------------------------------------
- * WRONG IDEA 3
- * ----------------------------------------------------------------------------
- *
- * Binary search replacement misunderstood as "destroying sequence".
- *
- * Example:
- *
- * tails:
- * [2,5,7]
- *
- * current = 3
- *
- * Replace 5 → 3
- *
- * New tails:
- * [2,3,7]
- *
- * This improves future extensibility.
- *
- * ----------------------------------------------------------------------------
- * INTERVIEWER TRAP
- * ----------------------------------------------------------------------------
- *
- * Candidate says:
- *
- * "tails stores actual LIS."
- *
- * Incorrect.
- *
- * tails is only a compressed optimal-state representation.
- *
- * ============================================================================
- * ⚙️ HOW TO PHYSICALLY ASSEMBLE THE CODE
- * ============================================================================
- *
- * ----------------------------------------------------------------------------
- * 🛠️ IMPLEMENTATION BLUEPRINT — O(n²) DP
- * ----------------------------------------------------------------------------
- *
- * 1. Create dp[]
- *
- * 2. Fill all with 1
- *    because each element alone is LIS length 1
- *
- * 3. Outer loop:
- *    choose ending index i
- *
- * 4. Inner loop:
- *    inspect all previous j
- *
- * 5. If nums[j] < nums[i]:
- *       extend subsequence
- *
- * 6. Update global answer
- *
- * ----------------------------------------------------------------------------
- * 🛠️ IMPLEMENTATION BLUEPRINT — O(n log n)
- * ----------------------------------------------------------------------------
- *
- * 1. Create tails[]
- *
- * 2. Maintain size
- *
- * 3. For every number:
- *
- *      binary search first >= num
- *
- * 4. Replace that position
- *
- * 5. If inserted at end:
- *      size++
- *
- * 6. Return size
- *
- * ============================================================================
- * 🧾 ULTRA-COMPACT PSEUDOCODE (MEMORY SCAFFOLD)
- * ============================================================================
- *
- * tails = []
- *
- * for num in nums:
- *
- *     pos = first index >= num
- *
- *     tails[pos] = num
- *
- *     if pos == size:
- *         size++
- *
- * return size
- *
- * ============================================================================
- * 🟡 PRIMARY PROBLEM — SOLUTION CLASSES
  * ============================================================================
  */
 public class LIS {
 
+    /*
+     * =========================================================================
+     * PROBLEM STATEMENT — DETAILED
+     * =========================================================================
+     *
+     * Given an integer array nums, return the length of the longest strictly
+     * increasing subsequence.
+     *
+     * A subsequence is formed by deleting zero or more elements while keeping
+     * the relative order of the remaining elements unchanged.
+     *
+     * "Strictly increasing" means:
+     *
+     *      next value > previous value
+     *
+     * Equal values do NOT count as increasing.
+     *
+     * -------------------------------------------------------------------------
+     * EXAMPLE 1
+     * -------------------------------------------------------------------------
+     *
+     * nums = [10, 9, 2, 5, 3, 7, 101, 18]
+     *
+     * One valid longest increasing subsequence is:
+     *
+     *      [2, 3, 7, 101]
+     *
+     * Another is:
+     *
+     *      [2, 3, 7, 18]
+     *
+     * Length:
+     *
+     *      4
+     *
+     * -------------------------------------------------------------------------
+     * EXAMPLE 2
+     * -------------------------------------------------------------------------
+     *
+     * nums = [0, 1, 0, 3, 2, 3]
+     *
+     * One LIS is:
+     *
+     *      [0, 1, 2, 3]
+     *
+     * Length:
+     *
+     *      4
+     *
+     * -------------------------------------------------------------------------
+     * EXAMPLE 3
+     * -------------------------------------------------------------------------
+     *
+     * nums = [7, 7, 7, 7]
+     *
+     * Since the subsequence must be strictly increasing,
+     * equal values cannot extend one another.
+     *
+     * Answer:
+     *
+     *      1
+     *
+     * -------------------------------------------------------------------------
+     * IMPORTANT DISTINCTION
+     * -------------------------------------------------------------------------
+     *
+     * SUBSEQUENCE:
+     *
+     *      may skip elements
+     *
+     * SUBARRAY:
+     *
+     *      must remain contiguous
+     *
+     * Therefore this is NOT a sliding-window problem.
+     */
+
+    /*
+     * =========================================================================
+     * HOW THE BRAIN SHOULD PROGRESS WHILE READING THE PROBLEM
+     * =========================================================================
+     *
+     * The purpose of this section is not to memorize LIS.
+     *
+     * It is to train a reusable reasoning sequence that can be applied
+     * to unfamiliar "best ordered chain" problems.
+     *
+     * -------------------------------------------------------------------------
+     * STEP 1 — PARSE THE WORDS
+     * -------------------------------------------------------------------------
+     *
+     * "Subsequence"
+     *
+     *      I can skip elements.
+     *      Order still matters.
+     *
+     * "Increasing"
+     *
+     *      There is a transition rule between chosen elements.
+     *
+     * "Longest"
+     *
+     *      This is an optimization problem.
+     *
+     * So mentally:
+     *
+     *      choose / skip
+     *      preserve order
+     *      obey a pairwise rule
+     *      maximize chain length
+     *
+     * -------------------------------------------------------------------------
+     * STEP 2 — FIRST NAIVE THOUGHT
+     * -------------------------------------------------------------------------
+     *
+     * "Can I just greedily keep taking the next larger value?"
+     *
+     * Example:
+     *
+     *      [3, 4, 1, 2]
+     *
+     * Greedily taking:
+     *
+     *      [3, 4]
+     *
+     * seems reasonable,
+     * but later:
+     *
+     *      [1, 2]
+     *
+     * is another equally long possibility with a much better future tail.
+     *
+     * This tells me:
+     *
+     *      one local path is not enough.
+     *
+     * I need to remember multiple possible histories or compressed states.
+     *
+     * -------------------------------------------------------------------------
+     * STEP 3 — WHAT MAKES A STATE USEFUL?
+     * -------------------------------------------------------------------------
+     *
+     * Asking:
+     *
+     *      "What is the LIS of the whole prefix?"
+     *
+     * is not enough.
+     *
+     * Why?
+     *
+     * Because whether I can append nums[i] depends on
+     * WHAT VALUE the previous subsequence ends with.
+     *
+     * So I need a state that exposes the ending point.
+     *
+     * This suggests:
+     *
+     *      "What if I force nums[i] to be the LAST element?"
+     *
+     * That is the key state-discovery move.
+     *
+     * -------------------------------------------------------------------------
+     * STEP 4 — ONCE i IS FORCED TO BE LAST, THE PROBLEM BECOMES LOCAL
+     * -------------------------------------------------------------------------
+     *
+     * Suppose nums[i] must be the final element.
+     *
+     * Who could come before it?
+     *
+     * Any earlier j such that:
+     *
+     *      j < i
+     *      nums[j] < nums[i]
+     *
+     * So now the question becomes:
+     *
+     *      "Among all valid previous endings j,
+     *       which one gives me the longest chain?"
+     *
+     * That naturally gives:
+     *
+     *      dp[i] = 1 + max(dp[j])
+     *
+     * over every valid predecessor j.
+     *
+     * If there is no valid predecessor:
+     *
+     *      dp[i] = 1
+     *
+     * -------------------------------------------------------------------------
+     * STEP 5 — WHY THIS IS A REUSABLE PATTERN
+     * -------------------------------------------------------------------------
+     *
+     * Notice what was generic:
+     *
+     *      force i to be the end
+     *      scan previous j
+     *      check whether j can precede i
+     *      extend the best previous chain
+     *
+     * Only this part was LIS-specific:
+     *
+     *      nums[j] < nums[i]
+     *
+     * In another problem, the rule could become:
+     *
+     *      nums[i] % nums[j] == 0
+     *
+     * or:
+     *
+     *      pair[j].end < pair[i].start
+     *
+     * or:
+     *
+     *      word[j] is a predecessor of word[i]
+     *
+     * This is why the important thing to learn is:
+     *
+     *      BEST CHAIN ENDING AT i
+     *
+     * not "LeetCode 300 code."
+     *
+     * -------------------------------------------------------------------------
+     * STEP 6 — WHAT IS THE GLOBAL ANSWER?
+     * -------------------------------------------------------------------------
+     *
+     * dp[i] answers:
+     *
+     *      best LIS ending exactly at i
+     *
+     * But the final LIS may end anywhere.
+     *
+     * Therefore:
+     *
+     *      answer = max(dp[i])
+     *
+     * not:
+     *
+     *      dp[n - 1]
+     *
+     * -------------------------------------------------------------------------
+     * STEP 7 — ONLY AFTER THE O(n^2) DP IS CLEAR, ASK FOR OPTIMIZATION
+     * -------------------------------------------------------------------------
+     *
+     * The DP may keep many states representing the same progress.
+     *
+     * Ask:
+     *
+     *      "If two subsequences have the same length,
+     *       do I really need both?"
+     *
+     * Example:
+     *
+     *      length 3 ending at 8
+     *      length 3 ending at 5
+     *
+     * The one ending at 5 is always at least as useful for the future.
+     *
+     * So 8 is dominated.
+     *
+     * This leads to:
+     *
+     *      same length -> keep the smallest tail
+     *
+     * That is the conceptual bridge to tails[].
+     *
+     * -------------------------------------------------------------------------
+     * INTERVIEW THOUGHT SCRIPT
+     * -------------------------------------------------------------------------
+     *
+     * When reading a similar random problem, mentally ask:
+     *
+     *      1. Am I building a chain while preserving order?
+     *      2. Can I skip elements?
+     *      3. What makes one item legally follow another?
+     *      4. If I force item i to be last, can I describe the best answer?
+     *      5. Which earlier states can transition into i?
+     *      6. Is the final answer one dp state or the best among all states?
+     *      7. Are some states dominated and therefore compressible?
+     *
+     * This sequence is more valuable than memorizing the finished code.
+     */
+
+
+    /*
+     * =========================================================================
+     * DP ANTI-FREEZE LADDER — THE ORDER TO THINK IN AN INTERVIEW
+     * =========================================================================
+     *
+     * If bottom-up DP does not appear immediately, do NOT freeze trying to
+     * invent a table.
+     *
+     * Use this ladder:
+     *
+     *      1. RECURSION
+     *         What is my state?
+     *         What choices do I have?
+     *
+     *      2. MEMOIZATION
+     *         Which recursive states repeat?
+     *         Cache them.
+     *
+     *      3. BOTTOM-UP DP
+     *         Can I express the same dependency with a simpler iterative state?
+     *
+     *      4. FURTHER OPTIMIZATION
+     *         Are some states dominated or compressible?
+     *
+     * For LIS:
+     *
+     *      recursion:
+     *          (index, previousIndex)
+     *          TAKE / SKIP
+     *
+     *      memoization:
+     *          cache (index, previousIndex)
+     *
+     *      bottom-up:
+     *          dp[i] = best LIS ending exactly at i
+     *
+     *      optimized follow-up:
+     *          same length -> keep smallest tail
+     *
+     * UNIVERSAL MEMORY HOOK:
+     *
+     *      STATE -> CHOICES -> RECURSE -> MEMOIZE -> TABULATE -> OPTIMIZE
+     */
+
     /**
      * =========================================================================
-     * BRUTE FORCE
+     * INTUITIVE DERIVATION — BRUTE-FORCE RECURSION
      * =========================================================================
      *
-     * Try:
-     * take / skip recursion.
+     * PURPOSE:
+     *
+     *      easiest anti-freeze working solution
+     *      easiest way to discover the DP state
+     *
+     * At each index:
+     *
+     *      SKIP current
+     *
+     *      TAKE current
+     *          only if it is greater than the previously chosen value
+     *
+     * State:
+     *
+     *      index
+     *      previousIndex
+     *
+     * Why previousIndex instead of previousValue?
+     *
+     *      It gives a finite O(n^2) state space for memoization later.
      *
      * Time:
-     * O(2^n)
+     *
+     *      O(2^n)
      *
      * Space:
-     * O(n)
      *
-     * Interview Preference:
-     * Never preferred beyond initial discussion.
+     *      O(n) recursion depth
      */
-    static class BruteForceSolution {
+    static class RecursiveSolution {
 
         public int lengthOfLIS(int[] nums) {
 
-            return dfs(nums, 0, Integer.MIN_VALUE);
+            if (nums == null || nums.length == 0) {
+                return 0;
+            }
+
+            return dfs(nums, 0, -1);
         }
 
-        private int dfs(int[] nums, int index, int prev) {
+        private int dfs(int[] nums, int index, int previousIndex) {
 
-            // Base case:
-            // no elements left.
             if (index == nums.length) {
                 return 0;
             }
 
-            // Option 1:
-            // skip current element.
-            int skip = dfs(nums, index + 1, prev);
+            int skip = dfs(nums, index + 1, previousIndex);
 
             int take = 0;
 
-            // Strictly increasing condition.
-            if (nums[index] > prev) {
-
-                take = 1 + dfs(nums, index + 1, nums[index]);
+            if (previousIndex == -1 || nums[index] > nums[previousIndex]) {
+                take = 1 + dfs(nums, index + 1, index);
             }
 
-            return Math.max(skip, take);
+            return Math.max(take, skip);
         }
     }
 
+    /*
+     * =========================================================================
+     * VISUAL RECURSION TREE — SMALL EXAMPLE
+     * =========================================================================
+     *
+     * nums = [3, 1, 2]
+     *
+     * State:
+     *
+     *      dfs(index, previousIndex)
+     *
+     * Start:
+     *
+     *                              dfs(0,-1)
+     *                              current=3
+     *                            /           \
+     *                         TAKE           SKIP
+     *                          3
+     *                       /                   \
+     *                  dfs(1,0)              dfs(1,-1)
+     *                  current=1             current=1
+     *                     |                   /       \
+     *              TAKE invalid            TAKE      SKIP
+     *                     |                  1
+     *                   SKIP              /             \
+     *                     |            dfs(2,1)       dfs(2,-1)
+     *                  dfs(2,0)         current=2      current=2
+     *                  current=2          /   \\          /   \\
+     *                     |             TAKE SKIP      TAKE  SKIP
+     *              TAKE invalid           2              2
+     *                     |                |              |
+     *                   SKIP             end            end
+     *                     |
+     *                    end
+     *
+     * Important paths:
+     *
+     *      TAKE 3
+     *          -> 1 cannot be taken
+     *          -> 2 cannot be taken
+     *          -> length 1
+     *
+     *      SKIP 3
+     *          -> TAKE 1
+     *          -> TAKE 2
+     *          -> length 2
+     *
+     * Answer:
+     *
+     *      2
+     *
+     * -------------------------------------------------------------------------
+     * HOW TO READ THIS IN AN INTERVIEW
+     * -------------------------------------------------------------------------
+     *
+     * Do not memorize the tree.
+     *
+     * See the recurring structure:
+     *
+     *      CURRENT STATE
+     *          |
+     *          +-- SKIP -> next index, same previous
+     *          |
+     *          +-- TAKE -> next index, current becomes previous
+     *
+     * That is the recurrence.
+     */
+
+    /*
+     * =========================================================================
+     * RECURSIVE RECURRENCE — WRITE THIS BEFORE THINKING ABOUT A TABLE
+     * =========================================================================
+     *
+     * solve(index, previousIndex)
+     *
+     *      if index == n:
+     *          return 0
+     *
+     *      skip = solve(index + 1, previousIndex)
+     *
+     *      take = 0
+     *
+     *      if previousIndex == -1
+     *         OR nums[index] > nums[previousIndex]:
+     *
+     *          take = 1 + solve(index + 1, index)
+     *
+     *      return max(take, skip)
+     *
+     * This is already a correct solution.
+     *
+     * Only after correctness is clear do we optimize repeated work.
+     */
+
     /**
      * =========================================================================
-     * IMPROVED — O(n²) DYNAMIC PROGRAMMING
+     * TOP-DOWN DP — MEMOIZED RECURSION
      * =========================================================================
      *
-     * Core Idea:
+     * Same exact reasoning as brute-force recursion.
      *
-     * dp[i] =
-     * LIS ending exactly at i.
+     * Difference:
+     *
+     *      each unique (index, previousIndex) state is solved once.
+     *
+     * previousIndex may be -1.
+     * Arrays cannot use -1 as an index.
+     *
+     * So memo column is:
+     *
+     *      previousIndex + 1
+     *
+     * Mapping:
+     *
+     *      previousIndex = -1 -> column 0
+     *      previousIndex =  0 -> column 1
+     *      previousIndex =  1 -> column 2
+     *      ...
+     *
+     * Number of unique states:
+     *
+     *      index         = O(n)
+     *      previousIndex = O(n)
      *
      * Time:
-     * O(n²)
+     *
+     *      O(n^2)
      *
      * Space:
-     * O(n)
      *
-     * Interview Preference:
-     * Very important foundational solution.
+     *      O(n^2) memo
+     *      + O(n) recursion stack
+     */
+    static class MemoizedSolution {
+
+        public int lengthOfLIS(int[] nums) {
+
+            if (nums == null || nums.length == 0) {
+                return 0;
+            }
+
+            int[][] memo = new int[nums.length][nums.length + 1];
+
+            int row = 0;
+
+            while (row < memo.length) {
+                Arrays.fill(memo[row], -1);
+                row++;
+            }
+
+            return dfs(nums, 0, -1, memo);
+        }
+
+        private int dfs(
+                int[] nums,
+                int index,
+                int previousIndex,
+                int[][] memo
+        ) {
+
+            if (index == nums.length) {
+                return 0;
+            }
+
+            int memoColumn = previousIndex + 1;
+
+            if (memo[index][memoColumn] != -1) {
+                return memo[index][memoColumn];
+            }
+
+            int skip = dfs(
+                    nums,
+                    index + 1,
+                    previousIndex,
+                    memo
+            );
+
+            int take = 0;
+
+            if (previousIndex == -1 || nums[index] > nums[previousIndex]) {
+
+                take = 1 + dfs(
+                        nums,
+                        index + 1,
+                        index,
+                        memo
+                );
+            }
+
+            memo[index][memoColumn] = Math.max(take, skip);
+
+            return memo[index][memoColumn];
+        }
+    }
+
+    /*
+     * =========================================================================
+     * VISUAL MEMOIZATION TABLE — WHAT THE CACHE REPRESENTS
+     * =========================================================================
+     *
+     * memo[index][previousIndex + 1]
+     *
+     * means:
+     *
+     *      best LIS length obtainable from `index` onward
+     *      when `previousIndex` was the last selected element.
+     *
+     * Small conceptual table:
+     *
+     * +----------------------+----------------------------+--------------------+
+     * | State                | First encounter            | Later encounter    |
+     * +----------------------+----------------------------+--------------------+
+     * | (3, 1)               | recursively compute        | return memo[3][2]  |
+     * | (4, 2)               | recursively compute        | return memo[4][3]  |
+     * | (5, -1)              | recursively compute        | return memo[5][0]  |
+     * +----------------------+----------------------------+--------------------+
+     *
+     * -------------------------------------------------------------------------
+     * WHY THIS IS DP
+     * -------------------------------------------------------------------------
+     *
+     * Brute recursion:
+     *
+     *      solve the same state every time a path reaches it
+     *
+     * Memoized recursion:
+     *
+     *      solve each unique state once
+     *
+     * That is the key DP recognition signal:
+     *
+     *      RECURSION + OVERLAPPING SUBPROBLEMS = MEMOIZATION
+     */
+
+    /*
+     * =========================================================================
+     * RECURSION -> MEMOIZATION -> BOTTOM-UP BRIDGE
+     * =========================================================================
+     *
+     * Recursive state:
+     *
+     *      (index, previousIndex)
+     *
+     * is intuitive, but uses O(n^2) table space.
+     *
+     * We can find a cleaner formulation by changing the question:
+     *
+     *      Instead of:
+     *          "What can I build from here?"
+     *
+     *      Ask:
+     *          "What is the best chain if i MUST be the last element?"
+     *
+     * That produces the simpler 1D state:
+     *
+     *      dp[i] = best LIS ending exactly at i
+     *
+     * This is not a completely different idea.
+     * It is a more compact way to organize the same search space.
      */
 
     /**
      * =========================================================================
-     * 🟡 VISUAL DRY RUN — BEST SINGLE EXAMPLE
+     * PRIMARY — O(n^2) DP
      * =========================================================================
      *
-     * nums = [10, 9, 2, 5, 3, 7, 101, 18]
+     * This is the solution to be able to RECONSTRUCT under interview pressure.
      *
-     * =========================================================================
-     * PART 1 — O(n²) DP DRY RUN
-     * =========================================================================
+     * Do not memorize the code line-by-line.
      *
-     * 🟢 INVARIANT
+     * Reconstruct it from:
      *
-     * dp[i] =
-     * length of LIS ending EXACTLY at index i.
-     *
-     * -------------------------------------------------------------------------
-     * INITIAL
-     * -------------------------------------------------------------------------
-     *
-     * nums : [10,  9,  2,  5,  3,  7, 101, 18]
-     * dp   : [ 1,  1,  1,  1,  1,  1,  1,  1]
-     *
-     * Every element alone forms LIS length 1.
-     *
-     * -------------------------------------------------------------------------
-     * VISUAL TABLE
-     * -------------------------------------------------------------------------
-     *
-     * ┌───────┬─────────┬──────────────────────────────┬────────┬─────────────┐
-     * │   i   │ nums[i] │ Best Previous Smaller Value │ dp[i]  │ LIS Ending  │
-     * ├───────┼─────────┼──────────────────────────────┼────────┼─────────────┤
-     * │   0   │   10    │ none                         │   1    │ [10]        │
-     * │   1   │    9    │ none                         │   1    │ [9]         │
-     * │   2   │    2    │ none                         │   1    │ [2]         │
-     * │   3   │    5    │ 2                            │   2    │ [2,5]       │
-     * │   4   │    3    │ 2                            │   2    │ [2,3]       │
-     * │   5   │    7    │ 5 or 3                       │   3    │ [2,5,7]     │
-     * │   6   │  101    │ 7                            │   4    │ [2,5,7,101] │
-     * │   7   │   18    │ 7                            │   4    │ [2,5,7,18]  │
-     * └───────┴─────────┴──────────────────────────────┴────────┴─────────────┘
-     *
-     * Final Answer:
-     * 4
-     *
-     * ----------------------------------------------------------------------------
-     * 🟢 CORE DP INSIGHT
-     * ----------------------------------------------------------------------------
-     *
-     * We are solving:
-     *
-     * "What is the best subsequence if nums[i] MUST be the final element?"
-     *
-     * NOT:
-     *
-     * "What is best globally so far?"
-     *
-     * =========================================================================
-     * PART 2 — O(n log n) GREEDY + BINARY SEARCH
-     * =========================================================================
-     *
-     * 🟢 INVARIANT
-     *
-     * tails[k] =
-     * smallest possible tail for subsequence length (k + 1)
-     *
-     * ----------------------------------------------------------------------------
-     * VISUAL TABLE
-     * ----------------------------------------------------------------------------
-     *
-     * ┌─────────┬──────────────────────────────┬────────────────────┬────────┐
-     * │ Current │ Action                       │ tails[]            │ Size   │
-     * ├─────────┼──────────────────────────────┼────────────────────┼────────┤
-     * │   10    │ start new subsequence        │ [10]               │   1    │
-     * │    9    │ replace 10                   │ [9]                │   1    │
-     * │    2    │ replace 9                    │ [2]                │   1    │
-     * │    5    │ extend                       │ [2,5]              │   2    │
-     * │    3    │ replace 5                    │ [2,3]              │   2    │
-     * │    7    │ extend                       │ [2,3,7]            │   3    │
-     * │  101    │ extend                       │ [2,3,7,101]        │   4    │
-     * │   18    │ replace 101                  │ [2,3,7,18]         │   4    │
-     * └─────────┴──────────────────────────────┴────────────────────┴────────┘
-     *
-     * Final Answer:
-     * 4
-     *
-     * ----------------------------------------------------------------------------
-     * 🟢 MOST IMPORTANT GREEDY INSIGHT
-     * ----------------------------------------------------------------------------
-     *
-     * Replacing:
-     *
-     * [2,5]
-     *
-     * with:
-     *
-     * [2,3]
-     *
-     * is GOOD.
-     *
-     * Because:
-     *
-     * smaller tail = easier future extension.
-     *
-     * ----------------------------------------------------------------------------
-     * 🔴 INTERVIEW TRAP
-     * ----------------------------------------------------------------------------
-     *
-     * tails[] is NOT the actual LIS.
-     *
-     * It is:
-     *
-     * the best extendable representation for each length.
+     *      dp[i] = best LIS ending exactly at i
      */
-
     static class DPSolution {
 
         public int lengthOfLIS(int[] nums) {
 
-            // Edge case:
-            // problem constraints guarantee at least one element,
-            // but defensive coding is still useful.
             if (nums == null || nums.length == 0) {
                 return 0;
             }
 
-            int n = nums.length;
+            int[] dp = new int[nums.length];
 
-            int[] dp = new int[n];
-
-            // Invariant:
-            // every element alone forms LIS length 1.
+            /*
+             * Every element alone is an increasing subsequence of length 1.
+             */
             Arrays.fill(dp, 1);
 
             int answer = 1;
 
-            // Choose ending position.
-            for (int i = 0; i < n; i++) {
+            int i = 0;
 
-                // Explore all previous states.
-                for (int j = 0; j < i; j++) {
+            while (i < nums.length) {
 
-                    // Valid extension only if strictly increasing.
+                int j = 0;
+
+                while (j < i) {
+
+                    /*
+                     * Can the chain ending at j continue into i?
+                     */
                     if (nums[j] < nums[i]) {
-
-                        // Extend best subsequence ending at j.
                         dp[i] = Math.max(dp[i], dp[j] + 1);
                     }
+
+                    j++;
                 }
 
-                // Maintain global optimum.
+                /*
+                 * LIS may end anywhere, not necessarily at nums[n - 1].
+                 */
                 answer = Math.max(answer, dp[i]);
+
+                i++;
             }
 
             return answer;
         }
     }
 
-    /**
+    /*
      * =========================================================================
-     * OPTIMAL — GREEDY + BINARY SEARCH
+     * WHY THIS DP STATE?
      * =========================================================================
      *
-     * Time:
-     * O(n log n)
+     * "Longest increasing subsequence somewhere in the array"
+     * is too vague to transition from.
      *
-     * Space:
-     * O(n)
+     * So force one decision:
      *
-     * Interview Preferred:
-     * YES
+     *      nums[i] MUST be the final element.
      *
-     * ----------------------------------------------------------------------------
-     * 🟢 CORE INVARIANT
-     * ----------------------------------------------------------------------------
+     * Now the problem becomes local:
      *
-     * tails[k] =
-     * smallest possible tail value
-     * for increasing subsequence length (k + 1).
+     *      Which earlier j can come immediately before i?
+     *
+     * For LIS:
+     *
+     *      j < i
+     *      nums[j] < nums[i]
+     *
+     * If a valid chain ending at j has length dp[j],
+     * appending nums[i] creates:
+     *
+     *      dp[j] + 1
+     *
+     * Therefore:
+     *
+     *      dp[i] = max(dp[i], dp[j] + 1)
      */
 
-    /**
+    /*
      * =========================================================================
-     * 🟡 VISUAL DRY RUN — OPTIMAL GREEDY + BINARY SEARCH
+     * WHY dp[i] STARTS AT 1?
+     * =========================================================================
+     *
+     * Even if no earlier value can precede nums[i],
+     * nums[i] by itself is a valid subsequence.
+     *
+     * Therefore:
+     *
+     *      dp[i] = 1
+     *
+     * before considering predecessors.
+     */
+
+    /*
+     * =========================================================================
+     * WHY max(dp) AND NOT dp[n - 1]?
+     * =========================================================================
+     *
+     * dp[i] means:
+     *
+     *      best LIS ending EXACTLY at i
+     *
+     * The global LIS may finish before the final array position.
+     *
+     * Example:
+     *
+     *      [1, 2, 3, 0]
+     *
+     * dp:
+     *
+     *      [1, 2, 3, 1]
+     *
+     * dp[n - 1] = 1
+     * answer      = 3
+     */
+
+    /*
+     * =========================================================================
+     * REUSABLE MACHINE — BEST CHAIN ENDING AT i
+     * =========================================================================
+     *
+     * This is the real reason LIS is worth learning.
+     *
+     * Generic template:
+     *
+     *      dp[i] = best valid chain ending at item i
+     *
+     *      for every earlier j:
+     *
+     *          if j can precede i:
+     *              dp[i] = best(dp[i], dp[j] + contribution)
+     *
+     * LIS:
+     *
+     *      nums[j] < nums[i]
+     *
+     * Largest Divisible Subset:
+     *
+     *      nums[i] % nums[j] == 0
+     *
+     * Pair Chain:
+     *
+     *      pair[j].end < pair[i].start
+     *
+     * Longest String Chain:
+     *
+     *      word[j] is a valid predecessor of word[i]
+     *
+     * The transition rule changes.
+     * The mental machine stays the same.
+     */
+
+    /*
+     * =========================================================================
+     * PHYSICAL CODE SKELETON
+     * =========================================================================
+     *
+     * int[] dp = new int[n];
+     * fill(dp, BASE);
+     *
+     * answer = BASE;
+     *
+     * i = 0;
+     *
+     * while (i < n) {
+     *
+     *     j = 0;
+     *
+     *     while (j < i) {
+     *
+     *         if (canPrecede(j, i)) {
+     *             dp[i] = best(dp[i], dp[j] + contribution);
+     *         }
+     *
+     *         j++;
+     *     }
+     *
+     *     answer = best(answer, dp[i]);
+     *     i++;
+     * }
+     *
+     * return answer;
+     */
+
+    /*
+     * =========================================================================
+     * VISUAL DRY RUN — DP
      * =========================================================================
      *
      * nums = [10, 9, 2, 5, 3, 7, 101, 18]
      *
-     * ----------------------------------------------------------------------------
-     * 🟢 CORE INVARIANT
-     * ----------------------------------------------------------------------------
+     * dp[i] = LIS ending EXACTLY at i
      *
-     * tails[k] =
-     * smallest possible tail value
-     * for an increasing subsequence of length (k + 1)
+     * value   best valid predecessor     dp
+     * ------------------------------------------------
+     * 10      none                       1
+     *  9      none                       1
+     *  2      none                       1
+     *  5      2                          2
+     *  3      2                          2
+     *  7      5 or 3                     3
+     * 101     7                          4
+     * 18      7                          4
      *
-     * IMPORTANT:
-     *
-     * tails[] is NOT necessarily the actual LIS.
-     *
-     * ----------------------------------------------------------------------------
-     * 🧠 MENTAL MODEL
-     * ----------------------------------------------------------------------------
-     *
-     * For every subsequence length:
-     *
-     * keep the MOST FUTURE-EXTENDABLE tail.
-     *
-     * Smaller tail = better future growth potential.
-     *
-     *
+     * answer = 4
+     */
+
+    /*
      * =========================================================================
-     * 🟢 WHY REPLACEMENT IS CORRECT
+     * COMMON FAILURES
      * =========================================================================
      *
-     * ----------------------------------------------------------------------------
-     * KEY MOMENT:
-     * ----------------------------------------------------------------------------
+     * 1. Using <=
      *
-     * tails = [2,5]
-     * current = 3
+     *      LIS is STRICTLY increasing.
      *
-     * Replace:
+     *      Correct:
+     *          nums[j] < nums[i]
      *
-     * [2,5]
+     * 2. Returning dp[n - 1]
      *
-     * with:
+     *      LIS can end anywhere.
      *
-     * [2,3]
+     * 3. Thinking this is sliding window
      *
-     * ----------------------------------------------------------------------------
-     * WHY THIS IS BETTER
-     * ----------------------------------------------------------------------------
+     *      Subsequence allows skipping.
+     *      Sliding window is for contiguous ranges.
      *
-     * Both represent subsequence length = 2
+     * 4. Greedily extending one currently increasing sequence
      *
-     * But:
-     *
-     * tail 3 is superior to tail 5.
-     *
-     * Because:
-     *
-     * more future numbers can extend 3.
-     *
-     * Example:
-     *
-     * future number = 4
-     *
-     * can extend:
-     *
-     * [2,3]
-     *
-     * but NOT:
-     *
-     * [2,5]
-     *
+     *      Local choices can block a better future subsequence.
+     */
+
+    /*
      * =========================================================================
-     * 🟡 VISUAL DRY RUN TABLE — OPTIMAL GREEDY + BINARY SEARCH
+     * INTERVIEW ARTICULATION — PRIMARY SOLUTION
      * =========================================================================
      *
-     * nums = [10, 9, 2, 5, 3, 7, 101, 18]
+     * "I define dp[i] as the length of the longest increasing subsequence
+     * ending exactly at index i.
      *
-     * ----------------------------------------------------------------------------
-     * 🟢 CORE INVARIANT
-     * ----------------------------------------------------------------------------
+     * Every element alone gives dp[i] = 1.
      *
-     * tails[i] =
-     * smallest possible tail
-     * for increasing subsequence length (i + 1)
+     * For each i, I inspect every earlier j.
+     * If nums[j] < nums[i], then nums[i] can extend the subsequence ending
+     * at j, so I update dp[i] with dp[j] + 1.
      *
-     * Smaller tail =
-     * easier future extension.
+     * Since the global LIS can end at any index, I keep the maximum dp value.
      *
-     * =========================================================================
-     * VISUAL TABLE
-     * =========================================================================
+     * There are O(n^2) predecessor checks and O(n) extra space."
      *
-     * ┌──────┬─────────┬──────────────────────────────┬────────────────────┬──────┐
-     * │ Step │ Current │ First Value >= Current      │ tails[]            │ size │
-     * ├──────┼─────────┼──────────────────────────────┼────────────────────┼──────┤
-     * │  1   │   10    │ none                         │ [10]               │  1   │
-     * │  2   │    9    │ 10                           │ [9]                │  1   │
-     * │  3   │    2    │ 9                            │ [2]                │  1   │
-     * │  4   │    5    │ none                         │ [2,5]              │  2   │
-     * │  5   │    3    │ 5                            │ [2,3]              │  2   │
-     * │  6   │    7    │ none                         │ [2,3,7]            │  3   │
-     * │  7   │  101    │ none                         │ [2,3,7,101]        │  4   │
-     * │  8   │   18    │ 101                          │ [2,3,7,18]         │  4   │
-     * └──────┴─────────┴──────────────────────────────┴────────────────────┴──────┘
+     * Correctness:
      *
-     * =========================================================================
-     * 🟢 HOW TO READ THE TABLE
-     * =========================================================================
+     * For each i, we examine every possible previous element that can legally
+     * precede nums[i], so every increasing subsequence ending at i is covered.
+     * Taking the best such predecessor gives the optimal dp[i].
      *
-     * ----------------------------------------------------------------------------
-     * STEP 5 → current = 3
-     * ----------------------------------------------------------------------------
+     * Complexity:
      *
-     * Current tails:
-     *
-     * [2,5]
-     *
-     * First value >= 3:
-     *
-     * 5
-     *
-     * Replace:
-     *
-     * [2,5]
-     *
-     * with:
-     *
-     * [2,3]
-     *
-     * Why?
-     *
-     * Smaller tail is easier to extend later.
-     *
-     * =========================================================================
-     * 🟢 MOST IMPORTANT INSIGHT
-     * =========================================================================
-     *
-     * We are NOT storing actual LIS.
-     *
-     * We are storing:
-     *
-     * the BEST POSSIBLE tail
-     * for every subsequence length.
-     *
-     * =========================================================================
-     * 🧠 ONE-LINE MEMORY HOOK
-     * =========================================================================
-     *
-     * "For every subsequence length,
-     * keep the easiest ending value to extend later."
+     *      Time  = O(n^2)
+     *      Space = O(n)
      */
 
     /**
      * =========================================================================
-     * 🟢 OPTIMAL LIS — CLEAN MANUAL BINARY SEARCH VERSION
+     * FOLLOW-UP OPTIMIZATION — O(n log n)
      * =========================================================================
      *
-     * 🧠 CORE IDEA
+     * RETENTION PRIORITY:
      *
-     * For every subsequence length:
+     *      Recognize the idea.
+     *      Be able to explain the invariant.
+     *      Do NOT make this the only solution you depend on under pressure.
      *
-     * keep the SMALLEST POSSIBLE ending value.
+     * Core idea:
      *
-     * Smaller ending value =
-     * easier future extension.
+     *      For the SAME subsequence length,
+     *      a smaller ending value dominates a larger ending value.
      *
-     * ----------------------------------------------------------------------------
-     * 🟢 CORE INVARIANT
-     * ----------------------------------------------------------------------------
-     *
-     * tails[i] =
-     * smallest possible tail
-     * for increasing subsequence length (i + 1)
-     *
-     * ----------------------------------------------------------------------------
      * Example:
-     * ----------------------------------------------------------------------------
      *
-     * tails = [2,3,7]
+     *      length 2 ending at 5
+     *      length 2 ending at 3
      *
-     * Means:
+     * Keep 3.
      *
-     * length 1 subsequence can end at 2
-     * length 2 subsequence can end at 3
-     * length 3 subsequence can end at 7
+     * Anything that can extend 5 can also extend 3,
+     * while some future values can extend 3 but not 5.
+     *
+     * Therefore:
+     *
+     *      tails[len - 1]
+     *      = smallest possible tail for subsequence length len
+     *
+     * MEMORY HOOK:
+     *
+     *      SAME LENGTH -> KEEP SMALLER TAIL
      */
-    static class OptimalSolution {
+    static class OptimalFollowUp {
 
         public int lengthOfLIS(int[] nums) {
 
@@ -840,635 +1041,567 @@ public class LIS {
                 return 0;
             }
 
+            /*
+             * tails[length - 1]
+             * = smallest tail found for an increasing subsequence of that length.
+             *
+             * The array has nums.length CAPACITY,
+             * but only indices [0, lisLen) contain meaningful state.
+             */
             int[] tails = new int[nums.length];
 
-            int size = 0;
+            int lisLen = 0;
+            int i = 0;
 
-            for (int current : nums) {
+            while (i < nums.length) {
 
-                /**
-                 * Find:
+                int currentValue = nums[i];
+
+                /*
+                 * Search ONLY the meaningful prefix:
                  *
-                 * first value >= current
+                 *      tails[0 ... lisLen - 1]
+                 *
+                 * NOT the whole allocated array.
+                 *
+                 * Search interval is half-open:
+                 *
+                 *      [left, right)
                  */
                 int left = 0;
-                int right = size;
+                int right = lisLen; // Search only the valid prefix: tails[0 ... lisLen).
 
                 while (left < right) {
 
-                    int mid = left + (right - left) / 2;
+                    int middle = left
+                            + (right - left) / 2;
 
-                    /**
-                     * Current number can extend after mid.
-                     *
-                     * So answer must be on right side.
-                     */
-                    if (tails[mid] < current) {
-
-                        left = mid + 1;
-
+                    if (tails[middle] < currentValue) {
+                        left = middle + 1;
                     } else {
-
-                        /**
-                         * mid might be first >= current.
-                         */
-                        right = mid;
+                        right = middle;
                     }
                 }
 
-                /**
-                 * left =
-                 * first position with value >= current
+                /*
+                 * left is now the first position whose tail >= currentValue.
+                 *
+                 * If left == lisLen, no such tail existed,
+                 * so currentValue extends the longest subsequence found so far.
+                 *
+                 * Otherwise it replaces a larger/equal tail for the SAME length.
                  */
-                tails[left] = current;
+                int tailPosition = left;
 
-                /**
-                 * Inserted beyond current LIS length.
-                 */
-                if (left == size) {
-                    size++;
-                }
-            }
+                tails[tailPosition] = currentValue;
 
-            return size;
-        }
-    }
-    /**
-     * =========================================================================
-     * 🟣 INTERVIEW ARTICULATION (NO CODE)
-     * =========================================================================
-     *
-     * ----------------------------------------------------------------------------
-     * HOW TO EXPLAIN THE DP SOLUTION
-     * ----------------------------------------------------------------------------
-     *
-     * "I define dp[i] as the LIS ending exactly at index i.
-     *
-     * Then I inspect all previous indices j.
-     *
-     * If nums[j] < nums[i],
-     * then nums[i] can extend subsequence ending at j.
-     *
-     * So transition becomes:
-     *
-     * dp[i] = max(dp[i], dp[j] + 1)
-     *
-     * Final answer is maximum dp value."
-     *
-     * ----------------------------------------------------------------------------
-     * HOW TO EXPLAIN THE OPTIMAL SOLUTION
-     * ----------------------------------------------------------------------------
-     *
-     * "Instead of storing all subsequences,
-     * I maintain the smallest possible tail for every length.
-     *
-     * Smaller tails are always better because they leave more room
-     * for future extension.
-     *
-     * I binary search replacement position for each number."
-     *
-     * ----------------------------------------------------------------------------
-     * WHAT BREAKS IF CHANGED
-     * ----------------------------------------------------------------------------
-     *
-     * If strict comparison becomes <=:
-     *
-     * duplicates incorrectly extend LIS.
-     *
-     * If binary search finds first > instead of >=:
-     *
-     * duplicate handling breaks.
-     *
-     * ----------------------------------------------------------------------------
-     * IN-PLACE FEASIBILITY
-     * ----------------------------------------------------------------------------
-     *
-     * Possible with careful mutation,
-     * but clarity worsens.
-     *
-     * ----------------------------------------------------------------------------
-     * STREAMING FEASIBILITY
-     * ----------------------------------------------------------------------------
-     *
-     * O(n log n) approach works beautifully in streaming.
-     *
-     * Each new number updates tails incrementally.
-     *
-     * ----------------------------------------------------------------------------
-     * WHEN NOT TO USE THIS PATTERN
-     * ----------------------------------------------------------------------------
-     *
-     * If contiguity matters:
-     * use subarray techniques instead.
-     *
-     * If state depends on multiple dimensions:
-     * LIS alone insufficient.
-     *
-     * =========================================================================
-     * 🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
-     * =========================================================================
-     *
-     * Pattern Trigger:
-     * subsequence + increasing + optimal length
-     *
-     * Core Invariant:
-     * smallest tail for each length
-     *
-     * Search Target:
-     * first >= current
-     *
-     * Discard Rule:
-     * larger tail is dominated by smaller tail
-     *
-     * Common Trap:
-     * tails is NOT actual LIS
-     *
-     * Edge Cases:
-     * duplicates
-     * descending array
-     * single element
-     *
-     * Interview One-Liner:
-     *
-     * "Maintain smallest extendable tail for every subsequence length."
-     *
-     * Re-derivation Cue:
-     *
-     * "Smaller tail always gives better future extension."
-     *
-     * =========================================================================
-     * 🔄 VARIATIONS & TWEAKS
-     * =========================================================================
-     *
-     * ----------------------------------------------------------------------------
-     * VARIATION 1 — NON-DECREASING SUBSEQUENCE
-     * ----------------------------------------------------------------------------
-     *
-     * Change:
-     *
-     * <
-     *
-     * to:
-     *
-     * <=
-     *
-     * Binary search target changes too.
-     *
-     * ----------------------------------------------------------------------------
-     * VARIATION 2 — PRINT ACTUAL LIS
-     * ----------------------------------------------------------------------------
-     *
-     * Need:
-     *
-     * parent reconstruction arrays.
-     *
-     * Pattern still works,
-     * but bookkeeping increases.
-     *
-     * ----------------------------------------------------------------------------
-     * VARIATION 3 — COUNT NUMBER OF LIS
-     * ----------------------------------------------------------------------------
-     *
-     * LIS length invariant alone insufficient.
-     *
-     * Need:
-     *
-     * count DP dimension.
-     *
-     * ----------------------------------------------------------------------------
-     * PATTERN BREAK SIGNALS
-     * ----------------------------------------------------------------------------
-     *
-     * If problem asks:
-     *
-     * contiguous range
-     * exact partitioning
-     * arbitrary graph traversal
-     *
-     * LIS invariant likely breaks.
-     *
-     * =========================================================================
-     * ⚫ REINFORCEMENT PROBLEMS
-     * =========================================================================
-     */
-
-    /**
-     * =========================================================================
-     * REINFORCEMENT 1 — MAXIMUM LENGTH OF PAIR CHAIN
-     * =========================================================================
-     *
-     * LeetCode 646
-     *
-     * Summary:
-     *
-     * Given pairs [a,b],
-     * find longest chain where previous end < next start.
-     *
-     * ----------------------------------------------------------------------------
-     * INVARIANT MAPPING
-     * ----------------------------------------------------------------------------
-     *
-     * Same LIS extension idea:
-     *
-     * previous_end < current_start
-     */
-    static class MaximumLengthOfPairChain {
-
-        public int findLongestChain(int[][] pairs) {
-
-            Arrays.sort(pairs, Comparator.comparingInt(a -> a[0]));
-
-            int n = pairs.length;
-
-            int[] dp = new int[n];
-
-            Arrays.fill(dp, 1);
-
-            int answer = 1;
-
-            for (int i = 0; i < n; i++) {
-
-                for (int j = 0; j < i; j++) {
-
-                    if (pairs[j][1] < pairs[i][0]) {
-
-                        dp[i] = Math.max(dp[i], dp[j] + 1);
-                    }
+                if (tailPosition == lisLen) {
+                    lisLen++;
                 }
 
-                answer = Math.max(answer, dp[i]);
+                i++;
             }
 
-            return answer;
+            return lisLen;
         }
     }
 
-    /**
+    /*
      * =========================================================================
-     * REINFORCEMENT 2 — RUSSIAN DOLL ENVELOPES
-     * =========================================================================
-     *
-     * LeetCode 354
-     *
-     * Summary:
-     *
-     * Nest envelopes by width and height.
-     *
-     * ----------------------------------------------------------------------------
-     * INVARIANT MAPPING
-     * ----------------------------------------------------------------------------
-     *
-     * Convert to LIS on heights after sorting widths.
-     */
-    static class RussianDollEnvelopes {
-
-        public int maxEnvelopes(int[][] envelopes) {
-
-            Arrays.sort(envelopes, (a, b) -> {
-
-                if (a[0] == b[0]) {
-                    return b[1] - a[1];
-                }
-
-                return a[0] - b[0];
-            });
-
-            int[] tails = new int[envelopes.length];
-
-            int size = 0;
-
-            for (int[] envelope : envelopes) {
-
-                int height = envelope[1];
-
-                int left = 0;
-                int right = size;
-
-                while (left < right) {
-
-                    int mid = left + (right - left) / 2;
-
-                    if (tails[mid] < height) {
-                        left = mid + 1;
-                    } else {
-                        right = mid;
-                    }
-                }
-
-                tails[left] = height;
-
-                if (left == size) {
-                    size++;
-                }
-            }
-
-            return size;
-        }
-    }
-
-    /**
-     * =========================================================================
-     * REINFORCEMENT 3 — LONGEST CONTINUOUS INCREASING SUBSEQUENCE
+     * VARIABLE MAP — KEEP THE ROLES SEPARATE
      * =========================================================================
      *
-     * LeetCode 674
+     * i
+     *      current position in nums[]
      *
-     * ----------------------------------------------------------------------------
-     * IMPORTANT
-     * ----------------------------------------------------------------------------
+     * current
+     *      nums[i]
      *
-     * This is SUBARRAY,
-     * not subsequence.
+     * tails
+     *      array capacity = nums.length
      *
-     * Pattern changes.
+     * lisLen
+     *      number of MEANINGFUL values currently stored in tails
      *
-     * Edge Case Trap:
-     * skipping not allowed.
-     */
-    static class LongestContinuousIncreasingSubsequence {
-
-        public int findLengthOfLCIS(int[] nums) {
-
-            if (nums == null || nums.length == 0) {
-                return 0;
-            }
-
-            int best = 1;
-            int current = 1;
-
-            for (int i = 1; i < nums.length; i++) {
-
-                if (nums[i] > nums[i - 1]) {
-
-                    current++;
-                } else {
-
-                    current = 1;
-                }
-
-                best = Math.max(best, current);
-            }
-
-            return best;
-        }
-    }
-
-    /**
-     * =========================================================================
-     * 🧩 RELATED PROBLEMS
-     * =========================================================================
+     * IMPORTANT:
+     *
+     *      only tails[0 ... lisLen - 1] is valid algorithm state
+     *
+     *      binary search range = [0, lisLen)
+     *
+     * Example:
+     *
+     *      tails  = [2, 3, 0, 0, 0, 0]
+     *                ^^^^
+     *                valid
+     *
+     *      lisLen = 2
+     *
+     * The unused zeroes are only Java array initialization.
+     * They are NOT searched.
      */
 
-    /**
+    /*
      * =========================================================================
-     * RELATED 1 — NUMBER OF LONGEST INCREASING SUBSEQUENCES
+     * VISUAL DRY RUN — O(n log n) FULL STATE EVOLUTION
      * =========================================================================
      *
-     * LeetCode 673
+     * nums = [10, 9, 2, 5, 3, 7, 101, 18]
      *
-     * Modified Invariant:
+     * INVARIANT:
      *
-     * Need:
+     *      tails[k] =
+     *      smallest possible tail for an increasing subsequence
+     *      of length k + 1
      *
-     * length DP + count DP
+     * +------+---------+--------------------------+--------------------+------+
+     * | Step | Current | First value >= current   | meaningful tails   | LIS  |
+     * +------+---------+--------------------------+--------------------+------+
+     * |  1   |   10    | none                     | [10]               |  1   |
+     * |  2   |    9    | 10                       | [9]                |  1   |
+     * |  3   |    2    | 9                        | [2]                |  1   |
+     * |  4   |    5    | none                     | [2,5]              |  2   |
+     * |  5   |    3    | 5                        | [2,3]              |  2   |
+     * |  6   |    7    | none                     | [2,3,7]            |  3   |
+     * |  7   |  101    | none                     | [2,3,7,101]        |  4   |
+     * |  8   |   18    | 101                      | [2,3,7,18]         |  4   |
+     * +------+---------+--------------------------+--------------------+------+
+     *
+     * Final:
+     *
+     *      lisLen = 4
+     *
+     * IMPORTANT:
+     *
+     *      tails[] is a compressed state representation.
+     *      It is NOT guaranteed to be the actual LIS.
      */
-    static class NumberOfLIS {
 
-        public int findNumberOfLIS(int[] nums) {
-
-            int n = nums.length;
-
-            int[] length = new int[n];
-            int[] count = new int[n];
-
-            Arrays.fill(length, 1);
-            Arrays.fill(count, 1);
-
-            int maxLen = 1;
-
-            for (int i = 0; i < n; i++) {
-
-                for (int j = 0; j < i; j++) {
-
-                    if (nums[j] < nums[i]) {
-
-                        if (length[j] + 1 > length[i]) {
-
-                            length[i] = length[j] + 1;
-                            count[i] = count[j];
-
-                        } else if (length[j] + 1 == length[i]) {
-
-                            count[i] += count[j];
-                        }
-                    }
-                }
-
-                maxLen = Math.max(maxLen, length[i]);
-            }
-
-            int answer = 0;
-
-            for (int i = 0; i < n; i++) {
-
-                if (length[i] == maxLen) {
-                    answer += count[i];
-                }
-            }
-
-            return answer;
-        }
-    }
-
-    /**
+    /*
      * =========================================================================
-     * RELATED 2 — LONGEST BITONIC SUBSEQUENCE
+     * VISUAL DRY RUN — REPLACE VS APPEND
      * =========================================================================
      *
-     * Same invariant twice:
+     * CASE 1 — REPLACE
      *
-     * increasing from left
-     * decreasing from right
+     *      tails   = [2,5]
+     *      current = 3
+     *
+     *      first >= 3 is 5
+     *
+     *      [2,5]
+     *         |
+     *         v
+     *      [2,3]
+     *
+     *      lisLen stays 2.
+     *
+     * Meaning:
+     *
+     *      We did NOT discover a longer subsequence.
+     *      We improved the tail for an already achievable length.
+     *
+     * -------------------------------------------------------------------------
+     * CASE 2 — APPEND
+     * -------------------------------------------------------------------------
+     *
+     *      tails   = [2,3]
+     *      current = 7
+     *
+     *      no existing tail >= 7
+     *
+     *      [2,3]
+     *           \
+     *            + 7
+     *
+     *      [2,3,7]
+     *
+     *      lisLen grows from 2 to 3.
+     *
+     * Meaning:
+     *
+     *      We really discovered a longer increasing subsequence.
+     *
+     * MEMORY:
+     *
+     *      REPLACE = same length, better future
+     *      APPEND  = longer length discovered
      */
-    static class LongestBitonicSubsequence {
 
-        public int longestBitonic(int[] nums) {
-
-            int n = nums.length;
-
-            int[] lis = new int[n];
-            int[] lds = new int[n];
-
-            Arrays.fill(lis, 1);
-            Arrays.fill(lds, 1);
-
-            for (int i = 0; i < n; i++) {
-
-                for (int j = 0; j < i; j++) {
-
-                    if (nums[j] < nums[i]) {
-
-                        lis[i] = Math.max(lis[i], lis[j] + 1);
-                    }
-                }
-            }
-
-            for (int i = n - 1; i >= 0; i--) {
-
-                for (int j = n - 1; j > i; j--) {
-
-                    if (nums[j] < nums[i]) {
-
-                        lds[i] = Math.max(lds[i], lds[j] + 1);
-                    }
-                }
-            }
-
-            int answer = 1;
-
-            for (int i = 0; i < n; i++) {
-
-                answer = Math.max(answer, lis[i] + lds[i] - 1);
-            }
-
-            return answer;
-        }
-    }
-
-    /**
+    /*
      * =========================================================================
-     * RELATED 3 — LARGEST DIVISIBLE SUBSET
+     * VISUAL DRY RUN — MANUAL BINARY SEARCH
      * =========================================================================
      *
-     * Modified invariant:
+     * Suppose:
      *
-     * divisibility replaces increasing condition.
+     *      tails   = [2,3,7,101]
+     *      lisLen = 4
+     *      current = 18
+     *
+     * Goal:
+     *
+     *      find FIRST value >= 18
+     *
+     * Search interval is:
+     *
+     *      [left, right)
+     *
+     *      left = 0
+     *      right = 4
+     *
+     * +-----------+------+-------+-----+------------+-------------------------+
+     * | Iteration | left | rightX | mid | tail[mid]  | Decision                |
+     * +-----------+------+-------+-----+------------+-------------------------+
+     * |     1     |  0   |   4   |  2  |     7      | 7 < 18 -> left = 3    |
+     * |     2     |  3   |   4   |  3  |   101      | >=18 -> right = 3     |
+     * +-----------+------+-------+-----+------------+-------------------------+
+     *
+     * Stop:
+     *
+     *      left == right == 3
+     *
+     * Therefore:
+     *
+     *      first value >= 18 is at index 3
+     *
+     * Replace:
+     *
+     *      [2,3,7,101]
+     *
+     * becomes:
+     *
+     *      [2,3,7,18]
      */
-    static class LargestDivisibleSubset {
 
-        public List<Integer> largestDivisibleSubset(int[] nums) {
-
-            Arrays.sort(nums);
-
-            int n = nums.length;
-
-            int[] dp = new int[n];
-            int[] parent = new int[n];
-
-            Arrays.fill(dp, 1);
-            Arrays.fill(parent, -1);
-
-            int bestIndex = 0;
-
-            for (int i = 0; i < n; i++) {
-
-                for (int j = 0; j < i; j++) {
-
-                    if (nums[i] % nums[j] == 0) {
-
-                        if (dp[j] + 1 > dp[i]) {
-
-                            dp[i] = dp[j] + 1;
-                            parent[i] = j;
-                        }
-                    }
-                }
-
-                if (dp[i] > dp[bestIndex]) {
-                    bestIndex = i;
-                }
-            }
-
-            List<Integer> answer = new ArrayList<>();
-
-            while (bestIndex != -1) {
-
-                answer.add(nums[bestIndex]);
-                bestIndex = parent[bestIndex];
-            }
-
-            Collections.reverse(answer);
-
-            return answer;
-        }
-    }
-
-    /**
+    /*
      * =========================================================================
-     * 🧠 MASTERY CHECKLIST
+     * VISUAL DRY RUN — DUPLICATES / STRICTNESS
      * =========================================================================
      *
-     * Q: invariant?
+     * nums = [7,7,7,7]
      *
-     * DP:
-     * dp[i] = LIS ending at i
+     * Strict LIS searches:
      *
-     * Optimal:
-     * tails[k] = minimal tail for length k+1
+     *      first tail >= current
      *
-     * ----------------------------------------------------------------------------
-     * Q: search target?
+     * +------+---------+----------------------+---------+------+
+     * | Step | Current | Action               | tails   | size |
+     * +------+---------+----------------------+---------+------+
+     * |  1   |    7    | append               | [7]     |  1   |
+     * |  2   |    7    | replace index 0      | [7]     |  1   |
+     * |  3   |    7    | replace index 0      | [7]     |  1   |
+     * |  4   |    7    | replace index 0      | [7]     |  1   |
+     * +------+---------+----------------------+---------+------+
      *
-     * first value >= current number
+     * Answer:
      *
-     * ----------------------------------------------------------------------------
-     * Q: discard rule?
+     *      1
      *
-     * larger tail dominated by smaller tail
-     *
-     * ----------------------------------------------------------------------------
-     * Q: termination logic?
-     *
-     * size = LIS length
-     *
-     * ----------------------------------------------------------------------------
-     * Q: naive failure?
-     *
-     * local greedy choices block future extension
-     *
-     * ----------------------------------------------------------------------------
-     * Q: edge cases?
-     *
-     * duplicates
-     * descending array
-     * single element
-     *
-     * ----------------------------------------------------------------------------
-     * Q: debugging readiness?
-     *
-     * verify:
-     *
-     * tails sorted
-     * binary search target correct
-     * strict inequality correct
-     *
-     * ----------------------------------------------------------------------------
-     * Q: variant readiness?
-     *
-     * understand:
-     *
-     * changing comparator changes invariant
-     *
-     * ----------------------------------------------------------------------------
-     * Q: pattern boundary?
-     *
-     * subsequence only
-     * not contiguous window problems
-     *
+     * This is why strict LIS uses FIRST >= current.
+     */
+
+    /*
      * =========================================================================
-     * 🧪 SELF-VERIFYING TESTS
+     * WHY FIRST >= current?
      * =========================================================================
+     *
+     * Strict LIS must NOT allow duplicates to extend the length.
+     *
+     * Example:
+     *
+     *      [2, 2]
+     *
+     * answer must remain 1.
+     *
+     * So the second 2 replaces the first 2.
+     *
+     * Therefore strict LIS searches for:
+     *
+     *      first value >= current
+     *
+     * If the problem asks for LONGEST NON-DECREASING subsequence,
+     * equal values ARE allowed to extend.
+     *
+     * Then search for:
+     *
+     *      first value > current
+     */
+
+    /*
+     * =========================================================================
+     * WHY DOES size EQUAL LIS LENGTH?
+     * =========================================================================
+     *
+     * Replacing a tail does not create a new length.
+     * It only gives an already achievable length a better ending value.
+     *
+     * size grows only when current is greater than every existing tail.
+     *
+     * Then current can extend an already achievable subsequence of length size,
+     * so a subsequence of length size + 1 really exists.
+     *
+     * Therefore:
+     *
+     *      size = LIS length
+     *
+     * IMPORTANT:
+     *
+     * tails[] is NOT guaranteed to be the actual LIS.
+     */
+
+    /*
+     * =========================================================================
+     * DP -> OPTIMAL DERIVATION
+     * =========================================================================
+     *
+     * DP keeps many ending states.
+     *
+     * Ask:
+     *
+     *      "For the same amount of progress,
+     *       are some states strictly worse than others?"
+     *
+     * For LIS:
+     *
+     *      same length + larger tail
+     *
+     * is dominated by:
+     *
+     *      same length + smaller tail
+     *
+     * So keep only one best representative per length.
+     *
+     * Those representatives are ordered,
+     * which makes binary search possible.
+     *
+     * GENERAL INTERVIEW LESSON:
+     *
+     *      SAME PROGRESS + BETTER FUTURE OPTIONS
+     *      -> DISCARD THE DOMINATED STATE
+     */
+
+    /*
+     * =========================================================================
+     * PRESSURE PRIORITY
+     * =========================================================================
+     *
+     * MUST BE ABLE TO DERIVE WHEN BLANK:
+     *
+     *      brute-force take / skip recursion
+     *
+     * MUST BE ABLE TO TURN INTO WORKING DP:
+     *
+     *      memoized recursion
+     *
+     * MUST RECONSTRUCT AS THE MAIN REUSABLE PATTERN:
+     *
+     *      O(n^2) ending-at-i bottom-up DP
+     *
+     * MUST RECOGNIZE / EXPLAIN:
+     *
+     *      smaller-tail dominance
+     *      tails + binary search
+     *
+     * SAFE TO LOOK UP / RE-DERIVE LATER:
+     *
+     *      actual LIS reconstruction
+     *      Fenwick / segment-tree variants
+     *      specialized counting optimizations
+     */
+
+    /*
+     * =========================================================================
+     * VARIATION MAP
+     * =========================================================================
+     *
+     * LONGEST NON-DECREASING SUBSEQUENCE
+     *
+     *      DP condition:
+     *          nums[j] <= nums[i]
+     *
+     *      tails search:
+     *          first > current
+     *
+     * -------------------------------------------------------------------------
+     * PRINT ACTUAL LIS
+     *
+     *      Length alone is not enough.
+     *      Track parent/predecessor information and reconstruct.
+     *
+     * -------------------------------------------------------------------------
+     * NUMBER OF LIS — LeetCode 673
+     *
+     *      dp length alone is not enough.
+     *
+     *      Track:
+     *          length[i]
+     *          count[i]
+     *
+     * -------------------------------------------------------------------------
+     * LONGEST CONTINUOUS INCREASING SUBSEQUENCE — LeetCode 674
+     *
+     *      Contiguous.
+     *      NOT this DP pattern.
+     *
+     *      Just maintain current consecutive run.
+     */
+
+    /*
+     * =========================================================================
+     * INTERVIEW ARTICULATION — THE FULL DP LADDER
+     * =========================================================================
+     *
+     * RECURSION:
+     *
+     *      "At each index I can skip the current number, or take it if it is
+     *       larger than the previously selected number. That gives the state
+     *       (index, previousIndex) and a take/skip recurrence."
+     *
+     * MEMOIZATION:
+     *
+     *      "The same (index, previousIndex) state can be reached through
+     *       different decision paths, so I cache each state. There are O(n^2)
+     *       states, giving O(n^2) time and O(n^2) memo space."
+     *
+     * BOTTOM-UP DP:
+     *
+     *      "I can simplify the state by defining dp[i] as the LIS ending
+     *       exactly at i. I scan all earlier j, and if nums[j] < nums[i],
+     *       i can extend dp[j]. The answer is max(dp), because the LIS can
+     *       end anywhere."
+     *
+     * OPTIMAL FOLLOW-UP:
+     *
+     *      "For equal subsequence length, a smaller tail dominates a larger
+     *       tail. I keep the smallest tail for every achievable length and
+     *       binary-search the first tail >= current. This gives O(n log n)."
+     */
+
+    /*
+     * =========================================================================
+     * REINFORCEMENT — PATTERN TRANSFER
+     * =========================================================================
+     *
+     * 1. Largest Divisible Subset
+     *
+     *      SAME MACHINE:
+     *          best chain ending at i
+     *
+     *      CHANGE ONLY:
+     *          predecessor rule
+     *
+     *      nums[i] % nums[j] == 0
+     *
+     * -------------------------------------------------------------------------
+     * 2. Maximum Length of Pair Chain
+     *
+     *      SAME MACHINE:
+     *          best chain ending at pair i
+     *
+     *      predecessor rule:
+     *
+     *          pair[j].end < pair[i].start
+     *
+     * -------------------------------------------------------------------------
+     * 3. Longest String Chain
+     *
+     *      SAME MACHINE:
+     *          best chain ending at word i
+     *
+     *      predecessor rule:
+     *
+     *          word[j] can become word[i]
+     *
+     * -------------------------------------------------------------------------
+     * 4. Longest Bitonic Subsequence
+     *
+     *      Reuse ending-at-i thinking from both directions.
+     *
+     * -------------------------------------------------------------------------
+     * 5. Russian Doll Envelopes
+     *
+     *      Sort first dimension carefully.
+     *      Then reduce second dimension to LIS.
+     *
+     *      Useful optimization follow-up,
+     *      but not required to reconstruct basic LIS DP.
+     */
+
+    /*
+     * =========================================================================
+     * INTERVIEW ANTI-FREEZE SCRIPT
+     * =========================================================================
+     *
+     * If I am blank, say and do this:
+     *
+     *      "I'll first express this top-down so the state and choices are
+     *       explicit. Once the recurrence is correct, I'll memoize repeated
+     *       states. Then I can convert it to bottom-up if useful."
+     *
+     * For LIS:
+     *
+     *      STATE:
+     *          (index, previousIndex)
+     *
+     *      CHOICES:
+     *          TAKE / SKIP
+     *
+     *      BASE:
+     *          index == n -> 0
+     *
+     *      COMBINE:
+     *          max(take, skip)
+     *
+     *      REPEATED STATE:
+     *          memo[index][previousIndex + 1]
+     *
+     *      CLEANER BOTTOM-UP STATE:
+     *          dp[i] = best LIS ending at i
+     *
+     * Even if tails[] is completely forgotten,
+     * this path still gets to a correct O(n^2) solution.
+     */
+
+    /*
+     * =========================================================================
+     * FINAL 15-SECOND RECALL CARD
+     * =========================================================================
+     *
+     * RANDOM PROBLEM:
+     *      ordered items + choose/skip + best chain
+     *
+     * IF BLANK:
+     *      state -> choices -> recursion -> memoize
+     *
+     * THEN SIMPLIFY:
+     *      "Force i to be last."
+     *
+     * WRITE:
+     *      dp[i] = best chain ending at i
+     *
+     * DO:
+     *      scan earlier j
+     *      if j can precede i -> extend
+     *
+     * LIS SPECIFIC:
+     *      nums[j] < nums[i]
+     *
+     * ANSWER:
+     *      max(dp)
+     *
+     * FOLLOW-UP:
+     *      same length -> smaller tail wins
      */
 
     private static void assertEqual(int actual, int expected, String testName) {
 
         if (actual != expected) {
-
             throw new AssertionError(
                     testName
                             + " FAILED | expected = "
                             + expected
-                            + " but got = "
+                            + ", actual = "
                             + actual
             );
         }
@@ -1478,125 +1611,63 @@ public class LIS {
 
     public static void main(String[] args) {
 
-        OptimalSolution optimal = new OptimalSolution();
+        RecursiveSolution recursive = new RecursiveSolution();
+        MemoizedSolution memoized = new MemoizedSolution();
         DPSolution dp = new DPSolution();
+        OptimalFollowUp optimal = new OptimalFollowUp();
 
-        /**
-         * -------------------------------------------------------------
-         * Happy Path
-         * -------------------------------------------------------------
-         *
-         * Classic LIS example.
-         */
-        int[] nums1 = {10, 9, 2, 5, 3, 7, 101, 18};
+        int[][] tests = {
+                {10, 9, 2, 5, 3, 7, 101, 18},
+                {0, 1, 0, 3, 2, 3},
+                {7, 7, 7, 7},
+                {5, 4, 3, 2, 1},
+                {1, 2, 3, 4, 5},
+                {3, 4, 1, 2},
+                {42}
+        };
 
-        assertEqual(
-                optimal.lengthOfLIS(nums1),
+        int[] expected = {
                 4,
-                "Classic LIS Example — Optimal"
-        );
-
-        assertEqual(
-                dp.lengthOfLIS(nums1),
                 4,
-                "Classic LIS Example — DP"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Duplicate Handling
-         * -------------------------------------------------------------
-         *
-         * Strictly increasing means duplicates cannot extend.
-         */
-        int[] nums2 = {7, 7, 7, 7};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums2),
                 1,
-                "Duplicates Strictness Test"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Mixed Oscillation
-         * -------------------------------------------------------------
-         *
-         * Tests replacement behavior in tails[].
-         */
-        int[] nums3 = {0, 1, 0, 3, 2, 3};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums3),
-                4,
-                "Oscillation Replacement Test"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Strictly Descending
-         * -------------------------------------------------------------
-         *
-         * Every element alone.
-         */
-        int[] nums4 = {9, 8, 7, 6, 5};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums4),
                 1,
-                "Descending Array Test"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Strictly Increasing
-         * -------------------------------------------------------------
-         *
-         * Entire array is LIS.
-         */
-        int[] nums5 = {1, 2, 3, 4, 5};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums5),
                 5,
-                "Strictly Increasing Test"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Single Element Boundary
-         * -------------------------------------------------------------
-         */
-        int[] nums6 = {42};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums6),
-                1,
-                "Single Element Boundary Test"
-        );
-
-        /**
-         * -------------------------------------------------------------
-         * Interview Trap
-         * -------------------------------------------------------------
-         *
-         * Greedy local extension would fail.
-         */
-        int[] nums7 = {3, 4, 1, 2};
-
-        assertEqual(
-                optimal.lengthOfLIS(nums7),
                 2,
-                "Greedy Trap Test"
-        );
+                1
+        };
+
+        int index = 0;
+
+        while (index < tests.length) {
+
+            assertEqual(
+                    recursive.lengthOfLIS(tests[index]),
+                    expected[index],
+                    "Recursive test " + (index + 1)
+            );
+
+            assertEqual(
+                    memoized.lengthOfLIS(tests[index]),
+                    expected[index],
+                    "Memoized test " + (index + 1)
+            );
+
+            assertEqual(
+                    dp.lengthOfLIS(tests[index]),
+                    expected[index],
+                    "Bottom-up DP test " + (index + 1)
+            );
+
+            assertEqual(
+                    optimal.lengthOfLIS(tests[index]),
+                    expected[index],
+                    "Optimal follow-up test " + (index + 1)
+            );
+
+            index++;
+        }
 
         System.out.println();
-        System.out.println("All tests passed.");
-
-        System.out.println();
-        System.out.println("I understand the invariant.");
-        System.out.println("I can re-derive the solution.");
-        System.out.println("I can physically reconstruct the implementation under pressure.");
-        System.out.println("This chapter is complete.");
+        System.out.println("All LIS tests passed.");
     }
 }

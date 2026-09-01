@@ -2,651 +2,296 @@ package org.chijai.day8.graph.session1;
 
 import java.util.Arrays;
 
+/**
+ * WORD SEARCH — LC 79
+ *
+ * Interview goal:
+ * Do not memorize this exact problem.
+ *
+ * Reconstruct the reusable pattern:
+ *
+ *      PATH constraint
+ *      + choose one cell
+ *      + explore
+ *      + undo the choice
+ *
+ * That is grid backtracking.
+ */
 public class WordSearch {
 
     /*
-     * ============================================================
-     * 2. 📘 PRIMARY PROBLEM
-     * ============================================================
-     *
-     * Title:
-     * Word Search
-     *
-     * Difficulty:
-     * Medium
-     *
-     * Tags:
-     * Backtracking
-     * DFS
-     * Matrix
-     * Recursion
-     *
-     * Official LeetCode:
-     * https://leetcode.com/problems/word-search/
-     *
-     * ------------------------------------------------------------
-     * Problem
-     * ------------------------------------------------------------
+     * ========================================================================
+     * 1. 📘 PRIMARY PROBLEM
+     * ========================================================================
      *
      * Given an m x n board of characters and a string word,
-     * determine whether the word exists in the board.
+     * return true if the word can be constructed from letters in the board.
+     *
+     * Consecutive characters of the word must come from cells that are
+     * horizontally or vertically adjacent.
      *
      * Rules:
      *
-     * • Characters must be connected by horizontal or vertical moves.
-     * • Diagonal movement is NOT allowed.
-     * • Each board cell may be used at most once within one path.
-     * • Different searches may reuse the same cell.
+     * 1. You may move UP, DOWN, LEFT, or RIGHT.
+     * 2. Diagonal movement is not allowed.
+     * 3. A board cell may be used at most once in the SAME candidate path.
+     * 4. A cell may be reused by a DIFFERENT candidate path after backtracking.
      *
-     * Return true if such a path exists.
-     *
-     * ------------------------------------------------------------
-     * Constraints
-     * ------------------------------------------------------------
-     *
-     * 1 <= m, n <= 6
-     * 1 <= word.length <= 15
-     * board and word contain English letters.
-     *
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
      * Example 1
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
      *
      * board =
      *
-     * A B C E
-     * S F C S
-     * A D E E
+     *      0   1   2   3
+     *    +---+---+---+---+
+     * 0  | A | B | C | E |
+     *    +---+---+---+---+
+     * 1  | S | F | C | S |
+     *    +---+---+---+---+
+     * 2  | A | D | E | E |
+     *    +---+---+---+---+
      *
      * word = "ABCCED"
      *
-     * Output:
-     * true
+     * One valid path:
      *
-     * Path:
+     * (0,0) A
+     *    →
+     * (0,1) B
+     *    →
+     * (0,2) C
+     *    ↓
+     * (1,2) C
+     *    ↓
+     * (2,2) E
+     *    ←
+     * (2,1) D
      *
-     * A →
-     *     B →
-     *         C ↓
-     *         C ↓
-     *         E ←
-     *     D
+     * Output: true
      *
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
      * Example 2
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
+     *
+     * Same board.
      *
      * word = "SEE"
      *
-     * Output:
-     * true
+     * One path:
      *
-     * ------------------------------------------------------------
+     * (1,3) S -> (2,3) E -> (2,2) E
+     *
+     * Output: true
+     *
+     * ------------------------------------------------------------------------
      * Example 3
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
+     *
+     * Same board.
      *
      * word = "ABCB"
      *
-     * Output:
-     * false
+     * Output: false
      *
-     * because the same B cannot be reused.
+     * Why?
      *
-     * ============================================================
-     * 3. 🔵 CORE PATTERN OVERVIEW
-     * ============================================================
+     * A -> B -> C is possible.
      *
-     * Pattern
-     * -------
-     * DFS Backtracking on Grid
+     * But completing the final B would require reusing the B at (0,1),
+     * and one cell cannot appear twice in the same path.
      *
-     * Archetype
-     * ---------
-     * Explore
-     * → Choose
-     * → Recurse
-     * → Undo
+     * ========================================================================
+     * 2. 🧠 FIRST-PRINCIPLES THOUGHT PROGRESSION
+     * ========================================================================
      *
-     * Core Invariant
-     * --------------
-     * Every recursive frame represents exactly one valid prefix
-     * of the target word.
+     * Train this sequence, because this is what should be reconstructible
+     * months later under interview pressure.
      *
-     * The visited cells are precisely the cells that form
-     * that prefix.
+     * ------------------------------------------------------------------------
+     * Thought 1 — What is the question really asking?
+     * ------------------------------------------------------------------------
      *
-     * Why it Works
-     * ------------
-     * Whenever we stand at recursion level index,
-     * the first index characters have already been matched.
+     * "Does there EXIST one legal path that spells this exact sequence?"
      *
-     * The only remaining work is extending that valid prefix
-     * by exactly one adjacent character.
+     * The output is only true/false.
      *
-     * Since every possible extension is explored,
-     * every legal path is examined exactly once.
+     * So I do not need all paths.
+     * I can stop as soon as one complete path succeeds.
      *
-     * Recognition Signals
-     * -------------------
-     * Use this pattern whenever:
+     * ------------------------------------------------------------------------
+     * Thought 2 — Where can the path start?
+     * ------------------------------------------------------------------------
      *
-     * • explore all paths
-     * • path constraints
-     * • cannot revisit nodes
-     * • grid traversal
-     * • exact sequence matching
-     * • "does there exist?"
+     * There is no fixed starting cell.
      *
-     * When NOT to Use
-     * ---------------
-     * Do NOT use pure backtracking if:
+     * Therefore every board cell is a possible starting point.
      *
-     * • shortest path is required
-     * • weighted graph
-     * • repeated states can be memoized
-     * • dynamic programming naturally fits
+     * OUTER SEARCH:
      *
-     * Comparison
-     * ----------
+     *      try DFS from every cell
      *
-     * Flood Fill
-     * ----------
-     * Visits entire connected component.
+     * ------------------------------------------------------------------------
+     * Thought 3 — Once I choose a starting cell, what changes?
+     * ------------------------------------------------------------------------
      *
-     * Word Search
-     * -----------
-     * Visits only one candidate path.
+     * Now I am following ONE candidate path.
      *
-     * Number of Islands
-     * -----------------
-     * Permanently marks visited.
+     * At each step:
      *
-     * Word Search
-     * -----------
-     * Must restore state after every failed attempt.
+     *      current board cell must match current word character
      *
-     * Maze DFS
-     * --------
-     * Destination fixed.
+     * and the next character must come from one of four neighbors.
      *
-     * Word Search
-     * -----------
-     * Destination depends on matching characters.
+     * This naturally becomes DFS.
      *
-     * ============================================================
-     * 4. 🟢 MENTAL MODEL & INVARIANTS
-     * ============================================================
+     * ------------------------------------------------------------------------
+     * Thought 4 — Why is plain DFS not enough?
+     * ------------------------------------------------------------------------
      *
-     * Mental Model
-     * ------------
+     * Because the current path is not allowed to reuse a cell.
      *
-     * Imagine walking through the board while spelling
-     * the word one character at a time.
+     * So DFS needs PATH-SPECIFIC state:
      *
-     * Every recursive call answers:
+     *      "Which cells are already used by THIS path?"
      *
-     * "Can I finish the remaining suffix starting
-     * from this cell?"
+     * ------------------------------------------------------------------------
+     * Thought 5 — Is that state permanent?
+     * ------------------------------------------------------------------------
      *
-     * ------------------------------------------------------------
-     * Primary Invariant
-     * ------------------------------------------------------------
+     * No.
      *
-     * search(r, c, index)
+     * Suppose one branch uses cell X and fails.
+     * A sibling branch is still allowed to use X.
+     *
+     * Therefore:
+     *
+     *      choose  -> mark
+     *      explore -> recurse
+     *      undo    -> restore
+     *
+     * The need to UNDO is the signal that this is BACKTRACKING,
+     * not ordinary flood-fill DFS.
+     *
+     * ------------------------------------------------------------------------
+     * Thought 6 — What should one recursive call mean?
+     * ------------------------------------------------------------------------
+     *
+     * Give the function one sentence:
+     *
+     *      dfs(row, col, index)
      *
      * means:
      *
-     * word[0 ... index-1]
-     * has already been matched.
+     *      "Can I match word[index ... end]
+     *       starting exactly from board[row][col]?"
      *
-     * The current cell is expected to match
-     * word[index].
+     * Once this meaning is clear, the code almost writes itself.
      *
-     * ------------------------------------------------------------
-     * State Variables
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
+     * Thought 7 — When is this call impossible?
+     * ------------------------------------------------------------------------
      *
-     * row
-     * ----
-     * current board row
+     * It fails immediately if:
      *
-     * col
-     * ----
-     * current board column
+     *      1. row/col is outside the board
+     *      2. this cell is already used by the current path
+     *      3. board[row][col] != word[index]
      *
-     * index
-     * -----
-     * next character that must be matched
+     * These are the three discard rules.
      *
-     * visited
-     * -------
-     * cells already used by the current path only.
+     * ------------------------------------------------------------------------
+     * Thought 8 — What happens after the current character matches?
+     * ------------------------------------------------------------------------
      *
-     * ------------------------------------------------------------
-     * Allowed Moves
-     * ------------------------------------------------------------
+     * If this was the final character:
      *
-     * Up
-     * Down
-     * Left
-     * Right
+     *      success
      *
-     * if
+     * Otherwise:
      *
-     * • inside board
-     * • not visited
-     * • character matches
+     *      mark this cell unavailable
+     *      try four neighbors for index + 1
+     *      restore this cell
      *
-     * ------------------------------------------------------------
-     * Forbidden Moves
-     * ------------------------------------------------------------
+     * ------------------------------------------------------------------------
+     * THE WHOLE RE-DERIVATION
+     * ------------------------------------------------------------------------
      *
-     * Visiting outside board.
+     *      Every cell can start
+     *              ↓
+     *      DFS follows one candidate path
+     *              ↓
+     *      path cannot reuse cells
+     *              ↓
+     *      mark current choice
+     *              ↓
+     *      explore 4 neighbors
+     *              ↓
+     *      restore choice
      *
-     * Revisiting current path.
-     *
-     * Character mismatch.
-     *
-     * Skipping characters.
-     *
-     * Jumping diagonally.
-     *
-     * ------------------------------------------------------------
-     * Transition
-     * ------------------------------------------------------------
-     *
-     * Match current character.
-     *
-     * Mark visited.
-     *
-     * Explore four neighbors.
-     *
-     * Restore visited.
-     *
-     * ------------------------------------------------------------
-     * Termination
-     * ------------------------------------------------------------
-     *
-     * If index == word.length(),
-     * every character has already been matched.
-     *
-     * Therefore return true immediately.
-     *
-     * ------------------------------------------------------------
-     * Correctness Intuition
-     * ------------------------------------------------------------
-     *
-     * Each recursive level commits exactly one character.
-     *
-     * Backtracking guarantees:
-     *
-     * after exploring one branch,
-     * the board returns to exactly the same state
-     * before exploring another branch.
-     *
-     * Therefore branches never interfere.
-     *
-     * ------------------------------------------------------------
-     * Why Naive Search Fails
-     * ------------------------------------------------------------
-     *
-     * Simply walking greedily fails.
-     *
-     * Example:
-     *
-     * A B C
-     * A C C
-     *
-     * Word:
-     *
-     * ABCC
-     *
-     * Choosing the wrong C first reaches a dead end.
-     *
-     * Only backtracking allows recovery.
-     *
-     * ============================================================
-     * 5. 🔴 WHY WRONG SOLUTIONS FAIL
-     * ============================================================
-     *
-     * Mistake 1
-     * ---------
-     * Never unmark visited.
-     *
-     * Looks Correct Because
-     * ---------------------
-     * We already explored the cell.
-     *
-     * Violated Invariant
-     * ------------------
-     * visited belongs only to ONE path.
-     *
-     * Counterexample
-     * --------------
-     *
-     * Two different starting cells may legally
-     * reuse the same board position.
-     *
-     * ------------------------------------------------------------
-     * Mistake 2
-     * ---------
-     * Forget boundary checking before access.
-     *
-     * Result
-     * ------
-     * IndexOutOfBoundsException.
-     *
-     * ------------------------------------------------------------
-     * Mistake 3
-     * ---------
-     * Mark visited after recursion.
-     *
-     * Violated Invariant
-     * ------------------
-     * A cell may appear twice inside one path.
-     *
-     * ------------------------------------------------------------
-     * Mistake 4
-     * ---------
-     * Returning false immediately after
-     * first failed direction.
-     *
-     * Reality
-     * -------
-     * One failed direction says nothing
-     * about the remaining three.
-     *
-     * ------------------------------------------------------------
-     * Mistake 5
-     * ---------
-     * Sharing visited across searches
-     * without resetting.
-     *
-     * Interview Trap
-     * --------------
-     * Every new starting position begins
-     * with an empty path.
-     *
-     * ============================================================
-     * ⚙ IMPLEMENTATION BLUEPRINT
-     * ============================================================
-     *
-     * Typing Order
-     * ------------
-     *
-     * 1. Declare visited.
-     *
-     * 2. exist(board, word)
-     *
-     * 3. Allocate visited.
-     *
-     * 4. Double loop over every cell.
-     *
-     * 5. Launch DFS.
-     *
-     * 6. DFS base case.
-     *
-     * 7. Boundary check.
-     *
-     * 8. Character check.
-     *
-     * 9. Visited check.
-     *
-     * 10. Mark visited.
-     *
-     * 11. Explore four directions.
-     *
-     * 12. Restore visited.
-     *
-     * 13. Return result.
-     *
-     * ============================================================
-     * 🧾 ULTRA-COMPACT PSEUDOCODE
-     * ============================================================
-     *
-     * for every cell
-     *     dfs(start)
-     *
-     * dfs
-     *     if complete return true
-     *     if invalid return false
-     *     mark
-     *     recurse 4 directions
-     *     unmark
-     *     return result
+     *      = GRID BACKTRACKING
      */
 
-    static class BruteForceSolution {
+    /*
+     * ========================================================================
+     * 3. ✅ PREFERRED INTERVIEW SOLUTION
+     * ========================================================================
+     *
+     * Mental model:
+     *
+     *      Word Search
+     *      =
+     *      Flood Fill navigation
+     *      +
+     *      Backtracking lifecycle
+     *
+     * Flood Fill contributes:
+     *
+     *      • boundary checks
+     *      • 4-direction movement
+     *
+     * Backtracking contributes:
+     *
+     *      • path-local used state
+     *      • mark
+     *      • recurse
+     *      • unmark
+     *
+     * Primary invariant:
+     *
+     * dfs(row, col, index) asks:
+     *
+     *      "Can I match word[index ... end]
+     *       starting exactly from board[row][col]?"
+     *
+     * used[row][col] means:
+     *
+     *      "This cell already belongs to the CURRENT candidate path."
+     */
+    static final class Solution {
 
-        /*
-         * Idea
-         * ----
-         * Enumerate every possible path of length L
-         * without remembering already-used cells.
-         *
-         * Invariant
-         * ---------
-         * Every sequence of moves is explored.
-         *
-         * Limitation
-         * ----------
-         * Generates many impossible paths because
-         * cells may repeat.
-         *
-         * Complexity
-         * ----------
-         * Exponential.
-         *
-         * Interview Usefulness
-         * --------------------
-         * Demonstrates why path state is necessary.
-         */
-        boolean conceptualOnly(char[][] board, String word) {
-            throw new UnsupportedOperationException(
-                    "Conceptual brute-force only."
-            );
-        }
-    }
-
-    static class ImprovedSolution {
-
-/*
- * Idea
- * ----
- * DFS with visited matrix.
- *
- * Improvement
- * -----------
- * Invalid paths terminate immediately.
- *
- * Invariant
- * ---------
- * visited contains exactly the current path.
- *
- * Complexity
- * ----------
- * Time:
- * O(m * n * 4^L)
- *
- * Space:
- * O(L) recursion
- * +
- * O(m * n) visited
- *
- * Interview Usefulness
- * --------------------
- * Natural stepping stone toward the
- * preferred implementation.
- */
-
-        private boolean[][] visited;
+        private boolean[][] used;
 
         boolean exist(char[][] board, String word) {
 
-            int rows = board.length;
-            int cols = board[0].length;
-
-            visited = new boolean[rows][cols];
-
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-
-                    if (dfs(board, word, r, c, 0)) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private boolean dfs(char[][] board,
-                            String word,
-                            int row,
-                            int col,
-                            int index) {
-
-            if (index == word.length()) {
-                return true;
-            }
-
-            if (row < 0 ||
-                    row >= board.length ||
-                    col < 0 ||
-                    col >= board[0].length) {
+            if (board == null
+                    || board.length == 0
+                    || board[0].length == 0
+                    || word == null
+                    || word.isEmpty()) {
                 return false;
             }
 
-            if (visited[row][col]) {
+            if (word.length() > board.length * board[0].length) {
                 return false;
             }
 
-            if (board[row][col] != word.charAt(index)) {
-                return false;
-            }
+            used = new boolean[board.length][board[0].length];
 
-            visited[row][col] = true;
+            for (int row = 0; row < board.length; row++) {
 
-            boolean found =
-                    dfs(board, word, row - 1, col, index + 1)
-                            || dfs(board, word, row + 1, col, index + 1)
-                            || dfs(board, word, row, col - 1, index + 1)
-                            || dfs(board, word, row, col + 1, index + 1);
-
-            visited[row][col] = false;
-
-            return found;
-        }
-    }
-
-    static class OptimalSolution {
-
-        /*
-         * ============================================================
-         * Optimal (Interview Preferred)
-         * ============================================================
-         *
-         * Idea
-         * ----
-         * Launch DFS from every board cell.
-         *
-         * The DFS maintains one invariant:
-         *
-         * "The current recursion stack exactly represents
-         * one valid prefix of the target word."
-         *
-         * Whenever a mismatch occurs,
-         * that entire branch is impossible and can be
-         * discarded immediately.
-         *
-         * ------------------------------------------------------------
-         * 🟢 Invariant
-         * ------------------------------------------------------------
-         *
-         * Before dfs(row, col, index):
-         *
-         * • word[0 ... index-1] is already matched.
-         *
-         * • visited contains exactly those matched cells.
-         *
-         * • Current cell is responsible only for
-         *   matching word[index].
-         *
-         * ------------------------------------------------------------
-         * Why Backtracking is Correct
-         * ------------------------------------------------------------
-         *
-         * Marking visited commits this cell to
-         * the current candidate path.
-         *
-         * Unmarking restores the board exactly to its
-         * previous state.
-         *
-         * Therefore every recursive branch explores
-         * an independent candidate path.
-         *
-         * ------------------------------------------------------------
-         * Complexity
-         * ------------------------------------------------------------
-         *
-         * Time
-         * ----
-         * O(M × N × 4^L)
-         *
-         * M*N
-         * possible starting cells.
-         *
-         * Each recursive level explores at most
-         * four directions.
-         *
-         * Space
-         * -----
-         * O(M × N)
-         * visited matrix.
-         *
-         * O(L)
-         * recursion stack.
-         *
-         * ------------------------------------------------------------
-         * Interview Usefulness
-         * ------------------------------------------------------------
-         *
-         * Canonical grid backtracking pattern.
-         *
-         * Reappears in:
-         *
-         * • Word Search II
-         * • Path finding
-         * • Maze exploration
-         * • Sudoku
-         * • N Queens
-         */
-
-        private boolean[][] visited;
-
-        boolean exist(char[][] board, String word) {
-
-            if (board == null ||
-                    board.length == 0 ||
-                    board[0].length == 0) {
-                return false;
-            }
-
-            if (word == null) {
-                return false;
-            }
-
-            int rows = board.length;
-            int cols = board[0].length;
-
-            visited = new boolean[rows][cols];
-
-            for (int row = 0; row < rows; row++) {
-
-                for (int col = 0; col < cols; col++) {
-
-                    // Invariant:
-                    // Every cell is treated as an independent start.
+                for (int col = 0; col < board[0].length; col++) {
 
                     if (dfs(board, word, row, col, 0)) {
                         return true;
@@ -663,37 +308,26 @@ public class WordSearch {
                             int col,
                             int index) {
 
-            // Invariant:
-            // Entire word already matched.
-
-            if (index == word.length()) {
-                return true;
-            }
-
-            // Discard impossible coordinates.
-
-            if (row < 0 ||
-                    row >= board.length ||
-                    col < 0 ||
-                    col >= board[0].length) {
+            if (row < 0
+                    || row >= board.length
+                    || col < 0
+                    || col >= board[0].length) {
                 return false;
             }
 
-            // Current path cannot reuse cells.
-
-            if (visited[row][col]) {
+            if (used[row][col]) {
                 return false;
             }
-
-            // Prefix cannot be extended.
 
             if (board[row][col] != word.charAt(index)) {
                 return false;
             }
 
-            // Commit this character to the current path.
+            if (index == word.length() - 1) {
+                return true;
+            }
 
-            visited[row][col] = true;
+            used[row][col] = true;
 
             boolean found =
                     dfs(board, word, row - 1, col, index + 1)
@@ -701,344 +335,661 @@ public class WordSearch {
                             || dfs(board, word, row, col - 1, index + 1)
                             || dfs(board, word, row, col + 1, index + 1);
 
-            // Restore state for sibling branches.
-
-            visited[row][col] = false;
+            used[row][col] = false;
 
             return found;
         }
     }
 
-/*
- * ============================================================
- * 🟣 INTERVIEW ARTICULATION
- * ============================================================
- *
- * Explain the Invariant
- * ---------------------
- *
- * Each DFS frame represents one valid prefix of the word.
- *
- * The visited matrix contains exactly the cells used
- * by that prefix.
- *
- * Every recursive step attempts to extend the prefix
- * by exactly one adjacent character.
- *
- * ------------------------------------------------------------
- * Discard Rule
- * ------------------------------------------------------------
- *
- * Immediately abandon a branch if:
- *
- * • outside board
- * • already visited
- * • character mismatch
- *
- * None of these branches can ever become valid later.
- *
- * ------------------------------------------------------------
- * Correctness
- * ------------------------------------------------------------
- *
- * Every legal path is explored.
- *
- * Every illegal path is pruned at the earliest point
- * its invariant is violated.
+    /*
+     * ========================================================================
+     * 4. 🔍 WHY EACH PIECE EXISTS
+     * ========================================================================
+     *
+     * ------------------------------------------------------------------------
+     * WHY TRY EVERY CELL?
+     * ------------------------------------------------------------------------
+     *
+     * The problem gives no starting coordinate.
+     *
+     * Therefore every board cell is a possible start:
+     *
+     *      for every row
+     *          for every col
+     *              try dfs(row, col, 0)
+     *
+     * Nested for-loops are the clearest fit because this is a fixed,
+     * complete traversal of the board.
+     *
+     * ------------------------------------------------------------------------
+     * WHY DFS?
+     * ------------------------------------------------------------------------
+     *
+     * Once one character matches, the next character must come from
+     * one adjacent cell.
+     *
+     * We follow one candidate path until it succeeds or reaches a dead end.
+     *
+     * That is naturally DFS.
+     *
+     * ------------------------------------------------------------------------
+     * WHY `used[row][col]`?
+     * ------------------------------------------------------------------------
+     *
+     * The same board cell cannot appear twice in ONE candidate path.
+     *
+     * Therefore the current path needs to remember which cells it already owns.
+     *
+     *      used[row][col] = true
+     *
+     * means:
+     *
+     *      "This cell is unavailable to descendants of the current path."
+     *
+     * ------------------------------------------------------------------------
+     * WHY UNMARK IT?
+     * ------------------------------------------------------------------------
+     *
+     * This is the backtracking part.
+     *
+     * The cell is forbidden only for the CURRENT candidate path.
+     * A sibling path may legally use it.
+     *
+     * Therefore:
+     *
+     *      used[row][col] = true;    // choose / mark
+     *
+     *      recurse
+     *
+     *      used[row][col] = false;   // undo
+     *
+     * ------------------------------------------------------------------------
+     * WHY DOES THIS LOOK LIKE PERMUTATIONS?
+     * ------------------------------------------------------------------------
+     *
+     * Because it is the same backtracking lifecycle.
+     *
+     * Permutations:
+     *
+     *      used[i] = true;
+     *      recurse;
+     *      used[i] = false;
+     *
+     * Word Search:
+     *
+     *      used[row][col] = true;
+     *      recurse to neighbors;
+     *      used[row][col] = false;
+     *
+     * The difference is only the shape of the choices:
+     *
+     *      Permutations -> choose another unused element
+     *      Word Search  -> choose an adjacent unused cell
+     *
+     * ------------------------------------------------------------------------
+     * WHY DOES GREEDY FAIL?
+     * ------------------------------------------------------------------------
+     *
+     * A character can have multiple matching neighbors.
+     *
+     * One locally valid neighbor may lead to a dead end,
+     * while another completes the word.
+     *
+     * Therefore all valid alternatives must be explored.
+     */
 
- *
- * Because backtracking restores the previous state,
- * exploring one branch never corrupts another.
- *
- * ------------------------------------------------------------
- * Termination
- * ------------------------------------------------------------
- *
- * The recursion terminates because every recursive call
- * increases index by exactly one.
- *
- * index can never exceed word.length().
- *
- * Therefore recursion depth is bounded by L.
- *
- * ------------------------------------------------------------
- * In-place Feasibility
- * ------------------------------------------------------------
- *
- * Yes.
- *
- * Instead of a visited matrix,
- * temporarily replace the current character with
- * a sentinel such as '#',
- * then restore it after recursion.
- *
- * Space becomes:
- *
- * O(L)
- *
- * since the separate visited matrix disappears.
- *
- * ------------------------------------------------------------
- * Streaming Feasibility
- * ------------------------------------------------------------
- *
- * No.
- *
- * DFS requires random access to neighboring cells
- * multiple times.
- *
- * ------------------------------------------------------------
- * When NOT to Use
- * ------------------------------------------------------------
- *
- * Avoid this pattern when:
- *
- * • repeated states can be memoized
- * • shortest path is required
- * • graph contains weighted transitions
- *
- * ============================================================
- * 🎯 INTERVIEW RECALL SHEET
- * ============================================================
- *
- * Trigger
- * -------
- * Grid
- * +
- * Exact word
- * +
- * No reuse
- *
- * Pattern
- * -------
- * DFS Backtracking
- *
- * Invariant
- * ---------
- * Current recursion equals one valid prefix.
- *
- * Search Space
- * ------------
- * Every board cell.
- *
- * State
- * -----
- * row
- * col
- * index
- * visited
- *
- * Discard Rule
- * ------------
- * Out of bounds
- * OR
- * mismatch
- * OR
- * visited.
- *
- * Edge Cases
- * ----------
- *
- * Empty board.
- *
- * Single cell.
- *
- * Word length one.
- *
- * Word longer than number of cells.
- *
- * Repeated characters.
- *
- * One-liner
- * ---------
- * Match one character,
- * recurse four directions,
- * undo before returning.
- *
- * Re-derivation Cue
- * -----------------
- * Prefix committed.
- * Suffix unexplored.
- * Restore after exploration.
- *
- * ============================================================
- * 🔄 VARIATIONS & TWEAKS
- * ============================================================
- *
- * Variation 1
- * -----------
- * In-place marking.
- *
- * Replace current character by '#'
- * and restore afterwards.
- *
- * Invariant
- * ---------
- * Board itself stores visitation state.
- *
- * Benefits
- * --------
- * Removes O(MN) visited array.
- *
- * ------------------------------------------------------------
- * Variation 2
- * -----------
- * Direction array.
- *
- * int[] dr = {-1,1,0,0}
- * int[] dc = {0,0,-1,1}
- *
- * Invariant
- * ---------
- * Neighbor generation is centralized.
- *
- * Less duplicated code.
- *
- * ------------------------------------------------------------
- * Variation 3
- * -----------
- * Frequency pruning.
- *
- * Count characters in board.
- *
- * If board lacks enough occurrences,
- * return false before DFS.
- *
- * Invariant
- * ---------
- * Impossible instances terminate early.
- *
- * ------------------------------------------------------------
- * Variation 4
- * -----------
- * Reverse search.
- *
- * Start from whichever end of the word
- * begins with the rarer character.
- *
- * Branching factor often decreases.
- *
- * ------------------------------------------------------------
- * Variation 5
- * -----------
- * Word Search II.
- *
- * Replace single word with Trie.
- *
- * Invariant changes.
- *
- * Current path represents a Trie prefix
- * instead of one target string.
- *
- * ============================================================
- * ⚫ PATTERN MAPPING
- * ============================================================
- *
- * Same Pattern
- * ------------
- *
- * • Word Search II
- * • N Queens
- * • Sudoku Solver
- * • Restore IP Addresses
- * • Letter Combinations
- * • Palindrome Partitioning
- *
- * Same Invariant
- * --------------
- *
- * Current recursion frame represents
- * one partial valid construction.
- *
- * ------------------------------------------------------------
- * Similar but Different
- * ---------------------
- *
- * Flood Fill
- * ----------
- * Never undo.
- *
- * Number of Islands
- * -----------------
- * Permanent visitation.
- *
- * Rat in a Maze
- * -------------
- * Destination fixed.
- *
- * Word Search
- * -----------
- * Destination depends on sequence matching.
- *
- * ============================================================
- * 🧠 MASTERY CHECKLIST
- * ============================================================
- *
- * Can you explain the invariant?
- *
- * YES
- *
- * Can you define the search space?
- *
- * YES
- *
- * Can you explain the recursive state?
- *
- * YES
- *
- * Can you justify the discard rule?
- *
- * YES
- *
- * Can you explain termination?
- *
- * YES
- *
- * Can you explain why greedy fails?
- *
- * YES
- *
- * Can you debug missing backtracking?
- *
- * YES
- *
- * Can you implement without notes?
- *
- * YES
- *
- * Can you recognize pattern boundaries?
- *
- * YES
- *
- * ============================================================
- * Additional Debugging Checklist
- * ============================================================
- *
- * □ Base case before boundary?
- *
- * □ Boundary before board access?
- *
- * □ Character check before recursion?
- *
- * □ Mark before exploring?
- *
- * □ Unmark on every exit path?
- *
- * □ Four directions explored?
- *
- * □ New DFS launched from every cell?
- *
- * □ index incremented exactly once?
- *
- * □ Current cell never revisited?
- *
- * □ Early return only after successful path?
- */
+    /*
+     * ========================================================================
+     * 5. 👀 VISUAL DRY RUN #1 — SUCCESSFUL PATH
+     * ========================================================================
+     *
+     * board:
+     *
+     *      0   1   2   3
+     *    +---+---+---+---+
+     * 0  | A | B | C | E |
+     *    +---+---+---+---+
+     * 1  | S | F | C | S |
+     *    +---+---+---+---+
+     * 2  | A | D | E | E |
+     *    +---+---+---+---+
+     *
+     * word = ABCCED
+     *
+     * +------+-------+-------+----------+-----------------------------+
+     * | step | index | cell  | expected | action                      |
+     * +------+-------+-------+----------+-----------------------------+
+     * |  1   |   0   | (0,0) |    A     | match A, mark (0,0)         |
+     * |  2   |   1   | (0,1) |    B     | match B, mark (0,1)         |
+     * |  3   |   2   | (0,2) |    C     | match C, mark (0,2)         |
+     * |  4   |   3   | (1,2) |    C     | match C, mark (1,2)         |
+     * |  5   |   4   | (2,2) |    E     | match E, mark (2,2)         |
+     * |  6   |   5   | (2,1) |    D     | final char matches -> true  |
+     * +------+-------+-------+----------+-----------------------------+
+     *
+     * Recursion stack at the key moment:
+     *
+     *      A(0,0)
+     *        └── B(0,1)
+     *              └── C(0,2)
+     *                    └── C(1,2)
+     *                          └── E(2,2)
+     *                                └── D(2,1) ✓
+     *
+     * The stack itself is the current path.
+     */
 
+    /*
+     * ========================================================================
+     * 6. 👀 VISUAL DRY RUN #2 — WHY REUSE MUST FAIL
+     * ========================================================================
+     *
+     * word = ABCB
+     *
+     * board top row:
+     *
+     *      A   B   C   E
+     *      0   1   2   3
+     *
+     * Candidate path:
+     *
+     *      A(0,0)
+     *        →
+     *      B(0,1)
+     *        →
+     *      C(0,2)
+     *
+     * Need final B.
+     *
+     * The tempting B is behind us at (0,1):
+     *
+     *      A  [B]  C
+     *          ↑   |
+     *          +---+
+     *
+     * But:
+     *
+     *      used[0][1] == true
+     *
+     * while this path is active.
+     *
+     * Therefore revisiting (0,1) is rejected.
+     *
+     * Important:
+     *
+     * It is forbidden only INSIDE this branch.
+     * Once the branch unwinds, B is restored.
+     */
+
+    /*
+     * ========================================================================
+     * 7. 👀 VISUAL DRY RUN #3 — BACKTRACKING / RESTORATION
+     * ========================================================================
+     *
+     * Imagine:
+     *
+     *      A A
+     *      B C
+     *
+     * and we are exploring a word whose current prefix starts at top-left A.
+     *
+     * Before choice:
+     *
+     *      used[0][0] = false
+     *
+     * Choose top-left A:
+     *
+     *      used[0][0] = true
+     *
+     * Try one direction.
+     *
+     * Suppose that branch fails.
+     *
+     * Before trying a sibling path:
+     *
+     *      used[0][0] = false
+     *
+     * State timeline:
+     *
+     * +----------------------+-------------------+
+     * | moment               | used[0][0]        |
+     * +----------------------+-------------------+
+     * | before choosing      | false             |
+     * | during current path  | true              |
+     * | after branch returns | false again       |
+     * +----------------------+-------------------+
+     *
+     * BACKTRACKING EQUATION:
+     *
+     *      STATE AFTER CHILD RETURNS
+     *      =
+     *      STATE BEFORE CHILD WAS TRIED
+     *
+     * That equation is more reusable than memorizing Word Search.
+     */
+
+    /*
+     * ========================================================================
+     * 8. 🧩 THE REUSABLE BACKTRACKING SKELETON
+     * ========================================================================
+     *
+     * General pattern:
+     *
+     *      search(state):
+     *
+     *          if complete:
+     *              return success
+     *
+     *          for each possible choice:
+     *
+     *              if choice invalid:
+     *                  continue
+     *
+     *              MAKE choice
+     *
+     *              search(next state)
+     *
+     *              UNDO choice
+     *
+     * Word Search translation:
+     *
+     *      choice       = use current board cell
+     *      make         = used[row][col] = true
+     *      next choices = 4 neighbors
+     *      undo         = used[row][col] = false
+     *      complete     = final word character matched
+     *
+     * ------------------------------------------------------------------------
+     * RECONSTRUCTION QUESTION
+     * ------------------------------------------------------------------------
+     *
+     * When stuck, ask:
+     *
+     *      "What temporary decision did I make
+     *       that a sibling branch must not inherit?"
+     *
+     * Whatever the answer is:
+     *
+     *      that state probably needs to be undone.
+     */
+
+    /*
+     * ========================================================================
+     * 9. ↔ HORIZONTAL MASTERY — SAME IDEA ACROSS PROBLEMS
+     * ========================================================================
+     *
+     * Learn the distinction, not 20 isolated implementations.
+     *
+     * +----------------------+----------------------+--------------------------+
+     * | Problem family       | State / choice       | Undo?                    |
+     * +----------------------+----------------------+--------------------------+
+     * | Flood Fill           | mark reached cell    | NO — visit is permanent  |
+     * | Number of Islands    | sink/mark land       | NO — visit is permanent  |
+     * | Word Search          | use cell in path     | YES                      |
+     * | Rat in a Maze        | use cell in path     | usually YES              |
+     * | Permutations         | choose unused item   | YES: used[i] = false     |
+     * | Subsets              | choose current item  | YES: remove last         |
+     * | Combination Sum      | choose candidate     | YES: remove last         |
+     * | N-Queens             | place queen          | YES: remove queen/state  |
+     * | Sudoku               | place digit          | YES: clear digit         |
+     * | Word Search II       | use grid cell        | YES + Trie prefix        |
+     * +----------------------+----------------------+--------------------------+
+     *
+     * ------------------------------------------------------------------------
+     * HIGH-ROI BOUNDARY
+     * ------------------------------------------------------------------------
+     *
+     * Permanent visitation:
+     *
+     *      "I have processed this node for the whole problem."
+     *
+     *      -> ordinary DFS / flood fill
+     *
+     * Path-local visitation:
+     *
+     *      "I am using this node only in the current candidate."
+     *
+     *      -> backtracking
+     *
+     * This distinction is one of the highest-ROI things to retain.
+     */
+
+    /*
+     * ========================================================================
+     * 10. ⚖️ WORD SEARCH VS OTHER GRID PATTERNS
+     * ========================================================================
+     *
+     * WORD SEARCH
+     * -----------
+     * Goal:
+     *      existence of one exact sequence
+     *
+     * State:
+     *      current path + word index
+     *
+     * Visit:
+     *      temporary
+     *
+     * Typical tool:
+     *      DFS backtracking
+     *
+     *
+     * NUMBER OF ISLANDS / FLOOD FILL
+     * ------------------------------
+     * Goal:
+     *      consume an entire connected component
+     *
+     * State:
+     *      which cells have globally been processed
+     *
+     * Visit:
+     *      permanent
+     *
+     * Typical tool:
+     *      DFS or BFS
+     *
+     *
+     * SHORTEST PATH IN GRID
+     * ---------------------
+     * Goal:
+     *      minimum number of edges / moves
+     *
+     * Visit:
+     *      usually permanent by shortest discovered distance
+     *
+     * Typical tool:
+     *      BFS for unweighted edges
+     *
+     *
+     * MEMORIZATION CUE
+     * ----------------
+     *
+     *      exact candidate path + undo  -> backtracking
+     *      whole component              -> DFS/BFS
+     *      minimum moves                -> BFS
+     */
+
+    /*
+     * ========================================================================
+     * 11. 🔴 COMMON WRONG SOLUTIONS
+     * ========================================================================
+     *
+     * 1. Never restore the marked cell
+     * --------------------------------
+     *
+     * Wrong because visitation is path-local, not global.
+     *
+     *
+     * 2. Mark only after recursion
+     * ----------------------------
+     *
+     * Wrong because a descendant can revisit the current cell
+     * before it has been marked.
+     *
+     *
+     * 3. Return false after the first failed direction
+     * ------------------------------------------------
+     *
+     * Wrong:
+     *
+     *      one neighbor failed
+     *
+     * does not imply:
+     *
+     *      all neighbors fail
+     *
+     *
+     * 4. Search from only the first occurrence of word[0]
+     * ----------------------------------------------------
+     *
+     * Another occurrence may be the start of the valid path.
+     *
+     *
+     * 5. Use a global visited set
+     * ---------------------------
+     *
+     * Wrong model.
+     *
+     * A cell used by one failed candidate path must become available
+     * to another candidate path.
+     *
+     *
+     * 6. Forget restoration on success
+     * --------------------------------
+     *
+     * If the caller expects the board unchanged, mutation leaks outside.
+     *
+     * Compute `found`, restore, then return.
+     */
+
+    /*
+     * ========================================================================
+     * 12. ⏱ COMPLEXITY
+     * ========================================================================
+     *
+     * Let:
+     *
+     *      M = rows
+     *      N = columns
+     *      L = word length
+     *
+     * Interview derivation:
+     *
+     *      M*N possible starting cells
+     *      ×
+     *      up to 4 choices at each step
+     *      ×
+     *      at most L recursive levels
+     *
+     * Therefore:
+     *
+     *      Time = O(M * N * 4^L)
+     *
+     * Short articulation:
+     *
+     *      "MN starts, up to 4 choices per step, and at most L steps."
+     *
+     * Reusable rule:
+     *
+     *      STARTS × CHOICES^DEPTH
+     *
+     * Important contrast:
+     *
+     *      Flood Fill:
+     *      visited is permanent
+     *      -> each cell is processed once
+     *      -> O(MN)
+     *
+     *      Word Search:
+     *      used state is undone
+     *      -> many different candidate paths are explored
+     *      -> count the search tree
+     *
+     * Space:
+     *
+     *      O(MN) for used[][]
+     *      +
+     *      O(L) recursion stack
+     *
+     *      = O(MN + L)
+     */
+
+    /*
+     * ========================================================================
+     * 13. 🎙 INTERVIEW ARTICULATION
+     * ========================================================================
+     *
+     * "I try every board cell as a possible starting point.
+     *
+     * My DFS asks whether the suffix beginning at `index`
+     * can be matched starting from the current cell.
+     *
+     * I reject out-of-bounds cells, already-used cells, and character
+     * mismatches. When the current cell matches, I mark it used for this
+     * candidate path, recurse in the four directions, and then unmark it
+     * so sibling paths can reuse it.
+     *
+     * That is DFS backtracking.
+     *
+     * For time complexity, there are MN starting cells, up to 4 choices
+     * per recursive step, and at most L steps, so the upper bound is
+     * O(MN * 4^L).
+     *
+     * Space is O(MN + L): the used matrix plus recursion depth."
+     *
+     * ------------------------------------------------------------------------
+     * If interviewer asks: "Why backtracking?"
+     * ------------------------------------------------------------------------
+     *
+     * "Because used-state belongs only to the current path.
+     * After one branch finishes, I must undo it for sibling branches."
+     *
+     * ------------------------------------------------------------------------
+     * If interviewer asks: "How is this different from Flood Fill?"
+     * ------------------------------------------------------------------------
+     *
+     * "Flood Fill marks visited permanently.
+     * Word Search marks a cell only for the current path and then unmarks it."
+     */
+
+    /*
+     * ========================================================================
+     * 14. 🧠 30-SECOND RECALL CARD
+     * ========================================================================
+     *
+     * WORD SEARCH
+     * =
+     * FLOOD FILL
+     * +
+     * BACKTRACKING
+     *
+     * GRID gives:
+     *
+     *      bounds
+     *      4 directions
+     *
+     * WORD gives:
+     *
+     *      index
+     *      character match
+     *
+     * BACKTRACKING gives:
+     *
+     *      used[row][col] = true
+     *      recurse
+     *      used[row][col] = false
+     *
+     * DFS meaning:
+     *
+     *      dfs(r, c, i)
+     *      =
+     *      can word[i...] be matched starting here?
+     *
+     * Complexity:
+     *
+     *      STARTS × CHOICES^DEPTH
+     *
+     *      MN × 4^L
+     *
+     * One-liner:
+     *
+     *      MATCH -> MARK USED -> 4-WAY DFS -> UNMARK
+     */
+
+    /*
+     * ========================================================================
+     * 15. ↔ RELATED / REINFORCEMENT PROBLEMS
+     * ========================================================================
+     *
+     * Flood Fill / Number of Islands
+     * ------------------------------
+     *
+     * Same:
+     *      bounds + 4-direction DFS
+     *
+     * Different:
+     *      visited is permanent
+     *
+     *
+     * Permutations
+     * ------------
+     *
+     * Same:
+     *
+     *      used = true
+     *      recurse
+     *      used = false
+     *
+     * Different:
+     *      choices are array elements instead of neighboring grid cells
+     *
+     *
+     * N-Queens / Sudoku
+     * -----------------
+     *
+     * Same:
+     *      choose -> recurse -> undo
+     *
+     * Different:
+     *      validity rules and state representation
+     *
+     *
+     * Word Search II
+     * --------------
+     *
+     * Same:
+     *      grid DFS + path-local used state
+     *
+     * Upgrade:
+     *      Trie is used to share prefixes across many words
+     */
+
+    /*
+     * ========================================================================
+     * 16. 🎯 RETENTION / RECONSTRUCTION TEST
+     * ========================================================================
+     *
+     * Months later, do NOT ask:
+     *
+     *      "Do I remember LeetCode 79?"
+     *
+     * Ask:
+     *
+     * 1. What does one DFS call mean?
+     *
+     * 2. Is visited state global or path-local?
+     *
+     * 3. What are my invalid states?
+     *
+     * 4. What choice do I temporarily make?
+     *
+     * 5. What must I undo before sibling branches?
+     *
+     * If you can answer those five,
+     * you can reconstruct the implementation.
+     *
+     * ------------------------------------------------------------------------
+     * MINIMUM MATERIAL TO RETAIN
+     * ------------------------------------------------------------------------
+     *
+     *      every cell can start
+     *
+     *      dfs(r,c,i) = match suffix from here
+     *
+     *      invalid -> false
+     *
+     *      final match -> true
+     *
+     *      used = true
+     *      4 directions
+     *      used = false
+     *
+     * Everything else can be re-derived from that.
+     */
 
     public static void main(String[] args) {
 
-        OptimalSolution solver = new OptimalSolution();
+        Solution solver = new Solution();
 
         char[][] board1 = {
                 {'A', 'B', 'C', 'E'},
@@ -1046,28 +997,15 @@ public class WordSearch {
                 {'A', 'D', 'E', 'E'}
         };
 
-        // Happy path:
-        // Standard example requiring turns.
         assert solver.exist(copy(board1), "ABCCED");
-
-        // Happy path:
-        // Multiple occurrences of the same letter.
         assert solver.exist(copy(board1), "SEE");
-
-        // Trap:
-        // Cannot reuse the same cell.
         assert !solver.exist(copy(board1), "ABCB");
 
         char[][] single = {
                 {'A'}
         };
 
-        // Boundary:
-        // Single matching cell.
         assert solver.exist(copy(single), "A");
-
-        // Boundary:
-        // Single mismatch.
         assert !solver.exist(copy(single), "B");
 
         char[][] repeated = {
@@ -1075,22 +1013,15 @@ public class WordSearch {
                 {'A', 'A'}
         };
 
-        // Repeated characters require proper visited handling.
         assert solver.exist(copy(repeated), "AAAA");
-
-        // Longer than total cells.
         assert !solver.exist(copy(repeated), "AAAAA");
 
-        char[][] line = {
+        char[][] horizontal = {
                 {'A', 'B', 'C', 'D'}
         };
 
-        // Horizontal traversal.
-        assert solver.exist(copy(line), "ABCD");
-
-        // Reverse direction should also work because
-        // every cell is a possible starting point.
-        assert solver.exist(copy(line), "DCBA");
+        assert solver.exist(copy(horizontal), "ABCD");
+        assert solver.exist(copy(horizontal), "DCBA");
 
         char[][] vertical = {
                 {'A'},
@@ -1099,16 +1030,8 @@ public class WordSearch {
                 {'D'}
         };
 
-        // Vertical traversal.
         assert solver.exist(copy(vertical), "ABCD");
-
-        char[][] deadEnd = {
-                {'A', 'B'},
-                {'C', 'D'}
-        };
-
-        // Requires backtracking but no valid completion exists.
-        assert !solver.exist(copy(deadEnd), "ABDCB");
+        assert solver.exist(copy(vertical), "DCBA");
 
         char[][] zigzag = {
                 {'C', 'A', 'A'},
@@ -1116,35 +1039,55 @@ public class WordSearch {
                 {'B', 'C', 'D'}
         };
 
-        // Common interviewer edge case.
         assert solver.exist(copy(zigzag), "AAB");
 
-        System.out.println("All assertions passed.");
+        char[][] branchChoice = {
+                {'A', 'A', 'A'},
+                {'A', 'B', 'A'},
+                {'A', 'A', 'A'}
+        };
+
+        // Many locally-valid A choices; DFS must be willing to backtrack.
+        assert solver.exist(copy(branchChoice), "AAAB");
+
+        char[][] impossibleReuse = {
+                {'A', 'B'},
+                {'C', 'D'}
+        };
+
+        assert !solver.exist(copy(impossibleReuse), "ABDCB");
+
+        System.out.println("All WordSearch assertions passed.");
     }
 
     private static char[][] copy(char[][] board) {
 
         char[][] clone = new char[board.length][];
 
-        for (int i = 0; i < board.length; i++) {
-            clone[i] = Arrays.copyOf(board[i], board[i].length);
+        for (int index = 0; index < board.length; index++) {
+            clone[index] = Arrays.copyOf(board[index], board[index].length);
         }
 
         return clone;
     }
-
 }
 
 /*
-============================================================
-🧘 FINAL CLOSURE STATEMENT
-============================================================
-
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
-*/
+ * ============================================================================
+ * FINAL CLOSURE
+ * ============================================================================
+ *
+ * Do not retain the whole file.
+ *
+ * Retain the invariant:
+ *
+ *      CURRENT PATH OWNS TEMPORARY STATE.
+ *
+ * Therefore:
+ *
+ *      choose
+ *      explore
+ *      undo
+ *
+ * That is the reusable interview pattern.
+ */

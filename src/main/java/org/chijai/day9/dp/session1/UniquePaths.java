@@ -2,525 +2,419 @@ package org.chijai.day9.dp.session1;
 
 import java.util.Arrays;
 
+/**
+ * ============================================================================
+ * UNIQUE PATHS — V4
+ * ============================================================================
+ *
+ * LeetCode 62
+ * https://leetcode.com/problems/unique-paths/
+ *
+ * PURPOSE
+ * -------
+ * This file is optimized for:
+ *
+ *      RECONSTRUCTION UNDER INTERVIEW PRESSURE
+ *
+ * Months later, after hundreds of other problems, recognition is not enough.
+ *
+ * The goal is to be able to rebuild the solution from:
+ *
+ *      NATURAL CHOICES
+ *          ↓
+ *      RECURSIVE STATE
+ *          ↓
+ *      REPEATED STATES
+ *          ↓
+ *      MEMOIZATION
+ *          ↓
+ *      BOTTOM-UP DEPENDENCIES
+ *          ↓
+ *      STATE → PREDECESSORS → COMBINE → BASE → ORDER → ANSWER
+ *
+ * Every section should help reconstruct, transfer, explain, or retain.
+ */
 public class UniquePaths {
 
     /*
-     * ================================================================
-     * 2. 📘 PRIMARY PROBLEM
-     * ================================================================
+     * =========================================================================
+     * 1. PROBLEM STATEMENT
+     * =========================================================================
      *
-     * Title:
-     * Unique Paths
+     * A robot starts at the top-left corner of an m x n grid.
      *
-     * Difficulty:
-     * Medium
+     * Start:
      *
-     * Tags:
-     * Dynamic Programming
-     * Grid DP
-     * Counting
-     * Combinatorics
+     *      (0, 0)
      *
-     * Problem Description
-     * -------------------
-     * A robot starts at the top-left cell of an m x n grid.
+     * Destination:
      *
-     * The robot may only move:
-     *   • Right
-     *   • Down
+     *      (m - 1, n - 1)
      *
-     * Determine how many different paths exist from
-     * (0,0) to (m-1,n-1).
+     * At each step the robot may move only:
      *
-     * Every valid path consists only of right and down moves.
+     *      RIGHT
+     *      DOWN
      *
-     * Constraints
-     * -----------
-     * 1 <= m,n <= 100
+     * Return the number of DISTINCT valid paths from start to destination.
      *
-     * The final answer always fits inside a signed 32-bit integer.
-     *
-     * Examples
-     * --------
-     *
+     * -------------------------------------------------------------------------
      * Example 1
+     * -------------------------------------------------------------------------
      *
-     * m = 3
-     * n = 7
+     * m = 3, n = 2
      *
-     * Answer = 28
+     *      S   .
+     *      .   .
+     *      .   E
      *
-     * Example 2
+     * To reach E:
      *
-     * m = 3
-     * n = 2
+     *      2 DOWN moves
+     *      1 RIGHT move
+     *
+     * Valid paths:
+     *
+     *      R D D
+     *      D R D
+     *      D D R
      *
      * Answer = 3
      *
-     * Paths:
-     * R D D
-     * D D R
-     * D R D
+     * -------------------------------------------------------------------------
+     * Example 2
+     * -------------------------------------------------------------------------
      *
-     * Official LeetCode
-     * -----------------
-     * https://leetcode.com/problems/unique-paths/
+     * m = 3, n = 7
+     *
+     * Answer = 28
+     *
+     * Important:
+     *
+     * We are NOT asked to enumerate all 28 paths.
+     * We only need their count.
+     *
+     * -------------------------------------------------------------------------
+     * Example 3
+     * -------------------------------------------------------------------------
+     *
+     * m = 1, n = 5
+     *
+     *      S → → → → E
+     *
+     * There is only one possible path.
+     *
+     * Answer = 1
+     *
+     * -------------------------------------------------------------------------
+     * Constraints
+     * -------------------------------------------------------------------------
+     *
+     *      1 <= m, n <= 100
+     *
+     * The final answer fits in a signed 32-bit integer.
      */
 
     /*
-     * ================================================================
-     * 3. 🔵 CORE PATTERN OVERVIEW
-     * ================================================================
+     * =========================================================================
+     * 2. HOW THE BRAIN SHOULD THINK
+     * =========================================================================
      *
-     * Pattern
-     * -------
-     * Grid Dynamic Programming
+     * Do NOT begin with:
      *
-     * Archetype
-     * ---------
-     * Count all possible ways to reach every state using
-     * previously solved neighboring states.
+     *      "This is DP."
      *
-     * Core Invariant
-     * --------------
-     * dp[i][j]
-     * always equals
-     * the number of distinct ways to reach cell (i,j).
+     * Train the thought sequence that INVENTS the DP.
      *
-     * Why It Works
-     * ------------
-     * Every path entering a cell must come from exactly one
-     * of two predecessors:
+     * -------------------------------------------------------------------------
+     * THOUGHT 1 — WHAT IS THE OUTPUT?
+     * -------------------------------------------------------------------------
      *
-     *      top
-     *      left
+     * The problem asks:
      *
-     * Therefore
+     *      "How many ways?"
      *
-     * dp[i][j]
-     * =
-     * dp[i-1][j]
-     * +
-     * dp[i][j-1]
+     * So this is a COUNTING problem.
      *
-     * Every path is counted exactly once.
+     * A useful signal:
      *
-     * Recognition Signals
-     * -------------------
-     * ✓ Count ways
-     * ✓ Grid
-     * ✓ Fixed movement directions
-     * ✓ Optimal substructure
-     * ✓ State depends only on nearby states
+     *      when independent previous possibilities lead to the same state,
+     *      counting usually combines them with SUM.
      *
-     * Use When
-     * --------
-     * • Counting paths
-     * • Counting sequences
-     * • Restricted movement
-     * • DAG-style transitions
+     * -------------------------------------------------------------------------
+     * THOUGHT 2 — WHAT CHANGES AS I MOVE?
+     * -------------------------------------------------------------------------
      *
-     * Do NOT Use When
-     * ---------------
-     * • Cycles exist
-     * • Future affects past
-     * • State cannot be represented locally
+     * Only the robot's position:
      *
-     * Comparison
-     * ----------
+     *      row
+     *      col
      *
-     * DFS
-     * ----
-     * Explores every path individually.
+     * So a natural state is:
      *
-     * DP
-     * --
-     * Reuses overlapping subproblems.
+     *      solve(row, col)
      *
-     * BFS
-     * ---
-     * Finds shortest path.
+     * -------------------------------------------------------------------------
+     * THOUGHT 3 — WHAT CHOICES EXIST FROM ONE CELL?
+     * -------------------------------------------------------------------------
      *
-     * DP
-     * --
-     * Counts every possible path.
+     * From (row, col):
      *
-     * Backtracking
-     * ------------
-     * Enumerates paths.
+     *      go DOWN
      *
-     * DP
-     * --
-     * Counts without enumeration.
-     */
-
-    /*
-     * ================================================================
-     * 4. 🟢 MENTAL MODEL & INVARIANTS
-     * ================================================================
+     * or:
      *
-     * Mental Model
-     * ------------
-     * Imagine pouring water from the start.
+     *      go RIGHT
      *
-     * Every cell accumulates all water arriving from:
+     * This naturally gives recursion.
      *
-     *   ↑
-     *   ←
+     * -------------------------------------------------------------------------
+     * THOUGHT 4 — WHAT SHOULD solve(row, col) MEAN?
+     * -------------------------------------------------------------------------
      *
-     * The amount collected at a cell equals the number of
-     * unique paths reaching that cell.
+     * Let:
      *
-     * Eventually the destination stores the final answer.
+     *      solve(row, col)
      *
-     * ------------------------------------------------
-     * Primary Invariant
-     * ------------------------------------------------
+     * mean:
      *
-     * After processing cell (i,j),
+     *      number of valid paths from (row,col) to destination
      *
-     * dp[i][j]
+     * Then:
      *
-     * permanently equals the number of valid paths from
-     * (0,0) to (i,j).
+     *      solve(row, col)
+     *      =
+     *      solve(row + 1, col)
+     *      +
+     *      solve(row, col + 1)
      *
-     * Once written,
-     * this value never changes.
+     * -------------------------------------------------------------------------
+     * THOUGHT 5 — BASE CASES?
+     * -------------------------------------------------------------------------
      *
-     * ------------------------------------------------
-     * State Meaning
-     * ------------------------------------------------
+     * Outside grid:
      *
-     * dp[i][j]
+     *      0 paths
      *
-     * =
+     * Destination reached:
      *
-     * number of paths ending exactly at (i,j)
+     *      1 completed path
      *
-     * NOT
+     * -------------------------------------------------------------------------
+     * THOUGHT 6 — IS WORK REPEATED?
+     * -------------------------------------------------------------------------
      *
-     * number of remaining paths.
-     *
-     * ------------------------------------------------
-     * Variable Meaning
-     * ------------------------------------------------
-     *
-     * m
-     * number of rows
-     *
-     * n
-     * number of columns
-     *
-     * i
-     * current row
-     *
-     * j
-     * current column
-     *
-     * ------------------------------------------------
-     * Allowed Transition
-     * ------------------------------------------------
-     *
-     * From top
-     *
-     * dp[i-1][j]
-     *
-     * From left
-     *
-     * dp[i][j-1]
-     *
-     * Therefore
-     *
-     * dp[i][j]
-     * =
-     * top + left
-     *
-     * ------------------------------------------------
-     * Forbidden Transition
-     * ------------------------------------------------
-     *
-     * Never use
-     *
-     * bottom
-     * right
-     * diagonal
-     *
-     * because those states have not yet been computed in
-     * row-major order.
-     *
-     * ------------------------------------------------
-     * Initialization Invariant
-     * ------------------------------------------------
-     *
-     * First row:
-     *
-     * Every cell has exactly one path.
-     *
-     * Keep moving right.
-     *
-     * First column:
-     *
-     * Every cell has exactly one path.
-     *
-     * Keep moving down.
-     *
-     * ------------------------------------------------
-     * Termination
-     * ------------------------------------------------
-     *
-     * Once every cell has been processed,
-     *
-     * dp[m-1][n-1]
-     *
-     * is final.
-     *
-     * ------------------------------------------------
-     * Why Naive Recursion Fails
-     * ------------------------------------------------
-     *
-     * Every state repeatedly recomputes identical
-     * subproblems.
+     * Yes.
      *
      * Example:
      *
-     * Paths to
-     * (5,5)
+     *      (1,1)
      *
-     * are recomputed by nearly every ancestor.
+     * can be reached through:
      *
-     * This causes exponential growth.
+     *      Down → Right
+     *
+     * and:
+     *
+     *      Right → Down
+     *
+     * Once at (1,1), the remaining answer depends only on:
+     *
+     *      (1,1)
+     *
+     * not on how we arrived there.
+     *
+     * Therefore:
+     *
+     *      SAME STATE
+     *      → SAME ANSWER
+     *      → REPEATED WORK
+     *      → MEMOIZE
+     *
+     * -------------------------------------------------------------------------
+     * THOUGHT 7 — HOW DO I TURN THIS BOTTOM-UP?
+     * -------------------------------------------------------------------------
+     *
+     * Flip the state viewpoint.
+     *
+     * Recursive viewpoint:
+     *
+     *      ways FROM current cell to destination
+     *
+     * Bottom-up viewpoint:
+     *
+     *      ways TO REACH current cell from start
+     *
+     * Define:
+     *
+     *      dp[row][col]
+     *      =
+     *      number of paths from start to (row,col)
+     *
+     * Now ask the most reusable question:
+     *
+     *      "WHERE COULD I HAVE COME FROM?"
+     *
+     *             TOP
+     *              ↓
+     *           [current] ← LEFT
+     *
+     * Only two legal predecessors exist.
+     *
+     * -------------------------------------------------------------------------
+     * THOUGHT 8 — HOW DO I COMBINE THEM?
+     * -------------------------------------------------------------------------
+     *
+     * Every path reaching the current cell arrives from:
+     *
+     *      TOP
+     *
+     * or:
+     *
+     *      LEFT
+     *
+     * The two path sets are disjoint.
+     *
+     * Since we are COUNTING:
+     *
+     *      current = top + left
+     *
+     * -------------------------------------------------------------------------
+     * THOUGHT 9 — WHAT IS THE BASE?
+     * -------------------------------------------------------------------------
+     *
+     * First row:
+     *
+     *      exactly one path to every cell:
+     *      keep moving RIGHT
+     *
+     * First column:
+     *
+     *      exactly one path to every cell:
+     *      keep moving DOWN
+     *
+     * Therefore initialize both borders to 1.
+     *
+     * -------------------------------------------------------------------------
+     * THOUGHT 10 — WHAT ORDER?
+     * -------------------------------------------------------------------------
+     *
+     * Current needs:
+     *
+     *      TOP
+     *      LEFT
+     *
+     * Therefore process:
+     *
+     *      top-left → bottom-right
+     *
+     * -------------------------------------------------------------------------
+     * FINAL RECONSTRUCTION
+     * -------------------------------------------------------------------------
+     *
+     * STATE:
+     *      dp[r][c] = ways to reach cell
+     *
+     * PREDECESSORS:
+     *      top, left
+     *
+     * COMBINE:
+     *      COUNT → SUM
+     *
+     * BASE:
+     *      first row = 1
+     *      first column = 1
+     *
+     * ORDER:
+     *      top-left → bottom-right
+     *
+     * ANSWER:
+     *      bottom-right
      */
 
     /*
-     * ================================================================
-     * 5. 🔴 WHY WRONG SOLUTIONS FAIL
-     * ================================================================
+     * =========================================================================
+     * 3. RECURSION — NATURAL CHOICES
+     * =========================================================================
      *
-     * Mistake 1
-     * ---------
-     * Forgetting base initialization.
+     * Why keep this?
      *
-     * Why It Looks Correct
-     * --------------------
-     * Transition itself is correct.
+     * Because recursion exposes:
      *
-     * Broken Invariant
-     * ----------------
-     * Every state depends on already-correct predecessor
-     * values.
+     *      the natural choices
+     *      the natural state
+     *      the repeated subproblems
      *
-     * Counterexample
-     * --------------
-     * m=1
-     * n=5
-     *
-     * Without initializing first row,
-     * answer becomes zero.
-     *
-     * ------------------------------------------------
-     * Mistake 2
-     * ------------------------------------------------
-     * Starting inner loops from zero.
-     *
-     * Result
-     * ------
-     * Access
-     *
-     * dp[-1][j]
-     *
-     * or
-     *
-     * dp[i][-1]
-     *
-     * ------------------------------------------------
-     * Mistake 3
-     * ------------------------------------------------
-     * Using multiplication instead of addition.
-     *
-     * Trap
-     * ----
-     * We combine independent path counts,
-     * not probabilities.
-     *
-     * ------------------------------------------------
-     * Mistake 4
-     * ------------------------------------------------
-     * Recursive brute force during interview.
-     *
-     * Looks Elegant
-     * -------------
-     * Tiny implementation.
-     *
-     * Reality
-     * -------
-     * Explodes exponentially.
-     *
-     * ------------------------------------------------
-     * Mistake 5
-     * ------------------------------------------------
-     * Thinking greedy movement works.
-     *
-     * There is no optimization objective.
-     *
-     * We are counting every valid path.
+     * Do not memorize it as the final interview solution.
      */
 
-    /*
-     * ================================================================
-     * ⚙ IMPLEMENTATION BLUEPRINT
-     * ================================================================
-     *
-     * Typing Order
-     * ------------
-     *
-     * 1.
-     * Create dp table.
-     *
-     * 2.
-     * Fill first column with 1.
-     *
-     * 3.
-     * Fill first row with 1.
-     *
-     * 4.
-     * Loop rows from 1.
-     *
-     * 5.
-     * Loop columns from 1.
-     *
-     * 6.
-     * Compute
-     *
-     * top = dp[i-1][j]
-     * left = dp[i][j-1]
-     *
-     * 7.
-     * Store
-     *
-     * top + left
-     *
-     * 8.
-     * Return bottom-right.
-     *
-     * Mechanical Skeleton
-     * -------------------
-     *
-     * allocate
-     *
-     * initialize borders
-     *
-     * nested loops
-     *
-     * transition
-     *
-     * return destination
-     */
-
-    /*
-     * ================================================================
-     * 🧾 ULTRA-COMPACT PSEUDOCODE
-     * ================================================================
-     *
-     * create table
-     *
-     * initialize borders
-     *
-     * for each remaining cell
-     *     state = top + left
-     *
-     * return destination
-     */
-
-    /*
-     * ================================================================
-     * 6. SOLUTION CLASSES
-     * ================================================================
-     */
-
-    /**
-     * ------------------------------------------------
-     * Brute Force
-     * ------------------------------------------------
-     *
-     * Idea
-     * ----
-     * Try both legal moves recursively.
-     *
-     * Invariant
-     * ---------
-     * Every recursive call represents one robot position.
-     *
-     * Limitation
-     * ----------
-     * Massive repeated computation.
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(2^(m+n))
-     *
-     * Space:
-     * O(m+n)
-     *
-     * Interview Usefulness
-     * --------------------
-     * Good starting point before introducing memoization.
-     */
-    static class BruteForce {
+    static class Recursion {
 
         public int uniquePaths(int m, int n) {
-            return dfs(m, n, 0, 0);
+            return solve(0, 0, m, n);
         }
 
-        private int dfs(int m, int n, int row, int col) {
+        private int solve(int row, int col, int m, int n) {
 
-            // Invariant: outside grid cannot contribute a valid path.
             if (row >= m || col >= n) {
                 return 0;
             }
 
-            // Invariant: reaching destination completes exactly one path.
             if (row == m - 1 && col == n - 1) {
                 return 1;
             }
 
-            int down = dfs(m, n, row + 1, col);
-            int right = dfs(m, n, row, col + 1);
+            int down = solve(row + 1, col, m, n);
+            int right = solve(row, col + 1, m, n);
 
             return down + right;
         }
     }
 
-    /**
-     * ------------------------------------------------
-     * Improved
-     * ------------------------------------------------
+    /*
+     * -------------------------------------------------------------------------
+     * RECURSION TREE — REPEATED STATE
+     * -------------------------------------------------------------------------
      *
-     * Idea
-     * ----
-     * Cache every state once.
+     *                          solve(0,0)
+     *                         /          \
+     *                    down              right
+     *                     /                  \
+     *              solve(1,0)              solve(0,1)
+     *                /     \                 /      \
+     *         solve(2,0)  solve(1,1)   solve(1,1)  solve(0,2)
+     *                          ↑               ↑
+     *                          └──── SAME ─────┘
      *
-     * Invariant
-     * ---------
-     * memo[row][col]
-     * stores the final answer for that state forever.
+     * The same state solve(1,1) appears twice.
      *
-     * Improvement
-     * -----------
-     * Eliminates repeated recursion.
+     * Reusable signal:
      *
-     * Complexity
-     * ----------
-     * Time:
-     * O(m*n)
+     *      same input state
+     *      → same answer
+     *      → repeated work
+     *      → cache candidate
      *
-     * Space:
-     * O(m*n)
+     * Complexity:
      *
-     * Interview Usefulness
-     * --------------------
-     * Natural bridge from recursion to tabulation.
+     *      Time  = exponential
+     *      Space = O(m + n) recursion depth
      */
+
+    /*
+     * =========================================================================
+     * 4. MEMOIZATION — RECURSION + CACHE
+     * =========================================================================
+     *
+     * Keep the same recursive meaning:
+     *
+     *      solve(row, col)
+     *      =
+     *      ways from this cell to destination
+     *
+     * But solve every coordinate once.
+     */
+
     static class Memoization {
 
         public int uniquePaths(int m, int n) {
@@ -534,7 +428,13 @@ public class UniquePaths {
             return solve(0, 0, m, n, memo);
         }
 
-        private int solve(int row, int col, int m, int n, int[][] memo) {
+        private int solve(
+                int row,
+                int col,
+                int m,
+                int n,
+                int[][] memo
+        ) {
 
             if (row >= m || col >= n) {
                 return 0;
@@ -548,156 +448,431 @@ public class UniquePaths {
                 return memo[row][col];
             }
 
-            memo[row][col] =
-                    solve(row + 1, col, m, n, memo)
-                            + solve(row, col + 1, m, n, memo);
+            int down = solve(row + 1, col, m, n, memo);
+            int right = solve(row, col + 1, m, n, memo);
+
+            memo[row][col] = down + right;
 
             return memo[row][col];
         }
     }
-    /**
-     * ------------------------------------------------
-     * Optimal (Interview Preferred)
-     * ------------------------------------------------
+
+    /*
+     * -------------------------------------------------------------------------
+     * REPEATED-STATE / CACHE-HIT VISUAL
+     * -------------------------------------------------------------------------
      *
-     * Idea
-     * ----
-     * Build the answer bottom-up.
+     * First time:
      *
-     * Every state is computed exactly once after both of
-     * its predecessor states are already finalized.
+     *      solve(1,1)
+     *          ↓
+     *      calculate
+     *          ↓
+     *      memo[1][1] = answer
      *
-     * 🟢 Invariant
-     * ------------
-     * Before computing dp[i][j]:
+     * Later:
      *
-     * dp[i - 1][j]
-     * and
-     * dp[i][j - 1]
+     *      solve(1,1)
+     *          ↓
+     *      memo[1][1] already exists
+     *          ↓
+     *      CACHE HIT
+     *          ↓
+     *      return immediately
      *
-     * already contain their final path counts.
+     * Possible states:
      *
-     * Therefore
+     *      m * n
      *
-     * dp[i][j]
+     * Each solved once:
      *
-     * can also become final immediately.
+     *      Time  = O(m * n)
+     *      Space = O(m * n)
      *
-     * Correctness
-     * -----------
-     * Every valid path reaching (i,j)
-     * must enter from exactly one predecessor:
-     *
-     *   top
-     *   left
-     *
-     * The predecessor sets are disjoint.
-     *
-     * Adding their counts counts every path exactly once.
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(m × n)
-     *
-     * Space:
-     * O(m × n)
-     *
-     * Interview Usefulness
-     * --------------------
-     * This is the standard expected interview solution.
+     * This is the recursion → DP bridge.
      */
-    static class Optimal {
 
-        public int uniquePaths(int m, int n) {
+    /*
+     * =========================================================================
+     * 5. BOTTOM-UP DP — PRIMARY INTERVIEW SOLUTION
+     * =========================================================================
+     *
+     * For fixed rectangular traversal, nested FOR loops are clearer than WHILE.
+     *
+     * They visually express:
+     *
+     *      "process every cell in this rectangular range"
+     *
+     * The transition should also remain visible as ONE equation:
+     *
+     *      current = top + left
+     *
+     * That equation is the heart of the DP.
+     */
 
-            if (m <= 0 || n <= 0) {
-                return 0;
-            }
+    public int uniquePaths(int m, int n) {
 
-            if (m == 1 || n == 1) {
-                return 1;
-            }
+        int[][] dp = new int[m][n];
 
-            int[][] dp = new int[m][n];
-
-            // Invariant: only one way to stay on first column.
-            for (int row = 0; row < m; row++) {
-                dp[row][0] = 1;
-            }
-
-            // Invariant: only one way to stay on first row.
-            for (int col = 0; col < n; col++) {
-                dp[0][col] = 1;
-            }
-
-            for (int row = 1; row < m; row++) {
-
-                for (int col = 1; col < n; col++) {
-
-                    // Invariant: predecessor states are already final.
-                    int fromTop = dp[row - 1][col];
-
-                    // Invariant: left predecessor is finalized.
-                    int fromLeft = dp[row][col - 1];
-
-                    // Every path enters from exactly one predecessor.
-                    dp[row][col] = fromTop + fromLeft;
-                }
-            }
-
-            // Invariant: destination now stores total path count.
-            return dp[m - 1][n - 1];
+        // Every first-column cell can be reached in exactly one way:
+        // keep moving DOWN from the start 0,0
+        for (int row = 0; row < m; row++) {
+            dp[row][0] = 1;
         }
+
+        // Every first-row cell can be reached in exactly one way:
+        // keep moving RIGHT from the start 0,0
+        for (int col = 0; col < n; col++) {
+            dp[0][col] = 1;
+        }
+
+        for (int row = 1; row < m; row++) {
+
+            for (int col = 1; col < n; col++) {
+
+                dp[row][col] =
+                        dp[row - 1][col]
+                                + dp[row][col - 1];
+            }
+        }
+
+        return dp[m - 1][n - 1];
     }
 
-    /**
-     * ------------------------------------------------
-     * Space Optimized
-     * ------------------------------------------------
+    /*
+     * =========================================================================
+     * 6. FULL DP TABLE — 3 x 3
+     * =========================================================================
      *
-     * Idea
-     * ----
-     * Observe that each row only depends on:
+     * After border initialization:
      *
-     * current row
-     * previous row
+     *      +---+---+---+
+     *      | 1 | 1 | 1 |
+     *      +---+---+---+
+     *      | 1 | 0 | 0 |
+     *      +---+---+---+
+     *      | 1 | 0 | 0 |
+     *      +---+---+---+
      *
-     * Instead of storing the entire matrix,
-     * reuse one array.
+     * -------------------------------------------------------------------------
+     * Compute row = 1
+     * -------------------------------------------------------------------------
      *
-     * State Meaning
-     * -------------
-     *
-     * dp[col]
-     *
-     * before update
+     * dp[1][1]
      * =
-     * paths from above
-     *
-     * dp[col - 1]
-     *
-     * after update
+     * dp[0][1] + dp[1][0]
      * =
-     * paths from left
-     *
-     * Transition
-     * ----------
-     *
-     * dp[col]
+     * 1 + 1
      * =
-     * dp[col]
-     * +
-     * dp[col - 1]
+     * 2
      *
-     * Complexity
-     * ----------
-     * Time:
-     * O(m × n)
+     * dp[1][2]
+     * =
+     * dp[0][2] + dp[1][1]
+     * =
+     * 1 + 2
+     * =
+     * 3
      *
-     * Space:
-     * O(n)
+     *      +---+---+---+
+     *      | 1 | 1 | 1 |
+     *      +---+---+---+
+     *      | 1 | 2 | 3 |
+     *      +---+---+---+
+     *      | 1 | 0 | 0 |
+     *      +---+---+---+
+     *
+     * -------------------------------------------------------------------------
+     * Compute row = 2
+     * -------------------------------------------------------------------------
+     *
+     * dp[2][1]
+     * =
+     * dp[1][1] + dp[2][0]
+     * =
+     * 2 + 1
+     * =
+     * 3
+     *
+     * dp[2][2]
+     * =
+     * dp[1][2] + dp[2][1]
+     * =
+     * 3 + 3
+     * =
+     * 6
+     *
+     *      +---+---+---+
+     *      | 1 | 1 | 1 |
+     *      +---+---+---+
+     *      | 1 | 2 | 3 |
+     *      +---+---+---+
+     *      | 1 | 3 | 6 |
+     *      +---+---+---+
+     *
+     * Answer = 6
      */
+
+    /*
+     * =========================================================================
+     * 7. FOCUSED INNER-LOOP TRACE
+     * =========================================================================
+     *
+     * We are at:
+     *
+     *      row = 2
+     *      col = 2
+     *
+     * Current table:
+     *
+     *      +---+---+---+
+     *      | 1 | 1 | 1 |
+     *      +---+---+---+
+     *      | 1 | 2 | 3 |
+     *      +---+---+---+
+     *      | 1 | 3 | 0 |
+     *      +---+---+---+
+     *
+     * Exact line:
+     *
+     *      dp[row][col]
+     *      =
+     *      dp[row - 1][col]
+     *      +
+     *      dp[row][col - 1]
+     *
+     * Substitute:
+     *
+     *      dp[2][2]
+     *      =
+     *      dp[1][2]
+     *      +
+     *      dp[2][1]
+     *
+     *      =
+     *      3 + 3
+     *
+     *      =
+     *      6
+     *
+     * Full table:
+     *
+     *      teaches global state evolution.
+     *
+     * Focused trace:
+     *
+     *      teaches exact code execution under pressure.
+     */
+
+    /*
+     * =========================================================================
+     * 8. INVARIANT + CORRECTNESS PROOF
+     * =========================================================================
+     *
+     * Invariant:
+     *
+     *      when dp[row][col] is computed,
+     *      it equals the number of valid paths from start to that cell.
+     *
+     * Why?
+     *
+     * Every path reaching (row,col) must make its final move from exactly one:
+     *
+     *      TOP
+     *      LEFT
+     *
+     * No other move is legal.
+     *
+     * The two path sets are disjoint because their final moves differ.
+     *
+     * By row-major order:
+     *
+     *      dp[row - 1][col] is already correct
+     *      dp[row][col - 1] is already correct
+     *
+     * Therefore:
+     *
+     *      dp[row][col]
+     *      =
+     *      top + left
+     *
+     * counts every valid path exactly once.
+     *
+     * The first row and first column are correctly initialized to 1.
+     *
+     * Therefore, by induction over the table,
+     * the destination value is correct.
+     *
+     * Complexity:
+     *
+     *      Time  = O(m * n)
+     *      Space = O(m * n)
+     */
+
+    /*
+     * =========================================================================
+     * 9. IMPLEMENTATION BLUEPRINT
+     * =========================================================================
+     *
+     * Generic:
+     *
+     *      define state
+     *      initialize base states
+     *      choose dependency-safe order
+     *      iterate states
+     *      combine predecessor answers
+     *      return target
+     *
+     * Unique Paths:
+     *
+     *      create dp[m][n]
+     *      first row = 1
+     *      first column = 1
+     *
+     *      for every interior cell:
+     *
+     *          current = top + left
+     *
+     *      return bottom-right
+     *
+     * Ultra-compact pseudocode:
+     *
+     *      initialize borders
+     *
+     *      for each remaining cell:
+     *          dp[cell] = top + left
+     *
+     *      return destination
+     */
+
+    /*
+     * =========================================================================
+     * 10. HIGH-ROI FOLLOW-UP — 2D → 1D SPACE COMPRESSION
+     * =========================================================================
+     *
+     * Do NOT memorize the 1D formula independently.
+     *
+     * Start from the 2D equation:
+     *
+     *      dp[row][col]
+     *      =
+     *      dp[row - 1][col]
+     *      +
+     *      dp[row][col - 1]
+     *
+     * When processing row by row, we only need:
+     *
+     *      TOP
+     *      LEFT
+     *
+     * So keep one array indexed by COLUMN.
+     *
+     * Why column?
+     *
+     * Because the outer loop walks rows.
+     *
+     * The 1D array represents one horizontal row of DP values.
+     *
+     * -------------------------------------------------------------------------
+     * BEFORE / AFTER MEANING
+     * -------------------------------------------------------------------------
+     *
+     * Before updating dp[col]:
+     *
+     *      dp[col]
+     *      =
+     *      previous row, same column
+     *      =
+     *      TOP
+     *
+     * Since col - 1 has already been processed in the current row:
+     *
+     *      dp[col - 1]
+     *      =
+     *      current row, previous column
+     *      =
+     *      LEFT
+     *
+     * Therefore the SAME recurrence becomes:
+     *
+     *      dp[col]
+     *      =
+     *      dp[col]
+     *      +
+     *      dp[col - 1]
+     *
+     * -------------------------------------------------------------------------
+     * VISUAL EQUIVALENCE
+     * -------------------------------------------------------------------------
+     *
+     * 2D:
+     *
+     *      dp[row][col]
+     *      =
+     *      dp[row - 1][col]      // TOP
+     *      +
+     *      dp[row][col - 1]      // LEFT
+     *
+     * 1D:
+     *
+     *      dp[col]
+     *      =
+     *      dp[col]               // TOP before update
+     *      +
+     *      dp[col - 1]           // LEFT after update
+     *
+     * -------------------------------------------------------------------------
+     * 1D DRY RUN
+     * -------------------------------------------------------------------------
+     *
+     * Start:
+     *
+     *      [1, 1, 1]
+     *
+     * Processing second row:
+     *
+     * col = 1
+     *
+     *      [1, 1, 1]
+     *          ↑
+     *
+     *      dp[1] = 1 + 1 = 2
+     *
+     *      [1, 2, 1]
+     *
+     * col = 2
+     *
+     *      dp[2] = 1 + 2 = 3
+     *
+     *      [1, 2, 3]
+     *
+     * Processing third row:
+     *
+     * col = 1
+     *
+     *      dp[1] = 2 + 1 = 3
+     *
+     *      [1, 3, 3]
+     *
+     * col = 2
+     *
+     *      dp[2] = 3 + 3 = 6
+     *
+     *      [1, 3, 6]
+     *
+     * Complexity:
+     *
+     *      Time  = O(m * n)
+     *      Space = O(n)
+     *
+     * Further optimization:
+     *
+     * Since the grid is symmetric, the smaller dimension can be used
+     * as the array length for O(min(m,n)) space.
+     *
+     * But O(n) is usually the cleaner interview explanation.
+     */
+
     static class SpaceOptimized {
 
         public int uniquePaths(int m, int n) {
@@ -710,9 +885,9 @@ public class UniquePaths {
 
                 for (int col = 1; col < n; col++) {
 
-                    // Current value represents paths from above.
-                    // Left value already represents current row.
-                    dp[col] = dp[col] + dp[col - 1];
+                    dp[col] =
+                            dp[col]
+                                    + dp[col - 1];
                 }
             }
 
@@ -720,699 +895,626 @@ public class UniquePaths {
         }
     }
 
-    /**
-     * ------------------------------------------------
-     * Mathematical Combination
-     * ------------------------------------------------
-     *
-     * Observation
-     * -----------
-     * Every valid path consists of
-     *
-     * (m-1) downs
-     * and
-     * (n-1) rights.
-     *
-     * Total moves
-     *
-     * =
-     * m+n-2
-     *
-     * We simply choose where one move type occurs.
-     *
-     * Formula
-     * -------
-     *
-     * C(m+n-2, m-1)
-     *
-     * or
-     *
-     * C(m+n-2, n-1)
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(min(m,n))
-     *
-     * Space:
-     * O(1)
-     *
-     * Interview Note
-     * --------------
-     * Elegant but DP is usually preferred because the
-     * obstacle variation extends naturally.
-     */
-    static class Mathematical {
-
-        public int uniquePaths(int m, int n) {
-
-            int totalMoves = m + n - 2;
-
-            int choose = Math.min(m - 1, n - 1);
-
-            long answer = 1;
-
-            for (int i = 1; i <= choose; i++) {
-
-                answer = answer * (totalMoves - choose + i) / i;
-            }
-
-            return (int) answer;
-        }
-    }
-
-/*
- * ================================================================
- * 🟣 INTERVIEW ARTICULATION
- * ================================================================
- *
- * Pattern
- * -------
- * Grid Dynamic Programming.
- *
- * State
- * -----
- * dp[i][j]
- * =
- * number of paths reaching (i,j).
- *
- * Invariant
- * ---------
- * When processing a cell,
- * both predecessor states are already finalized.
- *
- * Transition
- * ----------
- * top + left.
- *
- * Discard Rule
- * ------------
- * There is no search-space elimination.
- *
- * Instead,
- * every state is solved exactly once.
- *
- * Correctness
- * -----------
- * Every valid path reaching a cell must arrive
- * through exactly one predecessor.
- *
- * Since predecessor path sets are disjoint,
- * adding them counts every valid path exactly once.
- *
- * Termination
- * -----------
- * The nested loops visit every reachable state.
- *
- * After the final iteration,
- * destination is finalized.
- *
- * In-place Feasibility
- * --------------------
- * Yes.
- *
- * Reduce to one-dimensional DP because only the
- * previous row is required.
- *
- * Streaming Feasibility
- * ---------------------
- * Yes.
- *
- * Row-by-row processing is sufficient.
- *
- * When NOT To Use
- * ---------------
- * If movement is unrestricted or cycles exist,
- * this simple recurrence no longer holds.
- */
-
-/*
- * ================================================================
- * 🎯 INTERVIEW RECALL SHEET
- * ================================================================
- *
- * Trigger
- * -------
- * Count paths on a grid.
- *
- * Pattern
- * -------
- * Grid DP.
- *
- * State
- * -----
- * Paths ending at current cell.
- *
- * Invariant
- * ---------
- * Every predecessor is already correct.
- *
- * Transition
- * ----------
- * top + left.
- *
- * Search Target
- * -------------
- * Bottom-right cell.
- *
- * Common Trap
- * -----------
- * Forgetting first row / first column initialization.
- *
- * Edge Cases
- * ----------
- * 1 x n
- * m x 1
- * 1 x 1
- *
- * One-liner
- * ---------
- * Every path enters from top or left.
- *
- * Re-derivation Cue
- * -----------------
- * Ask:
- *
- * "Where could I have come from?"
- */
     /*
-     * ================================================================
-     * 🔄 VARIATIONS & TWEAKS
-     * ============================================================================
+     * =========================================================================
+     * 11. HORIZONTAL MASTERY — ONE LEARNED PATTERN, MANY PAYOFFS
+     * =========================================================================
      *
-     * Variation 1
-     * -----------
-     * Unique Paths II (Obstacles)
+     * The reusable family is:
      *
-     * Change
-     * ------
-     * Some cells cannot be entered.
+     *      CURRENT STATE
+     *           ↑
+     *      combine answers
+     *           ↑
+     *      VALID PREDECESSORS
      *
-     * New Invariant
-     * -------------
-     * dp[i][j]
-     * always equals the number of valid paths that avoid
-     * every obstacle encountered so far.
+     * -------------------------------------------------------------------------
+     * PROBLEM                  STATE                    PREDECESSORS    COMBINE
+     * -------------------------------------------------------------------------
      *
-     * Transition
-     * ----------
-     * obstacle
-     * ->
-     * dp[i][j] = 0
+     * Unique Paths            ways to reach cell       top, left       SUM
      *
-     * otherwise
+     * Unique Paths II         valid ways to reach      top, left       SUM
+     *                         cell; obstacle = 0
      *
-     * dp[i][j]
-     * =
-     * top + left
+     * Minimum Path Sum        min cost to reach         top, left       MIN
+     *                         cell
      *
-     * Pattern
-     * -------
-     * Exactly the same DP.
+     * Maximum Path Value      max value to reach        top, left       MAX
+     *                         cell
      *
-     * Only the transition changes.
+     * Min Falling Path Sum    min cost to reach         up-left,        MIN
+     *                         cell                      up,
+     *                                                   up-right
      *
-     * ------------------------------------------------
-     * Variation 2
-     * ------------------------------------------------
-     * Minimum Path Sum
+     * Triangle                best cost to reach        two parents     MIN
+     *                         position
      *
-     * State
-     * -----
-     * Minimum cost instead of path count.
+     * -------------------------------------------------------------------------
+     * WHAT SHOULD YOUR BRAIN NOTICE?
+     * -------------------------------------------------------------------------
      *
-     * Transition
-     * ----------
-     * min(top,left)
-     * +
-     * currentCell
+     * Unique Paths II:
      *
-     * Pattern survives.
+     *      same geometry
+     *      same SUM
+     *      add invalid-state rule
      *
-     * Aggregation changes.
+     * Minimum Path Sum:
      *
-     * ------------------------------------------------
-     * Variation 3
-     * ------------------------------------------------
-     * Maximum Path Value
+     *      same geometry
+     *      change state meaning
+     *      change SUM → MIN
      *
-     * Replace
-     * -------
-     * +
+     * Falling Path:
      *
-     * with
+     *      same grammar
+     *      change predecessor set
      *
-     * max()
+     * Triangle:
      *
-     * depending on problem definition.
+     *      same parent-combination idea
+     *      different shape
      *
-     * ------------------------------------------------
-     * Variation 4
-     * ------------------------------------------------
-     * Diagonal Moves Allowed
+     * That is horizontal mastery.
      *
-     * Transition becomes
-     *
-     * top
-     * +
-     * left
-     * +
-     * diagonal
-     *
-     * State definition stays identical.
-     *
-     * ------------------------------------------------
-     * Variation 5
-     * ------------------------------------------------
-     * Variable Movement Length
-     *
-     * Transition must consider additional predecessor
-     * states.
-     *
-     * Complexity usually increases.
-     *
-     * ------------------------------------------------
-     * Variation 6
-     * ------------------------------------------------
-     * Cyclic Graph
-     *
-     * Pattern Breaks.
-     *
-     * Reason
-     * ------
-     * There is no topological evaluation order.
-     *
-     * DP state may depend on itself.
-     *
-     * ------------------------------------------------
-     * Variation 7
-     * ------------------------------------------------
-     * Count Paths Mod M
-     *
-     * Transition
-     *
-     * (top + left) % MOD
-     *
-     * Invariant remains unchanged.
-     *
-     * ------------------------------------------------
-     * Variation 8
-     * ------------------------------------------------
-     * Huge Grid
-     *
-     * Prefer
-     *
-     * O(n)
-     *
-     * space optimization.
+     * Do not store six isolated solutions.
+     * Store one reconstruction grammar.
      */
 
     /*
-     * ================================================================
-     * ⚫ PATTERN MAPPING
-     * ================================================================
+     * =========================================================================
+     * 12. HIGH-ROI VARIATION DERIVATIONS
+     * =========================================================================
      *
-     * Problem
-     * -------
-     * Unique Paths
+     * The previous section is the FAST comparison layer.
      *
-     * State
-     * -----
-     * Count
+     * This section trains how to MUTATE the base pattern.
      *
-     * Transition
-     * ----------
-     * Sum
+     * -------------------------------------------------------------------------
+     * UNIQUE PATHS II
+     * -------------------------------------------------------------------------
      *
-     * ------------------------------------------------
+     * Ask the same questions.
      *
-     * Problem
-     * -------
-     * Unique Paths II
+     * STATE:
      *
-     * State
-     * -----
-     * Count
+     *      valid paths reaching this cell
      *
-     * Transition
-     * ----------
-     * Obstacle ?
-     * 0
-     * :
-     * top + left
+     * PREDECESSORS:
      *
-     * ------------------------------------------------
+     *      top, left
      *
-     * Problem
-     * -------
-     * Minimum Path Sum
+     * COMBINE:
      *
-     * State
-     * -----
-     * Minimum Cost
+     *      SUM
      *
-     * Transition
-     * ----------
-     * min(top,left)
-     * +
-     * current
+     * NEW RULE:
      *
-     * ------------------------------------------------
+     *      obstacle cannot be entered
      *
-     * Problem
-     * -------
-     * Dungeon Game
+     * Therefore:
      *
-     * State
-     * -----
-     * Minimum health needed.
+     *      if blocked:
      *
-     * Transition
-     * ----------
-     * Reverse DP.
+     *          dp[r][c] = 0
      *
-     * ------------------------------------------------
+     *      else:
      *
-     * Problem
-     * -------
-     * Triangle
+     *          dp[r][c] = top + left
      *
-     * State
-     * -----
-     * Best path.
+     * WHAT SURVIVED?
      *
-     * Transition
-     * ----------
-     * Parent states.
+     *      state shape
+     *      predecessors
+     *      SUM
+     *      traversal order
+     *
+     * WHAT CHANGED?
+     *
+     *      validity rule
+     *
+     * -------------------------------------------------------------------------
+     * MINIMUM PATH SUM
+     * -------------------------------------------------------------------------
+     *
+     * STATE:
+     *
+     *      minimum cost to reach this cell
+     *
+     * PREDECESSORS:
+     *
+     *      top, left
+     *
+     * Problem asks for MINIMUM.
+     *
+     * Therefore:
+     *
+     *      dp[r][c]
+     *      =
+     *      grid[r][c]
+     *      +
+     *      min(top, left)
+     *
+     * WHAT SURVIVED?
+     *
+     *      grid state
+     *      predecessor geometry
+     *      traversal order
+     *
+     * WHAT CHANGED?
+     *
+     *      state meaning
+     *      SUM → MIN
+     *      add current cell cost
+     *
+     * -------------------------------------------------------------------------
+     * MAXIMUM PATH VALUE
+     * -------------------------------------------------------------------------
+     *
+     * STATE:
+     *
+     *      maximum value reaching this cell
+     *
+     * PREDECESSORS:
+     *
+     *      top, left
+     *
+     * COMBINE:
+     *
+     *      MAX
+     *
+     * Recurrence:
+     *
+     *      dp[r][c]
+     *      =
+     *      value[r][c]
+     *      +
+     *      max(top, left)
+     *
+     * Again:
+     *
+     *      same predecessor skeleton
+     *      different objective
+     *
+     * -------------------------------------------------------------------------
+     * MINIMUM FALLING PATH SUM
+     * -------------------------------------------------------------------------
+     *
+     * STATE:
+     *
+     *      minimum cost reaching this cell
+     *
+     * PREDECESSORS:
+     *
+     *      upper-left
+     *      up
+     *      upper-right
+     *
+     * COMBINE:
+     *
+     *      MIN
+     *
+     * WHAT SURVIVED?
+     *
+     *      predecessor-combination DP grammar
+     *
+     * WHAT CHANGED?
+     *
+     *      predecessor set
+     *
+     * -------------------------------------------------------------------------
+     * TRIANGLE
+     * -------------------------------------------------------------------------
+     *
+     * STATE:
+     *
+     *      minimum/best cost reaching this triangle position
+     *
+     * PREDECESSORS:
+     *
+     *      the two valid parents above
+     *
+     * COMBINE:
+     *
+     *      MIN
+     *
+     * Different shape.
+     *
+     * Same reconstruction method:
+     *
+     *      What does my state mean?
+     *      Where can I come from?
+     *      How should I combine those parents?
      */
 
     /*
-     * ================================================================
-     * 🧠 UNIQUE PATHS II
-     * ================================================================
+     * =========================================================================
+     * 13. GENERIC DP RECONSTRUCTION GRAMMAR
+     * =========================================================================
      *
-     * Problem
-     * -------
-     * Some cells contain obstacles.
+     * When a random problem feels like DP:
      *
-     * Robot still moves only:
+     * 1. STATE
      *
-     * Right
-     * Down
+     *      What exactly does dp[...] mean?
      *
-     * State
-     * -----
-     * dp[i][j]
+     * 2. PREDECESSORS
      *
-     * =
-     * valid paths reaching this cell.
+     *      Which already-solved states can produce this state?
      *
-     * New Invariant
-     * -------------
-     * Obstacle cells permanently contain zero paths.
+     * 3. COMBINE
      *
-     * Initialization
-     * --------------
-     * If start or destination is blocked,
-     * answer is immediately zero.
+     *      COUNT       → SUM
+     *      MINIMUM     → MIN
+     *      MAXIMUM     → MAX
+     *      POSSIBLE?   → OR
+     *
+     * 4. BASE
+     *
+     *      What smallest state is directly known?
+     *
+     * 5. ORDER
+     *
+     *      In what order are dependencies ready first?
+     *
+     * 6. ANSWER
+     *
+     *      Which state represents what the problem asks?
+     *
+     * If you do not yet know the DP:
+     *
+     *      write natural recursion
+     *      → identify state
+     *      → notice repeated states
+     *      → memoize
+     *      → derive dependency order
+     *      → tabulate
      */
 
-    static class UniquePathsII {
+    /*
+     * =========================================================================
+     * 14. COMMON FAILURE MODES
+     * =========================================================================
+     *
+     * FAILURE 1
+     * ---------
+     * Writing recurrence before defining state.
+     *
+     * Repair:
+     *
+     *      say:
+     *
+     *      "dp[row][col] means ______."
+     *
+     * -------------------------------------------------------------------------
+     * FAILURE 2
+     * -------------------------------------------------------------------------
+     * Forgetting the recurrence.
+     *
+     * Repair:
+     *
+     *      draw ONE current cell
+     *
+     *      ask:
+     *
+     *      "Where could I have come from?"
+     *
+     * -------------------------------------------------------------------------
+     * FAILURE 3
+     * -------------------------------------------------------------------------
+     * Forgetting why border cells are 1.
+     *
+     * Repair:
+     *
+     * First row:
+     *
+     *      only RIGHT is possible
+     *
+     * First column:
+     *
+     *      only DOWN is possible
+     *
+     * Therefore exactly one path.
+     *
+     * -------------------------------------------------------------------------
+     * FAILURE 4
+     * -------------------------------------------------------------------------
+     * Wrong combine operator.
+     *
+     * Repair:
+     *
+     *      COUNT → SUM
+     *      MIN   → MIN
+     *      MAX   → MAX
+     *
+     * -------------------------------------------------------------------------
+     * FAILURE 5
+     * -------------------------------------------------------------------------
+     * Wrong traversal direction.
+     *
+     * Repair:
+     *
+     *      dependencies determine order
+     *
+     * Need top + left?
+     *
+     *      process top-left → bottom-right
+     *
+     * -------------------------------------------------------------------------
+     * FAILURE 6
+     * -------------------------------------------------------------------------
+     * Memorizing 1D compression mechanically.
+     *
+     * Repair:
+     *
+     *      dp[col]     = TOP before update
+     *      dp[col - 1] = LEFT after update
+     */
 
-        public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+    /*
+     * =========================================================================
+     * 15. INTERVIEW ARTICULATION
+     * =========================================================================
+     *
+     * "I'll use grid DP.
+     *
+     * Let dp[row][col] represent the number of valid paths from the start
+     * to that cell.
+     *
+     * Because movement is only right or down, every path reaching a cell
+     * must come from either the cell above or the cell to the left.
+     *
+     * Those path sets are disjoint, so I add their counts.
+     *
+     * The first row and first column each contain one path because there is
+     * only one possible direction along either border.
+     *
+     * I then process the remaining cells from top-left to bottom-right,
+     * using:
+     *
+     *      dp[row][col]
+     *      =
+     *      dp[row - 1][col]
+     *      +
+     *      dp[row][col - 1].
+     *
+     * The answer is dp[m - 1][n - 1].
+     *
+     * Time is O(mn) and space is O(mn).
+     *
+     * If needed, I can reduce the space to O(n) because each row only needs
+     * the value above and the already-updated value to the left."
+     */
 
-            if (obstacleGrid == null || obstacleGrid.length == 0) {
-                return 0;
-            }
+    /*
+     * =========================================================================
+     * 16. PRESSURE RECALL CARD
+     * =========================================================================
+     *
+     * UNIQUE PATHS
+     *
+     * Trigger:
+     *
+     *      count ways through directed grid
+     *
+     * Natural recursion:
+     *
+     *      down + right
+     *
+     * Repeated state:
+     *
+     *      same (row,col)
+     *
+     * Bottom-up state:
+     *
+     *      dp[r][c] = ways to reach cell
+     *
+     * Recovery question:
+     *
+     *      "Where could I have come from?"
+     *
+     * Parents:
+     *
+     *      TOP
+     *      LEFT
+     *
+     * Combine:
+     *
+     *      COUNT → SUM
+     *
+     * Base:
+     *
+     *      first row = 1
+     *      first column = 1
+     *
+     * Order:
+     *
+     *      top-left → bottom-right
+     *
+     * Transition:
+     *
+     *      current = top + left
+     *
+     * 1D follow-up:
+     *
+     *      dp[col]     = TOP before update
+     *      dp[col - 1] = LEFT after update
+     *
+     * One-liner:
+     *
+     *      Every path enters a cell from top or left.
+     */
 
-            int rows = obstacleGrid.length;
-            int cols = obstacleGrid[0].length;
+    /*
+     * =========================================================================
+     * 17. REINFORCEMENT MAP
+     * =========================================================================
+     *
+     * Solve in this order:
+     *
+     *      1. Unique Paths
+     *
+     *         Learn:
+     *         predecessor accumulation
+     *
+     *      2. Unique Paths II
+     *
+     *         Learn:
+     *         same DP + invalid states
+     *
+     *      3. Minimum Path Sum
+     *
+     *         Learn:
+     *         same geometry, SUM → MIN
+     *
+     *      4. Minimum Falling Path Sum
+     *
+     *         Learn:
+     *         change predecessor set
+     *
+     *      5. Triangle
+     *
+     *         Learn:
+     *         same parent-combination grammar in another shape
+     *
+     * Goal:
+     *
+     *      not five memorized solutions
+     *
+     * but:
+     *
+     *      one reconstructible predecessor-combination DP family
+     */
 
-            // Invariant: impossible if start or finish is blocked.
-            if (obstacleGrid[0][0] == 1
-                    || obstacleGrid[rows - 1][cols - 1] == 1) {
-                return 0;
-            }
+    /*
+     * =========================================================================
+     * 18. MASTERY CHECK
+     * =========================================================================
+     *
+     * Close this file.
+     *
+     * Can you reconstruct:
+     *
+     *      1. natural recursive choices?
+     *
+     *      2. recursive state meaning?
+     *
+     *      3. repeated state visual?
+     *
+     *      4. why memoization becomes O(mn)?
+     *
+     *      5. bottom-up state meaning?
+     *
+     *      6. top / left predecessors?
+     *
+     *      7. why COUNT means SUM?
+     *
+     *      8. why borders are 1?
+     *
+     *      9. why nested loops start at 1?
+     *
+     *     10. why top-left → bottom-right?
+     *
+     *     11. obstacle variation?
+     *
+     *     12. minimum-cost variation?
+     *
+     *     13. why 1D dp[col] represents TOP before update?
+     *
+     * If yes:
+     *
+     *      you can reconstruct the family.
+     */
 
-            int[][] dp = new int[rows][cols];
-
-            // Exactly one way to stand at the start.
-            dp[0][0] = 1;
-
-            // First column.
-            for (int row = 1; row < rows; row++) {
-
-                if (obstacleGrid[row][0] == 1) {
-
-                    // Obstacle permanently blocks all paths below through
-                    // this direction.
-                    dp[row][0] = 0;
-
-                } else {
-
-                    // Only predecessor is directly above.
-                    dp[row][0] = dp[row - 1][0];
-                }
-            }
-
-            // First row.
-            for (int col = 1; col < cols; col++) {
-
-                if (obstacleGrid[0][col] == 1) {
-
-                    dp[0][col] = 0;
-
-                } else {
-
-                    // Only predecessor is from the left.
-                    dp[0][col] = dp[0][col - 1];
-                }
-            }
-
-            for (int row = 1; row < rows; row++) {
-
-                for (int col = 1; col < cols; col++) {
-
-                    if (obstacleGrid[row][col] == 1) {
-
-                        // Invariant: blocked cells cannot accumulate paths.
-                        dp[row][col] = 0;
-
-                    } else {
-
-                        // Valid paths arrive only from reachable predecessors.
-                        dp[row][col] =
-                                dp[row - 1][col]
-                                        + dp[row][col - 1];
-                    }
-                }
-            }
-
-            return dp[rows - 1][cols - 1];
-        }
-    }
-
-/*
- * ================================================================
- * 🧠 MASTERY CHECKLIST
- * ================================================================
- *
- * □ I can define the DP state before writing code.
- *
- * □ I know why the first row is initialized to one.
- *
- * □ I know why the first column is initialized to one.
- *
- * □ I can derive the recurrence:
- *
- *   top + left
- *
- * □ I understand why no path is counted twice.
- *
- * □ I know why recursion becomes exponential.
- *
- * □ I can optimize O(m×n) space to O(n).
- *
- * □ I can adapt immediately to obstacles.
- *
- * □ I know when this DP pattern no longer applies.
- *
- * □ I can explain correctness without referring to code.
- */
+    /*
+     * =========================================================================
+     * 19. TESTS
+     * =========================================================================
+     */
 
     public static void main(String[] args) {
 
-        BruteForce brute = new BruteForce();
-        Memoization memo = new Memoization();
-        Optimal optimal = new Optimal();
+        Recursion recursion = new Recursion();
+        Memoization memoization = new Memoization();
+
+        UniquePaths bottomUp = new UniquePaths();
         SpaceOptimized optimized = new SpaceOptimized();
-        Mathematical math = new Mathematical();
-        UniquePathsII obstacleSolver = new UniquePathsII();
 
-        /*
-         * ================================================================
-         * 🧪 SELF-VERIFYING TESTS
-         * ================================================================
-         *
-         * Run with:
-         *
-         * java -ea UniquePaths
-         *
-         * Assertions remain silent when all invariants hold.
-         */
-
-        // ------------------------------------------------
-        // Happy Path
-        // Canonical LeetCode example.
-        // ------------------------------------------------
-        assert brute.uniquePaths(3, 2) == 3;
-        assert memo.uniquePaths(3, 2) == 3;
-        assert optimal.uniquePaths(3, 2) == 3;
+        // Canonical example.
+        assert recursion.uniquePaths(3, 2) == 3;
+        assert memoization.uniquePaths(3, 2) == 3;
+        assert bottomUp.uniquePaths(3, 2) == 3;
         assert optimized.uniquePaths(3, 2) == 3;
-        assert math.uniquePaths(3, 2) == 3;
 
-        // ------------------------------------------------
-        // Larger representative example.
-        // ------------------------------------------------
-        assert optimal.uniquePaths(3, 7) == 28;
+        // Larger example.
+        assert memoization.uniquePaths(3, 7) == 28;
+        assert bottomUp.uniquePaths(3, 7) == 28;
         assert optimized.uniquePaths(3, 7) == 28;
-        assert math.uniquePaths(3, 7) == 28;
 
-        // ------------------------------------------------
+        // Visual dry-run example.
+        assert bottomUp.uniquePaths(3, 3) == 6;
+        assert optimized.uniquePaths(3, 3) == 6;
+
         // Single cell.
-        // Start is destination.
-        // ------------------------------------------------
-        assert optimal.uniquePaths(1, 1) == 1;
+        assert bottomUp.uniquePaths(1, 1) == 1;
         assert optimized.uniquePaths(1, 1) == 1;
-        assert math.uniquePaths(1, 1) == 1;
 
-        // ------------------------------------------------
         // Single row.
-        // Only right moves exist.
-        // ------------------------------------------------
-        assert optimal.uniquePaths(1, 10) == 1;
-        assert optimized.uniquePaths(1, 10) == 1;
-        assert math.uniquePaths(1, 10) == 1;
+        assert bottomUp.uniquePaths(1, 5) == 1;
+        assert optimized.uniquePaths(1, 5) == 1;
 
-        // ------------------------------------------------
         // Single column.
-        // Only down moves exist.
-        // ------------------------------------------------
-        assert optimal.uniquePaths(8, 1) == 1;
-        assert optimized.uniquePaths(8, 1) == 1;
-        assert math.uniquePaths(8, 1) == 1;
+        assert bottomUp.uniquePaths(5, 1) == 1;
+        assert optimized.uniquePaths(5, 1) == 1;
 
-        // ------------------------------------------------
-        // Symmetry property.
-        // m x n == n x m.
-        // ------------------------------------------------
-        assert optimal.uniquePaths(5, 8) == optimal.uniquePaths(8, 5);
-        assert optimized.uniquePaths(5, 8) == optimized.uniquePaths(8, 5);
-        assert math.uniquePaths(5, 8) == math.uniquePaths(8, 5);
+        // Symmetry.
+        assert bottomUp.uniquePaths(5, 8)
+                == bottomUp.uniquePaths(8, 5);
 
-        // ------------------------------------------------
-        // Larger grid within constraints.
-        // Cross-check multiple implementations.
-        // ------------------------------------------------
-        int expected = optimal.uniquePaths(10, 10);
+        // Cross-check implementations.
+        int expected = bottomUp.uniquePaths(10, 10);
 
-        assert memo.uniquePaths(10, 10) == expected;
+        assert memoization.uniquePaths(10, 10) == expected;
         assert optimized.uniquePaths(10, 10) == expected;
-        assert math.uniquePaths(10, 10) == expected;
-
-        // ------------------------------------------------
-        // Unique Paths II
-        // Standard obstacle example.
-        // ------------------------------------------------
-        int[][] obstacleGrid1 = {
-                {0, 0, 0},
-                {0, 1, 0},
-                {0, 0, 0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid1) == 2;
-
-        // ------------------------------------------------
-        // One obstacle blocks first row.
-        // ------------------------------------------------
-        int[][] obstacleGrid2 = {
-                {0, 1},
-                {0, 0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid2) == 1;
-
-        // ------------------------------------------------
-        // Blocked start.
-        // ------------------------------------------------
-        int[][] obstacleGrid3 = {
-                {1}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid3) == 0;
-
-        // ------------------------------------------------
-        // Blocked destination.
-        // ------------------------------------------------
-        int[][] obstacleGrid4 = {
-                {0, 0},
-                {0, 1}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid4) == 0;
-
-        // ------------------------------------------------
-        // One-cell empty grid.
-        // ------------------------------------------------
-        int[][] obstacleGrid5 = {
-                {0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid5) == 1;
-
-        // ------------------------------------------------
-        // Entire middle row blocks traversal.
-        // ------------------------------------------------
-        int[][] obstacleGrid6 = {
-                {0, 0, 0},
-                {1, 1, 1},
-                {0, 0, 0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid6) == 0;
-
-        // ------------------------------------------------
-        // Narrow grid with obstacle.
-        // ------------------------------------------------
-        int[][] obstacleGrid7 = {
-                {0},
-                {0},
-                {1},
-                {0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid7) == 0;
-
-        // ------------------------------------------------
-        // Two-by-two with no obstacles.
-        // ------------------------------------------------
-        int[][] obstacleGrid8 = {
-                {0, 0},
-                {0, 0}
-        };
-
-        assert obstacleSolver.uniquePathsWithObstacles(obstacleGrid8) == 2;
 
         System.out.println("All assertions passed.");
     }
 }
 
 /*
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
-*/
+ * ============================================================================
+ * FINAL RETENTION RULE
+ * ============================================================================
+ *
+ * Months later, do NOT ask:
+ *
+ *      "What was the Unique Paths code?"
+ *
+ * Rebuild:
+ *
+ *      NATURAL CHOICES
+ *          ↓
+ *      STATE
+ *          ↓
+ *      REPEATED STATES
+ *          ↓
+ *      MEMOIZATION
+ *          ↓
+ *      PREDECESSORS
+ *          ↓
+ *      COMBINE
+ *          ↓
+ *      BASE
+ *          ↓
+ *      ORDER
+ *          ↓
+ *      ANSWER
+ *
+ * And across variations ask:
+ *
+ *      WHAT SURVIVES?
+ *      WHAT CHANGES?
+ *
+ * Then write the code.
+ */
