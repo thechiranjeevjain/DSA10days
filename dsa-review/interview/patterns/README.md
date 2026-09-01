@@ -24,9 +24,9 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 | 16 | Trie | 14 | 39 | 0 | 1 | 2 | 11 | [16_trie.md](16_trie.md) |
 | 17 | Intervals / Sorting Greedy | 7 | 42 | 0 | 1 | 1 | 5 | [17_intervals_greedy.md](17_intervals_greedy.md) |
 | 18 | Union Find / DSU | 1 | 70 | 0 | 1 | 0 | 0 | [18_union_find.md](18_union_find.md) |
-| 19 | Greedy | 4 | 72 | 0 | 0 | 4 | 0 | [19_greedy.md](19_greedy.md) |
-| 20 | Design Data Structures | 7 | 89 | 0 | 0 | 1 | 6 | [20_design_lld.md](20_design_lld.md) |
-| 21 | Math / Bit / String | 7 | 105 | 0 | 0 | 1 | 6 | [21_math_bit_string.md](21_math_bit_string.md) |
-| 22 | Basics / Implementation | 2 | 153 | 0 | 0 | 0 | 2 | [22_core_basics.md](22_core_basics.md) |
+| 19 | Greedy | 4 | 72 | 0 | 0 | 4 | 0 | [22_greedy.md](22_greedy.md) |
+| 20 | Design Data Structures | 7 | 89 | 0 | 0 | 1 | 6 | [19_design_lld.md](19_design_lld.md) |
+| 21 | Math / Bit / String | 7 | 105 | 0 | 0 | 1 | 6 | [20_math_bit_string.md](20_math_bit_string.md) |
+| 22 | Basics / Implementation | 2 | 153 | 0 | 0 | 0 | 2 | [21_core_basics.md](21_core_basics.md) |
 
 Total ranked entries: 207

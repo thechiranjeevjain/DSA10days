@@ -1495,6 +1495,7 @@ public class LIS {
      *
      * -------------------------------------------------------------------------
      * 2. Maximum Length of Pair Chain
+     *    LeetCode 646
      *
      *      SAME MACHINE:
      *          best chain ending at pair i
@@ -1520,6 +1521,7 @@ public class LIS {
      *
      * -------------------------------------------------------------------------
      * 5. Russian Doll Envelopes
+     *    LeetCode 354
      *
      *      Sort first dimension carefully.
      *      Then reduce second dimension to LIS.

@@ -446,7 +446,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 ### 44. Partition Equal Subset Sum
 
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/PartitionEqualSubsetSum.java) | [LeetCode](https://leetcode.com/problems/partition-equal-subset-sum/)
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/PartitionEqualSubsetSum.java)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
 - Bottleneck: Trying all subsets repeats sums; 0/1 knapsack tracks reachable sums once.
 - Pattern: Dynamic Programming, using 0/1 knapsack DP.

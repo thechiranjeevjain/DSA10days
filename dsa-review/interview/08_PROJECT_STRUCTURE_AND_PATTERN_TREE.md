@@ -54,10 +54,10 @@ TOPIC
 | Trie | 14 | 39 | [16_trie.md](patterns/16_trie.md) |
 | Intervals / Sorting Greedy | 7 | 42 | [17_intervals_greedy.md](patterns/17_intervals_greedy.md) |
 | Union Find / DSU | 1 | 70 | [18_union_find.md](patterns/18_union_find.md) |
-| Greedy | 4 | 72 | [19_greedy.md](patterns/19_greedy.md) |
-| Design Data Structures | 7 | 89 | [20_design_lld.md](patterns/20_design_lld.md) |
-| Math / Bit / String | 7 | 105 | [21_math_bit_string.md](patterns/21_math_bit_string.md) |
-| Basics / Implementation | 2 | 153 | [22_core_basics.md](patterns/22_core_basics.md) |
+| Greedy | 4 | 72 | [22_greedy.md](patterns/22_greedy.md) |
+| Design Data Structures | 7 | 89 | [19_design_lld.md](patterns/19_design_lld.md) |
+| Math / Bit / String | 7 | 105 | [20_math_bit_string.md](patterns/20_math_bit_string.md) |
+| Basics / Implementation | 2 | 153 | [21_core_basics.md](patterns/21_core_basics.md) |
 
 When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.
 

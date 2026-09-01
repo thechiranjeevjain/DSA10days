@@ -2041,6 +2041,36 @@ function ConvertTo-FileSlug {
     return $slug
 }
 
+function Get-StablePatternFileName {
+    param([string] $Category)
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "01_hashmap_hashset.md" }
+        "Binary Search" { return "02_binary_search.md" }
+        "Sliding Window" { return "03_sliding_window.md" }
+        "Prefix/Suffix" { return "04_prefix_suffix.md" }
+        "Linked List" { return "05_linked_list.md" }
+        "Two Pointers" { return "06_two_pointers.md" }
+        "Heap" { return "07_heap.md" }
+        "Tree BFS" { return "08_tree_bfs.md" }
+        "Tree DFS" { return "09_tree_dfs.md" }
+        "Graph DFS" { return "10_graph_dfs.md" }
+        "Topological Sort" { return "11_topological_sort.md" }
+        "Graph BFS" { return "12_graph_bfs.md" }
+        "Dynamic Programming" { return "13_dynamic_programming.md" }
+        "Backtracking" { return "14_backtracking.md" }
+        "Stack" { return "15_stack.md" }
+        "Trie" { return "16_trie.md" }
+        "Intervals/Greedy" { return "17_intervals_greedy.md" }
+        "Union Find" { return "18_union_find.md" }
+        "Design/LLD" { return "19_design_lld.md" }
+        "Math/Bit/String" { return "20_math_bit_string.md" }
+        "Core Basics" { return "21_core_basics.md" }
+        "Greedy" { return "22_greedy.md" }
+        default { return "99_" + (ConvertTo-FileSlug $Category) + ".md" }
+    }
+}
+
 function Get-PatternGroups {
     param([object[]] $Rows)
 
@@ -2059,11 +2089,9 @@ function Get-PatternGroups {
         }
     } | Sort-Object FirstRank, Category)
 
-    $index = 1
     foreach ($group in $groups) {
-        $fileName = "{0:D2}_{1}.md" -f $index, (ConvertTo-FileSlug $group.Category)
+        $fileName = Get-StablePatternFileName -Category $group.Category
         Add-Member -InputObject $group -NotePropertyName FileName -NotePropertyValue $fileName
-        $index++
     }
 
     return @($groups)

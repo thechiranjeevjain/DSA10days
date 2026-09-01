@@ -9,10 +9,12 @@ id,slug,title
 55,jump-game,Jump Game
 56,merge-intervals,Merge Intervals
 57,insert-interval,Insert Interval
+62,unique-paths,Unique Paths
 70,climbing-stairs,Climbing Stairs
 72,edit-distance,Edit Distance
 75,sort-colors,Sort Colors
 76,minimum-window-substring,Minimum Window Substring
+79,word-search,Word Search
 84,largest-rectangle-in-histogram,Largest Rectangle in Histogram
 85,maximal-rectangle,Maximal Rectangle
 97,interleaving-string,Interleaving String
@@ -47,6 +49,7 @@ id,slug,title
 274,h-index,H-Index
 279,perfect-squares,Perfect Squares
 283,move-zeroes,Move Zeroes
+300,longest-increasing-subsequence,Longest Increasing Subsequence
 309,best-time-to-buy-and-sell-stock-with-cooldown,Best Time to Buy and Sell Stock with Cooldown
 322,coin-change,Coin Change
 346,moving-average-from-data-stream,Moving Average from Data Stream
