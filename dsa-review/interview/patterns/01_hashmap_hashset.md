@@ -23,7 +23,7 @@ flowchart TD
   Invariant --> Sub02["SUB-PATTERN<br/>Frequency count<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 9: Valid Anagram"]
   Invariant --> Sub03["SUB-PATTERN<br/>Hash/frequency<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 104: Longest Palindrome"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 107: Longest Palindrome"]
   Invariant --> Sub04["SUB-PATTERN<br/>HashMap/frequency<br/>1 problem(s)"]
   Sub04 --> Sub04A01["ANCHOR<br/>rank 53: Ransom Note"]
   Invariant --> Sub05["SUB-PATTERN<br/>Two pointers / hash<br/>1 problem(s)"]
@@ -38,7 +38,7 @@ flowchart TD
 | 9 | Phase 1 - No Red Flags | Valid Anagram | Frequency count | [Java](../../../src/main/java/org/chijai/day3/session3/ValidAnagram.java) | [LC](https://leetcode.com/problems/valid-anagram/) | Two strings are anagrams when every character count nets to zero. | Reject different lengths, increment for s and decrement for t, then verify all counts zero. |
 | 51 | Phase 2 - Strong Core | Majority Element | Boyer-Moore / frequency | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/MajorityElement.java) | [LC](https://leetcode.com/problems/majority-element/) | Boyer-Moore cancels different values; surviving candidate is majority after optional verification. | Track candidate and count; reset at zero, increment on match, decrement otherwise. |
 | 53 | Phase 2 - Strong Core | Ransom Note | HashMap/frequency | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/RansomNote.java) | [LC](https://leetcode.com/problems/ransom-note/) | Count magazine chars, then spend counts for ransom; fail when a needed char is missing. | Build int[26] or map from magazine, decrement while scanning ransomNote, return false below zero. |
-| 104 | Phase 3 - Important | Longest Palindrome | Hash/frequency | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindrome.java) | [LC](https://leetcode.com/problems/longest-palindrome/) | At most one character may have an odd count; pairs from all counts build the longest palindrome. | Count chars, add count / 2 * 2, and allow one odd center if any count is odd. |
+| 107 | Phase 3 - Important | Longest Palindrome | Hash/frequency | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindrome.java) | [LC](https://leetcode.com/problems/longest-palindrome/) | At most one character may have an odd count; pairs from all counts build the longest palindrome. | Count chars, add count / 2 * 2, and allow one odd center if any count is odd. |
 
 ## Drill
 

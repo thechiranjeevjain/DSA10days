@@ -581,6 +581,11 @@ if ($horizontalRows.Count -ne $rankLines.Count) {
 if ($horizontalMatrixText -notmatch 'Near-miss switches' -or $horizontalMatrixText -notmatch 'Wrong-pattern guard') {
     Fail "horizontal master matrix is missing discrimination columns"
 }
+foreach ($requiredHorizontalPhrase in @("Why not now -", "Missing -", "Minimal change -", "Now works -")) {
+    if ($horizontalMatrixText -notmatch [regex]::Escape($requiredHorizontalPhrase)) {
+        Fail "horizontal master matrix is missing full near-miss loop phrase: $requiredHorizontalPhrase"
+    }
+}
 
 $horizontalRankSet = @{}
 $horizontalByTitle = @{}
@@ -645,7 +650,23 @@ $expectedHorizontalSemantics = @(
     @{ Title = "Maximum XOR With an Element From Array"; Winner = "Trie"; MustContain = "nums <= mi"; MustNotContain = "word-prefix" },
     @{ Title = "Maximum Genetic Difference Query"; Winner = "Trie"; MustContain = "current ancestors"; MustNotContain = "word-prefix" },
     @{ Title = "Count Pairs With XOR in a Range"; Winner = "Trie"; MustContain = "less-than counts by bit"; MustNotContain = "word-prefix" },
-    @{ Title = "Path Sum III"; Winner = "Tree DFS / Recursion"; MustContain = "prefix counts on the current root path"; MustNotContain = "minimum-level answers" }
+    @{ Title = "Path Sum III"; Winner = "Tree DFS / Recursion"; MustContain = "prefix counts on the current root path"; MustNotContain = "minimum-level answers" },
+    @{ Title = "Gas Station"; Winner = "Greedy"; MustContain = "prefix failure eliminates"; MustNotContain = "DP caches each state" },
+    @{ Title = "Jump Game"; Winner = "Greedy"; MustContain = "farthest reachable index"; MustNotContain = "DP caches each state" },
+    @{ Title = "Best Time to Buy and Sell Stock"; Winner = "Greedy"; MustContain = "running minimum"; MustNotContain = "DP caches each state" },
+    @{ Title = "Best Time to Buy and Sell Stock II"; Winner = "Greedy"; MustContain = "stock DP unless a fee"; MustNotContain = "DP caches each state" },
+    @{ Title = "Best Time to Buy and Sell Stock III"; Winner = "Dynamic Programming"; MustContain = "at most two transactions"; MustNotContain = "every rising edge is independently safe" },
+    @{ Title = "Best Time to Buy and Sell Stock IV"; Winner = "Dynamic Programming"; MustContain = "k requires layered hold/cash states"; MustNotContain = "DP caches each state" },
+    @{ Title = "Best Time to Buy and Sell Stock with Cooldown"; Winner = "Dynamic Programming"; MustContain = "blocks buying tomorrow"; MustNotContain = "DP caches each state" },
+    @{ Title = "Best Time to Buy and Sell Stock with Transaction Fee"; Winner = "Dynamic Programming"; MustContain = "overcome the fee"; MustNotContain = "DP caches each state" },
+    @{ Title = "Word Break"; Winner = "Dynamic Programming"; MustContain = "prefix can be segmented"; MustNotContain = "DP caches each state" },
+    @{ Title = "Distinct Subsequences II"; Winner = "Dynamic Programming"; MustContain = "last contribution per character"; MustNotContain = "Basics / Implementation" },
+    @{ Title = "Interleaving String"; Winner = "Dynamic Programming"; MustContain = "pair of consumed prefix lengths"; MustNotContain = "DP caches each state" },
+    @{ Title = "Longest Common Subsequence"; Winner = "Dynamic Programming"; MustContain = "subsequence order allows skips"; MustNotContain = "window reuses counts" },
+    @{ Title = "Maximum Length of Pair Chain"; Winner = "Intervals / Sorting Greedy"; MustContain = "earliest finishing pair"; MustNotContain = "DP caches each state" },
+    @{ Title = "Longest Continuous Increasing Subsequence"; Winner = "Sliding Window"; MustContain = "continuous means the streak resets"; MustNotContain = "DP caches each state" },
+    @{ Title = "Number of Longest Increasing Subsequence"; Winner = "Dynamic Programming"; MustContain = "length and count per ending index"; MustNotContain = "DP caches each state" },
+    @{ Title = "Russian Doll Envelopes"; Winner = "Dynamic Programming"; MustContain = "sort equal width by descending height"; MustNotContain = "DP caches each state" }
 )
 
 foreach ($expectation in $expectedHorizontalSemantics) {
@@ -665,11 +686,26 @@ foreach ($expectation in $expectedHorizontalSemantics) {
     }
 }
 
+$highRoiRankCaps = @(
+    @{ Title = "Gas Station"; MaxRank = 90 },
+    @{ Title = "Jump Game"; MaxRank = 90 },
+    @{ Title = "Best Time to Buy and Sell Stock II"; MaxRank = 90 }
+)
+
+foreach ($cap in $highRoiRankCaps) {
+    if (-not $horizontalByTitle.ContainsKey($cap.Title)) {
+        Fail "horizontal rank cap missing title: $($cap.Title)"
+    }
+    if ([int] $horizontalByTitle[$cap.Title].Rank -gt [int] $cap.MaxRank) {
+        Fail "horizontal rank cap exceeded for $($cap.Title): rank $($horizontalByTitle[$cap.Title].Rank), max $($cap.MaxRank)"
+    }
+}
+
 $horizontalFamilyFiles = @($horizontalMdFiles | Where-Object { $_.Name -match '^\d{2}_' -and $_.Name -notin @("00_MASTER_MATRIX.md", "01_CROSSDRILL_PROTOCOL.md", "02_MUTATION_SWITCHBOARD.md") })
 $horizontalFamilyRows = 0
 foreach ($file in $horizontalFamilyFiles) {
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -notmatch '```mermaid' -or $text -notmatch '## Problems' -or $text -notmatch 'Near-miss mutation') {
+    if ($text -notmatch '```mermaid' -or $text -notmatch '## Problems' -or $text -notmatch 'Near-miss reasoning') {
         Fail "horizontal family file is missing required sections: $($file.FullName)"
     }
     $horizontalFamilyRows += @(Select-String -LiteralPath $file.FullName -Pattern '^\| (?<rank>\d+) \|').Count

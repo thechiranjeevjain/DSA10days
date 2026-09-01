@@ -22,7 +22,7 @@ Use phase bands more than exact rank numbers:
 | Java source missing | 0 | Should stay 0. |
 | LeetCode-linked rows | 192 | Rows that open LeetCode directly. |
 | Local-only rows | 15 | Repo-only or design rows without direct LeetCode source link. |
-| Pattern files generated | 21 | One focused view per generated category. |
+| Pattern files generated | 22 | One focused view per generated category. |
 | Pattern rows covered | 207 | Should match ranked rows so no problem disappears from pattern files. |
 | Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |
 | Review dashboard rows | 207 | Dashboard ledger covers every ranked row and merges local review state. |

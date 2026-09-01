@@ -85,6 +85,16 @@ function Get-LinkMatchScore {
     $fileKey = Get-NormalizedKey $fileStem
     $titleKey = Get-NormalizedKey $Title
     $slugKey = Get-NormalizedKey $Slug
+    $pathKey = $RelativeFile.Replace("\", "/").ToLowerInvariant()
+
+    if ($titleKey -in @(
+        "besttimetobuyandsellstockiv",
+        "besttimetobuyandsellstockwithtransactionfee",
+        "besttimetobuyandsellstockwithcooldown"
+    )) {
+        if ($pathKey -like "day1/arrays/session3/stockseries2.java") { return 0 }
+        if ($pathKey -like "day1/arrays/session3/stockseries1.java") { return 8 }
+    }
 
     if ($fileKey -eq $slugKey -or $fileKey -eq $titleKey) { return 0 }
     if ($fileKey.Contains($slugKey) -or $slugKey.Contains($fileKey)) { return 1 }
@@ -789,6 +799,116 @@ function Get-ProblemOverride {
             hook = "Naive recursion branches into insert/delete/replace repeatedly for same prefixes."
             code = "Initialize empty-string row/column; if chars equal copy diagonal else 1 + min(insert, delete, replace)."
         }
+        "gasstation" = @{
+            recall = "If tank goes negative at i, every start since the candidate is impossible."
+            hook = "Trying every start repeats failed prefixes; greedy skips the whole impossible range."
+            code = "Track totalNet, tank, and start; when tank < 0 set start = i + 1 and reset tank."
+        }
+        "jumpgame" = @{
+            recall = "Track the farthest reachable index; failure happens only when i passes reach."
+            hook = "DP reachability is unnecessary; farthest reach dominates all earlier reachable choices."
+            code = "Scan i, fail if i > reach, otherwise reach = max(reach, i + nums[i])."
+        }
+        "besttimetobuyandsellstockii" = @{
+            recall = "Unlimited transactions means every positive day-to-day increase can be harvested."
+            hook = "State-machine DP collapses because every rising edge is independently safe to take."
+            code = "For i from 1, add prices[i] - prices[i-1] whenever the difference is positive."
+        }
+        "besttimetobuyandsellstockiii" = @{
+            recall = "Four states track first buy, first sell, second buy, second sell."
+            hook = "Greedy rising edges fail with at most two transactions; holding/sold states preserve constraints."
+            code = "Update buy1, sell1, buy2, sell2 for each price and return sell2."
+        }
+        "besttimetobuyandsellstockiv" = @{
+            recall = "For k transactions, each transaction layer has a hold and cash state."
+            hook = "Enumerating transaction boundaries repeats choices; DP compresses day and transaction count."
+            code = "If k is large use stock II; otherwise update hold[t] and cash[t] for t = 1..k."
+        }
+        "besttimetobuyandsellstockwithcooldown" = @{
+            recall = "Cooldown creates three states: hold, sold today, and rest."
+            hook = "Greedy cannot sell and immediately rebuy; the cooldown day must be encoded in state."
+            code = "For each price update sold = hold + price, hold = max(hold, rest - price), rest = max(rest, oldSold)."
+        }
+        "besttimetobuyandsellstockwithtransactionfee" = @{
+            recall = "Fee changes the sell transition; hold/cash states prevent double-counting fees."
+            hook = "Local rising edges are not enough when each completed transaction pays a fee."
+            code = "For each price: cash = max(cash, hold + price - fee); hold = max(hold, cash - price)."
+        }
+        "climbingstairs" = @{
+            recall = "Ways to reach n comes from n-1 plus n-2, with two rolling counts."
+            hook = "The recursion tree repeats the same step count states."
+            code = "Start ways(0)=1, ways(1)=1, then iterate next = oneBack + twoBack."
+        }
+        "mincostclimbingstairs" = @{
+            recall = "Cost to stand on step i is cost[i] plus min(previous one, previous two)."
+            hook = "Choosing the cheaper immediate next step can block a cheaper total suffix."
+            code = "Iterate two rolling minimum costs and return min(cost to last, cost to second last)."
+        }
+        "perfectsquares" = @{
+            recall = "dp[x] is the fewest square numbers summing to x; try each square as the last move."
+            hook = "Greedy largest-square choice fails on cases where smaller squares combine better."
+            code = "Initialize dp[0]=0; for x=1..n, dp[x]=1+min(dp[x-square])."
+        }
+        "wordbreak" = @{
+            recall = "dp[i] means prefix s[0..i) can be segmented into dictionary words."
+            hook = "Recursive cuts retry the same suffixes; prefix validity caches reusable split points."
+            code = "For each end i, set dp[i] if some dp[j] and s[j..i) is in the dictionary."
+        }
+        "deleteoperationfortwostrings" = @{
+            recall = "Minimum deletions equals removing everything not in the LCS."
+            hook = "Direct delete recursion repeats prefix pairs; LCS preserves the shared subsequence once."
+            code = "Compute LCS length, return word1.length + word2.length - 2 * lcs."
+        }
+        "distinctsubsequences" = @{
+            recall = "dp[i][j] counts ways first i source chars form first j target chars."
+            hook = "Include/skip choices revisit the same source-target prefix pairs."
+            code = "If chars match add skip and take counts; otherwise carry skip count."
+        }
+        "distinctsubsequencesii" = @{
+            recall = "Each char doubles subsequences, then subtracts subsequences counted before its previous occurrence."
+            hook = "A set of all subsequences explodes; last contribution per character removes duplicates compactly."
+            code = "Maintain total distinct subsequences and lastContribution[char], updating total by new unique additions."
+        }
+        "interleavingstring" = @{
+            recall = "dp[i][j] says s3 prefix i+j can be formed by prefixes of s1 and s2."
+            hook = "Greedy picking from either string fails when equal chars create ambiguous futures."
+            code = "Fill dp by taking next char from s1 or s2 when it matches s3[i+j-1]."
+        }
+        "longestcommonsubsequence" = @{
+            recall = "dp[i][j] is the best subsequence length between two prefixes."
+            hook = "Subsequence matching branches repeatedly on the same prefix pairs."
+            code = "If chars match use 1 + diagonal; otherwise max(top,left)."
+        }
+        "longestpalindromicsubsequence" = @{
+            recall = "dp[l][r] is best palindrome subsequence inside s[l..r]."
+            hook = "Subsequence choices overlap heavily; interval DP reuses inner ranges."
+            code = "Fill by increasing length: equal ends use 2 + dp[l+1][r-1], else max(drop left, drop right)."
+        }
+        "minimumasciideletesumfortwostrings" = @{
+            recall = "dp[i][j] is minimum ASCII deletion cost to make two prefixes equal."
+            hook = "LCS length is insufficient because deleted characters have different costs."
+            code = "If chars match take diagonal; otherwise delete one side and add its ASCII cost."
+        }
+        "longestcontinuousincreasingsubsequence" = @{
+            recall = "Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1]."
+            hook = "LIS tails/DP is overkill because skipping is not allowed."
+            code = "Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best."
+        }
+        "maximumlengthofpairchain" = @{
+            recall = "Sort pairs by end and take the next pair whose start is after the current end."
+            hook = "LIS-style DP works, but earliest finishing pair leaves maximum room for the future."
+            code = "Sort by pair[1], keep currentEnd, count pair when pair[0] > currentEnd."
+        }
+        "numberoflongestincreasingsubsequence" = @{
+            recall = "Track both LIS length ending at i and how many ways achieve that length."
+            hook = "tails gives length only; counting needs ownership of every ending index."
+            code = "For each i, scan previous smaller j and update len[i] plus count[i]."
+        }
+        "russiandollenvelopes" = @{
+            recall = "Sort width ascending, height descending for equal width, then LIS on heights."
+            hook = "Plain 2D sorting can wrongly nest equal-width envelopes."
+            code = "Sort by width asc and height desc, then lower_bound heights to get LIS length."
+        }
         "stockseries2" = @{
             recall = "For unlimited transactions, add every positive day-to-day price difference."
             hook = "Enumerating buy/sell sequences repeats work; every rising edge can be taken independently."
@@ -995,6 +1115,10 @@ function Get-Category {
     $titleText = $Title.ToLowerInvariant()
 
     if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
+    if ($titleText -match "^gas station$|^jump game$|^best time to buy and sell stock$|^best time to buy and sell stock ii$") { return "Greedy" }
+    if ($titleText -match "^distinct subsequences ii$|best time to buy and sell stock (iii|iv|with cooldown|with transaction fee)") { return "Dynamic Programming" }
+    if ($titleText -match "^longest continuous increasing subsequence$") { return "Sliding Window" }
+    if ($titleText -match "^maximum length of pair chain$") { return "Intervals/Greedy" }
     if ($titleText -match "^merge k sorted lists$") { return "Heap" }
     if ($titleText -match "^meeting rooms ii$") { return "Heap" }
     if ($titleText -match "^meeting rooms?$") { return "Intervals/Greedy" }
@@ -1233,6 +1357,27 @@ function Get-ProblemImportanceWeight {
         "sumofsubarrayminimums" { return 77 }
         "evaluatereversepolishnotation" { return 78 }
         "basiccalculator" { return 79 }
+        "gasstation" { return 58 }
+        "jumpgame" { return 59 }
+        "besttimetobuyandsellstockii" { return 60 }
+        "besttimetobuyandsellstockwithtransactionfee" { return 118 }
+        "besttimetobuyandsellstockwithcooldown" { return 119 }
+        "besttimetobuyandsellstockiii" { return 120 }
+        "besttimetobuyandsellstockiv" { return 121 }
+        "distinctsubsequencesii" { return 122 }
+        "wordbreak" { return 123 }
+        "interleavingstring" { return 124 }
+        "longestcommonsubsequence" { return 125 }
+        "deleteoperationfortwostrings" { return 126 }
+        "longestpalindromicsubsequence" { return 127 }
+        "minimumasciideletesumfortwostrings" { return 128 }
+        "climbingstairs" { return 129 }
+        "mincostclimbingstairs" { return 130 }
+        "perfectsquares" { return 131 }
+        "numberoflongestincreasingsubsequence" { return 132 }
+        "russiandollenvelopes" { return 133 }
+        "maximumlengthofpairchain" { return 134 }
+        "longestcontinuousincreasingsubsequence" { return 135 }
     }
 
     $tier0 = @()
@@ -3534,6 +3679,102 @@ function Get-HorizontalSwitches {
                 (New-HorizontalSwitch -Pattern "Tree DFS" -WhyNot "Plain DFS alone restarts work at every node." -Missing "Need to count all downward paths ending at current node efficiently." -Mutation "Ask only whether one root-to-leaf path equals target." -NowWhy "A simple path-sum DFS return/check is sufficient.")
             )
         }
+        "gasstation" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "No repeated subproblem needs caching; a failed tank invalidates a whole candidate range." -Missing "Independent choices whose future values must be compared." -Mutation "Ask for maximum profit route with rewards/costs and optional skips." -NowWhy "Choose/skip states become real and repeated."),
+                (New-HorizontalSwitch -Pattern "Prefix Sum" -WhyNot "Prefix sums expose total feasibility but not the candidate reset rule." -Missing "Only range balance queries, not a start index after failure." -Mutation "Ask many net-gas range sum queries." -NowWhy "Cumulative net answers each range in O(1).")
+            )
+        }
+        "jumpgame" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Reachability states collapse to one farthest reachable index." -Missing "Need minimum jumps or path reconstruction." -Mutation "Ask for the minimum number of jumps." -NowWhy "Layered greedy/BFS-style ranges or DP must distinguish jump counts."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Trying jumps enumerates many dominated paths." -Missing "Need to list all valid jump sequences." -Mutation "Ask to output every path from start to end." -NowWhy "The concrete path becomes the answer.")
+            )
+        }
+        "besttimetobuyandsellstockii" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "Hold/cash DP collapses because unlimited transactions let every positive edge be taken." -Missing "Constraint that couples today's sell to tomorrow's buy." -Mutation "Add cooldown, fee, or at most k transactions." -NowWhy "State must remember hold/cash/cooldown or remaining transactions."),
+                (New-HorizontalSwitch -Pattern "Single Transaction Running Min" -WhyNot "One min-buy is too restrictive when multiple profitable rises are allowed." -Missing "At most one buy/sell pair." -Mutation "Allow only one transaction." -NowWhy "Best sell today only needs the minimum earlier price.")
+            )
+        }
+        "besttimetobuyandsellstock" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "No table is needed; all previous days collapse to the cheapest buy so far." -Missing "Multiple transactions, cooldown, fee, or transaction count state." -Mutation "Allow at most k transactions or add cooldown/fee." -NowWhy "Hold/cash or transaction-layer state becomes necessary."),
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "The two days are ordered by time, not a sorted value array with eliminable ends." -Missing "Sorted values and a target relation." -Mutation "Ask for two sorted prices that sum to target." -NowWhy "Left/right movement can discard impossible sums.")
+            )
+        }
+        "besttimetobuyandsellstockiii" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "Adding all positive edges can exceed the two-transaction limit." -Missing "Unlimited transactions." -Mutation "Remove the two-transaction limit." -NowWhy "Each rising edge can be harvested independently."),
+                (New-HorizontalSwitch -Pattern "Single Transaction Running Min" -WhyNot "One buy/sell pair misses the second independent profit segment." -Missing "Only one transaction allowed." -Mutation "Restrict to at most one transaction." -NowWhy "A prefix minimum is enough.")
+            )
+        }
+        "besttimetobuyandsellstockiv" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "Greedy is valid only when k is large enough to behave like unlimited transactions." -Missing "k >= n/2 or no transaction limit." -Mutation "Make k unlimited or at least n/2." -NowWhy "All positive edges can be taken."),
+                (New-HorizontalSwitch -Pattern "Stock III Four-State DP" -WhyNot "Hardcoding two transactions breaks when k varies." -Missing "Fixed k = 2." -Mutation "Set k exactly to 2." -NowWhy "The generic transaction layers reduce to buy1/sell1/buy2/sell2.")
+            )
+        }
+        "besttimetobuyandsellstockwithcooldown" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "Selling today blocks buying tomorrow, so local positive edges are not independent." -Missing "No cooldown coupling across days." -Mutation "Remove the cooldown rule." -NowWhy "The problem collapses to summing positive differences."),
+                (New-HorizontalSwitch -Pattern "Plain Hold/Cash DP" -WhyNot "Two states cannot distinguish sold-today from rest." -Missing "A cooldown/rest state." -Mutation "Remove the one-day cooldown." -NowWhy "hold and cash are enough.")
+            )
+        }
+        "besttimetobuyandsellstockwithtransactionfee" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "Every small positive edge may be erased by the fee." -Missing "No per-transaction fixed cost." -Mutation "Set fee to zero." -NowWhy "Every positive rise is profitable."),
+                (New-HorizontalSwitch -Pattern "Single Transaction Running Min" -WhyNot "Multiple transactions are still allowed; fee only changes sell profitability." -Missing "At most one transaction." -Mutation "Limit to one buy/sell." -NowWhy "A running minimum plus fee-adjusted profit is enough.")
+            )
+        }
+        "wordbreak" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Trie" -WhyNot "Trie speeds word lookup but does not remember which prefixes are segmentable." -Missing "Only prefix membership queries, no full segmentation decision." -Mutation "Ask whether any dictionary word starts at each index." -NowWhy "Trie traversal is the core operation."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Backtracking enumerates cuts and repeats the same suffixes." -Missing "Need to output all valid segmentations." -Mutation "Ask for every possible sentence." -NowWhy "The chosen word path must be emitted.")
+            )
+        }
+        "distinctsubsequencesii" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Generating all subsequences is exponential and duplicates collide." -Missing "Tiny input or requirement to list subsequences." -Mutation "Ask to print every distinct subsequence for n <= 20." -NowWhy "The concrete subsequences become the output."),
+                (New-HorizontalSwitch -Pattern "HashSet" -WhyNot "A set can deduplicate strings but cannot survive large n." -Missing "Small enough output size." -Mutation "Constrain n so total subsequences fit memory." -NowWhy "Explicit generation plus set dedup is acceptable.")
+            )
+        }
+        "interleavingstring" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Greedy" -WhyNot "When both source chars match, picking one can make the future impossible." -Missing "A deterministic tie-breaker that is always safe." -Mutation "Guarantee no position has both s1[i] and s2[j] matching s3." -NowWhy "The next source is forced."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Backtracking repeats the same i,j prefix states." -Missing "Need all interleavings, not just existence." -Mutation "Ask to generate every valid interleaving." -NowWhy "The path choices are the answer.")
+            )
+        }
+        "longestcommonsubsequence" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Two Pointers" -WhyNot "Skipping a char from either string is a choice; local pointer movement can discard the optimum." -Missing "One string must be checked as a subsequence of the other." -Mutation "Ask only whether s is a subsequence of t." -NowWhy "A single forward scan is enough."),
+                (New-HorizontalSwitch -Pattern "Edit Distance" -WhyNot "LCS maximizes kept matches; edit distance minimizes operation cost." -Missing "Insert/delete/replace costs." -Mutation "Ask for minimum operations to convert one string to another." -NowWhy "Operation transitions define the DP.")
+            )
+        }
+        "maximumlengthofpairchain" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Dynamic Programming" -WhyNot "DP works, but earliest end has an exchange proof and avoids O(n^2)." -Missing "Weights/profits or non-greedy compatibility." -Mutation "Add profit to every pair and ask maximum profit chain." -NowWhy "Choosing fewer intervals can earn more, so choose/skip DP is needed."),
+                (New-HorizontalSwitch -Pattern "LIS" -WhyNot "Pair compatibility is interval-like; sorting by end directly proves the next safe choice." -Missing "One-dimensional increasing sequence after sorting." -Mutation "Ask for longest increasing subsequence of numbers." -NowWhy "Previous smaller value extension becomes the natural state.")
+            )
+        }
+        "longestcontinuousincreasingsubsequence" {
+            return @(
+                (New-HorizontalSwitch -Pattern "LIS / DP" -WhyNot "Continuous forbids skipping, so no previous-index search is needed." -Missing "Subsequence, not subarray." -Mutation "Allow deleting elements while preserving order." -NowWhy "Each index can extend many earlier smaller indices."),
+                (New-HorizontalSwitch -Pattern "Sliding Window With Counts" -WhyNot "There is no frequency constraint to maintain." -Missing "A window validity condition such as at most k violations." -Mutation "Allow at most k non-increasing breaks." -NowWhy "The left boundary repairs validity as breaks enter.")
+            )
+        }
+        "numberoflongestincreasingsubsequence" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Binary Search Tails" -WhyNot "tails stores representative values, not counts for all ending positions." -Missing "Only LIS length, not number of LIS." -Mutation "Ask only for the length of LIS." -NowWhy "Minimal tails are enough."),
+                (New-HorizontalSwitch -Pattern "Backtracking" -WhyNot "Enumerating all subsequences is exponential." -Missing "Need to print every LIS." -Mutation "Ask to output all longest increasing subsequences for small n." -NowWhy "The actual paths become required output.")
+            )
+        }
+        "russiandollenvelopes" {
+            return @(
+                (New-HorizontalSwitch -Pattern "Plain LIS" -WhyNot "Equal-width envelopes cannot nest, so sorting heights naively overcounts." -Missing "One-dimensional sequence without equal-width conflict." -Mutation "Remove width or guarantee all widths are unique and sorted." -NowWhy "Height LIS alone is valid."),
+                (New-HorizontalSwitch -Pattern "2D Dynamic Programming" -WhyNot "O(n^2) DP works, but sorted heights plus binary search is faster." -Missing "Small n or need reconstruction/proof clarity." -Mutation "Constrain n to a few thousand and ask for the actual chain." -NowWhy "DP parent pointers are practical.")
+            )
+        }
         "maximumxoroftwonumbersinanarray" {
             return @(
                 (New-HorizontalSwitch -Pattern "HashSet Prefix Greedy" -WhyNot "It is a valid alternative, but it hides the candidate structure compared with bitwise trie." -Missing "Need only feasibility of each candidate prefix, not explicit partner walk." -Mutation "Ask for a proof-focused O(n) prefix-set solution." -NowWhy "Testing candidate XOR prefixes proves whether the bit can be set."),
@@ -3712,6 +3953,22 @@ function Get-HorizontalWrongPatternGuard {
         "designcircularqueue" { return "Do not use stack reasoning; this is fixed-capacity FIFO with modulo head/tail arithmetic." }
         "lrucache" { return "Do not use only a map or only a list; O(1) get/put/evict needs both." }
         "pathsumiii" { return "Do not restart DFS from every node; keep prefix counts on the current root path." }
+        "gasstation" { return "Do not call this DP; prefix failure eliminates whole start ranges without cached states." }
+        "jumpgame" { return "Do not build a reachability DP table when one farthest reachable index proves the answer." }
+        "besttimetobuyandsellstock" { return "Do not allocate DP state; one running minimum is the whole legal buy history." }
+        "besttimetobuyandsellstockii" { return "Do not use stock DP unless a fee, cooldown, or transaction limit couples choices." }
+        "besttimetobuyandsellstockiii" { return "Do not sum all positive edges; at most two transactions requires buy/sell states." }
+        "besttimetobuyandsellstockiv" { return "Do not hardcode two transactions; k requires layered hold/cash states." }
+        "besttimetobuyandsellstockwithcooldown" { return "Do not greedily harvest adjacent rises; selling today blocks buying tomorrow." }
+        "besttimetobuyandsellstockwithtransactionfee" { return "Do not harvest every positive edge; each transaction must overcome the fee." }
+        "wordbreak" { return "Do not just build a Trie; the decisive state is whether each prefix can be segmented." }
+        "distinctsubsequencesii" { return "Do not enumerate subsequences; duplicate removal needs last contribution per character." }
+        "interleavingstring" { return "Do not choose greedily on equal chars; cache the pair of consumed prefix lengths." }
+        "longestcommonsubsequence" { return "Do not use sliding window; subsequence order allows skips, not contiguity." }
+        "maximumlengthofpairchain" { return "Do not default to LIS DP; earliest finishing pair has the greedy exchange proof." }
+        "longestcontinuousincreasingsubsequence" { return "Do not use LIS tails; continuous means the streak resets when order breaks." }
+        "numberoflongestincreasingsubsequence" { return "Do not use tails alone; counting LIS needs length and count per ending index." }
+        "russiandollenvelopes" { return "Do not nest equal widths; sort equal width by descending height before LIS." }
         "maximumxoroftwonumbersinanarray" { return "Do not use word-prefix Trie language; this is a bitwise prefix decision from high bit to low bit." }
         "maximumxorwithanelementfromarray" { return "Do not put every number in the trie; each query can use only nums <= mi." }
         "maximumgeneticdifferencequery" { return "Do not use a global trie; only current ancestors are valid candidates." }
@@ -3783,7 +4040,7 @@ function Join-HorizontalSwitchSummary {
     )
 
     return (@($Switches | Select-Object -First $Limit | ForEach-Object {
-        "$($_.Pattern): $($_.Mutation)"
+        "$($_.Pattern): Why not now - $($_.WhyNot); Missing - $($_.Missing); Minimal change - $($_.Mutation); Now works - $($_.NowWhy)"
     }) -join "<br>")
 }
 
@@ -3989,7 +4246,7 @@ function Build-HorizontalFamilyFile {
     $lines.Add("")
     $lines.Add("## Problems")
     $lines.Add("")
-    $lines.Add("| Rank | Problem | Winner | Why winner | Near-miss mutation | Wrong-pattern guard | Java | LeetCode |")
+    $lines.Add("| Rank | Problem | Winner | Why winner | Near-miss reasoning | Wrong-pattern guard | Java | LeetCode |")
     $lines.Add("|---:|---|---|---|---|---|---|---|")
     foreach ($row in $items) {
         $switches = @(Get-HorizontalSwitches -Category $row.Category -Title $row.Title)

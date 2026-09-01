@@ -19,7 +19,7 @@ flowchart TD
   Invariant["INVARIANT<br/>Brute force tries pairs; sorting/order lets pointers eliminate impossible pairs."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Expand around center<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 105: Longest Palindromic Substring"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 108: Longest Palindromic Substring"]
   Invariant --> Sub02["SUB-PATTERN<br/>Partition / Dutch flag<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 59: Sort Colors"]
   Invariant --> Sub03["SUB-PATTERN<br/>Two pointers<br/>2 problem(s)"]
@@ -40,7 +40,7 @@ flowchart TD
 | 13 | Phase 1 - No Red Flags | Container With Most Water | Two pointers | [Java](../../../src/main/java/org/chijai/day1/Arrays/session2/ContainerWithMostWater.java) | - | Area is limited by shorter wall, so move the shorter side inward. | Compute area at left/right, update max, move pointer with smaller height. |
 | 14 | Phase 1 - No Red Flags | Trapping Rain Water | Two pointers / stack | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | [LC](https://leetcode.com/problems/trapping-rain-water/) | Water at a side depends on the smaller max boundary seen so far. | Move the side with lower height, update max, add max-height when bounded. |
 | 59 | Phase 2 - Strong Core | Sort Colors | Partition / Dutch flag | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SortColors.java) | [LC](https://leetcode.com/problems/sort-colors/) | Dutch flag keeps < pivot, unknown, and > pivot regions with three pointers. | Use low, mid, high; swap 0 to low, 2 to high, advance mid on 1. |
-| 105 | Phase 3 - Important | Longest Palindromic Substring | Expand around center | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | Expand around every odd and even center and keep the longest span. | For each index, expand(i,i) and expand(i,i+1), update best start/length. |
+| 108 | Phase 3 - Important | Longest Palindromic Substring | Expand around center | [Java](../../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | Expand around every odd and even center and keep the longest span. | For each index, expand(i,i) and expand(i,i+1), update best start/length. |
 
 ## Drill
 

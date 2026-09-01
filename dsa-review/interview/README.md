@@ -34,7 +34,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 - Ranked entries: 207
 - Recursive LeetCode solved index: 214
 - Nested LeetCode curriculum TOC: `09_LEETCODE_CURRICULUM_TOC.md`
-- Pattern files: 21
+- Pattern files: 22
 - Ranking source: `../notes/PROBLEM_PATTERN_INDEX.md` plus LeetCode links found in Java chapters.
 - Ranking philosophy: transparent interview triage. Use phase bands more than exact rank numbers.
 - Ranking audit: `05_RANKING_METHODOLOGY_AND_AUDIT.md`.

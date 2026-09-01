@@ -728,7 +728,17 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Build graph/degrees, queue degree-1 leaves, remove layers while remainingNodes > 2.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 72. Serialize And Deserialize Binary Tree
+### 72. Best Time to Buy and Sell Stock
+
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
+- Brute force: Explore all choices with search/DP before noticing a local choice is safe.
+- Bottleneck: Trying all buy/sell pairs repeats the same prefix minimum search.
+- Pattern: Greedy, using Greedy / DP states.
+- Invariant/state: Track the lowest price so far; today's profit is price minus that minimum.
+- Code idea: For each price, update minPrice, then best = max(best, price - minPrice).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 73. Serialize And Deserialize Binary Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/SerializeAndDeserializeBinaryTree.java) | [LeetCode](https://leetcode.com/problems/serialize-and-deserialize-binary-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -738,7 +748,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Preorder/BFS serialize with # for null; deserialize by consuming tokens in same order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 73. Search In Rotated Sorted Array II
+### 74. Search In Rotated Sorted Array II
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LeetCode](https://leetcode.com/problems/search-in-rotated-sorted-array-ii/)
 - Brute force: Scan every index, especially when duplicates hide sorted-half information.
@@ -748,7 +758,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: If nums[left]==nums[mid]==nums[right], left++ and right--; otherwise reuse sorted-half logic.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 74. Number Of Provinces
+### 75. Number Of Provinces
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LeetCode](https://leetcode.com/problems/number-of-provinces/)
 - Brute force: Run a separate search from each source or use DFS and then compare path lengths.
@@ -758,7 +768,17 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Scan cities; when unvisited, count province and traverse connected cities from adjacency matrix.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 75. Clone Graph
+### 76. Gas Station
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LeetCode](https://leetcode.com/problems/gas-station/)
+- Brute force: Explore all choices with search/DP before noticing a local choice is safe.
+- Bottleneck: Trying every start repeats failed prefixes; greedy skips the whole impossible range.
+- Pattern: Greedy, using Greedy.
+- Invariant/state: If tank goes negative at i, every start since the candidate is impossible.
+- Code idea: Track totalNet, tank, and start; when tank < 0 set start = i + 1 and reset tank.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 77. Clone Graph
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CloneGraph.java) | [LeetCode](https://leetcode.com/problems/clone-graph/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -768,7 +788,17 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: DFS/BFS: create clone if absent, then connect cloned neighbors from the map.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 76. Search Insert Position
+### 78. Jump Game
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LeetCode](https://leetcode.com/problems/jump-game/)
+- Brute force: Explore all choices with search/DP before noticing a local choice is safe.
+- Bottleneck: DP reachability is unnecessary; farthest reach dominates all earlier reachable choices.
+- Pattern: Greedy, using Greedy.
+- Invariant/state: Track the farthest reachable index; failure happens only when i passes reach.
+- Code idea: Scan i, fail if i > reach, otherwise reach = max(reach, i + nums[i]).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 79. Search Insert Position
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/BinarySearch.java) | [LeetCode](https://leetcode.com/problems/search-insert-position/)
 - Brute force: Scan from left until finding the first value greater than or equal to target.
@@ -778,7 +808,17 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Binary search with answer initialized to n; when nums[mid] >= target save mid and move right left.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 77. Moving Average From Data Stream
+### 80. Best Time to Buy and Sell Stock II
+
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/)
+- Brute force: Explore all choices with search/DP before noticing a local choice is safe.
+- Bottleneck: State-machine DP collapses because every rising edge is independently safe to take.
+- Pattern: Greedy, using Greedy / DP states.
+- Invariant/state: Unlimited transactions means every positive day-to-day increase can be harvested.
+- Code idea: For i from 1, add prices[i] - prices[i-1] whenever the difference is positive.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 81. Moving Average From Data Stream
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/MovingAverage.java) | [LeetCode](https://leetcode.com/problems/moving-average-from-data-stream/)
 - Brute force: Enumerate every substring/subarray and recompute validity from scratch.
@@ -788,7 +828,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Offer val, add to sum, if queue too large poll and subtract, return sum/count.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 78. Design Browser History
+### 82. Design Browser History
 
 - Links: [Java](../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LeetCode](https://leetcode.com/problems/design-browser-history/)
 - Brute force: Copy nodes into an array/set, or make extra passes to recover positions.
@@ -798,7 +838,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Maintain current node; visit creates current.next and clears forward branch.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 79. Verify Preorder Serialization Of A Binary Tree
+### 83. Verify Preorder Serialization Of A Binary Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/ConstructTree.java) | [LeetCode](https://leetcode.com/problems/verify-preorder-serialization-of-a-binary-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -808,7 +848,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: For each token decrement slots, fail below zero, add two slots if token is not #.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 80. Find Peak Element
+### 84. Find Peak Element
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LeetCode](https://leetcode.com/problems/find-peak-element/)
 - Brute force: Check every index and compare it with neighbors to find a peak.
@@ -818,7 +858,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: If nums[mid] > nums[mid+1], move right to mid; else move left to mid+1 until left == right.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 81. First Bad Version
+### 85. First Bad Version
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/BinarySearch.java) | [LeetCode](https://leetcode.com/problems/first-bad-version/)
 - Brute force: Call isBadVersion from version 1 upward until the first bad version appears.
@@ -828,7 +868,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: If isBadVersion(mid), save mid and search left; otherwise search right.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 82. Split Array Largest Sum
+### 86. Split Array Largest Sum
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session2/AGGRCOW.java) | [LeetCode](https://leetcode.com/problems/split-array-largest-sum/)
 - Brute force: Try possible max sums or enumerate contiguous partitions directly.
@@ -838,7 +878,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Search max(nums)..sum(nums), greedily count pieces when current sum would exceed mid.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 83. Maximum Profit In Job Scheduling
+### 87. Maximum Profit In Job Scheduling
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session3/MaximumProfitInJobScheduling.java) | [LeetCode](https://leetcode.com/problems/maximum-profit-in-job-scheduling/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
@@ -848,7 +888,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Sort by end, for each job compute max(skip, profit + dp[lastNonOverlapping]).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 84. Kadane Max Sub Array
+### 88. Kadane Max Sub Array
 
 - Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/KadaneMaxSubArray.java)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
@@ -858,17 +898,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: cur = max(x, cur + x); best = max(best, cur) for every element.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 85. Best Time to Buy and Sell Stock
-
-- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Trying all buy/sell pairs repeats the same prefix minimum search.
-- Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Track the lowest price so far; today's profit is price minus that minimum.
-- Code idea: For each price, update minPrice, then best = max(best, price - minPrice).
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 86. First Unique Number
+### 89. First Unique Number
 
 - Links: [Java](../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | [LeetCode](https://leetcode.com/problems/first-unique-number/)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -878,7 +908,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: On add update count and queue/list, while front count > 1 pop it.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 87. Capacity To Ship Packages Within D Days
+### 90. Capacity To Ship Packages Within D Days
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | [LeetCode](https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/)
 - Brute force: Try every capacity from max weight to total weight and simulate shipping days.
@@ -888,7 +918,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Search maxWeight..sumWeight, count days by accumulating load until capacity would overflow.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 88. Minimum Number Of Days To Make M Bouquets
+### 91. Minimum Number Of Days To Make M Bouquets
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | [LeetCode](https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/)
 - Brute force: Try days linearly and count how many adjacent bouquets can be made.
@@ -898,7 +928,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Reject if m*k > n; for each day mid, count adjacent bloomed streaks of length k.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 89. Meeting Rooms
+### 92. Meeting Rooms
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | [LeetCode](https://leetcode.com/problems/meeting-rooms/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -908,7 +938,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Sort by start, scan adjacent intervals, return false if current.start < previous.end.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 90. Sliding Window Maximum
+### 93. Sliding Window Maximum
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/sliding-window-maximum/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -918,7 +948,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Drop out-of-window front, pop smaller/equal from back, push index, read front after first window.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 91. Construct Binary Tree From Inorder And Postorder Traversal
+### 94. Construct Binary Tree From Inorder And Postorder Traversal
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/ConstructTree.java) | [LeetCode](https://leetcode.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -928,7 +958,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Pop root from postorder end, build right then left using inorder bounds.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 92. Design Add and Search Words Data Structure
+### 95. Design Add and Search Words Data Structure
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/design-add-and-search-words-data-structure/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -938,7 +968,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: DFS over trie and word index; on '.', try every child, otherwise follow the matching child.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 93. Construct Binary Tree From Preorder And Inorder Traversal
+### 96. Construct Binary Tree From Preorder And Inorder Traversal
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/ConstructTree.java) | [LeetCode](https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -948,7 +978,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Read preorder index, split by inorder map, recursively build left and right ranges.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 94. Binary Tree Maximum Path Sum
+### 97. Binary Tree Maximum Path Sum
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | [LeetCode](https://leetcode.com/problems/binary-tree-maximum-path-sum/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -958,7 +988,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Clamp child gains at zero, update global with node+left+right, return node+max(left,right).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 95. Task Scheduler
+### 98. Task Scheduler
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | [LeetCode](https://leetcode.com/problems/task-scheduler/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -968,7 +998,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Use maxFreq and countMax: max(tasks.length, (maxFreq-1)*(n+1)+countMax).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 96. Kth Largest Element In An Array
+### 99. Kth Largest Element In An Array
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LeetCode](https://leetcode.com/problems/kth-largest-element-in-an-array/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -978,7 +1008,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Push each number, pop when heap size > k, return heap top.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 97. Kth Largest Element In A Stream
+### 100. Kth Largest Element In A Stream
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LeetCode](https://leetcode.com/problems/kth-largest-element-in-a-stream/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -988,7 +1018,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: On add, push value, trim heap to k, return heap.peek().
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 98. Time Based Key Value Store
+### 101. Time Based Key Value Store
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | [LeetCode](https://leetcode.com/problems/time-based-key-value-store/)
 - Brute force: Linearly test candidates or scan the full sorted/search range.
@@ -998,7 +1028,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Append on set; on get binary search the key's list for rightmost timestamp <= target.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 99. Word Search II
+### 102. Word Search II
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/WordSearchII.java) | [LeetCode](https://leetcode.com/problems/word-search-ii/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1008,7 +1038,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Build trie, DFS board paths, stop when prefix missing, collect terminal words, mark cells in-place.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 100. Next Greater Element II
+### 103. Next Greater Element II
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-ii/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1018,7 +1048,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: For i in 0..2n-1, resolve stack with nums[i % n], push i only during first pass.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 101. Evaluate Reverse Polish Notation
+### 104. Evaluate Reverse Polish Notation
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session3/EvalRPN.java) | [LeetCode](https://leetcode.com/problems/evaluate-reverse-polish-notation/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1028,7 +1058,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Push numbers; on operator pop b then a, compute a op b, push result.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 102. Find The Index Of The First Occurrence In A String
+### 105. Find The Index Of The First Occurrence In A String
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LeetCode](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1038,7 +1068,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 103. Basic Calculator
+### 106. Basic Calculator
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session3/BasicCalculator.java) | [LeetCode](https://leetcode.com/problems/basic-calculator/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1048,7 +1078,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Track result, sign, number; on '(' push result/sign and reset; on ')' fold into previous context.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 104. Longest Palindrome
+### 107. Longest Palindrome
 
 - Links: [Java](../../src/main/java/org/chijai/day3/session3/LongestPalindrome.java) | [LeetCode](https://leetcode.com/problems/longest-palindrome/)
 - Brute force: Scan repeatedly or compare every candidate pair/count directly.
@@ -1058,7 +1088,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Count chars, add count / 2 * 2, and allow one odd center if any count is odd.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 105. Longest Palindromic Substring
+### 108. Longest Palindromic Substring
 
 - Links: [Java](../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) | [LeetCode](https://leetcode.com/problems/longest-palindromic-substring/)
 - Brute force: Try all pairs, all boundaries, or build an auxiliary cleaned structure.
@@ -1068,7 +1098,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: For each index, expand(i,i) and expand(i,i+1), update best start/length.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 106. Count Number Of Nice Subarrays
+### 109. Count Number Of Nice Subarrays
 
 - Links: [Java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LeetCode](https://leetcode.com/problems/count-number-of-nice-subarrays/)
 - Brute force: Enumerate every substring/subarray and recompute validity from scratch.
@@ -1078,7 +1108,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Count subarrays with at most k odd numbers using a sliding left pointer, subtract atMost(k-1).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 107. Middle Of Linked List
+### 110. Middle Of Linked List
 
 - Links: [Java](../../src/main/java/org/chijai/day4/LinkedList/session4/MiddleOfLinkedList.java)
 - Brute force: Copy nodes into an array/set, or make extra passes to recover positions.
@@ -1088,7 +1118,11 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Use dummy when head can change; update prev/current/next in a fixed order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 108. Path Sum
+## Phase 4 - Secondary
+
+Ranks 111-150. Good coverage after the main interview patterns are under control.
+
+### 111. Path Sum
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | [LeetCode](https://leetcode.com/problems/path-sum/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1098,7 +1132,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: DFS with remaining sum; at leaf return remaining == node.val.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 109. Binary Tree Postorder Traversal
+### 112. Binary Tree Postorder Traversal
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeInorderTraversal.java) | [LeetCode](https://leetcode.com/problems/binary-tree-postorder-traversal/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1108,7 +1142,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Use recursion or stack with last-visited tracking; visit after left and right.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 110. Binary Tree Preorder Traversal
+### 113. Binary Tree Preorder Traversal
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeInorderTraversal.java) | [LeetCode](https://leetcode.com/problems/binary-tree-preorder-traversal/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1118,11 +1152,7 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 - Code idea: Visit node, then left, then right; iterative stack pushes right before left.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 4 - Secondary
-
-Ranks 111-150. Good coverage after the main interview patterns are under control.
-
-### 111. Insert Into A Binary Search Tree
+### 114. Insert Into A Binary Search Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | [LeetCode](https://leetcode.com/problems/insert-into-a-binary-search-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1132,7 +1162,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Iterate or recurse: if val < node.val go left, else go right; attach new node at null.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 112. Minimum Absolute Difference In BST
+### 115. Minimum Absolute Difference In BST
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | [LeetCode](https://leetcode.com/problems/minimum-absolute-difference-in-bst/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1142,7 +1172,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Inorder traverse, track previous value and best difference.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 113. Range Sum Of BST
+### 116. Range Sum Of BST
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | [LeetCode](https://leetcode.com/problems/range-sum-of-bst/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1152,7 +1182,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: If node < low go right, if node > high go left, else add node and both sides.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 114. Search In A Binary Search Tree
+### 117. Search In A Binary Search Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | [LeetCode](https://leetcode.com/problems/search-in-a-binary-search-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1162,7 +1192,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: While node != null and node.val != val, move left if val < node.val else right.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 115. All Nodes Distance K in Binary Tree
+### 118. All Nodes Distance K in Binary Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/BurnBinaryTree.java) | [LeetCode](https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1172,7 +1202,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Base case null, recurse left/right, compute local result, return contract.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 116. Amount of Time for Binary Tree to Be Infected
+### 119. Amount of Time for Binary Tree to Be Infected
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/BurnBinaryTree.java) | [LeetCode](https://leetcode.com/problems/amount-of-time-for-binary-tree-to-be-infected/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1182,7 +1212,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Base case null, recurse left/right, compute local result, return contract.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 117. Recover Binary Search Tree
+### 120. Recover Binary Search Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/RecoverBST.java) | [LeetCode](https://leetcode.com/problems/recover-binary-search-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1192,7 +1222,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Track prev, first, second during inorder; after traversal swap first.val and second.val.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 118. Binary Search Tree Iterator
+### 121. Binary Search Tree Iterator
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/RecoverBST.java) | [LeetCode](https://leetcode.com/problems/binary-search-tree-iterator/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1202,7 +1232,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: pushLeft(root); next() pops, then pushLeft(node.right); hasNext() checks stack.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 119. Convert BST To Greater Tree
+### 122. Convert BST To Greater Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/RecoverBST.java) | [LeetCode](https://leetcode.com/problems/convert-bst-to-greater-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1212,7 +1242,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Traverse right, add node.val into running sum, rewrite node.val, then traverse left.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 120. K Highest Ranked Items Within A Price Range
+### 123. K Highest Ranked Items Within A Price Range
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session3/KHighestRankedItemsWithinAPriceRange.java) | [LeetCode](https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/)
 - Brute force: Run a separate search from each source or use DFS and then compare path lengths.
@@ -1222,7 +1252,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: BFS from start through passable cells; collect price-in-range items with distance and sort ranking.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 121. Number Of Closed Islands
+### 124. Number Of Closed Islands
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LeetCode](https://leetcode.com/problems/number-of-closed-islands/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1232,7 +1262,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: DFS each land component, return false if any cell touches border, mark visited.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 122. Max Area Of Island
+### 125. Max Area Of Island
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | [LeetCode](https://leetcode.com/problems/max-area-of-island/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1242,7 +1272,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: On each unvisited land cell, DFS four directions accumulating area.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 123. Graph Valid Tree
+### 126. Graph Valid Tree
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/graph-valid-tree/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1252,7 +1282,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 124. Possible Bipartition
+### 127. Possible Bipartition
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/possible-bipartition/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1262,7 +1292,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 125. Redundant Connection
+### 128. Redundant Connection
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/redundant-connection/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1272,7 +1302,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 126. Coloring A Border
+### 129. Coloring A Border
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/ColoringABorder.java) | [LeetCode](https://leetcode.com/problems/coloring-a-border/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1282,7 +1312,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: DFS component, mark a cell as border if it touches outside grid or different color.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 127. Sqrtx
+### 130. Sqrtx
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LeetCode](https://leetcode.com/problems/sqrtx/)
 - Brute force: Try integers one by one until square exceeds x.
@@ -1292,7 +1322,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Binary search 0..x, cast mid*mid to long, save mid when square <= x.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 128. Largest Rectangle
+### 131. Largest Rectangle
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1302,7 +1332,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: While top is resolved by current value, pop and compute; then push current.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 129. Min Stack
+### 132. Min Stack
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/min-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1312,7 +1342,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Push value and min(value,currentMin); pop both together; getMin reads min top.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 130. Max Stack
+### 133. Max Stack
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/max-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1322,7 +1352,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Use stack plus max tracking, or doubly linked list plus TreeMap for O(log n) popMax.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 131. Implement Queue Using Stacks
+### 134. Implement Queue Using Stacks
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/implement-queue-using-stacks/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1332,7 +1362,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: push -> in.push; pop/peek -> if out empty move all in to out, then read out.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 132. Implement Stack Using Queues
+### 135. Implement Stack Using Queues
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/implement-stack-using-queues/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1342,7 +1372,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Offer x, then rotate size-1 older elements behind it; pop removes queue front.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 133. Next Greater Element I
+### 136. Next Greater Element I
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-i/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1352,7 +1382,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Scan nums2, pop smaller values and map them to current, then lookup each nums1 value.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 134. Online Stock Span
+### 137. Online Stock Span
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/online-stock-span/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1362,7 +1392,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Start span=1, while stack top price <= current add its span and pop, then push current/span.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 135. K Closest Points To Origin
+### 138. K Closest Points To Origin
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java) | [LeetCode](https://leetcode.com/problems/k-closest-points-to-origin/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1372,7 +1402,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Use max-heap of size k by distance, or quickselect by squared distance.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 136. Top K Frequent Words
+### 139. Top K Frequent Words
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/top-k-frequent-words/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1382,7 +1412,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Push candidates with comparator; poll when size or frontier rules require it.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 137. H-Index
+### 140. H-Index
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/h-index/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1392,7 +1422,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Push candidates with comparator; poll when size or frontier rules require it.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 138. Sort Characters By Frequency
+### 141. Sort Characters By Frequency
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/sort-characters-by-frequency/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1402,7 +1432,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Count chars, bucket by frequency or heap entries, append char repeated count times.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 139. Insert Interval
+### 142. Insert Interval
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | [LeetCode](https://leetcode.com/problems/insert-interval/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -1412,7 +1442,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Sort by start/end, then merge/count/select with one pass or heap.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 140. Merge Intervals
+### 143. Merge Intervals
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | [LeetCode](https://leetcode.com/problems/merge-intervals/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -1422,7 +1452,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Sort by start/end, then merge/count/select with one pass or heap.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 141. Non Overlapping Intervals
+### 144. Non Overlapping Intervals
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalGreedyByEnd.java) | [LeetCode](https://leetcode.com/problems/non-overlapping-intervals/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -1432,7 +1462,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Sort by start/end, then merge/count/select with one pass or heap.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 142. Partition Labels
+### 145. Partition Labels
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LeetCode](https://leetcode.com/problems/partition-labels/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -1442,7 +1472,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Sort by start/end, then merge/count/select with one pass or heap.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 143. Letter Combinations Of A Phone Number
+### 146. Letter Combinations Of A Phone Number
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/LetterCombinationsOfAPhoneNumber.java) | [LeetCode](https://leetcode.com/problems/letter-combinations-of-a-phone-number/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
@@ -1452,7 +1482,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 144. Permutations
+### 147. Permutations
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LeetCode](https://leetcode.com/problems/permutations/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
@@ -1462,7 +1492,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 145. Parallel Courses
+### 148. Parallel Courses
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/parallel-courses/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1472,7 +1502,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 146. Alien Dictionary
+### 149. Alien Dictionary
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/alien-dictionary/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1482,7 +1512,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 147. Find Eventual Safe States
+### 150. Find Eventual Safe States
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/find-eventual-safe-states/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1492,7 +1522,11 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 148. Sequence Reconstruction
+## Phase 5 - If Time
+
+Ranks 151+. Cover only if time remains or a target interviewer leans this way.
+
+### 151. Sequence Reconstruction
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/sequence-reconstruction/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1502,7 +1536,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 149. Sort Items by Groups Respecting Dependencies
+### 152. Sort Items by Groups Respecting Dependencies
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1512,7 +1546,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 150. Spiral Matrix
+### 153. Spiral Matrix
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session1/SpiralMatrix.java) | [LeetCode](https://leetcode.com/problems/spiral-matrix/)
 - Brute force: Try the direct simulation or enumeration first.
@@ -1522,11 +1556,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Traverse top row, right col, bottom row if valid, left col if valid; move boundaries inward.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-## Phase 5 - If Time
-
-Ranks 151+. Cover only if time remains or a target interviewer leans this way.
-
-### 151. String To Integer Atoi
+### 154. String To Integer Atoi
 
 - Links: [Java](../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LeetCode](https://leetcode.com/problems/string-to-integer-atoi/)
 - Brute force: Try the direct simulation or enumeration first.
@@ -1536,7 +1566,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Skip spaces, read optional sign, accumulate digit while checking against INT_MAX limits.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 152. Repeated Substring Pattern
+### 155. Repeated Substring Pattern
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LeetCode](https://leetcode.com/problems/repeated-substring-pattern/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1546,7 +1576,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 153. Maximum XOR of Two Numbers in an Array
+### 156. Maximum XOR of Two Numbers in an Array
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LeetCode](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1556,7 +1586,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert numbers by bits, then for each number walk preferred opposite bits and update max.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 154. Design A Stack With Increment Operation
+### 157. Design A Stack With Increment Operation
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/design-a-stack-with-increment-operation/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1566,7 +1596,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Keep stack plus inc array; on pop carry inc[i] to inc[i-1] and return value + inc[i].
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 155. Longest Happy Prefix
+### 158. Longest Happy Prefix
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LeetCode](https://leetcode.com/problems/longest-happy-prefix/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1576,7 +1606,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Build LPS over the string and return substring(0, lps[n - 1]).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 156. Longest Common Prefix
+### 159. Longest Common Prefix
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/longest-common-prefix/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1586,7 +1616,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 157. Longest Word in Dictionary
+### 160. Longest Word in Dictionary
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LeetCode](https://leetcode.com/problems/longest-word-in-dictionary/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1596,7 +1626,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 158. Replace Words
+### 161. Replace Words
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/replace-words/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1606,7 +1636,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 159. Search Suggestions System
+### 162. Search Suggestions System
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/search-suggestions-system/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1616,7 +1646,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 160. Short Encoding of Words
+### 163. Short Encoding of Words
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/short-encoding-of-words/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1626,7 +1656,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 161. Map Sum Pairs
+### 164. Map Sum Pairs
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LeetCode](https://leetcode.com/problems/map-sum-pairs/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1636,7 +1666,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 162. Maximum XOR With an Element From Array
+### 165. Maximum XOR With an Element From Array
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LeetCode](https://leetcode.com/problems/maximum-xor-with-an-element-from-array/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1646,7 +1676,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Sort nums and queries by mi, insert nums <= mi, answer each query by opposite-bit trie walk.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 163. Maximum Genetic Difference Query
+### 166. Maximum Genetic Difference Query
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LeetCode](https://leetcode.com/problems/maximum-genetic-difference-query/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1656,7 +1686,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: On entering node insert value, answer attached queries, DFS children, then remove value.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 164. Count Pairs With XOR in a Range
+### 167. Count Pairs With XOR in a Range
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LeetCode](https://leetcode.com/problems/count-pairs-with-xor-in-a-range/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -1666,7 +1696,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: For each num, add countLessThan(high+1) - countLessThan(low), then insert num.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 165. Climbing Stairs Fib
+### 168. Climbing Stairs Fib
 
 - Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/ClimbingStairsFib.java)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
@@ -1676,17 +1706,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Iterate two rolling values for ways to previous one and two steps.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 166. Gas Station
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LeetCode](https://leetcode.com/problems/gas-station/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 167. Edit Distance
+### 169. Edit Distance
 
 - Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/edit-distance/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
@@ -1696,177 +1716,17 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Initialize empty-string row/column; if chars equal copy diagonal else 1 + min(insert, delete, replace).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 168. Best Time to Buy and Sell Stock with Cooldown
-
-- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 169. Best Time to Buy and Sell Stock with Transaction Fee
-
-- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 170. Jump Game
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LeetCode](https://leetcode.com/problems/jump-game/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 171. Climbing Stairs
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/climbing-stairs/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Unbounded knapsack DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 172. Min Cost Climbing Stairs
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/min-cost-climbing-stairs/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Unbounded knapsack DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 173. Perfect Squares
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/perfect-squares/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Unbounded knapsack DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 174. Word Break
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/word-break/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Unbounded knapsack DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 175. Delete Operation for Two Strings
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/delete-operation-for-two-strings/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 176. Distinct Subsequences
+### 170. Distinct Subsequences
 
 - Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/distinct-subsequences/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
+- Bottleneck: Include/skip choices revisit the same source-target prefix pairs.
 - Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
+- Invariant/state: dp[i][j] counts ways first i source chars form first j target chars.
+- Code idea: If chars match add skip and take counts; otherwise carry skip count.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 177. Interleaving String
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/interleaving-string/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 178. Longest Common Subsequence
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/longest-common-subsequence/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 179. Longest Palindromic Subsequence
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/longest-palindromic-subsequence/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 180. Minimum ASCII Delete Sum for Two Strings
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/minimum-ascii-delete-sum-for-two-strings/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using 2D DP.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 181. Longest Continuous Increasing Subsequence
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/longest-continuous-increasing-subsequence/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using DP / patience sorting.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 182. Maximum Length of Pair Chain
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/maximum-length-of-pair-chain/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using DP / patience sorting.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 183. Number of Longest Increasing Subsequence
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/number-of-longest-increasing-subsequence/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using DP / patience sorting.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 184. Russian Doll Envelopes
-
-- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/russian-doll-envelopes/)
-- Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using DP / patience sorting.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 185. Add Binary
+### 171. Add Binary
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LeetCode](https://leetcode.com/problems/add-binary/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1876,7 +1736,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Use i,j,carry; append (sum % 2), update carry=sum/2, reverse result.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 186. Count Primes
+### 172. Count Primes
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session2/CountPrimes.java) | [LeetCode](https://leetcode.com/problems/count-primes/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1886,7 +1746,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Boolean isComposite; for p*p < n, mark multiples p*p, p*p+p, ...; count unmarked.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 187. Count Unique Characters of All Substrings of a Given String
+### 173. Count Unique Characters of All Substrings of a Given String
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LeetCode](https://leetcode.com/problems/count-unique-characters-of-all-substrings-of-a-given-string/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1896,7 +1756,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Record previous and next positions for each occurrence, sum leftGap * rightGap contributions.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 188. Award Top K Hotels
+### 174. Award Top K Hotels
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/AwardTopKHotels.java)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1906,7 +1766,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Build keyword set, count matches per hotel review, then sort or heap by score/id.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 189. Shortest Palindrome
+### 175. Shortest Palindrome
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LeetCode](https://leetcode.com/problems/shortest-palindrome/)
 - Brute force: Simulate the process directly or compare every possible candidate/string.
@@ -1916,7 +1776,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Compute LPS on combined string, reverse suffix from lps length, prepend it to s.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 190. Reverse Linked List II
+### 176. Reverse Linked List II
 
 - Links: [Java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) | [LeetCode](https://leetcode.com/problems/reverse-linked-list-ii/)
 - Brute force: Copy nodes into an array/set, or make extra passes to recover positions.
@@ -1926,7 +1786,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Find node before left, then head-insert nodes from the sublist for right-left steps.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 191. Path Sum II
+### 177. Path Sum II
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | [LeetCode](https://leetcode.com/problems/path-sum-ii/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1936,7 +1796,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Add node, recurse children with remaining sum, copy on valid leaf, remove node.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 192. Lowest Common Ancestor Of A Binary Tree II
+### 178. Lowest Common Ancestor Of A Binary Tree II
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LeetCode](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-ii/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1946,7 +1806,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: DFS returns found node/count flags; only accept LCA when both p and q are found.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 193. Lowest Common Ancestor Of A Binary Tree III
+### 179. Lowest Common Ancestor Of A Binary Tree III
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LeetCode](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iii/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1956,7 +1816,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Move a and b upward; when null redirect to the other node; meeting is LCA.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 194. Lowest Common Ancestor Of A Binary Tree IV
+### 180. Lowest Common Ancestor Of A Binary Tree IV
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session1/LCA.java) | [LeetCode](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iv/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
@@ -1966,7 +1826,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Return root if in target set; combine child returns and current membership.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 195. Permutations II
+### 181. Permutations II
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LeetCode](https://leetcode.com/problems/permutations-ii/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
@@ -1976,7 +1836,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 196. Course Schedule IV
+### 182. Course Schedule IV
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/course-schedule-iv/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
@@ -1986,17 +1846,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 197. Distinct Subsequences II
-
-- Links: [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LeetCode](https://leetcode.com/problems/distinct-subsequences-ii/)
-- Brute force: Try the direct simulation or enumeration first.
-- Bottleneck: Use brute force to expose repeated work, then choose the invariant and data structure.
-- Pattern: Basics / Implementation, using Contribution counting.
-- Invariant/state: Derive the direct approach, name the wasted work, then choose the invariant that removes it.
-- Code idea: Code the invariant directly, then dry-run edge cases.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 198. Encode And Decode Tinyurl
+### 183. Encode And Decode Tinyurl
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/DesignUrlShortner.java) | [LeetCode](https://leetcode.com/problems/encode-and-decode-tinyurl/)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2006,7 +1856,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Generate/increment key, store key->longUrl, return domain/key; decode extracts key and reads map.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 199. Design Circular Queue
+### 184. Design Circular Queue
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/design-circular-queue/)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2016,7 +1866,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: enQueue writes at (head + size) % capacity; deQueue advances head and decrements size.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 200. Hotel Reviews
+### 185. Hotel Reviews
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
@@ -2026,7 +1876,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Normalize review words, count keyword hits, aggregate per hotel, sort by score and id.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 201. Design Fraud Pattern Detection
+### 186. Design Fraud Pattern Detection
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/DesignFraudPatternDetection.java)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2036,7 +1886,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Index recent events by account/card/merchant, evict expired entries, evaluate rules on insert.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 202. Api Integration Example
+### 187. Api Integration Example
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/ApiIntegrationExample.java)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2046,7 +1896,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Wrap client call with typed DTOs, timeout/retry policy, status handling, and clear failure result.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 203. Design Redis
+### 188. Design Redis
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/DesignRedis.java)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2056,7 +1906,7 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Store value plus expireAt, check expiry on get/set, and maintain cleanup or eviction structure.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 204. Design Token Bucket Rate Limiter
+### 189. Design Token Bucket Rate Limiter
 
 - Links: [Java](../../src/main/java/org/chijai/design/lld/DesignTokenBucketRateLimiter.java)
 - Brute force: Implement only the happy-path operation with one map and no invariant for edge cases.
@@ -2066,32 +1916,182 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 - Code idea: Per key, compute tokens = min(capacity, tokens + elapsed*rate), allow if tokens >= cost.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 205. Best Time to Buy and Sell Stock II
+### 190. Best Time to Buy and Sell Stock with Transaction Fee
 
-- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries2.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
+- Bottleneck: Local rising edges are not enough when each completed transaction pays a fee.
+- Pattern: Dynamic Programming, using Stock DP variants.
+- Invariant/state: Fee changes the sell transition; hold/cash states prevent double-counting fees.
+- Code idea: For each price: cash = max(cash, hold + price - fee); hold = max(hold, cash - price).
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 206. Best Time to Buy and Sell Stock III
+### 191. Best Time to Buy and Sell Stock with Cooldown
+
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries2.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Greedy cannot sell and immediately rebuy; the cooldown day must be encoded in state.
+- Pattern: Dynamic Programming, using Stock DP variants.
+- Invariant/state: Cooldown creates three states: hold, sold today, and rest.
+- Code idea: For each price update sold = hold + price, hold = max(hold, rest - price), rest = max(rest, oldSold).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 192. Best Time to Buy and Sell Stock III
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
+- Bottleneck: Greedy rising edges fail with at most two transactions; holding/sold states preserve constraints.
 - Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
+- Invariant/state: Four states track first buy, first sell, second buy, second sell.
+- Code idea: Update buy1, sell1, buy2, sell2 for each price and return sell2.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 207. Best Time to Buy and Sell Stock IV
+### 193. Best Time to Buy and Sell Stock IV
 
-- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/)
+- Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries2.java) | [LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/)
 - Brute force: Use plain recursion or enumerate choices without caching repeated states.
-- Bottleneck: Naive recursion repeats states; DP caches each state and reuses transitions.
-- Pattern: Dynamic Programming, using Greedy / DP states.
-- Invariant/state: Name the state, base case, transition, and iteration order before writing loops.
-- Code idea: Initialize base states, fill states in dependency order, return target state.
+- Bottleneck: Enumerating transaction boundaries repeats choices; DP compresses day and transaction count.
+- Pattern: Dynamic Programming, using Stock DP variants.
+- Invariant/state: For k transactions, each transaction layer has a hold and cash state.
+- Code idea: If k is large use stock II; otherwise update hold[t] and cash[t] for t = 1..k.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 194. Distinct Subsequences II
+
+- Links: [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LeetCode](https://leetcode.com/problems/distinct-subsequences-ii/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: A set of all subsequences explodes; last contribution per character removes duplicates compactly.
+- Pattern: Dynamic Programming, using Contribution counting.
+- Invariant/state: Each char doubles subsequences, then subtracts subsequences counted before its previous occurrence.
+- Code idea: Maintain total distinct subsequences and lastContribution[char], updating total by new unique additions.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 195. Word Break
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/word-break/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Recursive cuts retry the same suffixes; prefix validity caches reusable split points.
+- Pattern: Dynamic Programming, using Unbounded knapsack DP.
+- Invariant/state: dp[i] means prefix s[0..i) can be segmented into dictionary words.
+- Code idea: For each end i, set dp[i] if some dp[j] and s[j..i) is in the dictionary.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 196. Interleaving String
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/interleaving-string/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Greedy picking from either string fails when equal chars create ambiguous futures.
+- Pattern: Dynamic Programming, using 2D DP.
+- Invariant/state: dp[i][j] says s3 prefix i+j can be formed by prefixes of s1 and s2.
+- Code idea: Fill dp by taking next char from s1 or s2 when it matches s3[i+j-1].
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 197. Longest Common Subsequence
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/longest-common-subsequence/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Subsequence matching branches repeatedly on the same prefix pairs.
+- Pattern: Dynamic Programming, using 2D DP.
+- Invariant/state: dp[i][j] is the best subsequence length between two prefixes.
+- Code idea: If chars match use 1 + diagonal; otherwise max(top,left).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 198. Delete Operation for Two Strings
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/delete-operation-for-two-strings/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Direct delete recursion repeats prefix pairs; LCS preserves the shared subsequence once.
+- Pattern: Dynamic Programming, using 2D DP.
+- Invariant/state: Minimum deletions equals removing everything not in the LCS.
+- Code idea: Compute LCS length, return word1.length + word2.length - 2 * lcs.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 199. Longest Palindromic Subsequence
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/longest-palindromic-subsequence/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Subsequence choices overlap heavily; interval DP reuses inner ranges.
+- Pattern: Dynamic Programming, using 2D DP.
+- Invariant/state: dp[l][r] is best palindrome subsequence inside s[l..r].
+- Code idea: Fill by increasing length: equal ends use 2 + dp[l+1][r-1], else max(drop left, drop right).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 200. Minimum ASCII Delete Sum for Two Strings
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java) | [LeetCode](https://leetcode.com/problems/minimum-ascii-delete-sum-for-two-strings/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: LCS length is insufficient because deleted characters have different costs.
+- Pattern: Dynamic Programming, using 2D DP.
+- Invariant/state: dp[i][j] is minimum ASCII deletion cost to make two prefixes equal.
+- Code idea: If chars match take diagonal; otherwise delete one side and add its ASCII cost.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 201. Climbing Stairs
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/climbing-stairs/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: The recursion tree repeats the same step count states.
+- Pattern: Dynamic Programming, using Unbounded knapsack DP.
+- Invariant/state: Ways to reach n comes from n-1 plus n-2, with two rolling counts.
+- Code idea: Start ways(0)=1, ways(1)=1, then iterate next = oneBack + twoBack.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 202. Min Cost Climbing Stairs
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/min-cost-climbing-stairs/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Choosing the cheaper immediate next step can block a cheaper total suffix.
+- Pattern: Dynamic Programming, using Unbounded knapsack DP.
+- Invariant/state: Cost to stand on step i is cost[i] plus min(previous one, previous two).
+- Code idea: Iterate two rolling minimum costs and return min(cost to last, cost to second last).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 203. Perfect Squares
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | [LeetCode](https://leetcode.com/problems/perfect-squares/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Greedy largest-square choice fails on cases where smaller squares combine better.
+- Pattern: Dynamic Programming, using Unbounded knapsack DP.
+- Invariant/state: dp[x] is the fewest square numbers summing to x; try each square as the last move.
+- Code idea: Initialize dp[0]=0; for x=1..n, dp[x]=1+min(dp[x-square]).
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 204. Number of Longest Increasing Subsequence
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/number-of-longest-increasing-subsequence/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: tails gives length only; counting needs ownership of every ending index.
+- Pattern: Dynamic Programming, using DP / patience sorting.
+- Invariant/state: Track both LIS length ending at i and how many ways achieve that length.
+- Code idea: For each i, scan previous smaller j and update len[i] plus count[i].
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 205. Russian Doll Envelopes
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/russian-doll-envelopes/)
+- Brute force: Use plain recursion or enumerate choices without caching repeated states.
+- Bottleneck: Plain 2D sorting can wrongly nest equal-width envelopes.
+- Pattern: Dynamic Programming, using DP / patience sorting.
+- Invariant/state: Sort width ascending, height descending for equal width, then LIS on heights.
+- Code idea: Sort by width asc and height desc, then lower_bound heights to get LIS length.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 206. Maximum Length of Pair Chain
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/maximum-length-of-pair-chain/)
+- Brute force: Compare every interval with every other interval before deciding conflicts/order.
+- Bottleneck: LIS-style DP works, but earliest finishing pair leaves maximum room for the future.
+- Pattern: Intervals / Sorting Greedy, using DP / patience sorting.
+- Invariant/state: Sort pairs by end and take the next pair whose start is after the current end.
+- Code idea: Sort by pair[1], keep currentEnd, count pair when pair[0] > currentEnd.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 207. Longest Continuous Increasing Subsequence
+
+- Links: [Java](../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LeetCode](https://leetcode.com/problems/longest-continuous-increasing-subsequence/)
+- Brute force: Enumerate every substring/subarray and recompute validity from scratch.
+- Bottleneck: LIS tails/DP is overkill because skipping is not allowed.
+- Pattern: Sliding Window, using DP / patience sorting.
+- Invariant/state: Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1].
+- Code idea: Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.

@@ -38,7 +38,7 @@ TOPIC
 |---|---:|---:|---|
 | HashMap / Frequency / Set | 5 | 1 | [01_hashmap_hashset.md](patterns/01_hashmap_hashset.md) |
 | Binary Search / Answer Search | 13 | 2 | [02_binary_search.md](patterns/02_binary_search.md) |
-| Sliding Window | 6 | 3 | [03_sliding_window.md](patterns/03_sliding_window.md) |
+| Sliding Window | 7 | 3 | [03_sliding_window.md](patterns/03_sliding_window.md) |
 | Prefix Sum / Prefix-Suffix | 2 | 4 | [04_prefix_suffix.md](patterns/04_prefix_suffix.md) |
 | Linked List Pointers | 14 | 6 | [05_linked_list.md](patterns/05_linked_list.md) |
 | Two Pointers | 6 | 10 | [06_two_pointers.md](patterns/06_two_pointers.md) |
@@ -48,15 +48,16 @@ TOPIC
 | Graph DFS / Components | 12 | 18 | [10_graph_dfs.md](patterns/10_graph_dfs.md) |
 | Topological Sort | 9 | 19 | [11_topological_sort.md](patterns/11_topological_sort.md) |
 | Graph BFS / Shortest Path | 6 | 21 | [12_graph_bfs.md](patterns/12_graph_bfs.md) |
-| Dynamic Programming | 31 | 32 | [13_dynamic_programming.md](patterns/13_dynamic_programming.md) |
+| Dynamic Programming | 26 | 32 | [13_dynamic_programming.md](patterns/13_dynamic_programming.md) |
 | Backtracking / Combinatorial DFS | 6 | 34 | [14_backtracking.md](patterns/14_backtracking.md) |
 | Stack / Monotonic Stack | 14 | 35 | [15_stack.md](patterns/15_stack.md) |
 | Trie | 14 | 39 | [16_trie.md](patterns/16_trie.md) |
-| Intervals / Sorting Greedy | 6 | 42 | [17_intervals_greedy.md](patterns/17_intervals_greedy.md) |
+| Intervals / Sorting Greedy | 7 | 42 | [17_intervals_greedy.md](patterns/17_intervals_greedy.md) |
 | Union Find / DSU | 1 | 70 | [18_union_find.md](patterns/18_union_find.md) |
-| Design Data Structures | 7 | 86 | [19_design_lld.md](patterns/19_design_lld.md) |
-| Math / Bit / String | 7 | 102 | [20_math_bit_string.md](patterns/20_math_bit_string.md) |
-| Basics / Implementation | 3 | 150 | [21_core_basics.md](patterns/21_core_basics.md) |
+| Greedy | 4 | 72 | [19_greedy.md](patterns/19_greedy.md) |
+| Design Data Structures | 7 | 89 | [20_design_lld.md](patterns/20_design_lld.md) |
+| Math / Bit / String | 7 | 105 | [21_math_bit_string.md](patterns/21_math_bit_string.md) |
+| Basics / Implementation | 2 | 153 | [22_core_basics.md](patterns/22_core_basics.md) |
 
 When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.
 
