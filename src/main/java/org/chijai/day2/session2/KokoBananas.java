@@ -591,11 +591,14 @@ public class KokoBananas {
             int currentLoad = 0;
 
             for (int w : weights) {
+                // INVARIANT: currentLoad must never exceed capacity.
+                // So validate BEFORE adding w.
                 if (currentLoad + w > capacity) {
                     requiredDays++;
-                    currentLoad = 0;
+                    currentLoad = w;   // w becomes first package of next day
+                } else {
+                    currentLoad = currentLoad + w;  // w fits in current day
                 }
-                currentLoad += w;
             }
             return requiredDays <= days;
         }

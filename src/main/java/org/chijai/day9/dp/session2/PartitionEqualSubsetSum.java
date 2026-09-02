@@ -261,6 +261,7 @@ public class PartitionEqualSubsetSum {
         for (int num : nums) {
 
             // Descend so this number cannot reuse a state it created itself.
+            // sum>=num ensures we do not read negative indices.
             for (int sum = target; sum >= num; sum--) {
                 dp[sum] = dp[sum] || dp[sum - num];
             }
