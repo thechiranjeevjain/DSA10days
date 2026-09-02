@@ -26,6 +26,7 @@ $requiredFiles = @(
     "09_LEETCODE_CURRICULUM_TOC.md",
     "10_AFTER_7_DAY_EXTENSION_PLAN.md",
     "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md",
+    "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -256,6 +257,79 @@ if ($crispText -notmatch "### 1\. $topRankTitle") {
 Assert-PhaseHeaders -Path (Join-Path $interviewRoot "02_ONE_LINE_RECALL_ALL_PROBLEMS.md") -ExpectedHeaders $expectedPhaseHeaders
 Assert-PhaseHeaders -Path (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.md") -ExpectedHeaders $expectedPhaseHeaders
 
+$articulationPath = Join-Path $interviewRoot "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md"
+$articulationText = Get-Content -LiteralPath $articulationPath -Raw
+foreach ($requiredArticulationPhrase in @(
+        "Master DSA Interview Articulation Table",
+        "Pattern -> Sub-pattern",
+        "Say Before Coding - Correctness Contract",
+        "Category fallback rows intentionally avoid unverified operator claims"
+    )) {
+    if ($articulationText -notmatch [regex]::Escape($requiredArticulationPhrase)) {
+        Fail "master articulation table is missing required phrase: $requiredArticulationPhrase"
+    }
+}
+
+$articulationRows = @(Select-String -LiteralPath $articulationPath -Pattern '^\| \*\*(?<rank>\d+)\. ' | ForEach-Object { $_.Line })
+if ($articulationRows.Count -ne $rankLines.Count) {
+    Fail "expected master articulation table to contain $($rankLines.Count) rows, found $($articulationRows.Count)"
+}
+
+$articulationRankSet = @{}
+foreach ($line in $articulationRows) {
+    $match = [regex]::Match($line, '^\| \*\*(?<rank>\d+)\. ')
+    if (-not $match.Success) {
+        Fail "could not parse articulation rank from row: $line"
+    }
+    $rank = [int] $match.Groups["rank"].Value
+    if ($articulationRankSet.ContainsKey($rank)) {
+        Fail "duplicate rank $rank in master articulation table"
+    }
+    $articulationRankSet[$rank] = $true
+}
+
+for ($i = 1; $i -le $rankLines.Count; $i++) {
+    if (-not $articulationRankSet.ContainsKey($i)) {
+        Fail "master articulation table missing rank $i"
+    }
+}
+
+$articulationJavaMatches = @(Select-String -LiteralPath $articulationPath -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
+if ($articulationJavaMatches.Matches.Count -ne $rankLines.Count) {
+    Fail "expected one Java link per master articulation row, found $($articulationJavaMatches.Matches.Count)"
+}
+
+$missingArticulationJavaLinks = @()
+foreach ($line in $articulationJavaMatches) {
+    foreach ($match in $line.Matches) {
+        $target = $match.Groups[1].Value
+        $fullPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $articulationPath) $target))
+        if (-not (Test-Path -LiteralPath $fullPath)) {
+            $missingArticulationJavaLinks += $target
+        }
+    }
+}
+if ($missingArticulationJavaLinks.Count -gt 0) {
+    Fail "missing master articulation Java links: $($missingArticulationJavaLinks -join ', ')"
+}
+
+$semanticArticulationChecks = @(
+    @{ Title = "Koko Eating Bananas"; MustContain = "speed is the candidate bananas per hour and must start at 1, never 0" },
+    @{ Title = "Sliding Window Maximum"; MustContain = "Expire front indices with index <= right - k" },
+    @{ Title = "Capacity To Ship Packages Within D Days"; MustContain = "currentLoad + w > capacity" },
+    @{ Title = "Minimum Number Of Days To Make M Bouquets"; MustContain = "When flowers == k, one bouquet consumes those k flowers" },
+    @{ Title = "Partition Equal Subset Sum"; MustContain = "Iterate sums right to left" },
+    @{ Title = "Rotting Oranges"; MustContain = "One BFS layer is one minute" }
+)
+
+foreach ($check in $semanticArticulationChecks) {
+    $title = [regex]::Escape($check.Title)
+    $must = [regex]::Escape($check.MustContain)
+    if ($articulationText -notmatch "$title[\s\S]{0,900}$must") {
+        Fail "master articulation semantic check failed for $($check.Title): missing '$($check.MustContain)'"
+    }
+}
+
 $interviewText = (Get-ChildItem -LiteralPath $interviewRoot -Recurse -Filter "*.md" |
     Sort-Object FullName |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
@@ -305,6 +379,9 @@ if ($readmeText -notmatch '07_LEETCODE_SOLVED_INDEX\.md') {
 }
 if ($readmeText -notmatch '09_LEETCODE_CURRICULUM_TOC\.md') {
     Fail "main README does not link to the nested LeetCode curriculum TOC"
+}
+if ($readmeText -notmatch '12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE\.md') {
+    Fail "main README does not link to the master articulation table"
 }
 if ($readmeText -notmatch '10_AFTER_7_DAY_EXTENSION_PLAN\.md') {
     Fail "main README does not link to the post-7-day extension plan"

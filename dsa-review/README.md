@@ -28,9 +28,10 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 9. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
 10. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
 11. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-12. For weak-topic focus, open `interview/patterns/README.md`.
-13. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-14. After a miss, run the review command and mark the item honestly.
+12. For exact say-before-coding contracts, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
+13. For weak-topic focus, open `interview/patterns/README.md`.
+14. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+15. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 
@@ -40,7 +41,7 @@ Run commands from the repo root unless noted otherwise.
 |---|---|---|
 | Full repo verification | Windows: `verify-all.cmd`; macOS/Linux: `pwsh ./verify-all.ps1` or `./verify-all.sh` | Runs Maven tests, rebuilds generated interview docs, then validates the cockpit. |
 | Rebuild cockpit docs | Windows: `dsa-review\scripts\build-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/build-interview-cockpit.sh` | Regenerates `interview/` and `interview/patterns/` from `notes/PROBLEM_PATTERN_INDEX.md` plus Java LeetCode metadata. |
-| Validate cockpit | Windows: `dsa-review\scripts\validate-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/validate-interview-cockpit.sh` | Checks ranked rows, Java links, LeetCode coverage, Mermaid maps, pattern files, ASCII output, and core interview text. |
+| Validate cockpit | Windows: `dsa-review\scripts\validate-interview-cockpit.cmd`; macOS/Linux: `./dsa-review/scripts/validate-interview-cockpit.sh` | Checks ranked rows, Java links, LeetCode coverage, Mermaid maps, pattern files, articulation rows, ASCII output, and core interview text. |
 | Random drill | Windows: `dsa-review\scripts\drill.cmd -Priority A -Count 3`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority A -Count 3` | Active-recall prompt from the local problem index. Use `-Priority B`, `-Priority C`, or `-Priority All` when needed. |
 | One-problem horizontal drill | Windows: `dsa-review\scripts\crossdrill.cmd "Two Sum"`; macOS/Linux: `./dsa-review/scripts/crossdrill.sh "Two Sum"` | Generates the Problem -> Patterns -> Mutation reasoning loop for one matched problem. |
 | Random drill including design | Windows: `dsa-review\scripts\drill.cmd -Priority All -Count 5 -IncludeDesign`; macOS/Linux: `./dsa-review/scripts/drill.sh -Priority All -Count 5 -IncludeDesign` | Useful when the interview can mix DSA and design-flavored coding. |

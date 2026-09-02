@@ -1699,6 +1699,199 @@ function Get-CodeIdea {
     }
 }
 
+function Get-PrecisionContract {
+    param(
+        [string] $Category,
+        [string] $Pattern,
+        [string] $Title,
+        [string] $Recall,
+        [string] $InterviewHook,
+        [string] $CodeIdea
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "twosum" { return "The map contains only indices already passed, so a complement hit never reuses the current element. For current value x, ask whether target - x has been seen before inserting x. If found, return the stored old index and the current index." }
+        "binarysearch" { return "The target can only be inside the current inclusive range [left, right]. Compare nums[mid] with target, then discard the half that sorted order proves impossible. Stop when left > right, because no candidate index remains." }
+        "longestsubstringwithoutrepeatingcharacters" { return "The active window contains no duplicate characters. When the current character was last seen inside the window, move left to lastSeen[ch] + 1, not one step blindly. Record the answer after the window is valid." }
+        "productofarrayexceptself" { return "answer[i] first receives the product of all values strictly left of i, then gets multiplied by the product strictly right of i. The current element is never included in its own answer. This avoids division and handles zeros naturally." }
+        "minimumwindowsubstring" { return "window counts only the current [left, right] characters and formed/have counts how many required character quotas are satisfied. Expand until every required quota is covered, then shrink from left while still valid and save the best before breaking validity. Extra copies do not increase formed once the quota is already met." }
+        "reverselinkedlist" { return "Save next before changing current.next. After rewiring current.next to prev, move prev to current and current to saved next. When current becomes null, prev is the new head." }
+        "linkedlistcycle" { return "slow advances one node and fast advances two nodes. Without a cycle, fast or fast.next reaches null; inside a cycle, the speed difference forces a meeting. Never dereference fast.next before checking it." }
+        "mergetwosortedlists" { return "dummy.next is the real head and tail is the last node already attached to the merged list. At each step attach the smaller current node and advance only that source list. After one list ends, attach the remaining suffix directly." }
+        "validanagram" { return "The count array/map is the net balance between the two strings. Increment for one string and decrement for the other, then every count must be zero. If lengths differ, fail before counting." }
+        "validpalindrome" { return "left and right move inward over the original string, skipping only non-alphanumeric characters. Compare normalized characters after both skips. A mismatch returns false; crossing pointers means every required pair matched." }
+        "mergeksortedlists" { return "The heap stores one current head per non-empty list, so the heap root is the globally smallest available node. Poll that node, append it to tail, then push its next node because that next node just became the list's candidate. Do not scan all k heads on every append." }
+        "twosumiiinputarrayissorted" { return "left and right bound the remaining sorted search space. If sum is too small, only moving left rightward can increase it; if sum is too large, only moving right leftward can decrease it. Return the required one-based indices when the sum equals target." }
+        "containerwithmostwater" { return "Area is width times the shorter wall, so the shorter side is the limiting boundary. Moving the taller side cannot improve the old limiting height with smaller width. Move the shorter side and keep the best area seen." }
+        "trappingrainwater" { return "leftMax and rightMax are the best walls already seen from each side. The side with smaller max determines trapped water there because the opposite side is already high enough. Move that side inward and add max - height only after updating the side max." }
+        "binarytreelevelordertraversal" { return "At the start of each outer loop, queue.size() is exactly the number of nodes in the current level. Process exactly that many nodes, appending their children for the next level. Never let newly enqueued children leak into the current level." }
+        "validatebinarysearchtree" { return "Each node must be strictly greater than its inherited lower bound and strictly less than its inherited upper bound. Left children tighten the upper bound; right children tighten the lower bound. Parent-child checks alone miss ancestor violations." }
+        "lowestcommonancestorofabinarytree" { return "The helper returns a found target or an LCA from that subtree. If both left and right return non-null, current is the split point. If only one side returns non-null, pass that result upward." }
+        "numberofislands" { return "A new island is counted only when an unvisited land cell is first found. DFS/BFS then owns and marks that entire 4-directional land component. Water and already visited land contribute nothing." }
+        "courseschedule" { return "indegree is the number of prerequisites still unmet for a course. Only zero-indegree courses can enter the queue, and processing one course decrements its dependents. If processed count is less than n, a cycle kept some courses locked." }
+        "coursescheduleii" { return "A course is appended to the answer only when its indegree has dropped to zero. Processing that course consumes it as a prerequisite and unlocks dependents by decrementing indegree. If the final order length is not n, return empty because a cycle remains." }
+        "wordladder" { return "Each queued word has a distance from beginWord, and all one-letter transformations cost one step. Mark a word visited when enqueueing so it cannot be reached again at the same or greater distance. The first time endWord is generated or dequeued is the shortest length." }
+        "kokoeatingbananas" { return "speed is the candidate bananas per hour and must start at 1, never 0. For each pile, required hours are ceil(pile / speed), and feasibility is totalHours <= h. If a speed works, every higher speed works, so save it and search smaller." }
+        "searchinrotatedsortedarray" { return "At least one half around mid is sorted. Decide which half is sorted, then keep it only if target lies within that half's inclusive bounds. Otherwise discard it and search the other half." }
+        "findfirstandlastpositionofelementinsortedarray" { return "Use two boundary searches, not one hit plus expansion. The left boundary is the first index with value >= target; the right boundary is the last index with value <= target. Verify the boundaries actually equal target before returning them." }
+        "lrucache" { return "The map owns key to node lookup, and the doubly linked list owns recency order from most-recent to least-recent. Every get or updated put moves the node to the front. When capacity is exceeded, remove the tail node from both list and map." }
+        "copylistwithrandompointer" { return "Each original node must map to exactly one cloned node, preserving identity rather than value. After clones exist, set each clone's next and random by looking up the original node's targets. Null random remains null." }
+        "kthsmallestelementinabst" { return "BST inorder traversal visits values in ascending order. Decrement k exactly when visiting the node itself, after left subtree and before right subtree. The kth visit is the answer." }
+        "diameterofbinarytree" { return "The helper returns height upward, but the global answer is the best leftHeight + rightHeight seen at any node. Update diameter before returning 1 + max(leftHeight, rightHeight). Do not return diameter as height." }
+        "pathsumiii" { return "prefixSum counts belong only to the current root-to-node path. For current sum s, paths ending here with targetSum equal the number of earlier prefixes s - targetSum. Add current prefix before going down, then decrement it when backtracking." }
+        "rottingoranges" { return "All initially rotten oranges are minute 0 BFS sources. One BFS layer is one minute, so minutes increments after processing the whole layer, not per orange. Mark a fresh orange rotten when enqueueing it and return -1 if fresh remains unreachable." }
+        "01matrix" { return "All zero cells start in the queue with distance 0. A one cell gets its nearest-zero distance the first time BFS reaches it. Mark distance when enqueueing to avoid duplicate visits." }
+        "houserobber" { return "At each house, the only relevant history is best if I skip this house versus rob it after the best before previous. The transition is max(previous best, bestBeforePrevious + current). Adjacent houses cannot both be chosen." }
+        "coinchange" { return "dp[a] is the fewest coins needed to form amount a, with dp[0] = 0. For each amount, try every coin that can precede it and relax dp[a] from dp[a - coin] + 1. Unreachable states must stay as INF, not accidentally overflow into valid answers." }
+        "validparentheses" { return "The stack contains unmatched opening brackets in nesting order. A closing bracket must match and consume the most recent opening bracket. At the end the stack must be empty." }
+        "topkfrequentelements" { return "First count exact frequencies, then select by frequency rather than by value. A size-k min-heap keeps the k strongest candidates by evicting the current weakest. If using buckets, bucket index is frequency." }
+        "dailytemperatures" { return "The stack stores indices whose next warmer day is unresolved, with temperatures decreasing from bottom to top. Current temperature resolves all colder stack-top days, and answer[old] is currentIndex - old. Push current only after resolving." }
+        "meetingroomsii" { return "Sort meetings by start time and keep active meeting end times in a min-heap. If the earliest end is <= current start, that room is reusable before adding the current meeting. Heap size after adding is active rooms; maximum size is rooms needed." }
+        "implementtrieprefixtree" { return "Each node represents the prefix formed by the path from root. insert creates missing child nodes and marks only the final node as a full word. search requires terminal true; startsWith does not." }
+        "floodfill" { return "Only cells connected to the start and equal to the original color can change. If newColor equals original color, return early to avoid revisiting forever. Mark/recolor before recursing to prevent cycles." }
+        "isgraphbipartite" { return "color[node] records which side of the partition owns the node. Each edge must connect opposite colors; an uncolored neighbor receives the opposite color. A same-color edge is an immediate contradiction." }
+        "minimumnumberofarrowstoburstballoons" { return "Sort balloons by end and shoot the current arrow at the earliest ending balloon's end. Any balloon starting <= arrowEnd is already covered. A new arrow is needed only when start > arrowEnd." }
+        "partitionequalsubsetsum" { return "Equal partition means one subset must make total / 2, so odd total is impossible. dp[s] means processed numbers can form sum s, seeded by dp[0] = true. Iterate sums right to left so the current number cannot reuse a state it just created." }
+        "longestincreasingsubsequence" { return "tails[len] is the smallest possible tail value for an increasing subsequence of length len + 1. Binary search the first tail >= x and replace it with x; this improves future options without changing known length incorrectly. Equal values replace, not extend, for strictly increasing subsequences." }
+        "wordsearch" { return "The path owns board cells temporarily while matching one word index. Mark the current cell before exploring neighbors, then restore it after recursion returns. A cell cannot be reused in the same path." }
+        "findmedianfromdatastream" { return "The max-heap owns the lower half and the min-heap owns the upper half. Keep sizes balanced so they differ by at most one and every lower value is <= every upper value. Median is one heap top or the average of both tops." }
+        "binarysubarrayswithsum" { return "For binary nonnegative arrays, exact goal equals atMost(goal) - atMost(goal - 1). atMost keeps a valid window with sum <= goal and adds right - left + 1 subarrays ending at right. Guard goal < 0 as zero." }
+        "majorityelement" { return "candidate survives pair cancellation between different values. When count becomes zero, the current value becomes the new candidate; equal increments and different decrements. This is valid because a value appearing more than n/2 cannot be fully cancelled." }
+        "findallanagramsinastring" { return "The window length must stay exactly p.length. Add the right char, remove the char that falls out once the window is too large, then compare frequency state. Record the left index only for complete matching windows." }
+        "intersectionoftwolinkedlists" { return "Each pointer walks its list then switches to the other head at null. After both switches, the remaining path lengths are equalized. They meet at the shared node identity or both reach null." }
+        "linkedlistcycleii" { return "After slow and fast meet inside the cycle, reset one pointer to head. Move both one step at a time; their meeting point is the cycle entry. The first meeting itself is not necessarily the entry." }
+        "reversenodesinkgroup" { return "Before reversing, verify that the next k nodes exist. Reverse exactly that closed group, reconnect previous group tail to the new head, and connect the reversed tail to the next group. Leave a final short group unchanged." }
+        "lowestcommonancestorofabinarysearchtree" { return "Use BST order to walk toward the split. If both targets are smaller than current, go left; if both are larger, go right. Otherwise current is where the two search paths diverge or one target equals current." }
+        "sortcolors" { return "Maintain three regions: [0, low) are 0s, [low, mid) are 1s, and (high, end] are 2s. A 0 swaps to low and advances both low and mid; a 2 swaps to high and only high moves because the incoming value is unclassified. A 1 advances mid." }
+        "networkdelaytime" { return "dist[node] is the best known time from the source. The min-heap always expands the currently smallest candidate distance; ignore stale heap entries larger than dist[node]. Weighted edges require Dijkstra, not plain BFS." }
+        "pacificatlanticwaterflow" { return "Reverse the problem: start from each ocean border and move to neighbors with height >= current height. A cell can reach an ocean if the reversed search can reach the cell from that ocean. The answer is cells marked by both ocean searches." }
+        "surroundedregions" { return "Only O cells connected to the border are safe. Mark all border-connected O cells first, then flip every remaining O to X and restore safe marks to O. Do not flip before proving border reachability." }
+        "slidingwindowmaximum" { return "The deque stores indices inside the current window, and their values decrease from front to back. Expire front indices with index <= right - k, remove dominated back indices while nums[back] <= nums[right], then add right. Emit only when right >= k - 1, writing to right - k + 1." }
+        "capacitytoshippackageswithinddays" { return "currentLoad is the load already assigned to the current day and must never exceed capacity. Before assigning w, if currentLoad + w > capacity, open a new day and let w start that day; equality is allowed in the current day. Feasibility is requiredDays <= days." }
+        "splitarraylargestsum" { return "currentSum is the sum of the current contiguous partition and must never exceed maxAllowedSum. If currentSum + x > maxAllowedSum, close the current partition and let x start the next one. Feasibility is pieces <= m because extra allowed partitions can be split later when needed." }
+        "minimumnumberofdaystomakembouquets" { return "flowers counts consecutive bloomed flowers not yet consumed into a bouquet. A flower with bloomDay <= day extends the streak; an unbloomed flower breaks adjacency and resets flowers to 0. When flowers == k, one bouquet consumes those k flowers, so increment bouquets and reset flowers to 0." }
+        "gasstation" { return "tank is the net gas from the current candidate start through the current station. If tank becomes negative, no station inside that failed segment can be a valid start, so the next index becomes the candidate and tank resets to 0. total gas minus cost decides whether any solution exists." }
+        "jumpgame" { return "farthest is the farthest index reachable using positions processed so far. If the current index is ever greater than farthest, it is unreachable and the answer is false. Otherwise update farthest with i + nums[i] and succeed once farthest reaches the last index." }
+        "editdistance" { return "dp[i][j] is the minimum edits to convert the first i chars of word1 to the first j chars of word2. Equal last chars inherit dp[i - 1][j - 1]; otherwise choose one plus insert, delete, or replace. Empty-prefix rows and columns are the base cases." }
+        "distinctsubsequences" { return "dp[i][j] counts ways the first i chars of s form the first j chars of t. Skipping s[i - 1] always contributes dp[i - 1][j]; if chars match, taking it also contributes dp[i - 1][j - 1]. dp[*][0] is 1 because empty t can always be formed by taking nothing." }
+        "interleavingstring" { return "dp[i][j] means s3 prefix length i + j can be formed from s1 first i chars and s2 first j chars. The next char must come from s1[i - 1] or s2[j - 1] and match s3[i + j - 1]. Greedy fails when both strings offer the same character." }
+        "russiandollenvelopes" { return "Sort width ascending, but equal width descending by height so equal-width envelopes cannot chain through LIS. Then run strict LIS on heights. Without descending tie-break, equal widths can be illegally nested." }
+    }
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "Define exactly what the map/set contains: processed values, counts, or remaining supply. Check before insert when the current item cannot pair with itself; update after consumption when supply is being spent. The state must change exactly once per current item." }
+        "Two Pointers" { return "The two pointers bound the remaining candidate space. Each move must be justified by order, symmetry, or a one-sided bottleneck so that discarded candidates cannot become answers. Save the answer before moving a pointer when the current state is valid." }
+        "Sliding Window" { return "The window state must describe exactly the current contiguous range. Include the right item, repair validity by moving left only while the invariant is broken or answer can improve, then update the answer at the correct valid moment. Removed items must also be removed from counts/sum/state." }
+        "Prefix/Suffix" { return "The prefix/suffix state must represent only values strictly before or after the current index unless the problem says inclusive. Build reusable cumulative information once, then combine the correct sides for each answer. Watch off-by-one ownership of the current element." }
+        "Binary Search" { return "Name the candidate space and the monotonic predicate before coding. A true candidate must let you discard one side without losing the first/last feasible answer. Preserve inclusivity of left/right and move with mid + 1 or mid - 1 only after saving a feasible answer when required." }
+        "Linked List" { return "Every pointer has an ownership role: previous fixed node, current node being moved, and saved next node. Save next before rewiring, reconnect all boundary nodes, and return the real head after possible head changes. Node identity matters more than node value." }
+        "Tree BFS" { return "The queue frontier defines the current level. Capture the level size before adding children so newly discovered nodes belong to the next level. Any per-level answer must be finalized after exactly that size is processed." }
+        "Tree DFS" { return "Define what the helper returns to its parent and what global answer it may update separately. Null/leaf base cases must match that return contract. Combine left and right results once per node without recomputing subtrees." }
+        "Graph BFS" { return "Queue entries are states reached in nondecreasing number of steps. Mark visited when enqueueing so duplicate paths do not re-enter the frontier. The first time a state is reached is optimal only when each edge has equal cost." }
+        "Graph DFS" { return "Visited state means this node/cell is already owned by the current traversal or component. Mark before exploring neighbors, and restore only when the problem is path backtracking rather than component ownership. Direction, parent, and boundary checks decide cycle behavior." }
+        "Stack" { return "The stack stores unresolved items whose answer depends on a future closer/warmer/smaller/larger/current token. While the current item resolves the stack top, pop and finalize that old item. Push current only if it remains unresolved." }
+        "Heap" { return "The heap contains only candidates still eligible for the current priority question, or it uses lazy deletion until stale candidates reach the root. Comparator order must match the requested best item. Poll only when size, expiry, or frontier rules say the root is no longer allowed." }
+        "Intervals/Greedy" { return "Sort to make the next conflict or safe choice local. Track the boundary that represents the current merged interval, selected endpoint, or active resource. Equality decides whether intervals touch, overlap, or can reuse a resource." }
+        "Backtracking" { return "The path is the current partial decision and visited/used state says what cannot be reused on this path. Choose one candidate, mutate state, recurse, then restore state before trying the next candidate. Duplicate skipping must depend on sorted order and same-depth ownership." }
+        "Trie" { return "Each edge consumes one character and each node represents the prefix consumed so far. Terminal state is separate from prefix existence. Search follows only valid child edges unless wildcard/board branching explicitly allows multiple children." }
+        "Dynamic Programming" { return "State the exact meaning of dp before the recurrence. Each transition must read only states that are already valid under the chosen iteration order. Base cases are not initialization trivia; they are the smallest true meanings that allow every later state to derive correctly." }
+        "Union Find" { return "parent[x] identifies the component representative after find compression. union merges two components only when representatives differ; equal representatives mean the connection was already present. Use DSU only when component identity is enough and path details are irrelevant." }
+        "Topological Sort" { return "indegree is the count of prerequisites still blocking a node. Only zero-indegree nodes can be processed, and processing a node consumes its outgoing prerequisite relation by decrementing neighbors. A leftover node means a dependency cycle." }
+        "Greedy" { return "Name the local choice and the exchange/dominance reason that makes it safe. After taking the choice, update the boundary/state that represents everything committed so far. If a future choice can invalidate the local choice, this is not greedy yet." }
+        "Math/Bit/String" { return "Expose the algebra, carry, bit, border, or contribution meaning before simulating. Each update must preserve that exact numeric/string invariant. Avoid operator claims unless the linked source confirms the equality boundary." }
+        "Design/LLD" { return "Start by naming each operation's contract and the stored state that makes the contract cheap. Every mutation must preserve lookup, ordering, capacity, expiry, or consistency invariants. State the failure/edge behavior before coding the happy path." }
+        default { return "$Recall $CodeIdea" }
+    }
+}
+
+function Get-PrecisionTrap {
+    param(
+        [string] $Category,
+        [string] $Title
+    )
+
+    $key = Get-NormalizedKey $Title
+    switch ($key) {
+        "twosum" { return "check complement before insert; no self reuse" }
+        "binarysearch" { return "left <= right; move by mid +/- 1" }
+        "longestsubstringwithoutrepeatingcharacters" { return "left = max(left, lastSeen + 1)" }
+        "minimumwindowsubstring" { return "save answer before left removal breaks validity" }
+        "reverselinkedlist" { return "save next before current.next rewrite" }
+        "linkedlistcycle" { return "guard fast and fast.next" }
+        "mergeksortedlists" { return "push polled.next, not every node upfront" }
+        "trappingrainwater" { return "update side max before adding trapped water" }
+        "binarytreelevelordertraversal" { return "capture queue size before pushing children" }
+        "validatebinarysearchtree" { return "strict bounds; ancestor violations matter" }
+        "numberofislands" { return "mark visited before exploring neighbors" }
+        "courseschedule" { return "processed count detects cycle" }
+        "coursescheduleii" { return "return empty if order length < n" }
+        "wordladder" { return "mark visited when enqueueing" }
+        "kokoeatingbananas" { return "speed starts at 1; ceil division" }
+        "findfirstandlastpositionofelementinsortedarray" { return "two boundary searches; verify equality" }
+        "lrucache" { return "remove evicted node from map and list" }
+        "diameterofbinarytree" { return "return height, update diameter separately" }
+        "pathsumiii" { return "decrement prefix count on backtrack" }
+        "rottingoranges" { return "minutes per layer, not per cell" }
+        "01matrix" { return "multi-source from zeros, not BFS from each one" }
+        "coinchange" { return "keep INF unreachable states safe" }
+        "validparentheses" { return "closing must match most recent opening" }
+        "dailytemperatures" { return "store indices; answer is i - oldIndex" }
+        "meetingroomsii" { return "reuse when earliestEnd <= start" }
+        "floodfill" { return "return early when newColor == original" }
+        "isgraphbipartite" { return "visited is not enough; check colors" }
+        "minimumnumberofarrowstoburstballoons" { return "new arrow only when start > arrowEnd" }
+        "partitionequalsubsetsum" { return "right-to-left DP; dp[0] seed" }
+        "longestincreasingsubsequence" { return "first tail >= x; equal replaces" }
+        "wordsearch" { return "restore visited cell after recursion" }
+        "findmedianfromdatastream" { return "rebalance heaps after each insert" }
+        "binarysubarrayswithsum" { return "atMost(goal) - atMost(goal - 1)" }
+        "majorityelement" { return "reset candidate only when count == 0" }
+        "intersectionoftwolinkedlists" { return "compare node identity, not value" }
+        "linkedlistcycleii" { return "meeting point is not always entry" }
+        "reversenodesinkgroup" { return "confirm k nodes before reversing" }
+        "sortcolors" { return "after swapping 2, do not advance mid" }
+        "networkdelaytime" { return "ignore stale heap distances" }
+        "pacificatlanticwaterflow" { return "reverse flow: move to >= height" }
+        "surroundedregions" { return "mark border-safe O before flipping" }
+        "slidingwindowmaximum" { return "expire front <= right-k; emit at right >= k-1" }
+        "capacitytoshippackageswithinddays" { return "> not >=; w starts new day" }
+        "splitarraylargestsum" { return "> not >=; x starts new partition" }
+        "minimumnumberofdaystomakembouquets" { return "two resets: gap and flowers == k" }
+        "gasstation" { return "reset start after tank < 0" }
+        "jumpgame" { return "fail when i > farthest" }
+        "editdistance" { return "base rows/cols are prefix lengths" }
+        "distinctsubsequences" { return "dp[*][0] = 1" }
+        "interleavingstring" { return "s3 index is i + j - 1" }
+        "russiandollenvelopes" { return "equal width sorted by height desc" }
+    }
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "check insert/consume order" }
+        "Two Pointers" { return "move only the provably discardable side" }
+        "Sliding Window" { return "remove left state when left moves" }
+        "Prefix/Suffix" { return "strict vs inclusive prefix boundary" }
+        "Binary Search" { return "wrong equality boundary" }
+        "Linked List" { return "lost next pointer or wrong returned head" }
+        "Tree BFS" { return "children leak into current level" }
+        "Tree DFS" { return "mixing helper return with global answer" }
+        "Graph BFS" { return "visited too late; duplicate enqueue" }
+        "Graph DFS" { return "mark/restore semantics confused" }
+        "Stack" { return "pop condition or unresolved ownership wrong" }
+        "Heap" { return "stale root or comparator reversed" }
+        "Intervals/Greedy" { return "overlap equality boundary" }
+        "Backtracking" { return "forgot undo or duplicate skip condition" }
+        "Trie" { return "prefix exists but terminal missing" }
+        "Dynamic Programming" { return "state meaning or iteration order wrong" }
+        "Union Find" { return "union raw nodes instead of roots" }
+        "Topological Sort" { return "decrement wrong indegree edge" }
+        "Greedy" { return "local choice lacks proof" }
+        "Math/Bit/String" { return "operator-sensitive boundary guessed" }
+        "Design/LLD" { return "state mutation violates operation invariant" }
+        default { return "verify exact boundary in linked Java" }
+    }
+}
+
 function Escape-Md {
     param([string] $Value)
     if ($null -eq $Value) { return "" }
@@ -2275,6 +2468,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need horizontal pattern discrimination | `../horizontal/README.md` | Winner pattern, near-misses, minimal mutations, and CROSSDRILL. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
+| Need exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | Pattern -> sub-pattern table with correctness contracts and traps for every ranked problem. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -2613,6 +2807,84 @@ function Build-CrispAnswers {
         $lines.Add("- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.")
     }
     return ($lines -join "`r`n")
+}
+
+function Build-MasterArticulationTable {
+    param([object[]] $Rows)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# Master DSA Interview Articulation Table")
+    $lines.Add("")
+    $lines.Add("Purpose: one retrieval sheet for speaking the exact correctness contract before coding. This is not a solution summary.")
+    $lines.Add("")
+    $lines.Add('Organization: Pattern -> Sub-pattern. Similar rows stay together, while the rank inside each problem preserves interview ROI from `01_ZERO_TO_HERO_RANKED_TABLE.md`.')
+    $lines.Add("")
+    $lines.Add("Use each row as: problem wording -> exact state meaning -> invariant -> transition -> trap. If a row does not constrain the code strongly enough, improve the generator instead of hand-editing this file.")
+    $lines.Add("")
+    $lines.Add("## Precision Rules")
+    $lines.Add("")
+    $lines.Add("- Say the contract before coding; then code only what the contract permits.")
+    $lines.Add('- Treat words like `exceeds`, `reaches`, `unused`, `seen`, `current`, `total`, `first`, and `any` as operator-level words.')
+    $lines.Add('- For exact operators, preserve the literal token when it matters: `>`, `>=`, `<`, `<=`, `i + 1`, `right - k`, `right >= k - 1`, `dp[0] = true`.')
+    $lines.Add("- Rows are generated from local ranked metadata, curated problem hooks, and checked source chapters. Category fallback rows intentionally avoid unverified operator claims.")
+    $lines.Add("")
+
+    $categoryGroups = @($Rows | Group-Object Category | ForEach-Object {
+        $items = @($_.Group | Sort-Object Rank)
+        [pscustomobject]@{
+            Category = $_.Name
+            DisplayCategory = Get-DisplayCategory $_.Name
+            FirstRank = [int] ($items | Select-Object -First 1).Rank
+            Items = $items
+        }
+    } | Sort-Object FirstRank, DisplayCategory)
+
+    foreach ($categoryGroup in $categoryGroups) {
+        $displayCategory = $categoryGroup.DisplayCategory
+        $lines.Add("## $(Escape-Md $displayCategory)")
+        $lines.Add("")
+
+        $patternGroups = @($categoryGroup.Items | Group-Object Pattern | ForEach-Object {
+            $items = @($_.Group | Sort-Object Rank)
+            [pscustomobject]@{
+                Name = $_.Name
+                FirstRank = [int] ($items | Select-Object -First 1).Rank
+                Items = $items
+            }
+        } | Sort-Object FirstRank, Name)
+
+        foreach ($patternGroup in $patternGroups) {
+            $lines.Add("### $(Escape-Md $patternGroup.Name)")
+            $lines.Add("")
+            $lines.Add("| Problem | Say Before Coding - Correctness Contract | Trap |")
+            $lines.Add("|---|---|---|")
+
+            foreach ($row in $patternGroup.Items) {
+                $title = Escape-Md $row.Title
+                $problemLink = if ($row.LeetCodeLink) { New-Link $title $row.LeetCodeLink } else { $title }
+                $java = New-Link "Java" $row.JavaLink
+                $rank = "{0}. " -f $row.Rank
+                $problemCell = "**$rank$problemLink**<br>$java"
+                if ($row.LeetCodeLink) {
+                    $problemCell += " / " + (New-Link "LC" $row.LeetCodeLink)
+                }
+
+                $contract = Get-PrecisionContract `
+                    -Category $row.Category `
+                    -Pattern $row.Pattern `
+                    -Title $row.Title `
+                    -Recall $row.Recall `
+                    -InterviewHook $row.InterviewHook `
+                    -CodeIdea $row.CodeIdea
+                $trap = Get-PrecisionTrap -Category $row.Category -Title $row.Title
+                $lines.Add("| $problemCell | $(Escape-Md $contract) | $(Escape-Md $trap) |")
+            }
+
+            $lines.Add("")
+        }
+    }
+
+    return ($lines -join "`r`n").TrimEnd()
 }
 
 function Build-Plans {
@@ -4347,6 +4619,7 @@ Write-TextFile -Path (Join-Path $outDir "08_PROJECT_STRUCTURE_AND_PATTERN_TREE.m
 Write-TextFile -Path (Join-Path $outDir "09_LEETCODE_CURRICULUM_TOC.md") -Content (Build-LeetCodeCurriculumToc -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "10_AFTER_7_DAY_EXTENSION_PLAN.md") -Content (Build-PostSevenDayExtensionPlan -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md") -Content (Build-ActiveNinetyPlanCutoff -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md") -Content (Build-MasterArticulationTable -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"
