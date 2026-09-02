@@ -28,7 +28,7 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 9. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
 10. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
 11. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-12. For exact say-before-coding contracts, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
+12. For one-pass reconstruction, exact say-before-coding contracts, traps, and mutations, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
 13. For weak-topic focus, open `interview/patterns/README.md`.
 14. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
 15. After a miss, run the review command and mark the item honestly.

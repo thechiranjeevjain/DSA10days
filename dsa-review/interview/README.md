@@ -17,7 +17,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need horizontal pattern discrimination | `../horizontal/README.md` | Winner pattern, near-misses, minimal mutations, and CROSSDRILL. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
-| Need exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | Pattern -> sub-pattern table with correctness contracts and traps for every ranked problem. |
+| Need reconstruction plus exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | One continuous pattern -> sub-pattern table with skeletons, correctness contracts, traps, and mutations. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |

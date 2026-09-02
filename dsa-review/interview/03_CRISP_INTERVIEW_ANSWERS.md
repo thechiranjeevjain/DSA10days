@@ -348,10 +348,10 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Subsets.java) | [LeetCode](https://leetcode.com/problems/subsets/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
+- Bottleneck: A used array is unnecessary because increasing start already prevents reuse and reorder duplicates.
 - Pattern: Backtracking / Combinatorial DFS, using Backtracking subsets.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Invariant/state: path is one subset formed from indices before start; every recursion state itself is a valid answer.
+- Code idea: Copy path on entry; for i from start, choose nums[i], recurse with i + 1, then remove the choice.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 35. Valid Parentheses
@@ -424,7 +424,7 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 - Code idea: For each uncolored node, BFS/DFS assign colors and fail on same-color neighbor.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 42. Minimum Number Of Arrows To Burst Balloons
+### 42. Minimum Number of Arrows to Burst Balloons
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalGreedyByEnd.java) | [LeetCode](https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/)
 - Brute force: Try arrow positions or compare balloon overlaps pair by pair.
@@ -468,10 +468,10 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/CombinationSum.java) | [LeetCode](https://leetcode.com/problems/combination-sum/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
-- Pattern: Backtracking / Combinatorial DFS, using Backtracking reuse.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Bottleneck: Advancing past the chosen index would incorrectly prohibit unlimited reuse.
+- Pattern: Backtracking / Combinatorial DFS, using Backtracking with candidate reuse.
+- Invariant/state: remaining is the target still unpaid and start prevents permutation duplicates; the same candidate may be reused.
+- Code idea: When remaining == 0 copy path; choose candidate i <= remaining, recurse with i, then undo; prune larger sorted candidates.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 47. Longest Substring With At Most K Distinct Characters
@@ -488,10 +488,10 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/WordSearch.java) | [LeetCode](https://leetcode.com/problems/word-search/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
-- Pattern: Backtracking / Combinatorial DFS, using DFS backtracking.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Bottleneck: Global visited is wrong because another starting path may reuse the same cell.
+- Pattern: Backtracking / Combinatorial DFS, using Grid path backtracking.
+- Invariant/state: index is the next word character to match and the current DFS path temporarily owns each board cell at most once.
+- Code idea: Match board[r][c] to word[index], mark it for this path, recurse four directions with index + 1, then restore the cell.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 49. Find Median From Data Stream
@@ -708,10 +708,10 @@ Ranks 31-70. High-frequency core patterns after the first pass is stable.
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | [LeetCode](https://leetcode.com/problems/accounts-merge/)
 - Brute force: Run DFS/BFS connectivity checks after every merge/query.
-- Bottleneck: Repeated graph searches are expensive; union-find maintains components incrementally.
-- Pattern: Union Find / DSU, using Union Find / graph.
-- Invariant/state: Represent components with parent links; union merges and failed union detects cycles.
-- Code idea: Initialize parent/rank, find with compression, union by rank/size.
+- Bottleneck: Names are not unique identifiers, but shared emails create transitive connectivity.
+- Pattern: Union Find / DSU, using Email ownership + DSU grouping.
+- Invariant/state: emailToFirstAccount owns the first account index for each email; a repeated email proves those account indices belong to one DSU component.
+- Code idea: Union account roots on repeated emails, then find each account root, collect unique emails under that root, sort them, and prefix the representative name.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ## Phase 3 - Important
@@ -1112,10 +1112,10 @@ Ranks 71-110. Important breadth once the core signal is reliable.
 
 - Links: [Java](../../src/main/java/org/chijai/day4/LinkedList/session4/MiddleOfLinkedList.java)
 - Brute force: Copy nodes into an array/set, or make extra passes to recover positions.
-- Bottleneck: Brute force may use extra storage; pointer invariants let us solve in one pass or O(1) space.
+- Bottleneck: Counting length takes two passes; the 2:1 pointer-speed invariant finds the middle in one pass.
 - Pattern: Linked List Pointers, using Fast/slow pointers.
-- Invariant/state: Name every pointer, save next before rewiring, and return the real new head.
-- Code idea: Use dummy when head can change; update prev/current/next in a fixed order.
+- Invariant/state: slow is the middle candidate and fast has covered twice as many edges; when fast cannot move two steps, slow is the required second middle.
+- Code idea: Start slow and fast at head; while fast != null and fast.next != null, move slow once and fast twice; return slow.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ## Phase 4 - Secondary
@@ -1196,20 +1196,20 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/BurnBinaryTree.java) | [LeetCode](https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
-- Bottleneck: Brute force revisits subtrees; helper return contracts summarize each subtree once.
-- Pattern: Tree DFS / Recursion, using Tree + graph BFS.
-- Invariant/state: Define exactly what the helper returns, combine left/right, and update global answer separately if needed.
-- Code idea: Base case null, recurse left/right, compute local result, return contract.
+- Bottleneck: Searching only target's subtree misses nodes reached through ancestors.
+- Pattern: Tree DFS / Recursion, using Tree converted to graph + BFS distance.
+- Invariant/state: Parent links turn the tree into an undirected graph; BFS level d contains exactly the nodes distance d from target.
+- Code idea: Build node-to-parent links, BFS from target with visited marked on enqueue, advance exactly k levels, then return the frontier.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 119. Amount of Time for Binary Tree to Be Infected
 
 - Links: [Java](../../src/main/java/org/chijai/day6/trees/session2/BurnBinaryTree.java) | [LeetCode](https://leetcode.com/problems/amount-of-time-for-binary-tree-to-be-infected/)
 - Brute force: Restart traversal from many nodes or compute subtree facts repeatedly.
-- Bottleneck: Brute force revisits subtrees; helper return contracts summarize each subtree once.
-- Pattern: Tree DFS / Recursion, using Tree + graph BFS.
-- Invariant/state: Define exactly what the helper returns, combine left/right, and update global answer separately if needed.
-- Code idea: Base case null, recurse left/right, compute local result, return contract.
+- Bottleneck: Subtree height from start misses infection paths that travel through parents.
+- Pattern: Tree DFS / Recursion, using Tree converted to graph + BFS spread.
+- Invariant/state: Parent links expose all three directions; each BFS level is one infection minute from the start node.
+- Code idea: Build node-to-parent links, BFS from start with visited on enqueue, and count completed spreading levels until the frontier is empty.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 120. Recover Binary Search Tree
@@ -1276,33 +1276,23 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/graph-valid-tree/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
-- Bottleneck: Brute force revisits states; visited DFS gives each component/path a single exploration.
-- Pattern: Graph DFS / Components, using BFS/DFS coloring.
-- Invariant/state: Own each component or path with visited state so one traversal fully accounts for it.
-- Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
+- Bottleneck: Connectivity alone accepts cycles, while acyclicity alone accepts disconnected forests.
+- Pattern: Graph DFS / Components, using Connectivity + cycle.
+- Invariant/state: A valid undirected tree has exactly n - 1 edges and all n nodes in one connected component.
+- Code idea: Reject edge count != n - 1, traverse from one node while skipping the parent edge, and require every node to be visited.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 127. Possible Bipartition
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/possible-bipartition/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
-- Bottleneck: Brute force revisits states; visited DFS gives each component/path a single exploration.
-- Pattern: Graph DFS / Components, using BFS/DFS coloring.
-- Invariant/state: Own each component or path with visited state so one traversal fully accounts for it.
-- Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
+- Bottleneck: Visited state alone cannot detect an odd-cycle parity conflict.
+- Pattern: Graph DFS / Components, using Bipartite coloring.
+- Invariant/state: color[x] is the group assigned to person x; every dislike edge must connect opposite colors.
+- Code idea: Build an undirected dislike graph; for every uncolored component, assign opposite colors by BFS/DFS and fail on a same-color edge.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 128. Redundant Connection
-
-- Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/redundant-connection/)
-- Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
-- Bottleneck: Brute force revisits states; visited DFS gives each component/path a single exploration.
-- Pattern: Graph DFS / Components, using BFS/DFS coloring.
-- Invariant/state: Own each component or path with visited state so one traversal fully accounts for it.
-- Code idea: Mark visited, recursively explore neighbors, carry parent/state when cycles matter.
-- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
-
-### 129. Coloring A Border
+### 128. Coloring A Border
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session1/ColoringABorder.java) | [LeetCode](https://leetcode.com/problems/coloring-a-border/)
 - Brute force: Start a fresh traversal for every cell/node without reusable visited/component state.
@@ -1312,7 +1302,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: DFS component, mark a cell as border if it touches outside grid or different color.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 130. Sqrtx
+### 129. Sqrtx
 
 - Links: [Java](../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LeetCode](https://leetcode.com/problems/sqrtx/)
 - Brute force: Try integers one by one until square exceeds x.
@@ -1322,17 +1312,17 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Binary search 0..x, cast mid*mid to long, save mid when square <= x.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 131. Largest Rectangle
+### 130. Largest Rectangle
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
-- Bottleneck: Brute force searches previous/next matches; stack keeps unresolved candidates in useful order.
-- Pattern: Stack / Monotonic Stack, using Monotonic stack.
-- Invariant/state: Keep pending openings, operands, or monotonic candidates until the current item resolves them.
-- Code idea: While top is resolved by current value, pop and compute; then push current.
+- Bottleneck: Expanding left and right from every bar repeats boundary searches.
+- Pattern: Stack / Monotonic Stack, using Monotonic stack pop-time boundaries.
+- Invariant/state: The increasing stack holds bar indices whose maximal right boundary is not known; a lower current bar closes every taller pending rectangle.
+- Code idea: Scan through a final height-0 sentinel; while currentHeight < height[top], pop h, use current i as right boundary and new top as left boundary, width = right - left - 1.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 132. Min Stack
+### 131. Min Stack
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/min-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1342,7 +1332,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Push value and min(value,currentMin); pop both together; getMin reads min top.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 133. Max Stack
+### 132. Max Stack
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/max-stack/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1352,7 +1342,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Use stack plus max tracking, or doubly linked list plus TreeMap for O(log n) popMax.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 134. Implement Queue Using Stacks
+### 133. Implement Queue Using Stacks
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/implement-queue-using-stacks/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1362,7 +1352,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: push -> in.push; pop/peek -> if out empty move all in to out, then read out.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 135. Implement Stack Using Queues
+### 134. Implement Stack Using Queues
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LeetCode](https://leetcode.com/problems/implement-stack-using-queues/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1372,7 +1362,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Offer x, then rotate size-1 older elements behind it; pop removes queue front.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 136. Next Greater Element I
+### 135. Next Greater Element I
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/next-greater-element-i/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1382,7 +1372,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Scan nums2, pop smaller values and map them to current, then lookup each nums1 value.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 137. Online Stock Span
+### 136. Online Stock Span
 
 - Links: [Java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LeetCode](https://leetcode.com/problems/online-stock-span/)
 - Brute force: For each element, scan left/right or simulate operations without remembering unresolved state.
@@ -1392,7 +1382,7 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Start span=1, while stack top price <= current add its span and pop, then push current/span.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 138. K Closest Points To Origin
+### 137. K Closest Points To Origin
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java) | [LeetCode](https://leetcode.com/problems/k-closest-points-to-origin/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1402,27 +1392,27 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Use max-heap of size k by distance, or quickselect by squared distance.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 139. Top K Frequent Words
+### 138. Top K Frequent Words
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/top-k-frequent-words/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
-- Bottleneck: Sorting everything is wasteful; a heap keeps only the next best or top K frontier.
-- Pattern: Heap / Priority Queue, using Frequency + heap/bucket.
-- Invariant/state: Keep only the frontier, top K, or two balanced halves instead of fully sorting each step.
-- Code idea: Push candidates with comparator; poll when size or frontier rules require it.
+- Bottleneck: Sorting every distinct word is unnecessary when only k winners are required.
+- Pattern: Heap / Priority Queue, using Bounded heap with tie ordering.
+- Invariant/state: A size-k min-heap stores the k strongest words, with the weakest winner at the root: lower frequency, or lexicographically larger on a tie.
+- Code idea: Count words, offer each distinct word, evict when size > k, then remove from weakest to strongest and prepend to produce final order.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 140. H-Index
+### 139. H-Index
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/h-index/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
-- Bottleneck: Sorting everything is wasteful; a heap keeps only the next best or top K frontier.
-- Pattern: Heap / Priority Queue, using Frequency + heap/bucket.
-- Invariant/state: Keep only the frontier, top K, or two balanced halves instead of fully sorting each step.
-- Code idea: Push candidates with comparator; poll when size or frontier rules require it.
+- Bottleneck: Full sorting is unnecessary because the answer range is only 0..n.
+- Pattern: Heap / Priority Queue, using Bounded frequency buckets.
+- Invariant/state: buckets[h] counts papers with exactly h citations, except every citation >= n is capped into bucket n.
+- Code idea: Accumulate paper counts from h = n downward; the first h with papers >= h is the maximum valid H-index.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 141. Sort Characters By Frequency
+### 140. Sort Characters By Frequency
 
 - Links: [Java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LeetCode](https://leetcode.com/problems/sort-characters-by-frequency/)
 - Brute force: Sort all candidates every time a top, kth, median, or next-best item is needed.
@@ -1432,37 +1422,37 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Count chars, bucket by frequency or heap entries, append char repeated count times.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 142. Insert Interval
+### 141. Insert Interval
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | [LeetCode](https://leetcode.com/problems/insert-interval/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
-- Bottleneck: Unsorted comparisons are noisy; sorting makes overlap or greedy choice local.
-- Pattern: Intervals / Sorting Greedy, using Intervals / merge.
-- Invariant/state: Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints.
-- Code idea: Sort by start/end, then merge/count/select with one pass or heap.
+- Bottleneck: Re-sorting discards a guarantee that enables one linear pass.
+- Pattern: Intervals / Sorting Greedy, using Insert into sorted non-overlapping intervals.
+- Invariant/state: newInterval is the not-yet-emitted merged interval; existing intervals are already sorted and non-overlapping.
+- Code idea: Emit intervals ending < new.start, merge while current.start <= new.end, emit the merged interval once, then append the untouched suffix.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 143. Merge Intervals
+### 142. Merge Intervals
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | [LeetCode](https://leetcode.com/problems/merge-intervals/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
-- Bottleneck: Unsorted comparisons are noisy; sorting makes overlap or greedy choice local.
-- Pattern: Intervals / Sorting Greedy, using Intervals / merge.
-- Invariant/state: Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints.
-- Code idea: Sort by start/end, then merge/count/select with one pass or heap.
+- Bottleneck: After sorting by start, only the active merged interval can overlap the current interval.
+- Pattern: Intervals / Sorting Greedy, using Merge sorted intervals.
+- Invariant/state: activeStart..activeEnd is the union of every sorted interval not yet flushed to output.
+- Code idea: If current.start <= activeEnd, extend activeEnd = max(activeEnd, current.end); otherwise flush active and replace it with current; flush once after the loop.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 144. Non Overlapping Intervals
+### 143. Non Overlapping Intervals
 
 - Links: [Java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalGreedyByEnd.java) | [LeetCode](https://leetcode.com/problems/non-overlapping-intervals/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
-- Bottleneck: Unsorted comparisons are noisy; sorting makes overlap or greedy choice local.
-- Pattern: Intervals / Sorting Greedy, using Intervals / sorting.
-- Invariant/state: Sort to make conflicts local, then merge, count active intervals, or choose safe endpoints.
-- Code idea: Sort by start/end, then merge/count/select with one pass or heap.
+- Bottleneck: Minimizing removals equals maximizing the number of compatible intervals.
+- Pattern: Intervals / Sorting Greedy, using Greedy earliest finish.
+- Invariant/state: lastFinish is the end of the last kept interval; earliest finish leaves maximal room for every future interval.
+- Code idea: Sort by end; keep current when current.start >= lastFinish and move lastFinish to current.end, otherwise remove it; answer is n - kept.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 145. Partition Labels
+### 144. Partition Labels
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java) | [LeetCode](https://leetcode.com/problems/partition-labels/)
 - Brute force: Compare every interval with every other interval before deciding conflicts/order.
@@ -1472,54 +1462,64 @@ Ranks 111-150. Good coverage after the main interview patterns are under control
 - Code idea: Sort by start/end, then merge/count/select with one pass or heap.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 146. Letter Combinations Of A Phone Number
+### 145. Letter Combinations Of A Phone Number
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/LetterCombinationsOfAPhoneNumber.java) | [LeetCode](https://leetcode.com/problems/letter-combinations-of-a-phone-number/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
-- Pattern: Backtracking / Combinatorial DFS, using Backtracking / mapping.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Bottleneck: Each digit contributes a small independent branch; the concrete strings are the output.
+- Pattern: Backtracking / Combinatorial DFS, using Position-choice backtracking.
+- Invariant/state: index is the next digit to expand and path contains exactly one mapped letter for every earlier digit.
+- Code idea: For each letter mapped from digits[index], append, recurse with index + 1, then delete; emit only when index == digits.length.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
-### 147. Permutations
+### 146. Permutations
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LeetCode](https://leetcode.com/problems/permutations/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
-- Pattern: Backtracking / Combinatorial DFS, using Backtracking permutations.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Bottleneck: A start index would miss valid reorderings because every unused value may occupy every position.
+- Pattern: Backtracking / Combinatorial DFS, using Permutation used-index state.
+- Invariant/state: used[i] means index i is already owned by the current ordering; path length is the next permutation position.
+- Code idea: Loop all indices, choose only !used[i], mark and append, recurse, then remove and unmark; copy at size n.
+- Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
+
+### 147. Redundant Connection
+
+- Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/GraphBipartite.java) | [LeetCode](https://leetcode.com/problems/redundant-connection/)
+- Brute force: Run DFS/BFS connectivity checks after every merge/query.
+- Bottleneck: Re-running graph traversal per edge repeats connectivity work.
+- Pattern: Union Find / DSU, using DSU cycle detection.
+- Invariant/state: DSU represents the forest formed by accepted edges; an edge is redundant exactly when both endpoints already have the same root.
+- Code idea: Initialize one parent per 1-based node; for each edge union roots, and return the edge whose roots were already equal.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 148. Parallel Courses
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/parallel-courses/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: A flat topological count proves feasibility but loses the minimum parallel rounds.
+- Pattern: Topological Sort, using Kahn BFS by levels.
+- Invariant/state: The queue at a semester boundary contains every course currently unlocked; one complete Kahn level is one semester.
+- Code idea: Queue all indegree-zero courses, process exactly queue.size() per semester, unlock dependents, and return -1 unless all courses were processed.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 149. Alien Dictionary
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/alien-dictionary/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: The dependency graph must be inferred before topological sorting can begin.
+- Pattern: Topological Sort, using Constraint inference + topological sort.
+- Invariant/state: Only the first differing characters in adjacent sorted words create an ordering edge; every distinct character is still a graph node.
+- Code idea: Reject a longer word before its exact prefix, deduplicate first-difference edges, then Kahn-sort all characters; return empty on a cycle.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 150. Find Eventual Safe States
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/find-eventual-safe-states/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: Forward reachability does not directly expose whether every path terminates.
+- Pattern: Topological Sort, using Reverse graph + outdegree elimination.
+- Invariant/state: outdegree[x] counts outgoing choices not yet proved safe; terminal nodes start safe with outdegree 0.
+- Code idea: Reverse every edge, queue terminal nodes, decrement predecessor outdegrees, enqueue a predecessor at zero, then sort the safe nodes.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ## Phase 5 - If Time
@@ -1530,20 +1530,20 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/sequence-reconstruction/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: One valid topological order is insufficient; uniqueness and exact target order both matter.
+- Pattern: Topological Sort, using Unique topological order.
+- Invariant/state: The target is uniquely reconstructible only when Kahn's frontier has exactly one node and that node equals nums[index] at every step.
+- Code idea: Build deduplicated edges, require every target value to appear, reject queue.size() != 1 or a mismatched pop, and consume all target values.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 152. Sort Items by Groups Respecting Dependencies
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: A single item-level topological order can interleave groups and violate group contiguity.
+- Pattern: Topological Sort, using Two-level topological sort.
+- Invariant/state: VERIFY FROM SOURCE - the local chapter records that item and group dependencies require two coordinated topological orders, but it does not provide a complete accepted implementation.
+- Code idea: VERIFY FROM SOURCE - confirm ungrouped-item normalization, item graph, group graph, and contiguous emission order before memorizing transitions.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 153. Spiral Matrix
@@ -1610,60 +1610,60 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/longest-common-prefix/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: A branch means strings disagree; a terminal means one string has already ended.
+- Pattern: Trie, using Single-branch prefix walk.
+- Invariant/state: The common prefix continues only while the trie path has exactly one child and the current node is not terminal.
+- Code idea: Insert all strings, walk the sole child while childCount == 1 && !isWord, append that edge, and stop at branch or terminal.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 160. Longest Word in Dictionary
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LeetCode](https://leetcode.com/problems/longest-word-in-dictionary/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie + DFS wildcard.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: Normal trie membership validates only the complete word, not all intermediate prefixes.
+- Pattern: Trie, using Every-prefix-terminal trie.
+- Invariant/state: A candidate is legal only if every trie node on its path is terminal, meaning every prefix is also a word.
+- Code idea: Insert all words, validate terminal after every consumed character, and choose greatest length with lexicographically smallest tie.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 161. Replace Words
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/replace-words/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: Continuing after the first terminal returns a longer root and violates the objective.
+- Pattern: Trie, using Shortest terminal prefix.
+- Invariant/state: While scanning a sentence word, the first terminal trie node is its shortest dictionary root.
+- Code idea: Walk characters until a child is missing or terminal is reached; replace only on the first terminal, otherwise keep the original word.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 162. Search Suggestions System
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/search-suggestions-system/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: Exact trie search finds the prefix node but does not rank descendants.
+- Pattern: Trie, using Prefix node + lexicographic DFS top 3.
+- Invariant/state: For each typed prefix, suggestions are the first at most three terminal words below that prefix in lexicographic DFS order.
+- Code idea: Locate each prefix node; DFS children 0..25, append terminal words, backtrack the path, and stop that search at three results.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 163. Short Encoding of Words
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LeetCode](https://leetcode.com/problems/short-encoding-of-words/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: Reversing words turns shared suffixes into shared trie prefixes.
+- Pattern: Trie, using Reversed suffix trie.
+- Invariant/state: Only words that are not suffixes of a longer encoded word add word.length + 1 characters.
+- Code idea: Deduplicate words, process longer words first or insert reversed words, and add length + 1 only when the word creates a new terminal leaf contribution.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 164. Map Sum Pairs
 
 - Links: [Java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LeetCode](https://leetcode.com/problems/map-sum-pairs/)
 - Brute force: Compare each word/prefix character-by-character against every dictionary entry.
-- Bottleneck: Repeated string scans waste prefix work; trie shares prefixes across words.
-- Pattern: Trie, using Trie + DFS wildcard.
-- Invariant/state: Share prefix nodes so lookup/search consumes one character at a time instead of rescanning words.
-- Code idea: Insert words by characters; search follows children and DFS branches on wildcard/board.
+- Bottleneck: Adding the full replacement value double-counts the key's old contribution.
+- Pattern: Trie, using Prefix aggregate with overwrite delta.
+- Invariant/state: node.sum is the total current value of every key passing through that prefix; updating an existing key changes each prefix by delta only.
+- Code idea: Compute delta = newValue - oldValue, store the new key value, add delta along root and every key edge, and return the reached prefix node's sum.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 165. Maximum XOR With an Element From Array
@@ -1830,20 +1830,20 @@ Ranks 151+. Cover only if time remains or a target interviewer leans this way.
 
 - Links: [Java](../../src/main/java/org/chijai/day11/backtracking/session1/Permutations.java) | [LeetCode](https://leetcode.com/problems/permutations-ii/)
 - Brute force: Generate all possible candidates first, then filter invalid answers at the end.
-- Bottleneck: Brute force generates blindly; backtracking prunes invalid decision paths early.
-- Pattern: Backtracking / Combinatorial DFS, using Backtracking permutations.
-- Invariant/state: Choose, recurse, undo; the path is exactly the current decision state.
-- Code idea: Loop candidates, choose, recurse, undo, and skip duplicates/prune invalid paths.
+- Bottleneck: Skipping every equal neighbor loses valid permutations; only an unused equal predecessor proves this branch is a duplicate.
+- Pattern: Backtracking / Combinatorial DFS, using Sorted duplicate-aware permutations.
+- Invariant/state: used[i] owns an index on the current path; after sorting, equal values are tried in a fixed same-depth order.
+- Code idea: Skip used indices and skip i > 0 && nums[i] == nums[i - 1] && !used[i - 1]; otherwise choose, recurse, and undo.
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 182. Course Schedule IV
 
 - Links: [Java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | [LeetCode](https://leetcode.com/problems/course-schedule-iv/)
 - Brute force: Repeatedly scan all dependencies to find what can be processed next.
-- Bottleneck: Brute force dependency checks loop; topo processes nodes only when prerequisites are done.
-- Pattern: Topological Sort, using Topological sort / cycle.
-- Invariant/state: Use indegree or DFS states to process dependencies before dependents.
-- Code idea: Build graph and indegrees, queue zero-indegree nodes, process order.
+- Bottleneck: Producing one topological order cannot answer arbitrary prerequisite reachability queries.
+- Pattern: Topological Sort, using Dependency transitive closure.
+- Invariant/state: reachable[a][b] means course a is a direct or indirect prerequisite of course b.
+- Code idea: Seed direct prerequisite edges, compute transitive closure through every intermediate course, then answer each query from reachable[from][to].
 - Dry run: Use the sample, then test empty/singleton, duplicates, no-answer, and boundary-answer cases.
 
 ### 183. Encode And Decode Tinyurl

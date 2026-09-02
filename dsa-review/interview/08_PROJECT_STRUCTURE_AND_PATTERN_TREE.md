@@ -45,7 +45,7 @@ TOPIC
 | Heap / Priority Queue | 12 | 11 | [07_heap.md](patterns/07_heap.md) |
 | Tree BFS / Level Order | 2 | 15 | [08_tree_bfs.md](patterns/08_tree_bfs.md) |
 | Tree DFS / Recursion | 31 | 16 | [09_tree_dfs.md](patterns/09_tree_dfs.md) |
-| Graph DFS / Components | 12 | 18 | [10_graph_dfs.md](patterns/10_graph_dfs.md) |
+| Graph DFS / Components | 11 | 18 | [10_graph_dfs.md](patterns/10_graph_dfs.md) |
 | Topological Sort | 9 | 19 | [11_topological_sort.md](patterns/11_topological_sort.md) |
 | Graph BFS / Shortest Path | 6 | 21 | [12_graph_bfs.md](patterns/12_graph_bfs.md) |
 | Dynamic Programming | 26 | 32 | [13_dynamic_programming.md](patterns/13_dynamic_programming.md) |
@@ -53,7 +53,7 @@ TOPIC
 | Stack / Monotonic Stack | 14 | 35 | [15_stack.md](patterns/15_stack.md) |
 | Trie | 14 | 39 | [16_trie.md](patterns/16_trie.md) |
 | Intervals / Sorting Greedy | 7 | 42 | [17_intervals_greedy.md](patterns/17_intervals_greedy.md) |
-| Union Find / DSU | 1 | 70 | [18_union_find.md](patterns/18_union_find.md) |
+| Union Find / DSU | 2 | 70 | [18_union_find.md](patterns/18_union_find.md) |
 | Greedy | 4 | 72 | [22_greedy.md](patterns/22_greedy.md) |
 | Design Data Structures | 7 | 89 | [19_design_lld.md](patterns/19_design_lld.md) |
 | Math / Bit / String | 7 | 105 | [20_math_bit_string.md](patterns/20_math_bit_string.md) |

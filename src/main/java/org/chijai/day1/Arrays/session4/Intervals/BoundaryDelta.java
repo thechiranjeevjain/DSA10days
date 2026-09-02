@@ -830,6 +830,8 @@ public class BoundaryDelta {
 
             int currentLoad = 0;
 
+            // at diff 0 also could fail
+            //
             for (int delta : difference) {
                 currentLoad += delta;
 

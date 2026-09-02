@@ -260,57 +260,105 @@ Assert-PhaseHeaders -Path (Join-Path $interviewRoot "03_CRISP_INTERVIEW_ANSWERS.
 $articulationPath = Join-Path $interviewRoot "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md"
 $articulationText = Get-Content -LiteralPath $articulationPath -Raw
 foreach ($requiredArticulationPhrase in @(
-        "Master DSA Interview Articulation Table",
-        "Pattern -> Sub-pattern",
-        "Say Before Coding - Correctness Contract",
-        "Category fallback rows intentionally avoid unverified operator claims"
+        "Master DSA Reconstruction + Interview Articulation Table",
+        "Pattern -> Sub-pattern divider rows",
+        "Reconstruction + Correctness Contract",
+        "Trap / Mutation"
     )) {
     if ($articulationText -notmatch [regex]::Escape($requiredArticulationPhrase)) {
         Fail "master articulation table is missing required phrase: $requiredArticulationPhrase"
     }
 }
 
-$articulationRows = @(Select-String -LiteralPath $articulationPath -Pattern '^\| \*\*(?<rank>\d+)\. ' | ForEach-Object { $_.Line })
+$articulationLines = @(Get-Content -LiteralPath $articulationPath)
+$articulationHeaders = @($articulationLines | Where-Object { $_ -eq "| Problem | Reconstruction + Correctness Contract | Trap / Mutation |" })
+if ($articulationHeaders.Count -ne 1) {
+    Fail "master articulation table must contain exactly one table header, found $($articulationHeaders.Count)"
+}
+
+$articulationSeparators = @($articulationLines | Where-Object { $_ -eq "|---|---|---|" })
+if ($articulationSeparators.Count -ne 1) {
+    Fail "master articulation table must contain exactly one separator row, found $($articulationSeparators.Count)"
+}
+
+if (@($articulationLines | Where-Object { $_ -match '^## ' }).Count -gt 0) {
+    Fail "master articulation table must use divider rows, not separate Markdown sections"
+}
+
+$articulationDividerRows = @($articulationLines | Where-Object { $_ -match '^\| \*\*.+ -> .+\*\* \| \*\*Family skeleton:\*\* .+ \| \|$' })
+if ($articulationDividerRows.Count -lt 20) {
+    Fail "master articulation table has too few pattern/sub-pattern divider rows: $($articulationDividerRows.Count)"
+}
+
+$articulationRows = @($articulationLines | Where-Object { $_ -match '^\| \[[^]]+\]\(\.\./\.\./src/main/java/org/chijai/.+\.java\) \|' })
 if ($articulationRows.Count -ne $rankLines.Count) {
     Fail "expected master articulation table to contain $($rankLines.Count) rows, found $($articulationRows.Count)"
 }
 
-$articulationRankSet = @{}
+$articulationByTitle = @{}
+$articulationContracts = New-Object System.Collections.Generic.List[string]
 foreach ($line in $articulationRows) {
-    $match = [regex]::Match($line, '^\| \*\*(?<rank>\d+)\. ')
+    $cells = @([regex]::Split($line, '(?<!\\)\|') | ForEach-Object { $_.Trim() })
+    if ($cells.Count -ne 5) {
+        Fail "master articulation row does not have exactly three columns: $line"
+    }
+
+    $match = [regex]::Match($cells[1], '^\[(?<title>[^]]+)\]\((?<java>\.\./\.\./src/main/java/org/chijai/.+\.java)\)$')
     if (-not $match.Success) {
-        Fail "could not parse articulation rank from row: $line"
+        Fail "could not parse articulation problem/source link from row: $line"
     }
-    $rank = [int] $match.Groups["rank"].Value
-    if ($articulationRankSet.ContainsKey($rank)) {
-        Fail "duplicate rank $rank in master articulation table"
+
+    $title = $match.Groups["title"].Value.Replace("\|", "|")
+    if ($articulationByTitle.ContainsKey($title)) {
+        Fail "duplicate problem '$title' in master articulation table"
     }
-    $articulationRankSet[$rank] = $true
+    $articulationByTitle[$title] = $true
+
+    $javaTarget = $match.Groups["java"].Value
+    $javaFullPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $articulationPath) $javaTarget))
+    if (-not (Test-Path -LiteralPath $javaFullPath)) {
+        Fail "missing master articulation Java link: $javaTarget"
+    }
+
+    if ($cells[1] -match '^\d+\.' -or $cells[1] -match '<br>|\[LC\]') {
+        Fail "articulation Problem column must show only the recognizable linked problem name: $($cells[1])"
+    }
+    if ($cells[2] -notmatch '^\*\*Skeleton:\*\* .+ \*\*Contract:\*\* .+') {
+        Fail "articulation row is missing reconstruction skeleton or correctness contract: $title"
+    }
+    if ($cells[3] -notmatch '^\*\*Trap:\*\* .+ \*\*Mutation:\*\* .+ -> .+') {
+        Fail "articulation row is missing a trap or explicit mutation-to-pattern shift: $title"
+    }
+
+    $articulationContracts.Add($cells[2])
 }
 
-for ($i = 1; $i -le $rankLines.Count; $i++) {
-    if (-not $articulationRankSet.ContainsKey($i)) {
-        Fail "master articulation table missing rank $i"
+foreach ($rankedRow in $rankedByRank.Values) {
+    if (-not $articulationByTitle.ContainsKey($rankedRow.Title)) {
+        Fail "master articulation table is missing ranked problem '$($rankedRow.Title)'"
     }
 }
 
-$articulationJavaMatches = @(Select-String -LiteralPath $articulationPath -Pattern '\[Java\]\(([^)]+)\)' -AllMatches)
-if ($articulationJavaMatches.Matches.Count -ne $rankLines.Count) {
-    Fail "expected one Java link per master articulation row, found $($articulationJavaMatches.Matches.Count)"
+$duplicateArticulationContracts = @($articulationContracts | Group-Object | Where-Object { $_.Count -gt 1 })
+if ($duplicateArticulationContracts.Count -gt 0) {
+    $examples = @($duplicateArticulationContracts | Select-Object -First 5 | ForEach-Object { "$($_.Count)x $($_.Name)" })
+    Fail "problem-specific articulation rows contain duplicated reconstruction contracts: $($examples -join '; ')"
 }
 
-$missingArticulationJavaLinks = @()
-foreach ($line in $articulationJavaMatches) {
-    foreach ($match in $line.Matches) {
-        $target = $match.Groups[1].Value
-        $fullPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $articulationPath) $target))
-        if (-not (Test-Path -LiteralPath $fullPath)) {
-            $missingArticulationJavaLinks += $target
-        }
+$genericArticulationPhrases = @(
+    "Name the candidate space and the monotonic predicate",
+    "The window state must describe exactly the current contiguous range",
+    "Every pointer has an ownership role",
+    "Define what the helper returns to its parent",
+    "The heap contains only candidates still eligible",
+    "State the exact meaning of dp before the recurrence",
+    "Each edge consumes one character and each node represents the prefix",
+    "The path is the current partial decision"
+)
+foreach ($genericPhrase in $genericArticulationPhrases) {
+    if ($articulationText -match [regex]::Escape($genericPhrase)) {
+        Fail "master articulation table still contains generic fallback contract: $genericPhrase"
     }
-}
-if ($missingArticulationJavaLinks.Count -gt 0) {
-    Fail "missing master articulation Java links: $($missingArticulationJavaLinks -join ', ')"
 }
 
 $semanticArticulationChecks = @(
@@ -323,7 +371,7 @@ $semanticArticulationChecks = @(
 )
 
 foreach ($check in $semanticArticulationChecks) {
-    $title = [regex]::Escape($check.Title)
+    $title = [regex]::Escape("[$($check.Title)]")
     $must = [regex]::Escape($check.MustContain)
     if ($articulationText -notmatch "$title[\s\S]{0,900}$must") {
         Fail "master articulation semantic check failed for $($check.Title): missing '$($check.MustContain)'"

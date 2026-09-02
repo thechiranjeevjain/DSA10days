@@ -1064,6 +1064,161 @@ function Get-ProblemOverride {
             hook = "Repeated string matching for every keyword wastes prefix/lookup work."
             code = "Normalize review words, count keyword hits, aggregate per hotel, sort by score and id."
         }
+        "middleoflinkedlist" = @{
+            recall = "slow is the middle candidate and fast has covered twice as many edges; when fast cannot move two steps, slow is the required second middle."
+            hook = "Counting length takes two passes; the 2:1 pointer-speed invariant finds the middle in one pass."
+            code = "Start slow and fast at head; while fast != null and fast.next != null, move slow once and fast twice; return slow."
+        }
+        "allnodesdistancekinbinarytree" = @{
+            recall = "Parent links turn the tree into an undirected graph; BFS level d contains exactly the nodes distance d from target."
+            hook = "Searching only target's subtree misses nodes reached through ancestors."
+            code = "Build node-to-parent links, BFS from target with visited marked on enqueue, advance exactly k levels, then return the frontier."
+        }
+        "amountoftimeforbinarytreetobeinfected" = @{
+            recall = "Parent links expose all three directions; each BFS level is one infection minute from the start node."
+            hook = "Subtree height from start misses infection paths that travel through parents."
+            code = "Build node-to-parent links, BFS from start with visited on enqueue, and count completed spreading levels until the frontier is empty."
+        }
+        "graphvalidtree" = @{
+            recall = "A valid undirected tree has exactly n - 1 edges and all n nodes in one connected component."
+            hook = "Connectivity alone accepts cycles, while acyclicity alone accepts disconnected forests."
+            code = "Reject edge count != n - 1, traverse from one node while skipping the parent edge, and require every node to be visited."
+        }
+        "possiblebipartition" = @{
+            recall = "color[x] is the group assigned to person x; every dislike edge must connect opposite colors."
+            hook = "Visited state alone cannot detect an odd-cycle parity conflict."
+            code = "Build an undirected dislike graph; for every uncolored component, assign opposite colors by BFS/DFS and fail on a same-color edge."
+        }
+        "redundantconnection" = @{
+            recall = "DSU represents the forest formed by accepted edges; an edge is redundant exactly when both endpoints already have the same root."
+            hook = "Re-running graph traversal per edge repeats connectivity work."
+            code = "Initialize one parent per 1-based node; for each edge union roots, and return the edge whose roots were already equal."
+        }
+        "parallelcourses" = @{
+            recall = "The queue at a semester boundary contains every course currently unlocked; one complete Kahn level is one semester."
+            hook = "A flat topological count proves feasibility but loses the minimum parallel rounds."
+            code = "Queue all indegree-zero courses, process exactly queue.size() per semester, unlock dependents, and return -1 unless all courses were processed."
+        }
+        "aliendictionary" = @{
+            recall = "Only the first differing characters in adjacent sorted words create an ordering edge; every distinct character is still a graph node."
+            hook = "The dependency graph must be inferred before topological sorting can begin."
+            code = "Reject a longer word before its exact prefix, deduplicate first-difference edges, then Kahn-sort all characters; return empty on a cycle."
+        }
+        "findeventualsafestates" = @{
+            recall = "outdegree[x] counts outgoing choices not yet proved safe; terminal nodes start safe with outdegree 0."
+            hook = "Forward reachability does not directly expose whether every path terminates."
+            code = "Reverse every edge, queue terminal nodes, decrement predecessor outdegrees, enqueue a predecessor at zero, then sort the safe nodes."
+        }
+        "sequencereconstruction" = @{
+            recall = "The target is uniquely reconstructible only when Kahn's frontier has exactly one node and that node equals nums[index] at every step."
+            hook = "One valid topological order is insufficient; uniqueness and exact target order both matter."
+            code = "Build deduplicated edges, require every target value to appear, reject queue.size() != 1 or a mismatched pop, and consume all target values."
+        }
+        "sortitemsbygroupsrespectingdependencies" = @{
+            recall = "VERIFY FROM SOURCE - the local chapter records that item and group dependencies require two coordinated topological orders, but it does not provide a complete accepted implementation."
+            hook = "A single item-level topological order can interleave groups and violate group contiguity."
+            code = "VERIFY FROM SOURCE - confirm ungrouped-item normalization, item graph, group graph, and contiguous emission order before memorizing transitions."
+        }
+        "coursescheduleiv" = @{
+            recall = "reachable[a][b] means course a is a direct or indirect prerequisite of course b."
+            hook = "Producing one topological order cannot answer arbitrary prerequisite reachability queries."
+            code = "Seed direct prerequisite edges, compute transitive closure through every intermediate course, then answer each query from reachable[from][to]."
+        }
+        "subsets" = @{
+            recall = "path is one subset formed from indices before start; every recursion state itself is a valid answer."
+            hook = "A used array is unnecessary because increasing start already prevents reuse and reorder duplicates."
+            code = "Copy path on entry; for i from start, choose nums[i], recurse with i + 1, then remove the choice."
+        }
+        "combinationsum" = @{
+            recall = "remaining is the target still unpaid and start prevents permutation duplicates; the same candidate may be reused."
+            hook = "Advancing past the chosen index would incorrectly prohibit unlimited reuse."
+            code = "When remaining == 0 copy path; choose candidate i <= remaining, recurse with i, then undo; prune larger sorted candidates."
+        }
+        "wordsearch" = @{
+            recall = "index is the next word character to match and the current DFS path temporarily owns each board cell at most once."
+            hook = "Global visited is wrong because another starting path may reuse the same cell."
+            code = "Match board[r][c] to word[index], mark it for this path, recurse four directions with index + 1, then restore the cell."
+        }
+        "lettercombinationsofaphonenumber" = @{
+            recall = "index is the next digit to expand and path contains exactly one mapped letter for every earlier digit."
+            hook = "Each digit contributes a small independent branch; the concrete strings are the output."
+            code = "For each letter mapped from digits[index], append, recurse with index + 1, then delete; emit only when index == digits.length."
+        }
+        "permutations" = @{
+            recall = "used[i] means index i is already owned by the current ordering; path length is the next permutation position."
+            hook = "A start index would miss valid reorderings because every unused value may occupy every position."
+            code = "Loop all indices, choose only !used[i], mark and append, recurse, then remove and unmark; copy at size n."
+        }
+        "permutationsii" = @{
+            recall = "used[i] owns an index on the current path; after sorting, equal values are tried in a fixed same-depth order."
+            hook = "Skipping every equal neighbor loses valid permutations; only an unused equal predecessor proves this branch is a duplicate."
+            code = "Skip used indices and skip i > 0 && nums[i] == nums[i - 1] && !used[i - 1]; otherwise choose, recurse, and undo."
+        }
+        "largestrectangle" = @{
+            recall = "The increasing stack holds bar indices whose maximal right boundary is not known; a lower current bar closes every taller pending rectangle."
+            hook = "Expanding left and right from every bar repeats boundary searches."
+            code = "Scan through a final height-0 sentinel; while currentHeight < height[top], pop h, use current i as right boundary and new top as left boundary, width = right - left - 1."
+        }
+        "topkfrequentwords" = @{
+            recall = "A size-k min-heap stores the k strongest words, with the weakest winner at the root: lower frequency, or lexicographically larger on a tie."
+            hook = "Sorting every distinct word is unnecessary when only k winners are required."
+            code = "Count words, offer each distinct word, evict when size > k, then remove from weakest to strongest and prepend to produce final order."
+        }
+        "hindex" = @{
+            recall = "buckets[h] counts papers with exactly h citations, except every citation >= n is capped into bucket n."
+            hook = "Full sorting is unnecessary because the answer range is only 0..n."
+            code = "Accumulate paper counts from h = n downward; the first h with papers >= h is the maximum valid H-index."
+        }
+        "insertinterval" = @{
+            recall = "newInterval is the not-yet-emitted merged interval; existing intervals are already sorted and non-overlapping."
+            hook = "Re-sorting discards a guarantee that enables one linear pass."
+            code = "Emit intervals ending < new.start, merge while current.start <= new.end, emit the merged interval once, then append the untouched suffix."
+        }
+        "mergeintervals" = @{
+            recall = "activeStart..activeEnd is the union of every sorted interval not yet flushed to output."
+            hook = "After sorting by start, only the active merged interval can overlap the current interval."
+            code = "If current.start <= activeEnd, extend activeEnd = max(activeEnd, current.end); otherwise flush active and replace it with current; flush once after the loop."
+        }
+        "nonoverlappingintervals" = @{
+            recall = "lastFinish is the end of the last kept interval; earliest finish leaves maximal room for every future interval."
+            hook = "Minimizing removals equals maximizing the number of compatible intervals."
+            code = "Sort by end; keep current when current.start >= lastFinish and move lastFinish to current.end, otherwise remove it; answer is n - kept."
+        }
+        "longestcommonprefix" = @{
+            recall = "The common prefix continues only while the trie path has exactly one child and the current node is not terminal."
+            hook = "A branch means strings disagree; a terminal means one string has already ended."
+            code = "Insert all strings, walk the sole child while childCount == 1 && !isWord, append that edge, and stop at branch or terminal."
+        }
+        "longestwordindictionary" = @{
+            recall = "A candidate is legal only if every trie node on its path is terminal, meaning every prefix is also a word."
+            hook = "Normal trie membership validates only the complete word, not all intermediate prefixes."
+            code = "Insert all words, validate terminal after every consumed character, and choose greatest length with lexicographically smallest tie."
+        }
+        "replacewords" = @{
+            recall = "While scanning a sentence word, the first terminal trie node is its shortest dictionary root."
+            hook = "Continuing after the first terminal returns a longer root and violates the objective."
+            code = "Walk characters until a child is missing or terminal is reached; replace only on the first terminal, otherwise keep the original word."
+        }
+        "searchsuggestionssystem" = @{
+            recall = "For each typed prefix, suggestions are the first at most three terminal words below that prefix in lexicographic DFS order."
+            hook = "Exact trie search finds the prefix node but does not rank descendants."
+            code = "Locate each prefix node; DFS children 0..25, append terminal words, backtrack the path, and stop that search at three results."
+        }
+        "shortencodingofwords" = @{
+            recall = "Only words that are not suffixes of a longer encoded word add word.length + 1 characters."
+            hook = "Reversing words turns shared suffixes into shared trie prefixes."
+            code = "Deduplicate words, process longer words first or insert reversed words, and add length + 1 only when the word creates a new terminal leaf contribution."
+        }
+        "mapsumpairs" = @{
+            recall = "node.sum is the total current value of every key passing through that prefix; updating an existing key changes each prefix by delta only."
+            hook = "Adding the full replacement value double-counts the key's old contribution."
+            code = "Compute delta = newValue - oldValue, store the new key value, add delta along root and every key edge, and return the reached prefix node's sum."
+        }
+        "accountsmerge" = @{
+            recall = "emailToFirstAccount owns the first account index for each email; a repeated email proves those account indices belong to one DSU component."
+            hook = "Names are not unique identifiers, but shared emails create transitive connectivity."
+            code = "Union account roots on repeated emails, then find each account root, collect unique emails under that root, sort them, and prefix the representative name."
+        }
         "spiralmatrix" = @{
             recall = "Shrink top, bottom, left, and right boundaries after traversing each side."
             hook = "Visited simulation is more state than needed; boundaries define the remaining ring."
@@ -1128,7 +1283,8 @@ function Get-Category {
     if ($titleText -match "^two sum ii") { return "Two Pointers" }
     if ($titleText -match "implement trie.*prefix tree|design add and search words|word search ii|maximum xor|hotel reviews|longest common prefix|longest word in dictionary|replace words|search suggestions system|short encoding of words") { return "Trie" }
     if ($titleText -match "parallel courses|alien dictionary|eventual safe states|sequence reconstruction|sort items by groups") { return "Topological Sort" }
-    if ($titleText -match "possible bipartition|graph valid tree|redundant connection") { return "Graph DFS" }
+    if ($titleText -match "^redundant connection$") { return "Union Find" }
+    if ($titleText -match "possible bipartition|graph valid tree") { return "Graph DFS" }
     if ($titleText -match "sliding window maximum|online stock span") { return "Stack" }
     if ($titleText -match "^meeting rooms$") { return "Intervals/Greedy" }
     if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
@@ -1204,6 +1360,37 @@ function Get-PatternOverride {
         "partitionlabels" { return "Greedy last-occurrence boundary" }
         "sortarraybyparity" { return "Parity partition" }
         "movezeroes" { return "Stable two-pointer compaction" }
+        "middleoflinkedlist" { return "Fast/slow pointers" }
+        "allnodesdistancekinbinarytree" { return "Tree converted to graph + BFS distance" }
+        "amountoftimeforbinarytreetobeinfected" { return "Tree converted to graph + BFS spread" }
+        "graphvalidtree" { return "Connectivity + cycle" }
+        "possiblebipartition" { return "Bipartite coloring" }
+        "redundantconnection" { return "DSU cycle detection" }
+        "parallelcourses" { return "Kahn BFS by levels" }
+        "aliendictionary" { return "Constraint inference + topological sort" }
+        "findeventualsafestates" { return "Reverse graph + outdegree elimination" }
+        "sequencereconstruction" { return "Unique topological order" }
+        "sortitemsbygroupsrespectingdependencies" { return "Two-level topological sort" }
+        "coursescheduleiv" { return "Dependency transitive closure" }
+        "subsets" { return "Backtracking subsets" }
+        "combinationsum" { return "Backtracking with candidate reuse" }
+        "wordsearch" { return "Grid path backtracking" }
+        "lettercombinationsofaphonenumber" { return "Position-choice backtracking" }
+        "permutations" { return "Permutation used-index state" }
+        "permutationsii" { return "Sorted duplicate-aware permutations" }
+        "largestrectangle" { return "Monotonic stack pop-time boundaries" }
+        "topkfrequentwords" { return "Bounded heap with tie ordering" }
+        "hindex" { return "Bounded frequency buckets" }
+        "insertinterval" { return "Insert into sorted non-overlapping intervals" }
+        "mergeintervals" { return "Merge sorted intervals" }
+        "nonoverlappingintervals" { return "Greedy earliest finish" }
+        "longestcommonprefix" { return "Single-branch prefix walk" }
+        "longestwordindictionary" { return "Every-prefix-terminal trie" }
+        "replacewords" { return "Shortest terminal prefix" }
+        "searchsuggestionssystem" { return "Prefix node + lexicographic DFS top 3" }
+        "shortencodingofwords" { return "Reversed suffix trie" }
+        "mapsumpairs" { return "Prefix aggregate with overwrite delta" }
+        "accountsmerge" { return "Email ownership + DSU grouping" }
         default { return $Pattern }
     }
 }
@@ -1779,30 +1966,7 @@ function Get-PrecisionContract {
         "russiandollenvelopes" { return "Sort width ascending, but equal width descending by height so equal-width envelopes cannot chain through LIS. Then run strict LIS on heights. Without descending tie-break, equal widths can be illegally nested." }
     }
 
-    switch ($Category) {
-        "HashMap/HashSet" { return "Define exactly what the map/set contains: processed values, counts, or remaining supply. Check before insert when the current item cannot pair with itself; update after consumption when supply is being spent. The state must change exactly once per current item." }
-        "Two Pointers" { return "The two pointers bound the remaining candidate space. Each move must be justified by order, symmetry, or a one-sided bottleneck so that discarded candidates cannot become answers. Save the answer before moving a pointer when the current state is valid." }
-        "Sliding Window" { return "The window state must describe exactly the current contiguous range. Include the right item, repair validity by moving left only while the invariant is broken or answer can improve, then update the answer at the correct valid moment. Removed items must also be removed from counts/sum/state." }
-        "Prefix/Suffix" { return "The prefix/suffix state must represent only values strictly before or after the current index unless the problem says inclusive. Build reusable cumulative information once, then combine the correct sides for each answer. Watch off-by-one ownership of the current element." }
-        "Binary Search" { return "Name the candidate space and the monotonic predicate before coding. A true candidate must let you discard one side without losing the first/last feasible answer. Preserve inclusivity of left/right and move with mid + 1 or mid - 1 only after saving a feasible answer when required." }
-        "Linked List" { return "Every pointer has an ownership role: previous fixed node, current node being moved, and saved next node. Save next before rewiring, reconnect all boundary nodes, and return the real head after possible head changes. Node identity matters more than node value." }
-        "Tree BFS" { return "The queue frontier defines the current level. Capture the level size before adding children so newly discovered nodes belong to the next level. Any per-level answer must be finalized after exactly that size is processed." }
-        "Tree DFS" { return "Define what the helper returns to its parent and what global answer it may update separately. Null/leaf base cases must match that return contract. Combine left and right results once per node without recomputing subtrees." }
-        "Graph BFS" { return "Queue entries are states reached in nondecreasing number of steps. Mark visited when enqueueing so duplicate paths do not re-enter the frontier. The first time a state is reached is optimal only when each edge has equal cost." }
-        "Graph DFS" { return "Visited state means this node/cell is already owned by the current traversal or component. Mark before exploring neighbors, and restore only when the problem is path backtracking rather than component ownership. Direction, parent, and boundary checks decide cycle behavior." }
-        "Stack" { return "The stack stores unresolved items whose answer depends on a future closer/warmer/smaller/larger/current token. While the current item resolves the stack top, pop and finalize that old item. Push current only if it remains unresolved." }
-        "Heap" { return "The heap contains only candidates still eligible for the current priority question, or it uses lazy deletion until stale candidates reach the root. Comparator order must match the requested best item. Poll only when size, expiry, or frontier rules say the root is no longer allowed." }
-        "Intervals/Greedy" { return "Sort to make the next conflict or safe choice local. Track the boundary that represents the current merged interval, selected endpoint, or active resource. Equality decides whether intervals touch, overlap, or can reuse a resource." }
-        "Backtracking" { return "The path is the current partial decision and visited/used state says what cannot be reused on this path. Choose one candidate, mutate state, recurse, then restore state before trying the next candidate. Duplicate skipping must depend on sorted order and same-depth ownership." }
-        "Trie" { return "Each edge consumes one character and each node represents the prefix consumed so far. Terminal state is separate from prefix existence. Search follows only valid child edges unless wildcard/board branching explicitly allows multiple children." }
-        "Dynamic Programming" { return "State the exact meaning of dp before the recurrence. Each transition must read only states that are already valid under the chosen iteration order. Base cases are not initialization trivia; they are the smallest true meanings that allow every later state to derive correctly." }
-        "Union Find" { return "parent[x] identifies the component representative after find compression. union merges two components only when representatives differ; equal representatives mean the connection was already present. Use DSU only when component identity is enough and path details are irrelevant." }
-        "Topological Sort" { return "indegree is the count of prerequisites still blocking a node. Only zero-indegree nodes can be processed, and processing a node consumes its outgoing prerequisite relation by decrementing neighbors. A leftover node means a dependency cycle." }
-        "Greedy" { return "Name the local choice and the exchange/dominance reason that makes it safe. After taking the choice, update the boundary/state that represents everything committed so far. If a future choice can invalidate the local choice, this is not greedy yet." }
-        "Math/Bit/String" { return "Expose the algebra, carry, bit, border, or contribution meaning before simulating. Each update must preserve that exact numeric/string invariant. Avoid operator claims unless the linked source confirms the equality boundary." }
-        "Design/LLD" { return "Start by naming each operation's contract and the stored state that makes the contract cheap. Every mutation must preserve lookup, ordering, capacity, expiry, or consistency invariants. State the failure/edge behavior before coding the happy path." }
-        default { return "$Recall $CodeIdea" }
-    }
+    return $Recall
 }
 
 function Get-PrecisionTrap {
@@ -1864,6 +2028,163 @@ function Get-PrecisionTrap {
         "distinctsubsequences" { return "dp[*][0] = 1" }
         "interleavingstring" { return "s3 index is i + j - 1" }
         "russiandollenvelopes" { return "equal width sorted by height desc" }
+        "middleoflinkedlist" { return "even length returns second middle; guard fast.next" }
+        "allnodesdistancekinbinarytree" { return "add parent edges; stop after exactly k BFS levels" }
+        "amountoftimeforbinarytreetobeinfected" { return "mark on enqueue; do not count a nonexistent final minute" }
+        "graphvalidtree" { return "require n - 1 edges and one connected component" }
+        "possiblebipartition" { return "scan disconnected components; fail only on same-color edge" }
+        "redundantconnection" { return "1-based DSU; union roots, not raw endpoints" }
+        "parallelcourses" { return "snapshot level size; return -1 if processed < n" }
+        "aliendictionary" { return "reject invalid prefix; only first difference creates edge" }
+        "findeventualsafestates" { return "reverse edges; decrement predecessor outdegree" }
+        "sequencereconstruction" { return "queue size must equal 1; every nums value must appear" }
+        "sortitemsbygroupsrespectingdependencies" { return "VERIFY FROM SOURCE - complete accepted implementation absent" }
+        "coursescheduleiv" { return "prerequisite edge direction; via loop must be outermost" }
+        "subsets" { return "copy path at every state; recurse with i + 1" }
+        "combinationsum" { return "recurse with i for reuse; undo path after return" }
+        "lettercombinationsofaphonenumber" { return "empty input returns empty; delete appended char" }
+        "permutations" { return "used tracks indices; unmark after recursion" }
+        "permutationsii" { return "duplicate skip requires !used[i - 1]" }
+        "largestrectangle" { return "flush with height-0 sentinel; width = right - left - 1" }
+        "topkfrequentwords" { return "tie makes lexicographically larger word the weaker heap root" }
+        "hindex" { return "cap citations at n; first papers >= h while scanning down" }
+        "insertinterval" { return "closed intervals overlap on equality; emit new interval once" }
+        "mergeintervals" { return "merge on start <= activeEnd; flush final active interval" }
+        "nonoverlappingintervals" { return "touching is compatible: start >= lastFinish" }
+        "longestcommonprefix" { return "stop at branch or terminal, including one-word prefix" }
+        "longestwordindictionary" { return "every intermediate node terminal; lexicographically smallest tie" }
+        "replacewords" { return "stop at first terminal; missing child keeps original word" }
+        "searchsuggestionssystem" { return "lexicographic child order; cap each prefix at three" }
+        "shortencodingofwords" { return "deduplicate; count only words not covered as suffixes" }
+        "mapsumpairs" { return "overwrite uses delta = new - old, not full new value" }
+        "accountsmerge" { return "merge by shared email, not equal name; group by find(root)" }
+        "validanagram" { return "reject unequal lengths; every net count must finish at zero" }
+        "ransomnote" { return "fail on the first negative remaining count; do not reuse a magazine character" }
+        "longestpalindrome" { return "use every pair, but allow at most one odd center" }
+        "searchinsertposition" { return "return the first >= target boundary, including n when no such index exists" }
+        "firstbadversion" { return "preserve mid when it is bad; search only versions 1 through n" }
+        "searchinrotatedsortedarray" { return "identify the sorted half before testing whether target lies inside it" }
+        "searchinrotatedsortedarrayii" { return "when left, mid, and right are equal, shrink both ends before choosing a half" }
+        "findpeakelement" { return "use left < right so mid + 1 stays valid; keep mid on a descending slope" }
+        "sqrtx" { return "avoid mid * mid overflow; return the floor boundary, not the final failed mid" }
+        "timebasedkeyvaluestore" { return "return the last timestamp <= query; preserve each key's timestamp order" }
+        "longestsubstringwithatmostkdistinctcharacters" { return "shrink while distinct > k and erase a character only when its count reaches zero" }
+        "findallanagramsinastring" { return "keep exactly p.length characters; compare only after outgoing state is removed" }
+        "movingaveragefromdatastream" { return "evict only after size exceeds capacity; divide by current size during warm-up" }
+        "countnumberofnicesubarrays" { return "exactly k requires atMost(k) - atMost(k - 1); handle k = 0" }
+        "longestcontinuousincreasingsubsequence" { return "continuous forbids skips; reset the streak on nums[i] <= nums[i - 1]" }
+        "productofarrayexceptself" { return "each pass must exclude nums[i]; do not divide because zeros are legal" }
+        "mergetwosortedlists" { return "advance only the list whose node was attached; append the remaining suffix" }
+        "designbrowserhistory" { return "visiting a new URL discards forward history; clamp back/forward at both ends" }
+        "copylistwithrandompointer" { return "clone by node identity, preserve null random, and restore the original list if interleaving" }
+        "oddevenlinkedlist" { return "save evenHead and reconnect odd tail to it after both chains are built" }
+        "rotatelist" { return "reduce k modulo length; break the ring at length - k" }
+        "swapnodesinpairs" { return "preserve the next pair head and return dummy.next after rewiring" }
+        "reverselinkedlistii" { return "use a dummy before left and reconnect both the prefix and suffix" }
+        "validpalindrome" { return "skip non-alphanumerics on both sides before comparing normalized characters" }
+        "containerwithmostwater" { return "move the shorter wall; moving only the taller wall cannot improve the limiting height" }
+        "twosumiiinputarrayissorted" { return "return one-based indices; move exactly one side according to the sum" }
+        "trappingrainwater" { return "update the chosen side maximum before adding water; never add a negative amount" }
+        "longestpalindromicsubstring" { return "expand both odd and even centers; convert final bounds without an off-by-one" }
+        "topkfrequentelements" { return "order by frequency, not value; keep exactly k candidates" }
+        "sortcharactersbyfrequency" { return "emit each character frequency times; comparator ties must remain consistent" }
+        "taskscheduler" { return "cooldown applies between equal tasks; include unavoidable idle slots" }
+        "kthlargestelementinanarray" { return "a size-k min-heap evicts only when size > k; answer is the root" }
+        "kthlargestelementinastream" { return "initialize through the same add invariant; root is valid only after k elements" }
+        "kclosestpointstoorigin" { return "compare squared distance without overflow; cap the retained heap at k" }
+        "awardtopkhotels" { return "apply score ties deterministically and preserve the required hotel ordering" }
+        "binarytreerightsideview" { return "snapshot each level size and record only that level's final visible node" }
+        "binarytreeinordertraversal" { return "visit left, node, right; iterative traversal must push the full left chain" }
+        "binarytreepostordertraversal" { return "visit both children before the node; do not emit on first stack sight" }
+        "binarytreepreordertraversal" { return "visit node before children; push right before left in an iterative stack" }
+        "lowestcommonancestorofabinarytree" { return "return subtree evidence upward; current is LCA only when both sides report a target" }
+        "lowestcommonancestorofabinarytreeii" { return "the split-point result is valid only after confirming both targets exist" }
+        "lowestcommonancestorofabinarytreeiii" { return "compare node identity through parent chains; do not assume equal depths" }
+        "lowestcommonancestorofabinarytreeiv" { return "treat targets as a set and stop ownership at the first multi-target split" }
+        "kthsmallestelementinabst" { return "decrement k on the inorder node visit, not when pushing or returning" }
+        "recoverbinarysearchtree" { return "capture both inorder inversions; non-adjacent swaps require first and last offenders" }
+        "binarysearchtreeiterator" { return "push the entire left spine initially and after every popped node's right child" }
+        "convertbsttogreatertree" { return "reverse inorder is required; update the running sum before storing the node" }
+        "sumroottoleafnumbers" { return "append the digit before the leaf check; add only complete root-to-leaf numbers" }
+        "binarytreemaximumpathsum" { return "clamp negative child gains to zero; return one branch but update global with two" }
+        "pathsum" { return "accept target equality only at a leaf, not at an internal prefix" }
+        "pathsumii" { return "copy the path on a matching leaf and remove the current node on every return" }
+        "lowestcommonancestorofabinarysearchtree" { return "walk by both target values; the first split or equality is the answer" }
+        "insertintoabinarysearchtree" { return "attach at the first null position and return the original root" }
+        "minimumabsolutedifferenceinbst" { return "compare adjacent inorder values and initialize previous-node state safely" }
+        "rangesumofbst" { return "include both bounds; prune only the subtree BST ordering proves irrelevant" }
+        "searchinabinarysearchtree" { return "choose one branch from the comparison; do not search both subtrees" }
+        "invertbinarytree" { return "swap both child references once per node; preserve the new children for recursion" }
+        "constructbinarysearchtreefrompreordertraversal" { return "advance the shared index only when the value fits the inherited upper bound" }
+        "verifypreorderserializationofabinarytree" { return "consume one slot per token and add two only for non-null nodes; slots may never go negative" }
+        "constructbinarytreefrominorderandpostordertraversal" { return "consume postorder from the end and build right before left" }
+        "constructbinarytreefrompreorderandinordertraversal" { return "split by the inorder index and keep preorder/subtree ranges aligned" }
+        "serializeanddeserializebinarytree" { return "encode null markers and delimiters explicitly; deserialize in the same traversal order" }
+        "numberofclosedislands" { return "border-connected land is not closed; either erase borders first or propagate closure with AND" }
+        "maxareaofisland" { return "reset area per component and mark each land cell before expanding" }
+        "clonegraph" { return "store original-to-clone before recursing so cycles reuse the same clone" }
+        "coloringaborder" { return "recolor only component cells touching outside/non-component; preserve interior cells" }
+        "minimumheighttrees" { return "the input must be a tree; trim simultaneous leaf layers until at most two centers remain" }
+        "numberofprovinces" { return "start one traversal per unvisited city; mark the start before scanning its row" }
+        "khighestrankeditemswithinapricerange" { return "finish a BFS distance layer before ranking; apply all tie keys in order" }
+        "houserobber" { return "compute current from old prev1/prev2 before shifting them; never combine adjacent houses" }
+        "climbingstairsfib" { return "define n = 0/1 bases explicitly and do not overwrite a value before using it" }
+        "wordbreak" { return "seed dp[0] = true; substring end is exclusive and must follow a reachable prefix" }
+        "climbingstairs" { return "seed the empty/first step consistently; transition only from legal prior steps" }
+        "mincostclimbingstairs" { return "cost is paid when landing on a step; answer is min of the final two states" }
+        "perfectsquares" { return "seed dp[0] = 0 and try only squares <= current amount" }
+        "uniquepaths" { return "seed first row/column as one path; each cell combines top and left" }
+        "numberoflongestincreasingsubsequence" { return "replace count on a longer predecessor, add count only on an equal-best predecessor" }
+        "maximumprofitinjobscheduling" { return "binary search the first next start >= current end; keep jobs and DP in the same sort order" }
+        "kadanemaxsubarray" { return "initialize from the first value so an all-negative array does not incorrectly return zero" }
+        "longestcommonsubsequence" { return "on mismatch take max(top,left); diagonal extension is only for equal characters" }
+        "deleteoperationfortwostrings" { return "the state counts deletions for prefixes; initialize empty-prefix costs" }
+        "longestpalindromicsubsequence" { return "fill shorter intervals before longer ones; equal ends use inner interval + 2" }
+        "minimumasciideletesumfortwostrings" { return "empty-prefix bases are ASCII prefix sums, not character counts" }
+        "besttimetobuyandsellstockwithtransactionfee" { return "charge the fee exactly once per transaction and update hold/cash from prior-day states" }
+        "besttimetobuyandsellstockwithcooldown" { return "buy from a rested state, not from cash created by yesterday's sell" }
+        "besttimetobuyandsellstockiv" { return "transaction layers must not reuse same-day updates; handle k >= n/2 as unlimited" }
+        "besttimetobuyandsellstockiii" { return "preserve buy1/sell1/buy2/sell2 update semantics; at most two completed sells" }
+        "distinctsubsequencesii" { return "subtract the previous contribution of the repeated character and normalize modulo" }
+        "evaluatereversepolishnotation" { return "for subtraction/division pop right operand first, then left operand" }
+        "nextgreaterelementii" { return "scan 2n indices but push unresolved indices only during the first pass" }
+        "implementqueueusingstacks" { return "transfer input to output only when output is empty; otherwise FIFO order breaks" }
+        "implementstackusingqueues" { return "rotate the queue according to one consistent push- or pop-heavy invariant" }
+        "basiccalculator" { return "apply the pending sign before reset; restore outer result/sign after a closing parenthesis" }
+        "minstack" { return "push duplicate minima and pop auxiliary minimum in lockstep" }
+        "maxstack" { return "popMax removes the topmost maximum and restores displaced elements in order" }
+        "nextgreaterelementi" { return "map answers while resolving the monotonic stack; source values must satisfy uniqueness assumptions" }
+        "onlinestockspan" { return "pop prices <= current and add their compressed spans; equal prices belong in the span" }
+        "designastackwithincrementoperation" { return "increment the bottom min(k,size) elements; propagate lazy increments when popping" }
+        "implementtrieprefixtree" { return "search requires terminal true; startsWith requires only the path" }
+        "designaddandsearchwordsdatastructure" { return "a dot branches over every existing child; success still requires terminal at the end" }
+        "wordsearchii" { return "restore board state, emit each word once, and prune only exhausted trie branches" }
+        "maximumxoroftwonumbersinanarray" { return "walk from the highest supported bit and prefer the opposite bit only when it exists" }
+        "maximumxorwithanelementfromarray" { return "insert only nums <= query limit; return -1 when the eligible trie is empty" }
+        "maximumgeneticdifferencequery" { return "the trie must contain only current ancestors; remove the node on DFS exit" }
+        "countpairswithxorinarange" { return "compute countLess(high + 1) - countLess(low) with consistent bit bounds" }
+        "hotelreviews" { return "tokenize consistently, count each required occurrence rule, and apply ranking ties deterministically" }
+        "meetingrooms" { return "sort by start and reject when current start < previous end; equality is reusable" }
+        "partitionlabels" { return "extend the active end to every seen character's last index; cut only when i == end" }
+        "maximumlengthofpairchain" { return "sort by end and accept only when next start > last end under the strict pair rule" }
+        "besttimetobuyandsellstock" { return "update profit before/with a running minimum; buy must precede sell" }
+        "besttimetobuyandsellstockii" { return "take only positive adjacent rises; do not double-count a constrained transaction model" }
+        "firstuniquenumber" { return "counts and candidate order must agree after every add; skip newly duplicated front values" }
+        "encodeanddecodetinyurl" { return "generated keys must be collision-safe; decode unknown keys according to the API contract" }
+        "designcircularqueue" { return "distinguish full from empty with size/count; wrap head and tail modulo capacity" }
+        "designfraudpatterndetection" { return "key events by the correct entity and apply thresholds inside the intended time window" }
+        "apiintegrationexample" { return "separate transport failure from domain failure; do not partially commit dependent state" }
+        "designredis" { return "keep value, expiry, and eviction/index state consistent for every mutation" }
+        "designtokenbucketratelimiter" { return "refill from elapsed time, cap at capacity, then consume atomically" }
+        "findtheindexofthefirstoccurrenceinastring" { return "on mismatch fall back with lps[j - 1] without moving the text index backward" }
+        "repeatedsubstringpattern" { return "require nonzero final LPS and n % (n - lps[n - 1]) == 0" }
+        "shortestpalindrome" { return "compute the longest palindromic prefix, not suffix; use an unambiguous separator" }
+        "longesthappyprefix" { return "the border must be proper; return exactly the final LPS length" }
+        "addbinary" { return "continue while either input or carry remains; prepend/collect bits in the correct order" }
+        "countprimes" { return "mark composites from p * p and count primes strictly less than n" }
+        "countuniquecharactersofallsubstringsofagivenstring" { return "use previous and next equal positions; flush each character's final contribution" }
+        "spiralmatrix" { return "recheck top <= bottom and left <= right before the reverse-direction passes" }
+        "stringtointegeratoi" { return "skip spaces, consume one sign, stop at first nondigit, and clamp before overflow" }
     }
 
     switch ($Category) {
@@ -1890,6 +2211,67 @@ function Get-PrecisionTrap {
         "Design/LLD" { return "state mutation violates operation invariant" }
         default { return "verify exact boundary in linked Java" }
     }
+}
+
+function Get-ArticulationFamilySkeleton {
+    param(
+        [string] $Category,
+        [string] $Pattern
+    )
+
+    $patternText = $Pattern.ToLowerInvariant()
+    if ($Category -eq "Binary Search" -and $patternText -match "binary search on answer") { return "search candidate answer -> feasible(mid)? save and move toward better : move toward feasible region" }
+    if ($Category -eq "Binary Search" -and $patternText -match "binary search boundary|binary search invariant") { return "define inclusive search boundary -> test mid -> discard only the proven-impossible side -> preserve and return the required boundary" }
+    if ($Category -eq "Linked List" -and $patternText -match "fast/slow|floyd") { return "move slow by 1 and fast by 2 -> use where fast stops or where pointers meet -> preserve null guards before every 2-step move" }
+    if ($Category -eq "Linked List" -and $patternText -match "reversal|swap nodes|odd even|rotate list") { return "name pointer ownership -> save the next structure -> rewire current group -> reconnect both boundaries -> return the real head" }
+    if ($Category -eq "Graph BFS" -and $patternText -match "multi-source|bfs spread|bfs distance") { return "enqueue every distance-0 source + mark -> process one frontier layer -> claim unvisited neighbors on enqueue -> advance distance/time once per layer" }
+    if ($Category -eq "Graph BFS" -and $patternText -match "dijkstra") { return "min-heap (distance,state) -> ignore stale entry -> relax outgoing edges -> push only improved distances" }
+    if ($Category -eq "Stack" -and $patternText -match "monotonic stack|next greater|stock span") { return "scan current -> while current resolves stack top, pop and finalize that old item -> push current as unresolved" }
+    if ($Category -eq "Topological Sort" -and $patternText -match "topological|kahn|outdegree") { return "build directed edges + dependency counts -> enqueue currently unlocked nodes -> consume edges on pop -> detect leftovers/ambiguity from the required output" }
+    if ($Category -eq "Backtracking" -and $patternText -match "backtracking|permutation|grid path") { return "choose -> mutate path/ownership -> recurse -> restore exactly what this frame changed -> try next choice" }
+    if ($Category -eq "Trie" -and $patternText -match "trie|prefix") { return "consume one character per edge -> create/follow child -> keep terminal separate from prefix existence -> branch only when the query permits it" }
+    if ($Category -eq "Intervals/Greedy" -and $patternText -match "interval|earliest finish") { return "order intervals by the boundary that makes the next decision local -> compare current with active boundary -> merge/accept/reject -> update boundary ownership" }
+    if ($Category -eq "Heap" -and $patternText -match "heap|top k|frequency|median") { return "define heap ownership + comparator -> offer eligible candidate -> evict/rebalance only when invariant requires -> read answer from valid root(s)" }
+
+    switch ($Category) {
+        "HashMap/HashSet" { return "scan current -> query prior count/complement/ownership -> consume or record exactly once -> keep map meaning true" }
+        "Two Pointers" { return "place boundaries -> evaluate current pair/span -> move only the boundary whose movement safely discards candidates -> preserve best/validity" }
+        "Sliding Window" { return "expand right + add state -> while invalid or shrinkable, remove left + advance -> record answer at the valid moment" }
+        "Prefix/Suffix" { return "seed empty prefix/suffix -> accumulate reusable state -> combine/query strict boundaries without including the wrong element" }
+        "Binary Search" { return "define monotonic candidate space -> test mid -> preserve feasible boundary -> discard half -> return first/last required candidate" }
+        "Linked List" { return "name node ownership -> save next before mutation -> rewire/advance -> reconnect changed boundaries -> return actual head" }
+        "Tree BFS" { return "queue root -> snapshot level size -> process exactly that level -> enqueue children for the next level -> finalize level output" }
+        "Tree DFS" { return "define helper return -> solve children once -> combine at current node -> update separate global state if needed -> return parent contract" }
+        "Graph BFS" { return "enqueue source(s) + mark visited -> pop in nondecreasing distance -> claim valid neighbors on enqueue -> stop at required frontier" }
+        "Graph DFS" { return "start each unowned component/path -> mark ownership before descent -> explore valid neighbors -> restore only for path-local ownership" }
+        "Stack" { return "push unresolved state -> current token resolves/combines top state -> pop in LIFO order -> leave only still-pending state" }
+        "Heap" { return "offer eligible candidates -> keep comparator aligned with requested best -> evict/rebalance stale or excess state -> read valid root" }
+        "Intervals/Greedy" { return "sort by proof boundary -> compare current interval with committed boundary -> merge/select/reject -> move boundary only when ownership changes" }
+        "Backtracking" { return "choose -> recurse -> unchoose; path and used state describe exactly this recursion frame" }
+        "Trie" { return "consume characters through prefix nodes -> distinguish terminal word from existing prefix -> branch/prune according to query" }
+        "Dynamic Programming" { return "define future-determining state -> seed smallest true states -> enumerate transitions -> fill only after dependencies -> return target state" }
+        "Union Find" { return "find canonical roots -> if different, union roots and update size/rank -> if equal, connection already exists -> group by final root" }
+        "Topological Sort" { return "build edges + indegree -> enqueue zero-indegree nodes -> pop and consume outgoing edges -> validate count/order requirement" }
+        "Greedy" { return "name the safe local choice -> prove dominated alternatives can be discarded -> commit it -> update the boundary summarizing all prior choices" }
+        "Math/Bit/String" { return "name carry/border/bit/contribution state -> update from the next symbol/value -> preserve exact arithmetic boundary -> emit final state" }
+        "Design/LLD" { return "state operation contract -> choose state that makes it cheap -> mutate every index consistently -> enforce capacity/expiry/failure behavior" }
+        default { return "state required output -> identify repeated work -> keep only the state needed by the next decision -> verify boundaries" }
+    }
+}
+
+function Get-ArticulationMutation {
+    param(
+        [string] $Category,
+        [string] $Title
+    )
+
+    $switches = @(Get-HorizontalSwitches -Category $Category -Title $Title)
+    if ($switches.Count -eq 0) {
+        return "VERIFY FROM SOURCE - choose the smallest statement change that breaks this invariant."
+    }
+
+    $change = $switches[0]
+    return "$($change.Mutation) -> $($change.Pattern): $($change.NowWhy)"
 }
 
 function Escape-Md {
@@ -2468,7 +2850,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need horizontal pattern discrimination | `../horizontal/README.md` | Winner pattern, near-misses, minimal mutations, and CROSSDRILL. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
-| Need exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | Pattern -> sub-pattern table with correctness contracts and traps for every ranked problem. |
+| Need reconstruction plus exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | One continuous pattern -> sub-pattern table with skeletons, correctness contracts, traps, and mutations. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -2813,21 +3195,16 @@ function Build-MasterArticulationTable {
     param([object[]] $Rows)
 
     $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add("# Master DSA Interview Articulation Table")
+    $lines.Add("# Master DSA Reconstruction + Interview Articulation Table")
     $lines.Add("")
-    $lines.Add("Purpose: one retrieval sheet for speaking the exact correctness contract before coding. This is not a solution summary.")
+    $lines.Add("Purpose: one continuous sharpening table for reconstructing the engine and speaking the exact correctness contract before coding. This is not a solution summary.")
     $lines.Add("")
-    $lines.Add('Organization: Pattern -> Sub-pattern. Similar rows stay together, while the rank inside each problem preserves interview ROI from `01_ZERO_TO_HERO_RANKED_TABLE.md`.')
+    $lines.Add('Organization: Pattern -> Sub-pattern divider rows live inside one uninterrupted table. Similar problems stay together in anchor-to-mutation progression; use `01_ZERO_TO_HERO_RANKED_TABLE.md` when ROI rank order is the goal.')
     $lines.Add("")
-    $lines.Add("Use each row as: problem wording -> exact state meaning -> invariant -> transition -> trap. If a row does not constrain the code strongly enough, improve the generator instead of hand-editing this file.")
+    $lines.Add("Each visible problem name opens its local Java source. Read: family skeleton -> problem skeleton -> state/invariant -> exact transition -> trap -> smallest useful mutation.")
     $lines.Add("")
-    $lines.Add("## Precision Rules")
-    $lines.Add("")
-    $lines.Add("- Say the contract before coding; then code only what the contract permits.")
-    $lines.Add('- Treat words like `exceeds`, `reaches`, `unused`, `seen`, `current`, `total`, `first`, and `any` as operator-level words.')
-    $lines.Add('- For exact operators, preserve the literal token when it matters: `>`, `>=`, `<`, `<=`, `i + 1`, `right - k`, `right >= k - 1`, `dp[0] = true`.')
-    $lines.Add("- Rows are generated from local ranked metadata, curated problem hooks, and checked source chapters. Category fallback rows intentionally avoid unverified operator claims.")
-    $lines.Add("")
+    $lines.Add("| Problem | Reconstruction + Correctness Contract | Trap / Mutation |")
+    $lines.Add("|---|---|---|")
 
     $categoryGroups = @($Rows | Group-Object Category | ForEach-Object {
         $items = @($_.Group | Sort-Object Rank)
@@ -2841,8 +3218,6 @@ function Build-MasterArticulationTable {
 
     foreach ($categoryGroup in $categoryGroups) {
         $displayCategory = $categoryGroup.DisplayCategory
-        $lines.Add("## $(Escape-Md $displayCategory)")
-        $lines.Add("")
 
         $patternGroups = @($categoryGroup.Items | Group-Object Pattern | ForEach-Object {
             $items = @($_.Group | Sort-Object Rank)
@@ -2854,20 +3229,13 @@ function Build-MasterArticulationTable {
         } | Sort-Object FirstRank, Name)
 
         foreach ($patternGroup in $patternGroups) {
-            $lines.Add("### $(Escape-Md $patternGroup.Name)")
-            $lines.Add("")
-            $lines.Add("| Problem | Say Before Coding - Correctness Contract | Trap |")
-            $lines.Add("|---|---|---|")
+            $familySkeleton = Get-ArticulationFamilySkeleton -Category $categoryGroup.Category -Pattern $patternGroup.Name
+            $divider = "$(Escape-Md $displayCategory) -> $(Escape-Md $patternGroup.Name)"
+            $lines.Add("| **$divider** | **Family skeleton:** $(Escape-Md $familySkeleton) | |")
 
             foreach ($row in $patternGroup.Items) {
                 $title = Escape-Md $row.Title
-                $problemLink = if ($row.LeetCodeLink) { New-Link $title $row.LeetCodeLink } else { $title }
-                $java = New-Link "Java" $row.JavaLink
-                $rank = "{0}. " -f $row.Rank
-                $problemCell = "**$rank$problemLink**<br>$java"
-                if ($row.LeetCodeLink) {
-                    $problemCell += " / " + (New-Link "LC" $row.LeetCodeLink)
-                }
+                $problemCell = New-Link $title $row.JavaLink
 
                 $contract = Get-PrecisionContract `
                     -Category $row.Category `
@@ -2877,10 +3245,11 @@ function Build-MasterArticulationTable {
                     -InterviewHook $row.InterviewHook `
                     -CodeIdea $row.CodeIdea
                 $trap = Get-PrecisionTrap -Category $row.Category -Title $row.Title
-                $lines.Add("| $problemCell | $(Escape-Md $contract) | $(Escape-Md $trap) |")
+                $mutation = Get-ArticulationMutation -Category $row.Category -Title $row.Title
+                $reconstructionCell = "**Skeleton:** $($row.CodeIdea) **Contract:** $contract"
+                $trapCell = "**Trap:** $trap **Mutation:** $mutation"
+                $lines.Add("| $problemCell | $(Escape-Md $reconstructionCell) | $(Escape-Md $trapCell) |")
             }
-
-            $lines.Add("")
         }
     }
 
