@@ -1,652 +1,636 @@
-# Goldman Sachs VP CoderPad — Final Execution Plan
+# Goldman Sachs VP CoderPad - Coach-Led Final Execution Plan
 
-**Candidate:** Chiranjeev Jain  
-**Interview:** Wednesday, 9 September 2026, 15:00–16:00 IST  
-**Plan created:** Friday, 4 September 2026, 16:40 IST  
-**Language:** Java  
-**Coverage ceiling:** finish the existing 90-problem hands-on plan; do not start the remaining 80 before this interview  
-**Performance objective:** calmly derive, code, test, and explain two medium problems in a blank shared editor
+**Candidate:** Chiranjeev/Cheranjeev Jain - verify the spelling used in the recruiter record; the supplied resume currently renders “Cheranjeev Jain”
 
-This is the only live calendar for Friday through Wednesday. The curriculum labels “Day 5” and “Day 6” refer to content, not their old August dates.
+**Interview:** Wednesday, 9 September 2026, 15:00-16:00 IST
 
-Use the companion files as follows:
+**Language:** Java
 
-- [Master plan and solution vault](./GOLDMAN_SACHS_VP_CODERPAD_SEP_9_2026_MASTER_PLAN.md): evidence, problem answer cards, Java reliability sheet, and VP reference.
-- [Final rehearsal script](./GOLDMAN_SACHS_VP_FINAL_REHEARSAL_SCRIPT.md): spoken answers, CoderPad language, honest ownership boundaries, and recording checklist.
-- [Original seven-day sprint](./DSA_7-Day_Hourly_WIN_FINAL_v15_HighSignal_Pattern_Triggers.md): source curriculum only. Its old dates no longer control this week.
+**Plan reset:** Friday, 4 September 2026, 22:00 IST
 
----
+**Target:** give the first-round CoderPad the fairest possible chance; do not optimize for syllabus completion
 
-## 1. Decisions already made
+This is the only live calendar. It replaces the earlier hypothesis that curriculum Days 5 and 6, 90 problems, or all 170 problems must be completed before the interview.
 
-1. The 90 hands-on problems are the coverage finish line.
-2. The remaining 80 are deliberately deferred until after the Goldman interview.
-3. A hands-on attempt is not automatically mastery. Every attempt receives G1, G2, Y, or R.
-4. Friday is curriculum Day 5. Saturday is curriculum Day 6. Sunday is permitted overflow and qualification time.
-5. Monday and Tuesday are office days unless the objective leave gate says otherwise.
-6. If only one leave or half-day is available, protect Wednesday first unless Wednesday is already quiet, remote, and interruption-free.
-7. Tuesday leave is for repairing measured weaknesses, never for opening the remaining 80.
-8. Wednesday is activation and logistics, not a study marathon.
-9. Sleep cannot be traded for another problem. Hard stop is 22:45 Friday, 22:15 Saturday, 21:45 Sunday, and 22:00 Monday/Tuesday.
-10. No problem is repeated merely to feel busy. Repeat only a recorded Y/R or a scheduled Core-12 probe.
+Companion files:
 
-### Late-start and overrun rule
-
-- If the clock has passed a listed start time, begin the earliest incomplete item immediately and run the same 18-minute protocol.
-- Keep the next listed meal, long break, and nightly hard stop fixed. Do not compress a rep to catch the clock.
-- Every rep that no longer fits becomes the earliest overflow item on the next day.
-- Never do two problems inside one 18-minute rep and never convert a solution reading into a hands-on attempt.
+- [Evidence, Goldman problem cards, and solution vault](./GOLDMAN_SACHS_VP_CODERPAD_SEP_9_2026_MASTER_PLAN.md)
+- [Spoken answers and recovery scripts](./GOLDMAN_SACHS_VP_FINAL_REHEARSAL_SCRIPT.md)
+- [Original seven-day curriculum](./DSA_7-Day_Hourly_WIN_FINAL_v15_HighSignal_Pattern_Triggers.md) - a source bank, not the calendar
 
 ---
 
-## 2. The operating protocol for every 18-minute rep
+## 1. Coach's decision
 
-| Minute | Action | Required spoken output |
+The immediate bottleneck is not exposure. It is unmeasured performance.
+
+You already have:
+
+- high DSA exposure and a large Java solution corpus;
+- 17 interview-sized LLD projects;
+- 31 HLD/system-design learning units;
+- strong resume alignment through Java/Spring, in-memory pre-trade risk, production problem solving, releases, and mentoring;
+- extensive notes and paid Educative and AlgoMonster access.
+
+You do not yet have a completed, scored mock in `G:\TechStudyNotes\MocksPractice`. Its mastery, failure, and coverage ledgers are all unassessed. Therefore more unique-problem coverage cannot be assumed to improve the real bottleneck.
+
+### Training priority until Wednesday
+
+| Share | Work | Why |
 |---:|---|---|
-| 00:00–02:00 | Read, restate, clarify | “Input is __; output is __; I’m assuming __.” |
-| 02:00–04:00 | Give baseline | “The direct solution is __ in O(__).” |
-| 04:00–06:00 | Find repeated work and invariant | “The repeated work is __. I will maintain __.” |
-| 06:00–14:00 | Write Java | Narrate state changes; do not describe every keystroke. |
-| 14:00–16:30 | Test | Normal, boundary, and adversarial case. |
-| 16:30–18:00 | Close | Time, space, one trade-off, score. |
+| 65% | blind/timed DSA performance and targeted repair | the scheduled first round is a 60-minute CoderPad |
+| 15% | clean Java and debugging reliability | correct ideas must become runnable code under observation |
+| 10% | introduction, resume depth, and behavioral judgment | reports show some CoderPads include an intro or scenarios |
+| 10% | resume-aligned Java/concurrency/risk/LLD/HLD defense | protects senior signal without opening a second syllabus |
 
-At minute 18, stop even if unfinished. Record exactly:
+### What is explicitly not a goal
 
-`Score: __ | Stuck: __ | Gap: __ | Fix: __ | Next: __`
+- Completing 90 before Sunday.
+- Touching the remaining 80 of 170.
+- Completing a course module in Educative or AlgoMonster.
+- Revising all 17 LLDs or 31 HLD units.
+- Memorizing the reported Goldman question list.
+- Doing more than two high-pressure simulations in one day.
 
-Scores:
-
-- **G1:** independently derived, coded, tested, and explained.
-- **G2:** achieved the same standard after one repair.
-- **Y:** correct direction but a material weakness remains.
-- **R:** needed the solution, had a wrong invariant, or could not produce coherent code.
-
-Failure codes:
-
-- **P:** pattern recognition
-- **I:** invariant/correctness
-- **D:** data structure choice
-- **J:** Java/API/syntax
-- **E:** edge case
-- **C:** complexity
-- **B:** debugging
-- **M:** memorized but not understood
-
-### Solution rule
-
-Do not open a solution during the first 18 minutes. For Y/R, use the 18-minute repair protocol:
-
-| Minute | Repair action |
-|---:|---|
-| 00:00–03:00 | Write the exact failure code and one-sentence gap. |
-| 03:00–07:00 | Read only the needed hint/answer card. |
-| 07:00–08:00 | Close the reference completely. |
-| 08:00–15:00 | Reconstruct the missing logic from blank. |
-| 15:00–17:00 | Run the failed edge case and one new case. |
-| 17:00–18:00 | Explain invariant and complexity; rescore G2/Y/R. |
+If a curriculum Day-5/Day-6 problem appears in a targeted slot, solve it. Otherwise its unfinished status is irrelevant before Wednesday.
 
 ---
 
-## 3. Fixed 30-problem completion queue
+## 2. Evidence behind the decision
 
-Always take the earliest incomplete item. If an item was already completed before this plan was created, mark its existing score and skip it; do not repeat it in a coverage slot.
+Public reports are anecdotal, not promises, but the repeated round shape is consistent enough for training:
 
-### Curriculum Day 5 — queue items 01–15
+- often two coding questions in one hour;
+- arrays/strings, hash maps, two pointers, BFS/DFS, binary search, DP, and clean test cases recur;
+- Trapping Rain Water appears repeatedly across levels;
+- reported examples include Highest Average Score/IP frequency, String Compression, Number of Islands, Koko-style binary search, Container With Most Water, Word Break, Validate BST, Minimum Window/at-most-K, and graph/grid tasks;
+- some reports include a short introduction or behavioral scenario;
+- Goldman publicly emphasizes algorithms, distributed systems, databases, scalable systems, low-latency infrastructure, and collaboration.
 
-| # | Problem | Core purpose |
+The resume makes the senior narrative simple: you build Java/Spring financial systems, with direct pre-trade risk, in-memory checks, production issue resolution, release leadership, and mentoring. Do not dilute this by trying to sound expert in every repository.
+
+---
+
+## 3. Performance definitions
+
+### A hands-on problem is interview-ready only when
+
+- [ ] the contract and assumptions were clarified;
+- [ ] a correct baseline was stated;
+- [ ] the repeated work/bottleneck was named;
+- [ ] the optimized invariant was stated before code;
+- [ ] coherent Java was written from blank;
+- [ ] normal, boundary, and adversarial cases were tested;
+- [ ] time and auxiliary-space complexity were explained;
+- [ ] one changed constraint was answered without reopening notes.
+
+### Score every attempt
+
+- **G1:** clean cold performance without help.
+- **G2:** clean reconstruction after one targeted repair.
+- **Y:** approach is substantially correct but one material weakness remains.
+- **R:** solution lookup, wrong invariant, incoherent code, or inability to explain why it works.
+
+Failure codes: **P** pattern, **I** invariant, **D** data structure, **J** Java, **E** edge case, **C** complexity, **B** debugging, **M** memorized/not understood, **V** verbal communication.
+
+### A 60-minute CoderPad mock passes only when
+
+- [ ] no solution, hint, notes, course, or AI answer is opened;
+- [ ] problem 1 is runnable or fully dry-runnable by minute 28;
+- [ ] problem 2 has a correct approach by minute 40;
+- [ ] problem 2 is runnable or precise to the last missing lines by minute 55;
+- [ ] at least three tests are stated for each completed problem;
+- [ ] there is no unexplained silence longer than 45 seconds;
+- [ ] a hint, if offered, is integrated without defensiveness;
+- [ ] the final complexity statement is correct.
+
+Perfection is not the pass condition. A disciplined recovery from one bug can still pass.
+
+---
+
+## 4. Resource rules
+
+### MocksPractice - primary measurement tool
+
+Use `G:\TechStudyNotes\MocksPractice` for the first diagnostic.
+
+1. Open that repository in Codex.
+2. Say `START MOCK Compressed`.
+3. Work only in the returned `sessions/session-0003/` directory.
+4. Do not inspect references or solutions.
+5. When the attempt is complete, say `DONE` and finish the viva before reading the score/editorials.
+
+The mock is about 60 minutes, but reserve 90 minutes for generation, attempt, viva, and scoring.
+
+### Educative and AlgoMonster - repair tools only
+
+They are not scheduled courses this week.
+
+- Open one only after a Y/R.
+- Search for the exact failed generator: for example, monotonic-stack boundaries, first-true binary search, multi-source BFS, or DP state.
+- Maximum source time: 12 minutes.
+- Close it and reconstruct from blank for 18 minutes.
+- If both platforms cover the gap, choose the shorter explanation; do not compare courses.
+- A watched lesson does not change the score. Only the closed-book retry can produce G2.
+
+### DSA10days - source and repair bank
+
+Use existing local Java and the master solution vault only after the cold timer. Do not browse all problem indexes.
+
+### LLDProjects - one narrow defense
+
+Only these are in scope before round 1:
+
+1. `pre-trade-risk-engine` - rule pipeline, integer ticks/overflow, explainable rejection, and stateful extensions.
+2. `token-bucket-rate-limiter` - lazy refill, atomic acquire, per-key state, and multi-instance limitation.
+
+No implementation rebuild is scheduled. Draw and explain from blank.
+
+### SystemDesignProjects - one narrow defense
+
+Only these are in scope:
+
+1. `java-concurrency-lab` - check-then-act invariant, per-client lock, bounded executor, backpressure, immutable snapshots.
+2. `trading-risk-platform` - fail-closed risk, atomic reservation, auditability, dependency failure, and recovery trade-offs.
+
+These are reference models. Never imply that every project feature was part of your Nasdaq production work.
+
+---
+
+## 5. The Goldman Core-12
+
+These are performance probes, not a predicted exam. They span the highest-return families and reported shapes.
+
+| # | Anchor | Generator that must be retrievable |
 |---:|---|---|
-| 01 | Intersection of Two Linked Lists | pointer alignment and identity |
-| 02 | Min Stack | augmented state and duplicate minima |
-| 03 | Implement Queue Using Stacks | amortized transfer |
-| 04 | Implement Stack Using Queues | queue rotation and operation trade-off |
-| 05 | Next Greater Element I | monotonic stack |
-| 06 | Next Greater Element II | circular monotonic stack |
-| 07 | Online Stock Span | compressed monotonic state |
-| 08 | Largest Rectangle in Histogram | boundary width and final flush |
-| 09 | Sum of Subarray Minimums | contribution counting and asymmetric ties |
-| 10 | Kth Largest Element in a Stream | size-k min-heap |
-| 11 | K Closest Points to Origin | bounded selection |
-| 12 | Evaluate Reverse Polish Notation | operand order and stack evaluation |
-| 13 | Letter Combinations of a Phone Number | backtracking state restoration |
-| 14 | Time Based Key-Value Store | greatest timestamp not exceeding query |
-| 15 | Implement Trie | prefix traversal and terminal marker |
+| 1 | Highest Average Score / IP frequency | map aggregation; sum/count; tie and ordering policy |
+| 2 | String Compression | run boundary; read/write indices; multi-digit count |
+| 3 | Trapping Rain Water | finalize the side with the safe lower boundary |
+| 4 | Container With Most Water | move the limiting wall; prove discarded widths cannot win |
+| 5 | Minimum Window / at most K distinct | validity count; expand then shrink under a precise condition |
+| 6 | Koko / first-true binary search | monotonic feasibility; smallest true boundary; overflow-safe math |
+| 7 | Number of Islands | every unseen land cell starts one component traversal |
+| 8 | 01 Matrix / grid shortest path | multi-source BFS; first reach is shortest |
+| 9 | Validate BST | ancestor bounds, not parent-only comparisons |
+| 10 | Word Break or Coin Change | explicit DP state, base case, transition, iteration order |
+| 11 | Gas Station | total feasibility plus why a negative prefix invalidates starts |
+| 12 | Largest Rectangle or Task Scheduler | boundary/frequency invariant and adversarial ties |
 
-### Curriculum Day 6 — queue items 16–30
+### Secondary probes - use only when the diagnostic says the family is weak
 
-| # | Problem | Core purpose |
-|---:|---|---|
-| 16 | Design Add and Search Words | trie plus wildcard DFS |
-| 17 | Gas Station | greedy reset proof |
-| 18 | Task Scheduler | frequency-bound scheduling |
-| 19 | Number of Provinces | component counting |
-| 20 | Network Delay Time | Dijkstra and stale heap entries |
-| 21 | Word Ladder | shortest path in an implicit graph |
-| 22 | Accounts Merge | transitive connectivity/DSU |
-| 23 | 01 Matrix | multi-source BFS |
-| 24 | Pacific Atlantic Water Flow | reverse reachability |
-| 25 | Surrounded Regions | boundary-connected preservation |
-| 26 | Binary Tree Right Side View | one answer per depth |
-| 27 | Path Sum | root-to-leaf state |
-| 28 | Search in a BST | ordering eliminates a subtree |
-| 29 | Insert into a BST | preserve ordering at the first null |
-| 30 | Invert Binary Tree | recursive state transformation |
+- Meeting Rooms / Merge Intervals
+- Top K Frequent / Kth Largest Stream
+- Reverse Linked List / Linked List Cycle
+- TimeMap
+- Evaluate RPN
+- Word Ladder
+- LRU Cache
+- Fraction to Recurring Decimal
+
+No problem outside Core-12 or this secondary list is added before Wednesday unless it is selected by the blind mock.
 
 ---
 
-# 4. Friday, 4 September — finish curriculum Day 5
+# 6. Friday, 4 September - stop training tonight
 
-Start at the earliest unfinished Day-5 queue item. The timetable below has capacity for all 15 items from scratch. If some are already complete, finish early and use freed slots only for the three highest-priority Y/R repairs; do not start Day 6 tonight.
+The current time at plan reset is approximately 22:00. The correct athletic decision is recovery.
 
-## 16:40–17:00 — reset and setup
-
-- **16:40–16:45:** water, washroom, phone on Do Not Disturb.
-- **16:45–16:50:** open blank Java editor, original sprint, and scoreboard only.
-- **16:50–16:55:** mark already completed Day-5 items and their honest scores.
-- **16:55–17:00:** say aloud: “Coverage attempt, not perfection. At minute 18 I score and move.”
-
-## 17:00–20:00 — queue items 01–09
-
-| Time | Work |
+| Time | Action |
 |---|---|
-| 17:00–17:18 | Next incomplete item, beginning at 01 |
-| 17:18–17:36 | Next incomplete item |
-| 17:36–17:54 | Next incomplete item |
-| 17:54–18:00 | stand, water, record scores |
-| 18:00–18:18 | Next incomplete item |
-| 18:18–18:36 | Next incomplete item |
-| 18:36–18:54 | Next incomplete item |
-| 18:54–19:00 | eyes away from screen, no solution reading |
-| 19:00–19:18 | Next incomplete item |
-| 19:18–19:36 | Next incomplete item |
-| 19:36–19:54 | Next incomplete item |
-| 19:54–20:00 | record failure codes and close editor |
-
-## 20:00–20:45 — dinner and full detachment
-
-No video solutions, LeetCode discussion, Java notes, or interview audio.
-
-## 20:45–22:45 — queue items 10–15
-
-| Time | Work |
-|---|---|
-| 20:45–21:03 | Next incomplete item |
-| 21:03–21:21 | Next incomplete item |
-| 21:21–21:39 | Next incomplete item |
-| 21:39–21:45 | break and scores |
-| 21:45–22:03 | Next incomplete item |
-| 22:03–22:21 | Next incomplete item |
-| 22:21–22:39 | Next incomplete item |
-| 22:39–22:45 | write final Day-5 scoreboard; choose Saturday’s top three repairs by R before Y, then P/I/J/E/B/C/M |
-
-## 22:45 onward
-
-- **22:45–23:00:** shut down, prepare clothes/water for morning.
-- **23:00–23:15:** wash and wind down.
-- **23:15:** lights out.
-
-Friday is successful if every Day-5 item has an attempt and a score. G1 is not required for all 15.
-
----
-
-# 5. Saturday, 5 September — finish curriculum Day 6
-
-## 06:45–09:00 — recovery and repair
-
-| Time | Work |
-|---|---|
-| 06:45–07:00 | wake, water, no phone feed |
-| 07:00–07:30 | wash, breakfast |
-| 07:30–07:45 | walk/prayer/quiet reset |
-| 07:45–08:03 | Repair 1: highest-priority Friday R |
-| 08:03–08:21 | Repair 2: next Friday R/Y |
-| 08:21–08:39 | Repair 3: next Friday R/Y |
-| 08:39–08:45 | break |
-| 08:45–09:00 | write three trigger–invariant pairs from memory; setup Day 6 |
-
-## 09:00–13:00 — queue items 16–24
-
-| Time | Work |
-|---|---|
-| 09:00–09:18 | 16 Add and Search Words |
-| 09:18–09:36 | 17 Gas Station |
-| 09:36–09:54 | 18 Task Scheduler |
-| 09:54–10:00 | break and scores |
-| 10:00–10:18 | 19 Number of Provinces |
-| 10:18–10:36 | 20 Network Delay Time |
-| 10:36–10:54 | 21 Word Ladder |
-| 10:54–11:10 | longer break, snack, walk |
-| 11:10–11:28 | 22 Accounts Merge |
-| 11:28–11:46 | 23 01 Matrix |
-| 11:46–12:04 | 24 Pacific Atlantic Water Flow |
-| 12:04–12:15 | scores and failure codes |
-| 12:15–13:00 | recovery buffer: first use for a late start; otherwise repair the single worst P/I failure from items 16–24 |
-
-## 13:00–14:00 — lunch and walk
-
-Zero study. Do not turn lunch into passive tutorial watching.
-
-## 14:00–17:00 — queue items 25–30 and repair
-
-| Time | Work |
-|---|---|
-| 14:00–14:18 | 25 Surrounded Regions |
-| 14:18–14:36 | 26 Binary Tree Right Side View |
-| 14:36–14:54 | 27 Path Sum |
-| 14:54–15:00 | break and scores |
-| 15:00–15:18 | 28 Search in a BST |
-| 15:18–15:36 | 29 Insert into a BST |
-| 15:36–15:54 | 30 Invert Binary Tree |
-| 15:54–16:10 | snack and walk |
-| 16:10–16:28 | Repair: highest Day-6 R |
-| 16:28–16:46 | Repair: next Day-6 R/Y |
-| 16:46–17:00 | scoreboard and Sunday overflow count |
-
-## 17:00–22:15 — recovery plus one qualification probe
-
-| Time | Work |
-|---|---|
-| 17:00–18:00 | exercise/walk; no interview content |
-| 18:00–19:00 | shower and dinner |
-| 19:00–19:30 | leisure |
-| 19:30–20:15 | one 45-minute closed-book mock: **Highest Average Score** |
-| 20:15–20:33 | repair only if the mock scored Y/R |
-| 20:33–20:50 | break |
-| 20:50–21:10 | record A01 introduction, A03 why Goldman, A04 why role |
-| 21:10–21:30 | listen once at 1×; note only one fix per answer |
-| 21:30–21:50 | record A24 CoderPad method and the three recovery lines |
-| 21:50–22:15 | write Saturday scorecard; shut down |
-| 22:15–22:45 | wind down |
+| 22:00-22:10 | close all code, notes, LeetCode, Educative, and AlgoMonster |
+| 22:10-22:20 | write only: today attempted __; strongest family __; weakest observed family __ |
+| 22:20-22:30 | prepare water, clothes, charger, and Saturday desk |
+| 22:30-22:45 | wash and wind down; no screen |
 | 22:45 | lights out |
 
-Saturday completion rule:
-
-- **Coverage complete:** all queue items 01–30 have scores.
-- **Overflow exists:** any unattempted item keeps its queue number and moves to Sunday 09:00. No guilt and no new scheduling decision.
+Do not finish one more problem. Saturday's diagnostic requires a rested brain more than Friday needs a higher count.
 
 ---
 
-# 6. Sunday, 6 September — overflow, remastery, and simulation
+# 7. Saturday, 5 September - measure first, then train
 
-## 07:00–09:00 — calm start
+## 06:45-08:30 - readiness setup
 
-| Time | Work |
+| Time | Action |
 |---|---|
-| 07:00–07:30 | wake, wash, water |
-| 07:30–08:00 | breakfast |
-| 08:00–08:30 | prayer/walk/quiet reset |
-| 08:30–08:45 | read scoreboard only; count unattempted queue items |
-| 08:45–09:00 | blank editor and timer setup |
+| 06:45-07:00 | wake, water, no phone feed |
+| 07:00-07:30 | wash and breakfast |
+| 07:30-07:50 | prayer/walk/quiet reset |
+| 07:50-08:05 | blank-editor Java warm-up: map counting plus one boundary test |
+| 08:05-08:15 | close warm-up; state its invariant and complexity |
+| 08:15-08:30 | open MocksPractice and prepare `START MOCK Compressed` |
 
-## 09:00–12:00 — deterministic overflow rule
+## 08:30-10:15 - blind diagnostic
 
-Use each 18-minute slot for the earliest unattempted item from 01–30. Once no unattempted item remains, immediately use all remaining slots for Core-12 retrieval in the order listed in Section 7.
-
-| Time | Slot |
+| Time | Action |
 |---|---|
-| 09:00–09:18 | earliest unattempted, otherwise Core-12 #1 |
-| 09:18–09:36 | next unattempted, otherwise next Core-12 |
-| 09:36–09:54 | next unattempted, otherwise next Core-12 |
-| 09:54–10:00 | break |
-| 10:00–10:18 | next unattempted, otherwise next Core-12 |
-| 10:18–10:36 | next unattempted, otherwise next Core-12 |
-| 10:36–10:54 | next unattempted, otherwise next Core-12 |
-| 10:54–11:06 | break |
-| 11:06–11:24 | next unattempted, otherwise next Core-12 |
-| 11:24–11:42 | next unattempted, otherwise next Core-12 |
-| 11:42–12:00 | next unattempted, otherwise next Core-12 |
+| 08:30 | say `START MOCK Compressed` |
+| 08:30-09:35 | generation plus cold attempt; obey the frozen session |
+| 09:35 | say `DONE` |
+| 09:35-10:05 | submission audit/viva; answer without sources |
+| 10:05-10:15 | read verdict and record the top three corrections only |
 
-If more than nine queue items remain unattempted at 12:00, stop coverage anyway. That is evidence the 18-minute protocol was not being followed. Do not sacrifice qualification to manufacture a count of 90.
+If generation takes longer, preserve the full attempt and viva. Shorten the next break, not the mock.
 
-## 12:00–14:00 — reset
+## 10:15-12:30 - repair the evidence
 
-- **12:00–12:20:** scoreboard; identify top three P/I/J failures.
-- **12:20–13:00:** lunch.
-- **13:00–13:30:** walk/rest.
-- **13:30–14:00:** CoderPad-style blank editor, camera/audio/network check.
-
-## 14:00–15:00 — full Goldman mock 1
-
-Use **String Compression** followed by **Number of Islands**. No references.
-
-| Minute | Action |
-|---:|---|
-| 00–03 | introduction and clarify problem 1 |
-| 03–07 | baseline, bottleneck, invariant |
-| 07–24 | code problem 1 |
-| 24–28 | test and complexity |
-| 28–31 | clarify problem 2 |
-| 31–38 | baseline and invariant |
-| 38–53 | code problem 2 |
-| 53–58 | tests and complexity |
-| 58–60 | concise close |
-
-## 15:00–16:00 — mock evidence and repair
-
-| Time | Work |
+| Time | Action |
 |---|---|
-| 15:00–15:10 | score mock without changing code |
-| 15:10–15:28 | repair highest-impact failure |
-| 15:28–15:46 | reconstruct failed section from blank |
-| 15:46–16:00 | explain both invariants and complexities aloud |
+| 10:15-10:35 | walk, water, snack; no post-mortem spiral |
+| 10:35-10:53 | repair top correction #1 |
+| 10:53-11:11 | closed-book retry #1 |
+| 11:11-11:17 | break |
+| 11:17-11:35 | repair top correction #2 |
+| 11:35-11:53 | closed-book retry #2 |
+| 11:53-11:59 | break |
+| 11:59-12:17 | repair top correction #3 |
+| 12:17-12:30 | summarize: Trigger -> Invariant -> Template -> Failed case |
 
-## 16:00–17:00 — full reset
+If fewer than three corrections exist, use the remaining slot for a changed-constraint version of the weakest problem. Do not add coverage.
 
-Snack, walk, no screen.
+## 12:30-14:00 - recovery
 
-## 17:00–18:30 — Core-12 oral retrieval
+Lunch, 20-minute walk, and zero interview content.
 
-For each problem, spend exactly seven minutes: 30 seconds trigger, 60 seconds baseline, 90 seconds invariant/proof, two minutes skeleton, one minute tests, one minute complexity/trade-off. Do not fully code unless it is Y/R.
+## 14:00-16:15 - Goldman-specific rehearsal
 
-| Time | Problems |
+These are 25-minute cold reps: 3 clarify, 4 baseline/invariant, 12 code, 4 tests, 2 complexity.
+
+| Time | Action |
 |---|---|
-| 17:00–17:28 | Core-12 #1–#4 |
-| 17:28–17:35 | break |
-| 17:35–18:03 | Core-12 #5–#8 |
-| 18:03–18:10 | break |
-| 18:10–18:38 | Core-12 #9–#12 |
+| 14:00-14:25 | Highest Average Score / IP frequency |
+| 14:25-14:32 | break |
+| 14:32-14:57 | Trapping Rain Water |
+| 14:57-15:12 | break, snack, eyes away |
+| 15:12-15:37 | String Compression |
+| 15:37-15:44 | break |
+| 15:44-16:09 | Number of Islands, use BFS once |
+| 16:09-16:15 | scores and failure codes |
 
-## 18:38–21:45 — rehearsal and leave pre-gate
+Open the solution only for Y/R, and only during the later repair block.
 
-| Time | Work |
+## 16:15-19:15 - physical recovery
+
+| Time | Action |
 |---|---|
-| 18:38–19:15 | dinner |
-| 19:15–19:35 | record A01, A03, A04, A07 |
-| 19:35–19:55 | record A11, A15, A18 |
-| 19:55–20:15 | record A19, A21, A22, A23, A24 |
-| 20:15–20:30 | listen once; one fix per answer only |
-| 20:30–20:45 | calculate Sunday readiness gate in Section 8 |
-| 20:45–21:15 | repair one red only: P/I first, then J, then E/B/C |
-| 21:15–21:30 | write Monday’s one target and prepare office items |
-| 21:30–21:45 | shut down |
-| 22:15 | lights out |
+| 16:15-17:30 | exercise/walk/gym |
+| 17:30-18:15 | shower and rest |
+| 18:15-19:15 | dinner and leisure |
 
----
+## 19:15-21:45 - Java, senior signal, and repair
 
-## 7. The must-remaster set
-
-These 12 cover the highest-ROI pattern families and reported Goldman-style shapes. The goal is not recognizing the title; it is reconstructing the invariant and clean Java after a context switch.
-
-| # | Problem | Required proof sentence | Required adversarial test |
-|---:|---|---|---|
-| 1 | Highest Average Score | aggregate sum and count per key; compare averages without losing precision | negative scores, repeated person, tie policy |
-| 2 | String Compression | read one run, write its symbol and count, never overwrite unread input incorrectly | run length 1, 10+, all same |
-| 3 | Trapping Rain Water | the lower boundary is the currently safe side to finalize | monotone, short array, deep basin |
-| 4 | Minimum Window Substring | shrink only while all required multiplicities are satisfied | duplicate required chars, impossible case |
-| 5 | Koko / first-true binary search | feasibility is monotonic; search for the smallest true answer | one pile, overflow-safe ceiling, tight boundary |
-| 6 | Largest Rectangle in Histogram | a smaller bar finalizes the popped bar’s maximal width | equal heights, increasing input, final flush |
-| 7 | Number of Islands | every unseen land cell starts exactly one component traversal | all water, all land, diagonal separation |
-| 8 | 01 Matrix | all zeros enter the queue together; first reach is shortest distance | all zero, one zero, rectangular grid |
-| 9 | Validate BST | every node obeys bounds inherited from all ancestors | invalid deep descendant, integer extremes |
-| 10 | Word Break | dp[i] means the prefix ending before i is constructible | empty prefix, reused word, impossible suffix |
-| 11 | Gas Station | negative running balance invalidates every start in that segment | impossible total, valid wraparound |
-| 12 | Task Scheduler | maximum task frequency creates the lower bound; real task count handles zero-idle cases | n=0, dominant task, many distinct tasks |
-
-### Secondary set — only after Core-12 is stable
-
-1. Top K Frequent / size-k heap
-2. TimeMap / greatest timestamp not exceeding target
-3. Word Ladder / implicit-graph BFS
-4. LRU Cache / map plus doubly linked list
-5. Merge Intervals or Meeting Rooms / boundary convention
-6. Evaluate RPN / operand order
-7. Reverse Linked List / preserve suffix before rewiring
-8. Minimum Path Sum / grid-DP state and initialization
-
-“Stable” means trigger, invariant, skeleton, three tests, and complexity can be produced closed-book in seven minutes. It does not mean memorizing a full solution.
-
----
-
-## 8. Objective readiness and leave gates
-
-### Sunday 20:30 preliminary gate
-
-Score one point for each true statement:
-
-- [ ] **Coverage:** all 30 Day-5/Day-6 queue items have a recorded attempt.
-- [ ] **Core retrieval:** at least 9 of the Core-12 are G1/G2; none remains R after its scheduled repair.
-- [ ] **Mock coding:** in mock 1, problem 1 was runnable by minute 28 and problem 2 had a correct approach by minute 38.
-- [ ] **Communication:** no silence exceeded 45 seconds; clarification, invariant, tests, and complexity were spoken.
-- [ ] **Java reliability:** collections, comparator, queue/stack use, bounds, and return values did not cause an unresolved failure.
-- [ ] **Energy:** the last two days included at least seven hours of sleep and no signs of cognitive collapse.
-
-Interpretation:
-
-- **5–6 points:** on track. Tuesday leave is not justified for study.
-- **3–4 points:** amber. Keep Monday office plan; decide Tuesday only after Monday mock.
-- **0–2 points:** red. Prepare to take Tuesday leave if feasible, but still run Monday mock before the final decision.
-
-### Monday 21:35 final Tuesday-leave gate
-
-Take Tuesday leave only if **two or more** of these remain true after Monday’s mock:
-
-1. Fewer than 9 Core-12 problems are G1/G2.
-2. Two timed mocks have failed because of derivation/coding, not a single typo.
-3. You still cannot produce coherent Java plus three tests inside 45 minutes for one medium.
-4. Your narration repeatedly has silence over 45 seconds or jumps into code without an invariant.
-
-Do **not** take Tuesday leave when only one item is weak. Use the Tuesday morning/evening targeted slots instead. Do **not** take leave to complete the remaining 80.
-
-### Wednesday leave/half-day gate
-
-This is a logistics and performance decision:
-
-- If office/commute/meetings prevent a quiet, private, tested setup from **12:30 through 16:30**, take Wednesday leave or at least a half-day if at all possible.
-- If you can work remotely, block the calendar from 12:30, and guarantee no interruption, full-day leave is optional.
-- If only one leave day can be taken, choose **Wednesday** unless the Wednesday environment is already protected and the Monday readiness gate explicitly requires Tuesday repair.
-
-Recommendation with present evidence: plan to work Monday; do not pre-commit Tuesday leave; protect Wednesday afternoon now. The decision may change only at the stated gates.
-
----
-
-# 9. Monday, 7 September — office day
-
-Assumption: leave home around 08:30 and return around 19:30. If commute differs, preserve the morning and evening block lengths; remove passive review before reducing sleep.
-
-## 06:30–08:30
-
-| Time | Work |
+| Time | Action |
 |---|---|
-| 06:30–06:45 | wake, water, wash |
-| 06:45–07:03 | closed-book repair of Sunday’s single worst Core-12 item |
-| 07:03–07:21 | closed-book reconstruction of one unrelated Core-12 item |
-| 07:21–07:30 | tests, complexity, scores |
-| 07:30–08:00 | breakfast and get ready |
-| 08:00–08:15 | speak A01, A03, A04 once; no rerecording |
-| 08:15–08:30 | leave/setup for office |
-
-## Office hours
-
-- No LeetCode during work.
-- Lunch: ten minutes maximum for trigger-only flash recall of Core-12 #1–#6. No code and no solution reading.
-- If work is unusually draining, cancel the 20:00 micro-recall; keep the 20:20 mock and sleep.
-
-## 19:30–22:00
-
-| Time | Work |
-|---|---|
-| 19:30–20:00 | dinner and decompress |
-| 20:00–20:20 | Core-12 #7–#12 trigger/invariant oral recall |
-| 20:20–21:20 | full mock 2: **Trapping Rain Water** then **Validate BST** |
-| 21:20–21:35 | score without emotional commentary |
-| 21:35–21:40 | apply final Tuesday-leave gate |
-| 21:40–21:58 | repair one precise failure only |
-| 21:58–22:00 | write Tuesday target; shut down |
+| 19:15-19:45 | blank Java reliability: `HashMap`, `ArrayDeque`, priority-queue comparator, overflow-safe midpoint/ceiling |
+| 19:45-20:15 | reconstruct only Y/R from the 14:00 block; maximum one problem |
+| 20:15-20:25 | break |
+| 20:25-20:50 | record A01 introduction, A03 why Goldman, A04 why this role, A24 CoderPad method |
+| 20:50-21:10 | listen once; one repair line per answer, no third takes |
+| 21:10-21:30 | draw pre-trade risk LLD from blank; explain rule seam, integer arithmetic, stateful extensions |
+| 21:30-21:45 | score the day and choose Sunday's first weak family |
+| 21:45 | preparation ends |
 | 22:30 | lights out |
 
+Saturday win condition: one scored blind diagnostic, its top three gaps repaired, and four Goldman-specific reps scored. Curriculum count is not part of the win.
+
 ---
 
-# 10. Tuesday, 8 September — two fixed versions
+# 8. Sunday, 6 September - simulate, transfer, and defend
 
-At Monday 21:40, the gate selects exactly one version. Do not blend them.
+## 07:00-08:30 - start calm
 
-## Version A — normal office day, default
-
-| Time | Work |
+| Time | Action |
 |---|---|
-| 06:30–06:45 | wake and wash |
-| 06:45–07:30 | 45-minute one-problem mock: **Minimum Window Substring** |
-| 07:30–07:45 | score and repair note; no solution unless Y/R |
-| 07:45–08:15 | breakfast/get ready |
-| 08:15–08:30 | speak A01 and A24 once |
-| Office lunch | 10-minute Core-12 trigger shuffle; no code |
-| 19:30–20:00 | dinner/decompress |
-| 20:00–21:00 | final full dress rehearsal: **Koko** then **Gas Station** |
-| 21:00–21:18 | repair only a concrete Y/R |
-| 21:18–21:30 | read Java reliability checklist and interview opening |
-| 21:30–21:45 | verify laptop, charger, browser, camera, microphone, calendar link, quiet room, backup connection |
-| 21:45 | all preparation ends |
+| 07:00-07:30 | wake and wash |
+| 07:30-08:00 | breakfast |
+| 08:00-08:20 | walk/prayer |
+| 08:20-08:30 | blank editor and timer; no notes |
+
+## 08:30-09:30 - exact CoderPad simulation 1
+
+Use two previously exposed medium problems chosen without seeing solutions. The mock controller/interviewer should reveal only one problem at a time and may ask one follow-up. Use the 60-minute protocol in Section 3.
+
+Preferred families: one array/string/map problem and one graph/tree/DP problem. Do not deliberately select yesterday's exact four anchors.
+
+## 09:30-11:15 - debrief and repair
+
+| Time | Action |
+|---|---|
+| 09:30-09:45 | score against the pass checklist before touching code |
+| 09:45-10:03 | repair the highest P/I gap |
+| 10:03-10:21 | reconstruct from blank |
+| 10:21-10:35 | break |
+| 10:35-10:53 | repair highest J/E/B/V gap |
+| 10:53-11:11 | reconstruct or rehearse the recovery line |
+| 11:11-11:15 | rescore only the repaired dimensions |
+
+## 11:15-12:45 - Core-12 retrieval circuit
+
+Use seven minutes per probe: 30 seconds trigger, 60 seconds baseline, 90 seconds invariant, two minutes skeleton, one minute tests, one minute complexity/trade-off.
+
+| Time | Action |
+|---|---|
+| 11:15-11:43 | four weakest Core-12 probes |
+| 11:43-11:50 | break |
+| 11:50-12:18 | next four weakest probes |
+| 12:18-12:25 | break |
+| 12:25-12:39 | two next weakest probes |
+| 12:39-12:45 | count green/yellow/red; no solution reading |
+
+Ten probes are enough. The strongest two Core-12 anchors do not need rehearsal today.
+
+## 12:45-14:30 - lunch and rest
+
+No passive course content.
+
+## 14:30-15:30 - exact CoderPad simulation 2
+
+Use one pattern that was weak in the morning and one unrelated pattern. The surfaces must differ from the anchor names. Pass/fail uses the same checklist.
+
+## 15:30-16:30 - debrief and stop high-pressure coding
+
+| Time | Action |
+|---|---|
+| 15:30-15:45 | score |
+| 15:45-16:03 | repair one root cause |
+| 16:03-16:21 | closed-book retry |
+| 16:21-16:30 | final complexity and changed-constraint answer |
+
+No more full mocks Sunday.
+
+## 16:30-18:15 - senior-depth defense
+
+| Time | Action |
+|---|---|
+| 16:30-16:50 | walk/snack |
+| 16:50-17:15 | Java concurrency: check-then-act, visibility vs atomicity, lock scope, bounded executors/backpressure |
+| 17:15-17:40 | risk platform: state ownership, fail-closed trade-off, atomic reservation, recovery and audit |
+| 17:40-18:05 | answer A07 PTR, A11 negative exposure, A15 ownership, A18 split brain, A19 honest AWS/EKS boundary |
+| 18:05-18:15 | write only unsupported or unclear claims; do not reread all PDFs |
+
+## 18:15-21:30 - recover, rehearse, gate
+
+| Time | Action |
+|---|---|
+| 18:15-19:15 | dinner and leisure |
+| 19:15-19:40 | record A21, A22, A23 and listen once |
+| 19:40-20:00 | three recovery scripts: stuck, hint, failed test |
+| 20:00-20:20 | Java skeleton recall: BFS, DFS, first-true binary search, sliding window |
+| 20:20-20:35 | compute Sunday readiness score |
+| 20:35-20:53 | one repair only if a P/I red remains |
+| 20:53-21:10 | prepare Monday office and mock setup |
+| 21:10-21:30 | shut down and wind down |
 | 22:15 | lights out |
 
-## Version B — Tuesday leave, only if the gate triggered
+### Sunday readiness score - six points
 
-| Time | Work |
+One point for each true statement:
+
+- [ ] the blind diagnostic was completed, graded, and its top gaps repaired;
+- [ ] at least one Sunday CoderPad simulation passed;
+- [ ] at least 8 of the Core-12 are G1/G2 and none of the tested anchors remains R;
+- [ ] no blocking Java issue survived a repair;
+- [ ] clarification, invariant, tests, and complexity were spoken without repeated 45-second silence;
+- [ ] sleep and energy are adequate for Monday.
+
+- **5-6:** on track.
+- **3-4:** amber; Monday mock decides Tuesday leave.
+- **0-2:** red; prepare Tuesday leave, but decide only after Monday evidence.
+
+---
+
+# 9. Monday, 7 September - office plus one decisive mock
+
+Assumption: office/commute occupies the normal working day. Preserve block durations around the actual commute; never borrow from sleep.
+
+## Before office
+
+| Time | Action |
 |---|---|
-| 07:00–07:45 | wake, breakfast, walk |
-| 07:45–08:03 | repair top P/I failure |
-| 08:03–08:21 | reconstruct it from blank |
-| 08:21–08:39 | repair top J/E/B failure |
-| 08:39–09:00 | break |
-| 09:00–10:00 | full mock: **Minimum Window** then **Gas Station** |
-| 10:00–10:30 | score and one repair |
-| 10:30–11:00 | walk/snack |
-| 11:00–12:00 | Core-12 oral retrieval; seven minutes each for the eight weakest |
-| 12:00–13:30 | lunch and rest |
-| 13:30–14:15 | one-problem mock on the weakest remaining family |
-| 14:15–14:45 | repair and reconstruct |
-| 14:45–15:30 | nap/rest/walk; zero content |
-| 15:30–16:00 | record mandatory Tier-A answers once |
-| 16:00–17:00 | full mock: **Koko** then **Validate BST** |
-| 17:00–17:30 | score; no further full coding |
-| 17:30–19:00 | exercise, shower, dinner |
-| 19:00–19:30 | Java reliability sheet and three recovery scripts |
-| 19:30–20:00 | interview setup test |
-| 20:00–20:30 | optional repair of one red only; otherwise stop |
+| 06:30-06:45 | wake and wash |
+| 06:45-07:10 | one 25-minute cold rep from Sunday's weakest family |
+| 07:10-07:25 | repair only if Y/R |
+| 07:25-07:50 | breakfast |
+| 07:50-08:05 | speak A01 and A24 once |
+| 08:05 onward | get ready/commute |
+
+## At office
+
+- Do your job normally. Do not run LeetCode between meetings.
+- At lunch, maximum 10 minutes: orally retrieve four trigger/invariant pairs.
+- No solution videos or course browsing during commute if it compromises recovery.
+
+## After office
+
+| Time | Action |
+|---|---|
+| 19:30-20:10 | dinner and decompression |
+| 20:10-20:20 | setup and breathing |
+| 20:20-21:20 | exact CoderPad simulation 3 |
+| 21:20-21:35 | score; do not edit code yet |
+| 21:35-21:45 | apply Tuesday-leave gate |
+| 21:45-22:03 | one root-cause repair if needed |
+| 22:03 | preparation ends |
+| 22:30 | lights out |
+
+### Tuesday-leave gate
+
+Take Tuesday leave only if two or more are true after Monday's mock:
+
+1. No full 60-minute simulation has passed.
+2. Fewer than 8 Core-12 anchors are G1/G2.
+3. Three or more P/I/J failures remain unresolved.
+4. You still cannot produce one coherent medium solution plus tests in 40 minutes.
+5. Communication repeatedly includes unexplained silence over 45 seconds, coding before an invariant, or no adversarial test.
+
+One weak area means targeted Tuesday morning/evening work, not leave. Leave must buy a specific repair plan, not generic study time.
+
+---
+
+# 10. Tuesday, 8 September - selected by Monday's gate
+
+Do not combine the two versions.
+
+## Version A - normal office day, default
+
+| Time | Action |
+|---|---|
+| 06:30-06:45 | wake and wash |
+| 06:45-07:30 | 45-minute one-problem mock from Monday's weakest family |
+| 07:30-07:45 | score and one repair line |
+| 07:45-08:15 | breakfast/get ready |
+| 08:15-08:25 | A01, A03, A04, A24 once |
+| Office lunch | 10-minute trigger/invariant shuffle only |
+| 19:30-20:10 | dinner and decompress |
+| 20:10-21:10 | final CoderPad simulation 4 |
+| 21:10-21:28 | repair one root cause only |
+| 21:28-21:42 | Java reliability checklist |
+| 21:42-21:55 | laptop, charger, browser, camera, microphone, link, quiet room, hotspot |
+| 21:55 | all preparation ends |
+| 22:20 | lights out |
+
+## Version B - Tuesday leave, only if triggered
+
+| Time | Action |
+|---|---|
+| 07:00-07:45 | wake, breakfast, walk |
+| 07:45-08:45 | CoderPad simulation on the two highest-risk families |
+| 08:45-09:15 | score and break |
+| 09:15-09:33 | repair highest P/I failure |
+| 09:33-09:51 | closed-book retry |
+| 09:51-10:10 | break |
+| 10:10-10:28 | repair highest J/E/B/V failure |
+| 10:28-10:46 | closed-book retry |
+| 10:46-11:15 | walk/snack |
+| 11:15-12:15 | eight weakest Core-12 oral probes, seven minutes each |
+| 12:15-13:45 | lunch and rest |
+| 13:45-14:30 | one-problem mock on the last red family |
+| 14:30-15:00 | score and repair |
+| 15:00-16:00 | nap/walk/complete detachment |
+| 16:00-17:00 | final CoderPad simulation |
+| 17:00-17:30 | score; high-pressure coding ends |
+| 17:30-19:00 | exercise, shower, dinner |
+| 19:00-19:30 | mandatory Tier-A answers and recovery scripts |
+| 19:30-19:50 | Java reliability sheet |
+| 19:50-20:10 | interview setup test |
+| 20:10-20:30 | one optional red repair; otherwise stop |
 | 20:30 | all preparation ends |
 | 22:15 | lights out |
 
-Taking leave does not authorize eight hours of coding. Version B deliberately contains recovery blocks.
+Version B intentionally contains only two full mocks and one shorter problem. Leave is not permission to overtrain.
 
 ---
 
-# 11. Wednesday, 9 September — interview day
+# 11. Wednesday, 9 September - protect performance
 
-No new problems, articles, discussions, videos, system-design topics, or remaining-80 coverage.
+## Leave recommendation
 
-| Time | Work |
+Try to protect at least a half-day Wednesday now. This has higher expected value than pre-booking Tuesday leave because it removes commute, meeting, privacy, and setup risk immediately before a 15:00 interview.
+
+- If office or commute prevents a quiet, private, tested environment from 12:30-16:30, take Wednesday leave or half-day if feasible.
+- If you can work remotely and hard-block 12:30-16:30 without interruption, full leave is optional.
+- If only one leave day is possible, prefer Wednesday unless Monday's objective gate triggers Tuesday and Wednesday is already fully protected.
+
+## Interview-day calendar
+
+| Time | Action |
 |---|---|
-| 07:00–07:30 | wake, wash, water |
-| 07:30–08:00 | breakfast |
-| 08:00–08:20 | walk/prayer/quiet reset |
-| 08:20–08:38 | warm-up 1: easy familiar array/map problem |
-| 08:38–08:56 | warm-up 2: easy familiar tree/graph problem |
-| 08:56–09:10 | tests and complexity; close code |
-| 09:10–09:30 | speak A01, A03, A04, A24 once |
-| 09:30–12:00 | normal light day; no study |
-| 12:00–12:30 | lunch; familiar, not heavy |
-| 12:30–13:00 | shower/change; quiet room begins |
-| 13:00–13:15 | laptop power, charger, internet, backup hotspot, camera, microphone, browser, CoderPad familiarity |
-| 13:15–13:30 | calendar invite and meeting access; do not expose passcodes in notes/screenshare |
-| 13:30–13:50 | final Core-12 trigger scan only—no code |
-| 13:50–14:05 | speak opening and stuck/hint/bug scripts |
-| 14:05–14:25 | eyes closed or short walk; water |
-| 14:25–14:35 | washroom; phone on Do Not Disturb; close unrelated apps |
-| 14:35–14:45 | blank paper: clarify → baseline → invariant → code → test → complexity |
-| 14:45–14:50 | join link/open meeting environment |
-| 14:50–14:57 | breathing: inhale 4, hold 2, exhale 6; repeat |
-| 14:57–15:00 | sit still; say: “I do not need recognition. I need a correct next step.” |
-| 15:00–16:00 | interview |
-| 16:00–16:15 | write factual debrief only; no catastrophizing |
+| 07:00-07:30 | wake and wash |
+| 07:30-08:00 | breakfast |
+| 08:00-08:20 | walk/prayer |
+| 08:20-08:38 | easy familiar map/array warm-up |
+| 08:38-08:56 | easy familiar tree/graph warm-up |
+| 08:56-09:10 | test, complexity, close code |
+| 09:10-09:25 | A01, A03, A04, A24 once |
+| 09:25-12:00 | normal light morning; no study |
+| 12:00-12:30 | light familiar lunch |
+| 12:30-13:00 | shower/change; quiet-room boundary begins |
+| 13:00-13:15 | charger, internet, hotspot, camera, microphone, browser |
+| 13:15-13:30 | invitation/link check; do not expose passcodes on screen |
+| 13:30-13:50 | eight Core-12 trigger/invariant sentences; no code |
+| 13:50-14:05 | opening, stuck, hint, and failed-test scripts |
+| 14:05-14:25 | eyes closed or short walk |
+| 14:25-14:35 | washroom, water, Do Not Disturb, close unrelated apps |
+| 14:35-14:45 | blank paper: clarify -> baseline -> invariant -> code -> test -> complexity |
+| 14:45-14:50 | open/join interview environment |
+| 14:50-14:57 | inhale 4, hold 2, exhale 6; repeat |
+| 14:57-15:00 | “I do not need instant recognition. I need the next correct step.” |
+| 15:00-16:00 | interview |
+| 16:00-16:15 | factual debrief only; no catastrophic interpretation |
 
-### Exact interview behavior
+---
 
-When the problem appears:
+## 12. Exact CoderPad operating script
 
-> “I’ll restate it to confirm the contract, ask about the important bounds, then outline a correct baseline before optimizing.”
+### Opening
 
-Before coding:
+> “Before I code, I’ll restate the contract, clarify the important bounds, outline a correct baseline, and then optimize deliberately.”
 
-> “The repeated work is __. I can remove it with __. The invariant I need to preserve is __.”
+### Before optimization
 
-If stuck:
+> “The direct solution is __ with O(__). The repeated work is __. I can remove it by maintaining __. The invariant is __.”
 
-> “I have a correct O(__) baseline. The bottleneck is __. I’m checking whether __ can preserve the needed state more efficiently.”
+### While coding
 
-After a hint:
+> “This structure stores __. At this update, __ remains true.”
 
-> “That suggests __. Let me connect it to the invariant before changing the code.”
+Do not narrate punctuation or every keystroke.
 
-After a failing test:
+### If stuck
 
-> “The observed result is __ and I expected __. I’ll trace the boundary/state update before changing the algorithm.”
+> “I have a correct O(__) baseline. Its bottleneck is __. I’m checking whether __ can preserve the required state more efficiently.”
 
-At the end:
+### If given a hint
+
+> “That suggests __. Let me connect it to the invariant: __.”
+
+### If code fails
+
+> “For this input I expected __ and observed __. I’ll trace the boundary/state at the first divergence before changing the algorithm.”
+
+### If time is running out
+
+> “I’ll make the remaining logic precise: state is __, update is __, termination is __, tests are __, and complexity is __.”
+
+### Close
 
 > “Each element/state is processed __, so time is __. The auxiliary structures hold at most __, so space is __.”
 
 ---
 
-## 12. Eight-years-of-experience red-flag firewall
+## 13. Eight-year-experience red-flag firewall
 
-The interview does not require instant perfection. It does require senior engineering behavior under uncertainty.
+The interviewer does not need instant brilliance. They do need observable engineering discipline.
 
-| Red flag | What the interviewer may infer | Required replacement behavior |
-|---|---|---|
-| Silent coding | memorized pattern or weak collaboration | explain the contract and invariant before typing |
-| Jumping straight to optimal code | pattern recall without proof | give the correct baseline and name repeated work |
-| Basic Java thrashing | insufficient hands-on fluency | use boring collections and compile-safe idioms |
-| Only happy-path testing | weak production judgment | test normal, boundary, and adversarial inputs |
-| Wrong complexity stated confidently | shallow understanding | count operations and maximum auxiliary state aloud |
-| Rewriting randomly after a bug | poor debugging discipline | compare expected/actual, trace state, change one cause |
-| Becoming defensive after a hint | poor coachability | acknowledge it and reconnect it to the invariant |
-| Overengineering | cannot scope for the setting | solve the stated problem; mention production extensions afterward |
-| Buzzword dumping | breadth without depth | answer the asked question, then one trade-off and one failure mode |
-| Inflated ownership | trust risk | separate “I did,” “we did,” and “I would” exactly |
-| Invented metrics or internal details | judgment/confidentiality risk | use only verified, permitted facts; describe impact qualitatively |
-| Treating trade-offs as universal truths | weak VP judgment | state the assumption that makes the choice appropriate |
+| Avoid | Show instead |
+|---|---|
+| silent pattern dumping | clarify, baseline, bottleneck, invariant |
+| memorized code with no proof | explain why each discarded state cannot matter |
+| basic Java chaos | boring collections, safe arithmetic, small helpers |
+| happy-path-only testing | normal, boundary, adversarial |
+| confident wrong complexity | count operations and maximum live state |
+| random edits after failure | expected vs actual, first divergence, one causal change |
+| defensiveness after a hint | acknowledge, connect hint to invariant, continue |
+| overengineering the coding problem | solve stated scope; mention production extensions afterward |
+| buzzword-heavy senior answers | one decision, one trade-off, one failure mode, one proof |
+| inflated ownership | separate “I did,” “we did,” and “I would” |
+| invented scale/latency numbers | use verified permitted facts or qualitative impact |
+| claiming every repo as production experience | label projects as learning/reference implementations |
 
-### The five signals to deliberately show
-
-1. **Contract discipline:** clarify inputs, outputs, constraints, and ambiguity.
-2. **Correctness discipline:** state a baseline and an invariant.
-3. **Implementation discipline:** write simple Java, not a framework.
-4. **Operational discipline:** test boundaries and debug from evidence.
-5. **Leadership discipline:** take hints well, communicate trade-offs, and maintain honest ownership boundaries.
+Your resume already supplies senior credibility. The CoderPad task is to avoid subtracting from it through disorganized execution.
 
 ---
 
-## 13. End-of-day scorecards
-
-### Friday
-
-`Day-5 attempted __/15 | G1 __ | G2 __ | Y __ | R __ | top failure codes __ | sleep time __`
+## 14. Daily scorecards
 
 ### Saturday
 
-`Day-6 attempted __/15 | total 30 attempted __ | G1/G2 __ | Y __ | R __ | Highest Average mock __ | overflow __`
+`Blind mock verdict __ | top corrections __ | Goldman reps G/Y/R __ | Java blocker __ | sleep __`
 
 ### Sunday
 
-`Coverage __/30 | Core-12 green __/12 | mock P1 runnable minute __ | P2 approach minute __ | P2 runnable minute __ | silence breach Y/N | readiness points __/6`
+`Mock 1 pass __ | Mock 2 pass __ | Core-12 green __/12 | unresolved P/I/J __ | readiness __/6`
 
 ### Monday
 
-`Core-12 green __/12 | mock 2 pass/fail __ | P/I failures __ | J/E/B failures __ | Tuesday gate count __/4 | selected version A/B __`
+`Mock 3 pass __ | total passed simulations __ | Core-12 green __/12 | leave triggers __/5 | Tuesday A/B __`
 
 ### Tuesday
 
-`Final mock pass/fail __ | unresolved red count __ | setup verified Y/N | preparation stopped at __ | lights out __`
+`Final mock pass __ | unresolved red __ | setup verified __ | stopped at __ | lights out __`
 
 ---
 
-## 14. Final anti-anxiety contract
+## 15. Final coaching contract
 
-- The remaining 80 are not unfinished business for this interview; they are post-interview curriculum.
-- A red score is scheduling information, not a judgment about ability.
-- A failed mock is useful only when converted into one named repair.
-- Recognition is optional. A correct baseline plus deliberate optimization is enough to demonstrate engineering judgment.
-- A hint does not end the interview. Senior behavior is visible in how the hint is integrated.
-- One typo is not a readiness failure. Chaotic recovery is; use the debugging script.
-- No late-night rescue session is allowed.
-- On Wednesday, calm reasoning has higher ROI than one more recalled solution.
+- Exposure is not readiness; cold performance is readiness.
+- Count passed simulations and repaired failure modes, not unique problems.
+- The 90/170 plan can resume after Goldman.
+- Paid resources are useful only when they shorten a measured repair.
+- LLD/HLD repositories are depth insurance, not this round's primary event.
+- A hint is not failure. Poor integration of the hint is the failure.
+- One bug is not failure. Chaotic, silent debugging is the risk.
+- Sleep and physical recovery are scheduled work.
+- At every ambiguity, follow the next clock block and the most recent scorecard; do not redesign the week.
 
-**Final instruction:** work the next scheduled slot, score honestly, repair only measured gaps, and stop on time.
+**Success this week means:** by Tuesday night, produce at least two passing 60-minute simulations, keep at least eight Core-12 anchors green, eliminate blocking Java failures, speak the Tier-A story truthfully, and enter Wednesday rested with a protected interview environment.
