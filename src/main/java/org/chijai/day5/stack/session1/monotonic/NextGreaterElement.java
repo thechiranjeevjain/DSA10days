@@ -1,293 +1,463 @@
 package org.chijai.day5.stack.session1.monotonic;
 
-// =====================================================================================
-// NEXT GREATER ELEMENT II — INVARIANT-FIRST ALGORITHM CHAPTER
-// =====================================================================================
-//
-// ⚠️ SINGLE FILE · INTELLIJ-READY · SELF-CONTAINED · NO EXTERNAL LIBRARIES
-//
-// =====================================================================================
-
 import java.util.Arrays;
 import java.util.Stack;
 
+/**
+ * =====================================================================================
+ * NEXT GREATER / SMALLER ELEMENT FAMILY
+ * =====================================================================================
+ *
+ * Goal:
+ * Learn one monotonic-boundary family deeply enough to reconstruct:
+ *
+ *   Next Greater Right
+ *   Previous Greater
+ *   Next Smaller Right
+ *   Previous Smaller
+ *   Next Greater Element I
+ *   Next Greater Element II (circular)
+ *
+ * Core rule:
+ *
+ *   NEXT GREATER  -> decreasing candidates
+ *   NEXT SMALLER  -> increasing candidates
+ *
+ * The important NEXT vs PREVIOUS difference:
+ *
+ *   NEXT     -> popped element gets answered.
+ *   PREVIOUS -> surviving top answers current.
+ *
+ * =====================================================================================
+ */
 public class NextGreaterElement {
 
-    // =================================================================================
-    // 2️⃣ 📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
-    // =================================================================================
     /*
-     * 🔗 Link: https://leetcode.com/problems/next-greater-element-ii/
-     * 🧩 Difficulty: Medium
-     * 🏷️ Tags: Array, Stack, Monotonic Stack
+     * =================================================================================
+     * 1️⃣ FAMILY MAP — WHAT CHANGES?
+     * =================================================================================
+     *
+     * ===================================================================================================
+     * VARIANT                | DIRECTION | TARGET  | WHILE LOOP GOAL          | ANSWER COMES FROM
+     * ===================================================================================================
+     * Next Greater Right     | right     | greater | resolve waiting elements | current value
+     * Previous Greater       | left      | greater | remove useless candidates| surviving top
+     * Next Smaller Right     | right     | smaller | resolve waiting elements | current value
+     * Previous Smaller       | left      | smaller | remove useless candidates| surviving top
+     * NGE I                  | right     | greater | same as Next Greater     | value->answer map
+     * NGE II                 | circular  | greater | same as Next Greater     | 2n traversal
+     * ===================================================================================================
+     *
+     * Same family:
+     *   Daily Temperatures -> Next Greater + distance
+     *   Stock Span         -> Previous Greater + compressed count
+     *
+     * Name traps:
+     *   NGE III -> next permutation, NOT monotonic stack
+     *   NGE IV  -> second greater; multi-stage resolution
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 2️⃣ PRIMARY PROBLEM — NEXT GREATER ELEMENT II
+     * =================================================================================
+     *
+     * LeetCode 503
+     *
+     * Given a circular array nums, return the first STRICTLY greater value encountered
+     * after each element while traversing forward. If none exists, return -1.
+     *
+     * Circular means:
+     *
+     *   after nums[n - 1], traversal continues at nums[0].
+     *
+     * Example:
+     *
+     *   nums   = [1, 2, 1]
+     *   answer = [2,-1, 2]
+     *
+     * Visual:
+     *
+     *   index:    0   1   2
+     *   nums:    [1,  2,  1]
+     *              \      |
+     *               > 2   | wrap
+     *                      v
+     *                     2
+     *
+     * For index 2:
+     *   nothing greater exists to its physical right,
+     *   so circular traversal wraps and finds 2 at index 1.
+     *
+     * Brute force:
+     *   For every index, scan up to n future positions -> O(n^2).
+     *
+     * We want to avoid repeatedly rescanning elements that are still waiting
+     * for their first greater value.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 3️⃣ CORE MENTAL MODEL + INVARIANT
+     * =================================================================================
+     *
+     * Stack = WAITING ROOM of unresolved indices.
+     *
+     * Each waiting index is saying:
+     *
+     *   "I have not yet seen my first greater value."
+     *
+     * When current arrives:
+     *
+     *   while current > waitingTop:
+     *       current is the answer for waitingTop
+     *       pop and resolve it
+     *
+     *   push current
+     *
+     * Invariant:
+     *
+     *   Waiting values are monotonically decreasing from bottom -> top.
+     *
+     * Why?
+     *
+     *   Any smaller waiting value is popped as soon as a greater current value arrives.
+     *
+     * Why the first greater is guaranteed:
+     *
+     *   We scan in traversal order.
+     *   The first current value that can pop an unresolved index is therefore
+     *   the first strictly greater value encountered after that index.
+     *
+     * Strictly greater matters:
+     *
+     *   use >
+     *   not >=
+     *
+     * Equal values do NOT resolve each other.
+     *
+     * =================================================================================
+     */
+
+
+
+    /**
+     * ============================================================================
+     * DEFERRED RESOLUTION PATTERN — MONOTONIC STACK
+     * ============================================================================
+     *
+     * Mental Model
+     * ------------
+     *
+     * Stack = Waiting Room of unresolved elements.
+     *
+     * Every incoming element follows the same lifecycle:
+     *
+     *                      Incoming Element
+     *                             │
+     *                             ▼
+     *                 Can I resolve someone?
+     *                       /         \
+     *                     YES          NO
+     *                      │            │
+     *             Resolve & Remove      │
+     *                      │            │
+     *                Keep checking      │
+     *                      │            │
+     *                 No one left? ◄────┘
+     *                      │
+     *                      ▼
+     *             Join the Waiting Room
+     *
+     *
+     * Generic Template
+     * ----------------
+     *
+     * Stack<Element> waiting = new Stack<>();
+     *
+     * for (each incomingElement) {
+     *
+     *     while (!waiting.isEmpty()
+     *             && canResolve(incomingElement, waiting.peek())) {
+     *
+     *         resolve(incomingElement, waiting.pop());
+     *     }
+     *
+     *     waiting.push(incomingElement);
+     * }
+     *
+     *
+     * Customize Only
+     * --------------
+     *
+     * 1. Who enters the waiting room?
+     * 2. What are they waiting for?
+     * 3. When can current resolve them?
+     * 4. How is the answer recorded?
+     *
+     *
+     * ============================================================================
+     * THIS PROBLEM — NEXT GREATER
+     * ============================================================================
+     *
+     * Waiting Room  : indices whose Next Greater Element is unknown
+     *
+     * Waiting For   : first strictly greater value to their right
+     *
+     * Resolve When  :
+     *     nums[current] > nums[waiting.peek()]
+     *
+     * Record Answer :
+     *     answer[unresolved] = nums[current]
+     *
+     * ============================================================================
+     *
+     * Boundary:
+     *
+     * This template fits NEXT problems directly:
+     *
+     *   current arrives
+     *   -> resolves OLD waiting elements
+     *   -> popped element gets answered
+     *
+     * PREVIOUS problems are slightly different:
+     *
+     *   current arrives
+     *   -> filters useless old candidates
+     *   -> surviving top answers CURRENT
+     *
+     * ============================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * ⭐ UNSEEN PROBLEM DECODER — SEE THE STRUCTURE BEFORE CODING
+     * =================================================================================
+     *
+     * Do NOT begin with:
+     *
+     *   "Which LeetCode problem does this resemble?"
+     *
+     * Begin with:
+     *
+     *   "Who needs an answer, where can that answer come from,
+     *    and what happens to candidates that can no longer matter?"
+     *
      *
      * -------------------------------------------------------------------------
-     * Given a circular integer array nums (i.e., the next element of nums[nums.length - 1]
-     * is nums[0]), return the next greater number for every element in nums.
+     * STEP 1 — WHO NEEDS THE ANSWER?
+     * -------------------------------------------------------------------------
      *
-     * The next greater number of a number x is the first greater number to its
-     * traversing-order next in the array, which means you could search circularly
-     * to find its next greater number. If it doesn't exist, return -1 for this number.
+     * Does CURRENT need an answer from the past?
+     *
+     *   -> PREVIOUS
+     *
+     * Are OLD elements waiting for an answer from the future?
+     *
+     *   -> NEXT
+     *
      *
      * -------------------------------------------------------------------------
-     * Example 1:
+     * THE MENTAL IMAGE TO LOCK
+     * -------------------------------------------------------------------------
      *
-     * Input: nums = [1,2,1]
-     * Output: [2,-1,2]
+     * NEXT
+     * ================================================================
      *
-     * Explanation:
-     * The first 1's next greater number is 2;
-     * The number 2 can't find next greater number.
-     * The second 1's next greater number needs to search circularly, which is also 2.
+     *           FUTURE
+     *             ↓
+     *
+     *  [old] [old] [old]       CURRENT
+     *    ?     ?     ?            |
+     *    |     |     |            |
+     *    +-----+-----+<-----------+
+     *           current answers them
+     *
+     *  POP = ANSWER
+     *
+     *  answer[popped] = current
+     *
+     *
+     * PREVIOUS
+     * ================================================================
+     *
+     *           PAST
+     *            ↓
+     *
+     *  [candidate] [candidate] [candidate] <- CURRENT
+     *                             |
+     *                    remove useless ones
+     *                             |
+     *                             v
+     *                     SURVIVING TOP
+     *                             |
+     *                             v
+     *                      answers current
+     *
+     *  POP = FILTER
+     *
+     *  answer[current] = survivor
+     *
+     *
+     * RECALL:
+     *
+     *   NEXT     -> old waits; current resolves; POPPED gets answer.
+     *
+     *   PREVIOUS -> current asks; old candidates are filtered;
+     *               SURVIVOR gives answer.
+     *
      *
      * -------------------------------------------------------------------------
-     * Example 2:
+     * STEP 2 — WHAT RELATION?
+     * -------------------------------------------------------------------------
      *
-     * Input: nums = [1,2,3,4,3]
-     * Output: [2,3,4,-1,4]
+     * GREATER?
+     *
+     *   -> keep decreasing candidates
+     *
+     * SMALLER?
+     *
+     *   -> keep increasing candidates
+     *
      *
      * -------------------------------------------------------------------------
-     * Constraints:
+     * STEP 3 — CAN A CANDIDATE BE DISCARDED FOREVER?
+     * -------------------------------------------------------------------------
      *
-     * 1 <= nums.length <= 10^4
-     * -10^9 <= nums[i] <= 10^9
+     * Ask:
+     *
+     *   "Once current defeats this candidate,
+     *    can that candidate ever matter again?"
+     *
+     * If NO:
+     *
+     *   permanent domination exists
+     *   -> monotonic structure is likely
+     *
+     * If candidates can expire because a window moves:
+     *
+     *   -> monotonic DEQUE, not plain stack
+     *
+     * If elements can be skipped arbitrarily:
+     *
+     *   -> likely subsequence / DP territory
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 4 — WHAT MUST THE ANSWER STORE?
+     * -------------------------------------------------------------------------
+     *
+     * The pattern may stay identical while only the payload changes:
+     *
+     *   value    -> answer[old] = nums[current]
+     *
+     *   index    -> answer[old] = current
+     *
+     *   distance -> answer[old] = current - old
+     *
+     *   span     -> compress count with the stack entry
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 5 — IS THERE ONLY A TRAVERSAL MODIFIER?
+     * -------------------------------------------------------------------------
+     *
+     * Normal:
+     *
+     *   n visits
+     *
+     * Circular:
+     *
+     *   2n visits
+     *   current = visit % n
+     *
+     * Direction reversed:
+     *
+     *   traversal changes
+     *
+     * The core invariant may remain unchanged.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * 10-SECOND DECISION TREE
+     * -------------------------------------------------------------------------
+     *
+     *                     RANDOM ARRAY PROBLEM
+     *                              |
+     *                              v
+     *                Directional greater/smaller?
+     *                       /              \
+     *                     NO                YES
+     *                     |                  |
+     *                other family           v
+     *                                NEXT or PREVIOUS?
+     *                                 /            \
+     *                              NEXT            PREVIOUS
+     *                               |                 |
+     *                          old waits         current asks
+     *                               |                 |
+     *                         pop = answer       pop = filter
+     *                               |                 |
+     *                        GREATER / SMALLER
+     *                          /          \
+     *                    decreasing     increasing
+     *                              |
+     *                              v
+     *                   What is the payload?
+     *                 value/index/distance/span
+     *                              |
+     *                              v
+     *                    Traversal modifier?
+     *                    normal/circular/etc.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * RANDOM-PROBLEM WORKSHEET
+     * -------------------------------------------------------------------------
+     *
+     * Before writing code, fill only this:
+     *
+     *   WHO needs the answer?
+     *       current / old unresolved elements
+     *
+     *   WHERE is the answer?
+     *       past / future
+     *
+     *   RELATION?
+     *       greater / smaller
+     *
+     *   WHAT DOES POP MEAN?
+     *       resolve / filter
+     *
+     *   WHO GETS ANSWERED?
+     *       popped / current
+     *
+     *   PAYLOAD?
+     *       value / index / distance / span
+     *
+     *   MODIFIER?
+     *       circular / reversed direction / window expiry / none
+     *
+     *
+     * If these seven lines are clear, code should feel mechanical.
+     *
+     * =================================================================================
      */
-    // =================================================================================
 
-
-    // =================================================================================
-    // 3️⃣ 🔵 CORE PATTERN OVERVIEW (INVARIANT-FIRST)
-    // =================================================================================
     /*
-     * 🔵 Pattern Name:
-     * Monotonic Decreasing Stack (Next Greater Element Pattern)
-     *
-     * 🔵 Problem Archetype:
-     * For each index, find the first future element (in traversal order)
-     * that is strictly greater.
-     *
-     * 🟢 Core Invariant (MANDATORY):
-     * The stack always stores indices of elements in strictly decreasing
-     * value order, and none of them has yet found a valid next greater element.
-     *
-     * 🟡 Why this invariant works:
-     * If a new element is greater than the stack top, it is the FIRST
-     * greater element encountered — anything in between was smaller.
-     *
-     * 🔵 When this pattern applies:
-     * - "Next greater / smaller"
-     * - One-directional discovery
-     * - Local future dominance
-     *
-     * 🧭 Pattern Recognition Signals:
-     * - Circular or linear scan
-     * - First greater to the right
-     * - Brute force is O(n²)
-     *
-     * 🔵 Difference from similar patterns:
-     * - Sliding window → window invariant, not dominance
-     * - Two pointers → positional narrowing, not ordering
+     * =================================================================================
+     * 5️⃣ PRIMARY IMPLEMENTATION — NGE II
+     * =================================================================================
      */
-    // =================================================================================
-
-
-    // =================================================================================
-    // 4️⃣ 🟢 MENTAL MODEL & INVARIANTS (CANONICAL)
-    // =================================================================================
-    /*
-     * 🧠 Mental Model:
-     * Walk forward while carrying unresolved elements behind you.
-     * When a bigger number appears, it resolves all smaller waiting ones.
-     *
-     * 🟢 Invariants:
-     * 1. Stack indices map to values in strictly decreasing order.
-     * 2. Every index in the stack has NOT yet found its next greater element.
-     * 3. Once popped, an index is permanently resolved.
-     *
-     * 🟢 State Representation:
-     * - stack: unresolved indices
-     * - answer[i]: next greater element for i or -1
-     *
-     * 🟢 Allowed Moves:
-     * - Push current index if unresolved
-     * - Pop while current value > stack top value
-     *
-     * 🔴 Forbidden Moves:
-     * - Pushing without popping smaller values
-     * - Resolving an index twice
-     *
-     * 🟡 Termination Logic:
-     * Each index is pushed once and popped once → finite.
-     *
-     * 🔴 Why alternatives fail:
-     * Brute force ignores dominance invariant → redundant scanning.
-     */
-    // =================================================================================
-
-
-    // =================================================================================
-    // 5️⃣ 🔴 WHY THE NAIVE / WRONG SOLUTION FAILS
-    // =================================================================================
-    /*
-     * ❌ Naive Approach:
-     * For each index, scan forward (circularly) until a greater element is found.
-     *
-     * Why it seems correct:
-     * - Direct translation of the problem statement
-     *
-     * Why it fails:
-     * - Violates dominance invariant
-     * - Re-scans same elements repeatedly
-     *
-     * 🔴 Invariant Violation:
-     * No memory of unresolved elements.
-     *
-     * 🧪 Minimal Counterexample:
-     * nums = [5,4,3,2,1]
-     * → Each element scans entire array → O(n²)
-     *
-     * 🎯 Interview Trap:
-     * Circular array distracts candidates into modulo-heavy brute force.
-     */
-    // =================================================================================
-
-
-    // =================================================================================
-    // 6️⃣ PRIMARY PROBLEM — SOLUTION CLASSES
-    // =================================================================================
-
-    // -------------------------------------------------------------------------
-    // 🔴 BRUTE FORCE
-    // -------------------------------------------------------------------------
-    static class BruteForce {
-        /*
-         * Core Idea:
-         * For each index, scan forward up to n elements circularly.
-         *
-         * Invariant Enforced:
-         * None globally.
-         *
-         * Time: O(n²)
-         * Space: O(1)
-         * Interview Preference: ❌
-         */
-        static int[] nextGreaterElements(int[] nums) {
-            int n = nums.length;
-            int[] answer = new int[n];
-
-            for (int i = 0; i < n; i++) {
-                answer[i] = -1;
-                for (int step = 1; step < n; step++) {
-                    int nextIndex = (i + step) % n;
-                    if (nums[nextIndex] > nums[i]) {
-                        answer[i] = nums[nextIndex];
-                        break;
-                    }
-                }
-            }
-            return answer;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // 🟡 IMPROVED (DOUBLE PASS, STILL STACK-LESS)
-    // -------------------------------------------------------------------------
-    static class Improved {
-        /*
-         * Core Idea:
-         * Duplicate traversal range to simulate circularity.
-         *
-         * Invariant:
-         * Partial ordering but no dominance memory.
-         *
-         * Time: O(n²)
-         * Space: O(1)
-         * Interview Preference: ❌
-         */
-        static int[] nextGreaterElements(int[] nums) {
-            int n = nums.length;
-            int[] answer = new int[n];
-
-            for (int i = 0; i < n; i++) {
-                answer[i] = -1;
-                for (int j = i + 1; j < i + n; j++) {
-                    if (nums[j % n] > nums[i]) {
-                        answer[i] = nums[j % n];
-                        break;
-                    }
-                }
-            }
-            return answer;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // 🟢 OPTIMAL (MONOTONIC STACK · INTERVIEW-PREFERRED)
-    // -------------------------------------------------------------------------
     static class Optimal {
-        /**
-         * ============================================================================
-         * DEFERRED RESOLUTION PATTERN (Monotonic Stack)
-         * ============================================================================
-         *
-         * Mental Model
-         * ------------
-         * Stack = Waiting Room of unresolved elements.
-         *
-         * Every incoming element follows the same lifecycle:
-         *
-         *                      Incoming Element
-         *                             │
-         *                             ▼
-         *                 Can I resolve someone?
-         *                       /         \
-         *                     Yes          No
-         *                      │            │
-         *             Resolve & Remove      │
-         *                      │            │
-         *                Keep checking      │
-         *                      │            │
-         *                 No one left? ◄────┘
-         *                      │
-         *                      ▼
-         *             Join the Waiting Room
-         *
-         * Generic Template
-         * ----------------
-         *
-         * Stack<Element> waiting = new Stack<>();
-         *
-         * for (each incomingElement) {
-         *
-         *     while (!waiting.isEmpty()
-         *             && canResolve(incomingElement, waiting.peek())) {
-         *
-         *         resolve(incomingElement, waiting.pop());
-         *     }
-         *
-         *     waiting.push(incomingElement);
-         * }
-         *
-         * Customize Only
-         * --------------
-         * 1. Who enters the waiting room?
-         * 2. What are they waiting for?
-         * 3. When can the current element resolve them?
-         * 4. How is the resolution recorded?
-         *
-         * ============================================================================
-         * THIS PROBLEM
-         * ============================================================================
-         *
-         * Waiting Room  : Indices whose Next Greater Element is unknown.
-         * Waiting For   : First greater element to their right (circular).
-         * Resolve When  : nums[current] > nums[waiting.peek()]
-         * Record Answer : answer[unresolved] = nums[current]
-         *
-         * Time  : O(n)
-         * Space : O(n)
-         * ============================================================================
-         */
+
         static int[] nextGreaterElements(int[] nums) {
 
             int n = nums.length;
@@ -303,7 +473,7 @@ public class NextGreaterElement {
 
                 int current = visit % n;
 
-                // Current element resolves everyone it can.
+                // NEXT: current resolves popped waiting indices.
                 while (!waiting.isEmpty()
                         && nums[current] > nums[waiting.peek()]) {
 
@@ -311,7 +481,6 @@ public class NextGreaterElement {
                     answer[unresolved] = nums[current];
                 }
 
-                // Current element joins the waiting room.
                 waiting.push(current);
             }
 
@@ -319,61 +488,122 @@ public class NextGreaterElement {
         }
     }
 
-    // =================================================================================
-    // 7️⃣ 🟣 INTERVIEW ARTICULATION (INVARIANT-LED)
-    // =================================================================================
+
     /*
-     * I maintain a stack of indices whose next greater element is unknown.
-     * The stack is strictly decreasing in value.
+     * =================================================================================
+     * 5️⃣ VISUAL DRY RUN — NGE II [1,2,1]
+     * =================================================================================
      *
-     * When I see a larger number, it resolves all smaller waiting elements.
-     * Circularity is handled by scanning twice.
+     * answer starts:
      *
-     * Correctness:
-     * First greater encountered is guaranteed by monotonicity.
+     *   [-1,-1,-1]
      *
-     * If logic changes:
-     * - Removing monotonicity → wrong resolutions
+     * waiting is shown bottom -> top.
      *
-     * In-place: ❌ (needs stack)
-     * Streaming: ❌ (needs future knowledge)
+     * -------------------------------------------------------------------------
+     * visit 0 -> current index 0 -> value 1
      *
-     * Not suitable when:
-     * - You need k-th greater
-     * - Bidirectional constraints exist
+     * waiting empty
+     * push 0
+     *
+     * waiting = [0]
+     *
+     * -------------------------------------------------------------------------
+     * visit 1 -> current index 1 -> value 2
+     *
+     * 2 > nums[0]=1
+     *
+     * pop 0
+     * answer[0] = 2
+     *
+     * push 1
+     *
+     * waiting = [1]
+     * answer  = [2,-1,-1]
+     *
+     * -------------------------------------------------------------------------
+     * visit 2 -> current index 2 -> value 1
+     *
+     * 1 > nums[1]=2 ? NO
+     *
+     * push 2
+     *
+     * waiting = [1,2]
+     *
+     * -------------------------------------------------------------------------
+     * SECOND TRAVERSAL = circular replay
+     *
+     * visit 3 -> current 0 -> value 1
+     *
+     * 1 > nums[2]=1 ? NO
+     * push 0
+     *
+     * waiting = [1,2,0]
+     *
+     * -------------------------------------------------------------------------
+     * visit 4 -> current 1 -> value 2
+     *
+     * 2 > nums[0]=1
+     *   pop 0
+     *   answer[0] = 2
+     *
+     * 2 > nums[2]=1
+     *   pop 2
+     *   answer[2] = 2
+     *
+     * 2 > nums[1]=2 ? NO
+     *
+     * final answer already:
+     *
+     *   [2,-1,2]
+     *
+     * -------------------------------------------------------------------------
+     * Why pushing on both passes is still O(n):
+     *
+     *   visits           = 2n
+     *   pushed entries   <= 2n
+     *   each pushed occurrence pops at most once
+     *
+     *   => total stack work O(n)
+     *
+     * =================================================================================
      */
-    // =================================================================================
 
 
-    // =================================================================================
-    // 8️⃣ 🔄 VARIATIONS & TWEAKS
-    // =================================================================================
     /*
-     * 🟢 Invariant-preserving:
-     * - Next smaller element → flip comparison
+     * =================================================================================
+     * 6️⃣ NEXT GREATER ELEMENT I — SAME ENGINE, MAP WRAPPER
+     * =================================================================================
      *
-     * 🟡 Reasoning-only:
-     * - Use values instead of indices if no duplicates
+     * LeetCode 496
      *
-     * 🔴 Pattern-break:
-     * - Distance to next greater → invariant insufficient alone
+     * nums1 is a subset of nums2 and nums2 values are unique.
+     * For each nums1 value, return its next greater value in nums2.
+     *
+     * Example:
+     *
+     *   nums1 = [4,1,2]
+     *   nums2 = [1,3,4,2]
+     *
+     * Build next-greater relationships from nums2:
+     *
+     *   1 -> 3
+     *   3 -> 4
+     *   4 -> -1
+     *   2 -> -1
+     *
+     * Result:
+     *
+     *   [-1,3,-1]
+     *
+     * Difference from generic NGE:
+     *
+     *   values are unique, so value -> nextGreater can be stored in a Map.
+     *
+     * =================================================================================
      */
-    // =================================================================================
-
-
-    // =================================================================================
-    // 9️⃣ ⚫ REINFORCEMENT PROBLEMS (SAME INVARIANT)
-    // =================================================================================
-
-    // -------------------------------------------------------------------------
-    // ⚫ Reinforcement 1: Next Greater Element I
-    // -------------------------------------------------------------------------
     static class NextGreaterElementI {
-        /*
-         * Same invariant:
-         * Monotonic decreasing stack.
-         * boths nums1 and nums2 are non-circular and unique
-         */
+
         static int[] nextGreaterElement(int[] nums1, int[] nums2) {
             java.util.Map<Integer, Integer> nextMap = new java.util.HashMap<>();
             java.util.Deque<Integer> stack = new java.util.ArrayDeque<>();
@@ -389,80 +619,375 @@ public class NextGreaterElement {
             for (int i = 0; i < nums1.length; i++) {
                 answer[i] = nextMap.getOrDefault(nums1[i], -1);
             }
+
             return answer;
         }
     }
 
-    // =================================================================================
-    // 10️⃣ 🧩 RELATED PROBLEMS (MINI CHAPTER)
-    // =================================================================================
+
     /*
-     * Daily Temperatures:
-     * Modified invariant (distance tracking)
+     * =================================================================================
+     * 7️⃣ GENERIC NEXT GREATER RIGHT
+     * =================================================================================
      *
-     * Trapping Rain Water:
-     * Invariant insufficient → needs two-sided boundary
+     * nums = [2,1,2,4,3]
+     *
+     * answer = [4,2,4,-1,-1]
+     *
+     * NEXT semantics:
+     *
+     *   while loop RESOLVES old waiting indices.
+     *   Every pop produces an answer.
+     *
+     * =================================================================================
      */
-    // =================================================================================
+    static class NextGreaterRight {
 
+        static int[] solve(int[] nums) {
+            int[] answer = new int[nums.length];
+            Arrays.fill(answer, -1);
 
-    // =================================================================================
-    // 11️⃣ 🟢 LEARNING VERIFICATION
-    // =================================================================================
-    /*
-     * Must recall:
-     * - Stack is decreasing
-     * - Pop resolves answer
-     *
-     * Debug skills:
-     * - Missing second pass
-     * - Wrong push condition
-     *
-     * Detection:
-     * "first greater to the right"
-     */
-    // =================================================================================
+            Stack<Integer> waiting = new Stack<>();
 
+            for (int current = 0; current < nums.length; current++) {
+                while (!waiting.isEmpty()
+                        && nums[current] > nums[waiting.peek()]) {
 
-    // =================================================================================
-    // 12️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS
-    // =================================================================================
-    public static void main(String[] args) {
-        test(new int[]{1, 2, 1}, new int[]{2, -1, 2});
-        test(new int[]{1, 2, 3, 4, 3}, new int[]{2, 3, 4, -1, 4});
-        test(new int[]{5, 4, 3, 2, 1}, new int[]{-1,5,5,5,5});
-        test(new int[]{2, 2, 2}, new int[]{-1, -1, -1});
-    }
+                    int unresolved = waiting.pop();
+                    answer[unresolved] = nums[current];
+                }
 
-    private static void test(int[] input, int[] expected) {
-        int[] actual = Optimal.nextGreaterElements(input);
-        if (!java.util.Arrays.equals(actual, expected)) {
-            throw new AssertionError(
-                    "Expected " + java.util.Arrays.toString(expected)
-                            + " but got " + java.util.Arrays.toString(actual));
+                waiting.push(current);
+            }
+
+            return answer;
         }
     }
 
-    // =================================================================================
-    // 13️⃣ 🧠 CHAPTER COMPLETION CHECKLIST (WITH ANSWERS)
-    // =================================================================================
+
     /*
-     * Invariant clarity → Stack holds unresolved decreasing values
-     * Search target clarity → First greater to the right (circular)
-     * Discard logic → Pop smaller values
-     * Termination guarantee → Each index pushed/popped once
-     * Failure awareness → Brute force O(n²)
-     * Edge-case confidence → All decreasing, duplicates
-     * Variant readiness → Next smaller, non-circular
-     * Pattern boundary → Multi-directional constraints
+     * =================================================================================
+     * 8️⃣ GENERIC PREVIOUS GREATER
+     * =================================================================================
+     *
+     * nums = [10,4,2,20,40,12,30]
+     *
+     * answer = [-1,10,4,-1,-1,40,40]
+     *
+     * PREVIOUS semantics:
+     *
+     *   while loop only FILTERS useless candidates.
+     *   Pops do NOT produce answers.
+     *
+     *   After filtering:
+     *   surviving top = nearest previous greater.
+     *
+     * =================================================================================
+     */
+    static class PreviousGreater {
+
+        static int[] solve(int[] nums) {
+            int[] answer = new int[nums.length];
+            Arrays.fill(answer, -1);
+
+            Stack<Integer> stack = new Stack<>();
+
+            for (int i = 0; i < nums.length; i++) {
+
+                // PREVIOUS: remove candidates that cannot answer current.
+                while (!stack.isEmpty()
+                        && nums[stack.peek()] <= nums[i]) {
+                    stack.pop();
+                }
+
+                // Survivor answers CURRENT.
+                if (!stack.isEmpty()) {
+                    answer[i] = nums[stack.peek()];
+                }
+
+                stack.push(i);
+            }
+
+            return answer;
+        }
+    }
+
+
+    /*
+     * =================================================================================
+     * 9️⃣ NEXT vs PREVIOUS — THE KEY SEMANTIC DIFFERENCE
+     * =================================================================================
+     *
+     * NEXT:
+     *
+     *   while (...) {
+     *       int unresolved = waiting.pop();
+     *       answer[unresolved] = nums[current];
+     *   }
+     *
+     *   while = RESOLUTION
+     *   popped element gets answered
+     *
+     * PREVIOUS:
+     *
+     *   while (...) {
+     *       stack.pop();
+     *   }
+     *
+     *   answer[current] = stack.peek()
+     *
+     *   while = FILTERING
+     *   survivor answers current
+     *
+     * RECALL:
+     *
+     *   NEXT     -> POPPED gets answer.
+     *   PREVIOUS -> SURVIVOR gives answer.
+     *
+     * =================================================================================
      */
 
-    // 🧘 FINAL CLOSURE STATEMENT
+
     /*
-     * For this problem, the invariant is a decreasing stack of unresolved indices.
-     * The answer represents the first future greater value.
-     * The search terminates because each index is resolved once.
-     * I can re-derive this solution under pressure.
-     * This chapter is complete.
+     * =================================================================================
+     * 🔟 NEXT SMALLER RIGHT
+     * =================================================================================
+     *
+     * Same NEXT engine.
+     * Flip greater -> smaller.
+     *
+     * nums = [4,8,5,2,25]
+     *
+     * answer = [2,5,2,-1,-1]
+     *
+     * NEXT GREATER -> decreasing candidates
+     * NEXT SMALLER -> increasing candidates
+     *
+     * =================================================================================
      */
+    static class NextSmallerRight {
+
+        static int[] solve(int[] nums) {
+            int[] answer = new int[nums.length];
+            Arrays.fill(answer, -1);
+
+            Stack<Integer> waiting = new Stack<>();
+
+            for (int current = 0; current < nums.length; current++) {
+                while (!waiting.isEmpty()
+                        && nums[current] < nums[waiting.peek()]) {
+
+                    int unresolved = waiting.pop();
+                    answer[unresolved] = nums[current];
+                }
+
+                waiting.push(current);
+            }
+
+            return answer;
+        }
+    }
+
+
+    /*
+     * =================================================================================
+     * 1️⃣1️⃣ PREVIOUS SMALLER
+     * =================================================================================
+     *
+     * Same PREVIOUS engine.
+     * Flip greater -> smaller.
+     *
+     * nums = [4,5,2,10,8]
+     *
+     * answer = [-1,4,-1,2,2]
+     *
+     * =================================================================================
+     */
+    static class PreviousSmaller {
+
+        static int[] solve(int[] nums) {
+            int[] answer = new int[nums.length];
+            Arrays.fill(answer, -1);
+
+            Stack<Integer> stack = new Stack<>();
+
+            for (int i = 0; i < nums.length; i++) {
+
+                while (!stack.isEmpty()
+                        && nums[stack.peek()] >= nums[i]) {
+                    stack.pop();
+                }
+
+                if (!stack.isEmpty()) {
+                    answer[i] = nums[stack.peek()];
+                }
+
+                stack.push(i);
+            }
+
+            return answer;
+        }
+    }
+
+
+    /*
+     * =================================================================================
+     * 1️⃣2️⃣ ± DELTA — RECOGNITION BOUNDARIES
+     * =================================================================================
+     *
+     * +Δ SAME FAMILY
+     *
+     * Daily Temperatures
+     *   Next Greater + store indices + answer distance.
+     *
+     * Stock Span
+     *   Previous Greater + compressed count/span.
+     *
+     * Next Smaller
+     *   Flip comparison; decreasing -> increasing candidates.
+     *
+     * -------------------------------------------------------------------------
+     * -Δ PATTERN BREAKS
+     *
+     * NGE III
+     *   "next greater number using same digits"
+     *   -> Next Permutation.
+     *
+     * LIS
+     *   can skip elements; first greater is not a hard boundary
+     *   -> DP / binary search.
+     *
+     * Sliding Window Maximum
+     *   candidates expire by age
+     *   -> Monotonic Deque.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣3️⃣ COMPLEXITY + INTERVIEW RECALL
+     * =================================================================================
+     *
+     * Linear variants:
+     *
+     *   each index pushes once
+     *   each index pops at most once
+     *   -> O(n) time, O(n) space
+     *
+     * Circular NGE II:
+     *
+     *   2n visits
+     *   <= 2n pushed occurrences
+     *   each occurrence pops at most once
+     *   -> O(n) time, O(n) space
+     *
+     * 30-second reconstruction:
+     *
+     *   NEXT GREATER:
+     *       decreasing waiting stack
+     *       while current > top:
+     *           answer[pop] = current
+     *
+     *   NEXT SMALLER:
+     *       flip > to <
+     *
+     *   PREVIOUS:
+     *       pop impossible candidates
+     *       survivor = answer for current
+     *
+     *   CIRCULAR:
+     *       traverse 2n with visit % n
+     *
+     * Interview sentence:
+     *
+     *   "The stack stores unresolved monotonic candidates. For NEXT problems,
+     *    current resolves popped indices. For PREVIOUS problems, current removes
+     *    invalid candidates and the surviving top answers current. Each pushed
+     *    entry can be popped at most once, so the total work is linear."
+     *
+     * =================================================================================
+     */
+
+
+    // =================================================================================
+    // 1️⃣4️⃣ SELF-VERIFYING TESTS
+    // =================================================================================
+
+    public static void main(String[] args) {
+
+        assertArrayEquals(
+                new int[]{2, -1, 2},
+                Optimal.nextGreaterElements(new int[]{1, 2, 1}),
+                "NGE II [1,2,1]"
+        );
+
+        assertArrayEquals(
+                new int[]{2, 3, 4, -1, 4},
+                Optimal.nextGreaterElements(new int[]{1, 2, 3, 4, 3}),
+                "NGE II [1,2,3,4,3]"
+        );
+
+        assertArrayEquals(
+                new int[]{-1, 5, 5, 5, 5},
+                Optimal.nextGreaterElements(new int[]{5, 4, 3, 2, 1}),
+                "NGE II decreasing"
+        );
+
+        assertArrayEquals(
+                new int[]{-1, -1, -1},
+                Optimal.nextGreaterElements(new int[]{2, 2, 2}),
+                "NGE II equal"
+        );
+
+        assertArrayEquals(
+                new int[]{-1, 3, -1},
+                NextGreaterElementI.nextGreaterElement(
+                        new int[]{4, 1, 2},
+                        new int[]{1, 3, 4, 2}
+                ),
+                "NGE I"
+        );
+
+        assertArrayEquals(
+                new int[]{4, 2, 4, -1, -1},
+                NextGreaterRight.solve(new int[]{2, 1, 2, 4, 3}),
+                "Next Greater Right"
+        );
+
+        assertArrayEquals(
+                new int[]{-1, 10, 4, -1, -1, 40, 40},
+                PreviousGreater.solve(new int[]{10, 4, 2, 20, 40, 12, 30}),
+                "Previous Greater"
+        );
+
+        assertArrayEquals(
+                new int[]{2, 5, 2, -1, -1},
+                NextSmallerRight.solve(new int[]{4, 8, 5, 2, 25}),
+                "Next Smaller Right"
+        );
+
+        assertArrayEquals(
+                new int[]{-1, 4, -1, 2, 2},
+                PreviousSmaller.solve(new int[]{4, 5, 2, 10, 8}),
+                "Previous Smaller"
+        );
+
+        System.out.println("ALL TESTS PASSED");
+    }
+
+    private static void assertArrayEquals(
+            int[] expected,
+            int[] actual,
+            String name) {
+
+        if (!Arrays.equals(expected, actual)) {
+            throw new AssertionError(
+                    name
+                            + " expected=" + Arrays.toString(expected)
+                            + " actual=" + Arrays.toString(actual)
+            );
+        }
+    }
 }

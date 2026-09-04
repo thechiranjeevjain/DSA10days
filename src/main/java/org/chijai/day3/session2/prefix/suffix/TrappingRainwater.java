@@ -1,416 +1,278 @@
 package org.chijai.day3.session2.prefix.suffix;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+/**
+ * =====================================================================================
+ * TRAPPING RAIN WATER — PREFIX / SUFFIX BOUNDARY SUMMARY
+ * =====================================================================================
+ *
+ * Primary recognition:
+ *
+ *      BEST LEFT / BEST RIGHT
+ *          -> PREFIX / SUFFIX
+ *
+ * Approach roles:
+ *
+ *      Prefix / Suffix   -> RECONSTRUCTION ANCHOR
+ *      Two Pointers      -> SPACE OPTIMIZATION
+ *      Monotonic Deque   -> ALTERNATIVE INVARIANT
+ *
+ * =====================================================================================
+ */
 public class TrappingRainwater {
 
     /*
-     * ============================================================================
-     * 📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
-     * ============================================================================
+     * =================================================================================
+     * 1️⃣ PROBLEM STATEMENT
+     * =================================================================================
      *
-     * 🔗 Official LeetCode Link:
-     * https://leetcode.com/problems/trapping-rain-water/
+     * Given non-negative bar heights, compute how much rain water is trapped.
      *
-     * 🧩 Difficulty:
-     * Hard
+     * Example:
      *
-     * 🏷️ Tags:
-     * Array, Two Pointers, Stack, Dynamic Programming, Monotonic Stack
+     *      height = [4,2,0,3,2,5]
+     *      answer = 9
      *
-     * ----------------------------------------------------------------------------
-     * Problem Statement:
+     * At any index i:
      *
-     * Given n non-negative integers representing an elevation map where the width
-     * of each bar is 1, compute how much water it can trap after raining.
+     *      waterLevel[i]
+     *          = min(maxLeft[i], maxRight[i])
      *
-     * ----------------------------------------------------------------------------
-     * Example 1:
+     *      waterAtI
+     *          = waterLevel[i] - height[i]
      *
-     * Input:
-     * height = [0,1,0,2,1,0,1,3,2,1,2,1]
-     *
-     * Output:
-     * 6
-     *
-     * Explanation:
-     * The above elevation map (black section) is represented by array
-     * [0,1,0,2,1,0,1,3,2,1,2,1]. In this case, 6 units of rain water (blue section)
-     * are being trapped.
-     *
-     * ----------------------------------------------------------------------------
-     * Example 2:
-     *
-     * Input:
-     * height = [4,2,0,3,2,5]
-     *
-     * Output:
-     * 9
-     *
-     * ----------------------------------------------------------------------------
-     * Constraints:
-     *
-     * n == height.length
-     * 1 <= n <= 2 * 10^4
-     * 0 <= height[i] <= 10^5
-     *
-     * ----------------------------------------------------------------------------
-     * Notes:
-     * - Water can only be trapped between bars.
-     * - Each bar has width exactly 1.
-     * - The elevation map is fixed; rain falls uniformly.
-     *
-     * ============================================================================
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 🔵 CORE PATTERN OVERVIEW (INVARIANT-FIRST · FULL)
-     * ============================================================================
+     * =================================================================================
+     * 2️⃣ HOW THE BRAIN SHOULD SEE IT
+     * =================================================================================
      *
-     * 🔵 Pattern Name:
-     * Boundary-Constrained Accumulation (Two-Sided Maximum Invariant)
+     * Ask:
      *
-     * 🔵 Problem Archetype:
-     * For each position, compute a value constrained by the minimum of two
-     * opposing boundaries while subtracting the local height.
+     *      "What information does ONE position need?"
      *
-     * 🟢 Core Invariant (MANDATORY — ONE SENTENCE):
-     * At every index i, the water trapped is determined solely by the minimum of
-     * the maximum height to its left and the maximum height to its right.
+     * It needs:
      *
-     * 🟡 Why This Invariant Makes the Pattern Work:
-     * Water cannot exceed the shorter boundary; any taller boundary is irrelevant.
-     * This invariant localizes a global-looking problem into independent columns.
+     *      BEST / TALLEST wall anywhere on the LEFT
+     *      BEST / TALLEST wall anywhere on the RIGHT
      *
-     * 🟢 When This Pattern Applies:
-     * - Trapped water / bounded area problems
-     * - Problems where constraints come from both directions
-     * - Elevation / histogram / skyline interpretations
+     * Not:
      *
-     * 🧭 Pattern Recognition Signals:
-     * - “How much can be trapped”
-     * - “Between bars”
-     * - Need for left and right context
-     * - Independent per-index contribution
+     *      nearest wall
      *
-     * 🟣 How This Pattern Differs from Similar Patterns:
-     * - Unlike monotonic stack for span problems, here the invariant is symmetric.
-     * - Unlike prefix-sum problems, accumulation depends on *future* maxima.
-     * - Unlike greedy local rules, correctness comes from global boundaries.
+     * That phrase:
      *
-     * ============================================================================
+     *      BEST over an entire side
+     *
+     * is the Prefix / Suffix signal.
+     *
+     *
+     * Mental image:
+     *
+     *      BEST LEFT WALL                 BEST RIGHT WALL
+     *            █~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~█
+     *            █~~~~~~~~~~~ water ~~~~~~~~~~~~~█
+     *            █~~~~~~~~~~~~~~█~~~~~~~~~~~~~~~~█
+     *                           ↑
+     *                        current
+     *
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 🟢 MENTAL MODEL & INVARIANTS (CANONICAL SOURCE OF TRUTH)
-     * ============================================================================
+     * =================================================================================
+     * 3️⃣ UNSEEN-PROBLEM DECODER
+     * =================================================================================
      *
-     * 🟢 Mental Model (THINKING, NOT CODE):
-     * Imagine filling water column by column.
-     * Each column can only hold water up to the height of the shorter wall
-     * surrounding it from the left and the right.
+     * For a random problem, ask:
      *
-     * 🟢 State Representation:
-     * - height[i]        → elevation at index i
-     * - maxLeft[i]       → maximum height strictly to the left of i (inclusive)
-     * - maxRight[i]      → maximum height strictly to the right of i (inclusive)
-     * - waterAtI         → min(maxLeft[i], maxRight[i]) - height[i]
+     *      WHAT does current need from the LEFT?
+     *          nearest / best / aggregate?
      *
-     * 🟢 ALL Invariants (EXPLICIT):
+     *      WHAT does current need from the RIGHT?
+     *          nearest / best / aggregate?
      *
-     * Invariant 1:
-     * maxLeft[i] is the tallest bar from index 0 to i.
+     *      CAN all raw history on one side be compressed
+     *      into one summary?
      *
-     * Invariant 2:
-     * maxRight[i] is the tallest bar from index i to n-1.
+     * Here:
      *
-     * Invariant 3:
-     * If min(maxLeft[i], maxRight[i]) <= height[i], then waterAtI = 0.
+     *      LEFT  -> maximum
+     *      RIGHT -> maximum
      *
-     * Invariant 4:
-     * Water contribution at index i is independent of all other indices
-     * once maxLeft and maxRight are known.
+     * Therefore:
      *
-     * 🟡 Allowed Moves (Preserve Invariant):
-     * - Precompute prefix maximums
-     * - Precompute suffix maximums
-     * - Two-pointer traversal maintaining running maxes
+     *      BEST LEFT  -> prefix summary
+     *      BEST RIGHT -> suffix summary
      *
-     * 🔴 Forbidden Moves (Break Correctness):
-     * - Using nearest greater instead of maximum
-     * - Using stack values instead of indices incorrectly
-     * - Letting local comparisons override global maxima
-     *
-     * 🟡 Termination Logic:
-     * - Finite array
-     * - Each index contributes once
-     * - No cyclic dependency
-     *
-     * 🔴 Why Common Alternatives Are Inferior:
-     * - Local greedy fails because water depends on *farthest* boundary
-     * - Stack misuse often computes spans, not volume
-     *
-     * ============================================================================
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 🔴 WHY THE NAIVE / WRONG SOLUTION FAILS (FORENSIC ANALYSIS)
-     * ============================================================================
+     * =================================================================================
+     * 4️⃣ 3 × 3 ANTI-CONFUSION MATRIX
+     * =================================================================================
      *
-     * 🔴 Typical Wrong Approach #1:
-     * Using nearest greater element on left and right.
+     * =============================================================================================================
+     * ASK ↓ / TOOL →    | MONOTONIC STACK          | PREFIX / SUFFIX               | TWO POINTERS
+     * =============================================================================================================
      *
-     * Why It Seems Correct:
-     * - Intuition says “water is trapped by nearest walls”.
+     * NEAREST BLOCKER   | ✅ exact fit             | ❌ stores BEST, not nearest    | ❌ no endpoint discard proof
+     *                    | Largest Rectangle        |                               |
      *
-     * Why It Fails:
-     * - Water does NOT care about nearest wall.
-     * - It cares about the TALLEST wall on each side.
+     * -------------------------------------------------------------------------------------------------------------
      *
-     * Exact Invariant Violated:
-     * Violates Invariant 1 & 2 — uses local boundary instead of global maximum.
+     * BEST SIDE SUPPORT | ⚠️ possible with         | ✅ exact fit                   | ✅ space optimization
+     *                    | valley-closure invariant | Trapping Rain Water           | Trapping Rain Water
      *
-     * Minimal Counterexample:
-     * height = [5, 0, 1, 0, 2]
+     * -------------------------------------------------------------------------------------------------------------
      *
-     * Nearest greater on right of index 1 is 1,
-     * but actual right boundary is 5 (farther).
+     * BEST ENDPOINT PAIR| ❌ nearest irrelevant    | ❌ independent summaries       | ✅ exact fit
+     *                    |                          |    insufficient                | Container
      *
-     * 🔴 Typical Wrong Approach #2:
-     * Stack storing heights instead of indices.
+     * =============================================================================================================
      *
-     * Why It Seems Correct:
-     * - Monotonic stack feels “advanced”.
+     * Lock:
      *
-     * Why It Fails:
-     * - Volume depends on distance (width), not just height.
-     * - Height-only stacks lose positional information.
+     *      NEAREST -> MONOTONIC STACK
+     *      BEST    -> PREFIX / SUFFIX
+     *      PAIR    -> TWO POINTERS
      *
-     * 🔴 Interviewer Trap:
-     * They let you pass small cases,
-     * then give a valley with distant tall walls.
      *
-     * 🔴 Your Failing Solution (POST-MORTEM):
+     * Interior meaning:
      *
-     * - You used Stack<Integer> of heights.
-     * - You attempted to compute “leftGreater” and “rightGreater”.
-     * - You popped based on <= comparison.
+     *      Largest Rectangle -> interior = CONSTRAINT
+     *      Rain              -> interior = CONTRIBUTION / VALLEY
+     *      Container         -> interior = IRRELEVANT
      *
-     * Fatal Issues:
-     * ❌ You stored heights, not indices.
-     * ❌ You computed nearest smaller/greater, not maximum.
-     * ❌ You allowed popping to overwrite boundaries.
-     * ❌ You assumed min(leftGreater, rightGreater) always valid.
-     *
-     * Result:
-     * The core invariant was never enforced.
-     *
-     * ============================================================================
-     */
-
-
-
-    /*
-     * ============================================================================
-     * 6️⃣ PRIMARY PROBLEM — SOLUTION CLASSES (DERIVED FROM INVARIANT)
-     * ============================================================================
-     *
-     * We derive every solution strictly from the invariant:
-     *
-     * 🟢 waterAtI = min(maxLeft[i], maxRight[i]) - height[i]
-     *
-     * The difference between solutions is HOW we maintain maxLeft and maxRight,
-     * not WHAT they mean.
-     *
-     * ============================================================================
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 🔹 BRUTE FORCE SOLUTION
-     * ============================================================================
+     * =================================================================================
+     * 5️⃣ MENTAL MODEL + CORE INVARIANT
+     * =================================================================================
      *
-     * 🔵 Core Idea:
-     * For each index i, scan left to find maxLeft,
-     * scan right to find maxRight.
+     * maxLeft[i]
+     *      = tallest bar from 0 ... i
      *
-     * 🟢 Invariant Enforced:
-     * Fully correct — directly computes the invariant per index.
+     * maxRight[i]
+     *      = tallest bar from i ... n-1
      *
-     * 🔴 Limitation:
-     * Recomputes the same maxima repeatedly.
+     * boundedHeight
+     *      = min(maxLeft[i], maxRight[i])
      *
-     * ⏱️ Time Complexity:
-     * O(n^2)
+     * waterAtI
+     *      = boundedHeight - height[i]
      *
-     * 🧠 Space Complexity:
-     * O(1)
      *
-     * 🟣 Interview Preference:
-     * ❌ Only acceptable as a baseline explanation.
+     * Because maxima include current:
      *
-     * ============================================================================
+     *      maxLeft[i]  >= height[i]
+     *      maxRight[i] >= height[i]
+     *
+     * so contribution is never negative.
+     *
+     * =================================================================================
      */
-    static class BruteForceSolution {
 
-        public int trap(int[] height) {
-            int n = height.length;
-            int totalWater = 0;
 
-            for (int i = 0; i < n; i++) {
-
-                int maxLeft = 0;
-                for (int left = 0; left <= i; left++) {
-                    maxLeft = Math.max(maxLeft, height[left]);
-                }
-
-                int maxRight = 0;
-                for (int right = i; right < n; right++) {
-                    maxRight = Math.max(maxRight, height[right]);
-                }
-
-                int boundedHeight = Math.min(maxLeft, maxRight);
-
-                if (boundedHeight > height[i]) {
-                    totalWater += boundedHeight - height[i];
-                }
-            }
-
-            return totalWater;
-        }
-    }
+    /**
+     * =================================================================================
+     * 6️⃣ REUSABLE PREFIX / SUFFIX SKELETON
+     * =================================================================================
+     *
+     * leftBest[0] = nums[0];
+     *
+     * for (int i = 1; i < n; i++) {
+     *     leftBest[i] =
+     *         combine(leftBest[i - 1], nums[i]);
+     * }
+     *
+     *
+     * rightBest[n - 1] = nums[n - 1];
+     *
+     * for (int i = n - 2; i >= 0; i--) {
+     *     rightBest[i] =
+     *         combine(rightBest[i + 1], nums[i]);
+     * }
+     *
+     *
+     * for (int i = 0; i < n; i++) {
+     *     answer += contribution(
+     *         leftBest[i],
+     *         rightBest[i],
+     *         nums[i]
+     *     );
+     * }
+     *
+     *
+     * THIS PROBLEM:
+     *
+     *      left summary  -> maximum
+     *      right summary -> maximum
+     *      combine       -> minimum
+     *      contribution  -> boundedHeight - height[i]
+     *
+     * =================================================================================
+     */
 
 
     /*
-     * ============================================================================
-     * 🔹 IMPROVED SOLUTION (PREFIX + SUFFIX MAX ARRAYS)
-     * ============================================================================
+     * =================================================================================
+     * 7️⃣ PREFIX / SUFFIX — RECONSTRUCTION ANCHOR
+     * =================================================================================
      *
-     * 🔵 Core Idea:
-     * Precompute maxLeft[] and maxRight[] once.
+     * Time  = O(n)
+     * Space = O(n)
      *
-     * 🟢 Invariant Enforced:
-     * Explicitly stored for every index.
-     *
-     * 🟡 What It Fixes:
-     * Eliminates redundant scans.
-     *
-     * ⏱️ Time Complexity:
-     * O(n)
-     *
-     * 🧠 Space Complexity:
-     * O(n)
-     *
-     * 🟣 Interview Preference:
-     * ✅ Very acceptable if space is allowed.
-     *
-     * ============================================================================
+     * This is the safest version to re-derive from first principles.
+     * =================================================================================
      */
     static class PrefixSuffixSolution {
 
         public int trap(int[] height) {
+
             int n = height.length;
 
-            if (n == 0) return 0;
+            if (n == 0) {
+                return 0;
+            }
 
             int[] maxLeft = new int[n];
             int[] maxRight = new int[n];
 
-            // maxLeft[i] = tallest bar from 0 to i
             maxLeft[0] = height[0];
+
             for (int i = 1; i < n; i++) {
-                maxLeft[i] = Math.max(maxLeft[i - 1], height[i]);
+                maxLeft[i] =
+                        Math.max(maxLeft[i - 1], height[i]);
             }
 
-            // maxRight[i] = tallest bar from i to n-1
             maxRight[n - 1] = height[n - 1];
+
             for (int i = n - 2; i >= 0; i--) {
-                maxRight[i] = Math.max(maxRight[i + 1], height[i]);
+                maxRight[i] =
+                        Math.max(maxRight[i + 1], height[i]);
             }
 
             int totalWater = 0;
 
             for (int i = 0; i < n; i++) {
-                int boundedHeight = Math.min(maxLeft[i], maxRight[i]);
+
+                int boundedHeight =
+                        Math.min(maxLeft[i], maxRight[i]);
+
                 totalWater += boundedHeight - height[i];
             }
-            return totalWater;
-        }
-    }
-
-    /*
-     * ============================================================================
-     * 🔹 MONOTONIC STACK SOLUTION (VALLEY-CLOSURE · ALTERNATIVE)
-     * ============================================================================
-     *
-     * 🔵 Core Idea:
-     * Water is trapped when a right boundary closes a valley formed earlier.
-     *
-     * 🟢 Stack Invariant (NON-NEGOTIABLE):
-     * The stack stores INDICES of bars in strictly decreasing height order.
-     *
-     * 🟢 What the Stack Represents:
-     * A sequence of potential left boundaries waiting for a right boundary.
-     *
-     * 🟡 When Water Is Computed:
-     * Only when a valley bottom is popped AND a left boundary exists.
-     *
-     * 🔴 What This Fixes:
-     * Correctly accounts for width (distance between boundaries).
-     *
-     * ⏱️ Time Complexity:
-     * O(n) — each index pushed and popped once
-     *
-     * 🧠 Space Complexity:
-     * O(n)
-     *
-     * 🟣 Interview Preference:
-     * ⚠️ Acceptable but harder to explain than two-pointer
-     *
-     * ============================================================================
-     */
-    static class MonotonicStackSolution {
-
-        public int trap(int[] height) {
-
-            int n = height.length;
-            int totalWater = 0;
-
-            // Stack stores INDICES, not heights
-            java.util.Stack<Integer> stack = new java.util.Stack<>();
-
-            for (int current = 0; current < n; current++) {
-
-                // Close valleys while current bar is taller
-                while (!stack.isEmpty() && height[current] > height[stack.peek()]) {
-
-                    int valleyIndex = stack.pop(); // bottom of the valley
-
-                    // No left boundary → cannot trap water
-                    if (stack.isEmpty()) {
-                        break;
-                    }
-
-                    int leftBoundaryIndex = stack.peek();
-
-                    int width = current - leftBoundaryIndex - 1;
-
-                    int boundedHeight =
-                            Math.min(height[leftBoundaryIndex], height[current])
-                                    - height[valleyIndex];
-
-                    if (boundedHeight > 0) {
-                        totalWater += width * boundedHeight;
-                    }
-                }
-
-                stack.push(current);
-            }
 
             return totalWater;
         }
@@ -418,32 +280,289 @@ public class TrappingRainwater {
 
 
     /*
-     * ============================================================================
-     * 🔹 OPTIMAL SOLUTION (TWO POINTER · INTERVIEW-PREFERRED)
-     * ============================================================================
+     * =================================================================================
+     * ⭐ HOW SOMEONE COULD INVENT THE TWO-POINTER SOLUTION
+     * =================================================================================
      *
-     * 🔵 Core Idea:
-     * Use two pointers and maintain running maxLeft and maxRight.
+     * Do NOT try to invent this loop directly:
      *
-     * 🟢 Core Invariant (Maintained Dynamically):
-     * At any step, the side with the smaller boundary determines water.
+     *      while (left <= right) { ... }
      *
-     * 🟡 Why This Works:
-     * If maxLeft < maxRight,
-     * then water is limited by maxLeft regardless of unseen right side.
+     * Invent it by COMPRESSING the obvious solution.
      *
-     * ⏱️ Time Complexity:
-     * O(n)
      *
-     * 🧠 Space Complexity:
-     * O(1)
+     * -------------------------------------------------------------------------
+     * STEP 1 — START FROM THE UNDENIABLE PHYSICS
+     * -------------------------------------------------------------------------
      *
-     * 🟣 Interview Preference:
-     * ⭐⭐ GOLD STANDARD ⭐⭐
+     * For one index i:
      *
-     * ============================================================================
+     *      waterAtI
+     *          = min(bestLeft, bestRight) - height[i]
+     *
+     * This immediately gives the easy O(n) solution:
+     *
+     *      maxLeft[]
+     *      maxRight[]
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 2 — ASK THE OPTIMIZATION QUESTION
+     * -------------------------------------------------------------------------
+     *
+     * Prefix/Suffix stores:
+     *
+     *      maxLeft for EVERY index
+     *      maxRight for EVERY index
+     *
+     * But while processing one side,
+     * do we really need every stored value?
+     *
+     * Maybe not.
+     *
+     * Ask:
+     *
+     *      "Can I process positions in an order where
+     *       one side is already safe to finalize?"
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 3 — PUT ONE POINTER AT EACH END
+     * -------------------------------------------------------------------------
+     *
+     *      L                               R
+     *      ↓                               ↓
+     *
+     *      [ ... heights ... ]
+     *
+     * The endpoints give two CERTIFIED walls immediately.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 4 — FIND THE IRREVERSIBLE SIDE
+     * -------------------------------------------------------------------------
+     *
+     * Suppose:
+     *
+     *      height[left] <= height[right]
+     *
+     * Then there already exists a wall on the right
+     * at least as tall as height[left].
+     *
+     * So LEFT is not waiting for proof that
+     * enough right-side support exists.
+     *
+     * The only remaining information LEFT needs is:
+     *
+     *      tallest wall seen so far on the LEFT
+     *
+     *      maxLeft
+     *
+     * Therefore LEFT is safe to finalize.
+     *
+     *
+     * Symmetrically:
+     *
+     *      height[left] > height[right]
+     *
+     * means RIGHT is safe to finalize using maxRight.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 5 — COMPRESS THE ARRAYS
+     * -------------------------------------------------------------------------
+     *
+     * Prefix/Suffix:
+     *
+     *      maxLeft[0 ... n-1]
+     *      maxRight[0 ... n-1]
+     *
+     * Two Pointers:
+     *
+     *      maxLeft
+     *      maxRight
+     *
+     * We replaced:
+     *
+     *      "know everything first"
+     *
+     * with:
+     *
+     *      "know enough to finalize one position permanently."
+     *
+     *
+     * -------------------------------------------------------------------------
+     * THE GENERAL INVENTION TEMPLATE
+     * -------------------------------------------------------------------------
+     *
+     * When an obvious solution stores global information:
+     *
+     *      1. What information am I storing?
+     *
+     *      2. Am I storing more than the current answer needs?
+     *
+     *      3. Can some index/candidate be finalized
+     *         before all information is known?
+     *
+     *      4. What inequality proves future information
+     *         cannot change that answer?
+     *
+     *
+     * For Rain Water:
+     *
+     *      stored information
+     *          = bestLeft[] + bestRight[]
+     *
+     *      over-storage
+     *          = yes
+     *
+     *      safe side
+     *          = smaller current boundary
+     *
+     *      proof
+     *          = opposite side already provides sufficient support
+     *
+     *
+     * RECALL:
+     *
+     *      OBVIOUS GLOBAL STATE
+     *          ↓
+     *      FIND WHAT CAN BE FINALIZED EARLY
+     *          ↓
+     *      KEEP ONLY RUNNING STATE
+     *          ↓
+     *      TWO POINTERS
+     *
+     * =================================================================================
      */
-    static class TwoPointerOptimalSolution {
+
+
+    /*
+     * =================================================================================
+     * 8️⃣ TWO POINTERS — SAME INVARIANT, LESS SPACE
+     * =================================================================================
+     *
+     * START FROM PREFIX / SUFFIX:
+     *
+     *      waterAtI
+     *          = min(bestLeft, bestRight) - height[i]
+     *
+     * Prefix/Suffix stores BOTH best values for every index.
+     *
+     * Two Pointers asks:
+     *
+     *      "Can I finalize one side before knowing every future value?"
+     *
+     *
+     * -------------------------------------------------------------------------
+     * KEY PROOF — WHY THE SMALLER SIDE IS SAFE
+     * -------------------------------------------------------------------------
+     *
+     * Suppose:
+     *
+     *      height[left] <= height[right]
+     *
+     * Then there already exists a wall on the RIGHT
+     * at least as tall as height[left].
+     *
+     * So the current LEFT position does not need to wait
+     * for more right-side information.
+     *
+     * Its limiting information is now:
+     *
+     *      the tallest wall seen so far on the LEFT
+     *
+     *      maxLeft
+     *
+     *
+     * Therefore:
+     *
+     *      update maxLeft
+     *      water at left = maxLeft - height[left]
+     *      left++
+     *
+     *
+     * Symmetrically:
+     *
+     *      if height[left] > height[right]
+     *
+     * then RIGHT can be finalized using maxRight.
+     *
+     *
+     * RECALL:
+     *
+     *      SMALLER SIDE
+     *          -> enough opposite support already exists
+     *          -> finalize it
+     *          -> move inward
+     *
+     *
+     * -------------------------------------------------------------------------
+     * WHY UPDATE maxLeft / maxRight FIRST?
+     * -------------------------------------------------------------------------
+     *
+     * Example:
+     *
+     *      maxLeft = 3
+     *      current left height = 5
+     *
+     * Current is a NEW boundary.
+     *
+     *      maxLeft = max(3,5) = 5
+     *
+     * then:
+     *
+     *      water = 5 - 5 = 0
+     *
+     * Correct.
+     *
+     *
+     * If:
+     *
+     *      maxLeft = 5
+     *      current left height = 2
+     *
+     * then:
+     *
+     *      maxLeft = 5
+     *      water = 5 - 2 = 3
+     *
+     * So the same two lines handle both:
+     *
+     *      new boundary
+     *      valley
+     *
+     *
+     * -------------------------------------------------------------------------
+     * MENTAL CODE SHAPE
+     * -------------------------------------------------------------------------
+     *
+     *      while left <= right
+     *
+     *          if LEFT is smaller/equal
+     *
+     *              update maxLeft
+     *              answer current LEFT
+     *              left++
+     *
+     *          else
+     *
+     *              update maxRight
+     *              answer current RIGHT
+     *              right--
+     *
+     *
+     * Mental verb:
+     *
+     *      FINALIZE SAFE SIDE -> MOVE
+     *
+     *
+     * Time  = O(n)
+     * Space = O(1)
+     *
+     * =================================================================================
+     */
+    static class TwoPointerSolution {
 
         public int trap(int[] height) {
 
@@ -458,22 +577,21 @@ public class TrappingRainwater {
             while (left <= right) {
 
                 if (height[left] <= height[right]) {
-                    // Left side is the limiting boundary
-                    if (height[left] >= maxLeft) {
-                        maxLeft = height[left]; // update boundary
-                    } else {
-                        // bounded by maxLeft invariant
-                        totalWater += maxLeft - height[left];
-                    }
+
+                    maxLeft = Math.max(maxLeft, height[left]);
+
+                    totalWater +=
+                            maxLeft - height[left];
+
                     left++;
+
                 } else {
-                    // Right side is the limiting boundary
-                    if (height[right] >= maxRight) {
-                        maxRight = height[right]; // update boundary
-                    } else {
-                        // bounded by maxRight invariant
-                        totalWater += maxRight - height[right];
-                    }
+
+                    maxRight = Math.max(maxRight, height[right]);
+
+                    totalWater +=
+                            maxRight - height[right];
+
                     right--;
                 }
             }
@@ -484,302 +602,473 @@ public class TrappingRainwater {
 
 
     /*
-     * ============================================================================
-     * 7️⃣ 🟣 INTERVIEW ARTICULATION (INVARIANT-LED · NO CODE)
-     * ============================================================================
+     * =================================================================================
+     * 8.1️⃣ TWO-POINTER DRY RUN — [4,2,0,3,2,5]
+     * =================================================================================
      *
-     * 🟣 State the Invariant:
-     * For any index i, trapped water equals
-     * min(max height to the left, max height to the right) minus height[i].
+     * Start:
      *
-     * 🟣 Discard / Transition Logic:
-     * In the two-pointer approach, we always advance the pointer with the smaller
-     * current boundary because the smaller boundary fully determines the water
-     * that can be trapped on that side.
+     *      left = 0
+     *      right = 5
+     *      maxLeft = 0
+     *      maxRight = 0
+     *      water = 0
      *
-     * 🟣 Why Correctness Is Guaranteed:
-     * When maxLeft <= maxRight, the right side cannot reduce the bound below
-     * maxLeft, so future right elements are irrelevant for current left.
      *
-     * 🟣 What Breaks If Logic Changes:
-     * - Advancing the larger side first violates the invariant.
-     * - Using nearest greater instead of maximum violates global boundary logic.
+     * =================================================================================================
+     * L  | R | h[L] | h[R] | SAFE SIDE | RUNNING MAX | WATER ADDED | TOTAL
+     * =================================================================================================
+     * 0  | 5 |  4   |  5   | LEFT      | maxLeft=4  | 4-4 = 0     | 0
+     * 1  | 5 |  2   |  5   | LEFT      | maxLeft=4  | 4-2 = 2     | 2
+     * 2  | 5 |  0   |  5   | LEFT      | maxLeft=4  | 4-0 = 4     | 6
+     * 3  | 5 |  3   |  5   | LEFT      | maxLeft=4  | 4-3 = 1     | 7
+     * 4  | 5 |  2   |  5   | LEFT      | maxLeft=4  | 4-2 = 2     | 9
+     * 5  | 5 |  5   |  5   | LEFT      | maxLeft=5  | 5-5 = 0     | 9
+     * =================================================================================================
      *
-     * 🟣 In-place Feasibility:
-     * Yes — O(1) space with two pointers.
+     * Final answer:
      *
-     * 🟣 Streaming Feasibility:
-     * No — future right boundary is required unless approximated.
+     *      9
      *
-     * 🟣 When NOT to Use This Pattern:
-     * - When boundaries are not monotonic or comparable.
-     * - When accumulation depends on local neighbors only.
      *
-     * ============================================================================
+     * Important:
+     *
+     * This example happens to keep finalizing LEFT.
+     *
+     * In a different shape, RIGHT may be the safe side.
+     *
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 8️⃣ 🔄 VARIATIONS & TWEAKS (INVARIANT-BASED)
-     * ============================================================================
+     * =================================================================================
+     * 9️⃣ MONOTONIC DEQUE — ALTERNATIVE VALLEY-CLOSURE INVARIANT
+     * =================================================================================
      *
-     * 🟢 Invariant-Preserving Changes:
-     * - Use long instead of int for very large heights.
-     * - Replace array with list if random access is preserved.
+     * This is NOT the primary BEST-left / BEST-right derivation.
      *
-     * 🟡 Reasoning-Only Changes:
-     * - Switching between prefix/suffix and two-pointer methods.
-     * - Explaining via valley-filling analogy instead of math.
+     * Different mental image:
      *
-     * 🔴 Pattern-Break Signals:
-     * - Boundaries depend on distance or slope.
-     * - Volume depends on more than two sides.
+     *      LEFT WALL       valley       CURRENT WALL
      *
-     * 🟡 Why Invariant Still Holds or Collapses:
-     * The invariant holds as long as water is constrained by two opposing maxima.
+     *          █~~~~~~~~~~~~~~~~~~~~~~~~~~~█
+     *          █~~~~~~~~ water ~~~~~~~~~~~~█
+     *                   █
+     *                   ↑
+     *                valley bottom
      *
-     * ============================================================================
+     *
+     * Current taller bar can close valleys behind it.
+     *
+     * Mental verb:
+     *
+     *      CURRENT TALLER
+     *          -> POP VALLEY
+     *          -> FILL BOUNDED LAYER
+     *
+     *
+     * Deque is used as a stack:
+     *
+     *      push()
+     *      pop()
+     *      peek()
+     *
+     * Time  = O(n) amortized
+     * Space = O(n)
+     *
+     * =================================================================================
      */
+    static class MonotonicDequeSolution {
 
+        public int trap(int[] height) {
 
-    /*
-     * ============================================================================
-     * 9️⃣ ⚫ REINFORCEMENT PROBLEMS (FULL SUB-CHAPTERS · SAME INVARIANT)
-     * ============================================================================
-     */
+            int totalWater = 0;
 
-    /*
-     * --------------------------------------------------------------------------
-     * Reinforcement Problem 1: Container With Most Water
-     * --------------------------------------------------------------------------
-     *
-     * Full Problem Statement:
-     *
-     * Given n non-negative integers a1, a2, ..., an, where each represents a point
-     * at coordinate (i, ai). n vertical lines are drawn such that the two endpoints
-     * of line i are at (i, ai) and (i, 0). Find two lines, which together with the
-     * x-axis forms a container, such that the container contains the most water.
-     *
-     * Pattern Mapping:
-     * Same invariant — volume limited by shorter boundary.
-     *
-     * Edge Cases & Traps:
-     * - Moving taller boundary is useless.
-     *
-     * Interview Articulation:
-     * Always move the pointer at the shorter line.
-     */
-    static class ContainerWithMostWater {
+            Deque<Integer> stack = new ArrayDeque<>();
 
-        public int maxArea(int[] height) {
-            int left = 0, right = height.length - 1;
-            int maxArea = 0;
+            for (int current = 0;
+                 current < height.length;
+                 current++) {
 
-            while (left < right) {
-                int width = right - left;
-                int boundedHeight = Math.min(height[left], height[right]);
-                maxArea = Math.max(maxArea, width * boundedHeight);
+                while (!stack.isEmpty()
+                        && height[current] > height[stack.peek()]) {
 
-                if (height[left] < height[right]) {
-                    left++;
-                } else {
-                    right--;
+                    int valley = stack.pop();
+
+                    if (stack.isEmpty()) {
+                        break;
+                    }
+
+                    int left = stack.peek();
+
+                    int width =
+                            current - left - 1;
+
+                    int boundedHeight =
+                            Math.min(
+                                    height[left],
+                                    height[current]
+                            )
+                            - height[valley];
+
+                    totalWater +=
+                            width * boundedHeight;
                 }
+
+                stack.push(current);
             }
-            return maxArea;
+
+            return totalWater;
         }
     }
 
 
     /*
-     * --------------------------------------------------------------------------
-     * Reinforcement Problem 2: Trapping Rain Water II (2D)
-     * --------------------------------------------------------------------------
+     * =================================================================================
+     * 🔟 FULL PREFIX / SUFFIX DRY RUN
+     * =================================================================================
      *
-     * Full Problem Statement:
-     * Given an m x n matrix of non-negative integers representing an elevation map,
-     * compute how much water it can trap after raining.
+     * height:
      *
-     * Pattern Mapping:
-     * Same invariant generalized to 2D using a min-heap.
+     *      [4,2,0,3,2,5]
      *
-     * Interview Note:
-     * Boundary-first expansion preserves the invariant.
+     * index:       0  1  2  3  4  5
+     * height:      4  2  0  3  2  5
+     * maxLeft:     4  4  4  4  4  5
+     * maxRight:    5  5  5  5  5  5
      *
-     * (Code omitted intentionally — requires priority queue and grid traversal;
-     * conceptually same invariant but structurally heavier.)
+     *
+     * ========================================================================
+     * i | height | min(maxLeft,maxRight) | water
+     * ========================================================================
+     * 0 |   4    |          4            |   0
+     * 1 |   2    |          4            |   2
+     * 2 |   0    |          4            |   4
+     * 3 |   3    |          4            |   1
+     * 4 |   2    |          4            |   2
+     * 5 |   5    |          5            |   0
+     * ========================================================================
+     *
+     * total = 9
+     *
+     * =================================================================================
      */
 
 
     /*
-     * --------------------------------------------------------------------------
-     * Reinforcement Problem 3: Largest Rectangle in Histogram
-     * --------------------------------------------------------------------------
+     * =================================================================================
+     * 1️⃣1️⃣ NEAREST vs BEST — MAIN CONFUSION TRAP
+     * =================================================================================
      *
-     * Full Problem Statement:
-     * Given an array of integers heights representing the histogram's bar height
-     * where the width of each bar is 1, return the area of the largest rectangle.
+     * Rain asks:
      *
-     * Pattern Mapping:
-     * Invariant flips — nearest smaller boundaries instead of maximum.
+     *      TALLEST support anywhere on each side.
      *
-     * Interview Note:
-     * This problem LOOKS similar but violates this chapter’s invariant.
+     * Not:
+     *
+     *      first qualifying boundary.
+     *
+     *
+     *      NEAREST
+     *          -> monotonic-boundary thinking
+     *
+     *      BEST
+     *          -> prefix/suffix aggregate thinking
+     *
+     * One word can change the primary pattern:
+     *
+     *      NEAREST -> BEST
+     *
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 10️⃣ 🧩 RELATED PROBLEMS (MINI INVARIANT CHAPTERS)
-     * ============================================================================
-     */
-
-    /*
-     * Related Problem: Pour Water
+     * =================================================================================
+     * 1️⃣2️⃣ THREE APPROACHES — COMPLEXITY + RETRIEVAL ROLE
+     * =================================================================================
      *
-     * Same invariant partially holds but local movement dominates.
+     * ==================================================================================================
+     * APPROACH          | STATE RETAINED                  | TIME   | SPACE | ROLE
+     * ==================================================================================================
      *
-     * Key Insight:
-     * Global maxima matter less than nearest slope.
-     */
-
-
-    /*
-     * ============================================================================
-     * 11️⃣ 🟢 LEARNING VERIFICATION (INVARIANT-FIRST)
-     * ============================================================================
+     * Prefix / Suffix   | BEST wall for every index      | O(n)   | O(n)  | reconstruction anchor
      *
-     * 🟢 Invariant to Recall (Without Code):
-     * Water at index i is limited by the shorter of the tallest bar on its left
-     * and the tallest bar on its right.
+     * Two Pointers      | running BEST left/right        | O(n)   | O(1)  | space optimization
      *
-     * 🔴 Why Naive Approaches Fail:
-     * - Nearest greater element ≠ tallest boundary
-     * - Local reasoning ignores distant constraints
+     * Monotonic Deque   | unresolved valley boundaries   | O(n)*  | O(n)  | alternate invariant
      *
-     * 🔴 Bugs to Debug Intentionally:
-     * - Replace max with nearest greater → wrong
-     * - Advance larger pointer first → wrong
-     * - Use heights instead of indices in stack → wrong
+     * ==================================================================================================
      *
-     * 🧭 How to Detect This Invariant in Unseen Problems:
+     * * amortized:
+     *   each index is pushed once and popped at most once.
+     *
+     *
+     * AFTER 500 MIXED PROBLEMS:
+     *
+     * Do NOT ask:
+     *
+     *      "Which of three codes do I remember?"
+     *
+     * Also do NOT try to recall the optimized loop first.
+     *
+     * Reconstruct:
+     *
+     *      mathematical truth
+     *          -> obvious state
+     *          -> identify over-stored information
+     *          -> find irreversible/safe candidate
+     *          -> compress state
+     *
      * Ask:
-     * “Is the answer at each position bounded by two opposing global constraints?”
      *
-     * ============================================================================
+     *      "What does water at ONE index require?"
+     *
+     *          BEST LEFT
+     *          BEST RIGHT
+     *
+     *      -> Prefix / Suffix recovered.
+     *
+     *
+     * Then:
+     *
+     *      "Can I avoid storing both arrays?"
+     *
+     *      -> Two Pointers.
+     *
+     *
+     * Only if needed:
+     *
+     *      "Can I view current as closing old valleys?"
+     *
+     *      -> Monotonic Deque.
+     *
+     *
+     * Safety ladder:
+     *
+     *      FORGET EVERYTHING
+     *          ↓
+     *      min(bestLeft, bestRight) - height[i]
+     *          ↓
+     *      PREFIX / SUFFIX
+     *          ↓
+     *      optimize space
+     *          ↓
+     *      TWO POINTERS
+     *
+     *      smaller side is safe
+     *          ↓
+     *      update running max
+     *          ↓
+     *      add runningMax - currentHeight
+     *          ↓
+     *      move that side
+     *
+     * =================================================================================
      */
 
 
     /*
-     * ============================================================================
-     * 12️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS (MUST BE LAST)
-     * ============================================================================
+     * =================================================================================
+     * 1️⃣3️⃣ STACK SEMANTICS — RAIN vs LARGEST RECTANGLE
+     * =================================================================================
      *
-     * These tests validate the INVARIANT, not just outputs.
-     * Each test explains WHY it exists.
+     * Both can use a monotonic structure,
+     * but POP means something different.
      *
-     * ============================================================================
+     *
+     * LARGEST RECTANGLE:
+     *
+     *      CURRENT SMALLER
+     *          -> pop taller bar
+     *          -> finalize popped bar's span
+     *
+     *
+     * TRAPPING RAIN WATER:
+     *
+     *      CURRENT TALLER
+     *          -> pop valley bottom
+     *          -> fill bounded water layer
+     *
+     *
+     * Recall:
+     *
+     *      RECTANGLE
+     *          POP = FINALIZE BAR
+     *
+     *      RAIN
+     *          POP = FILL VALLEY
+     *
+     * =================================================================================
      */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣4️⃣ ±Δ — HORIZONTAL MASTERY
+     * =================================================================================
+     *
+     * +Δ SAME CORE:
+     *
+     *      BEST on each side remains required
+     *      but aggregate changes:
+     *
+     *      max / min / sum / boolean summary
+     *
+     *      -> prefix/suffix may survive.
+     *
+     *
+     * -Δ BEST -> NEAREST:
+     *
+     *      "tallest anywhere"
+     *          becomes
+     *      "first qualifying boundary"
+     *
+     *      -> monotonic-boundary thinking.
+     *
+     *
+     * -Δ EVERY POSITION -> ONE PAIR:
+     *
+     *      "sum contribution at every position"
+     *          becomes
+     *      "choose two endpoints maximizing score"
+     *
+     *      -> pair / two-pointer reasoning.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣5️⃣ 30-SECOND RECONSTRUCTION + INTERVIEW ARTICULATION
+     * =================================================================================
+     *
+     * Primary reconstruction:
+     *
+     *      water at i
+     *          needs BEST wall left + BEST wall right
+     *
+     *      -> maxLeft[]
+     *      -> maxRight[]
+     *
+     *      boundedHeight
+     *          = min(maxLeft[i], maxRight[i])
+     *
+     *      water
+     *          += boundedHeight - height[i]
+     *
+     *
+     * Optimization:
+     *
+     *      store all BEST values
+     *          -> Prefix / Suffix
+     *
+     *      ask:
+     *          "Which side can be finalized
+     *           before all future information is known?"
+     *
+     *      smaller side is already sufficiently supported
+     *
+     *      maintain BEST dynamically
+     *          -> Two Pointers
+     *
+     *      smaller side
+     *          -> update its running max
+     *          -> add max - current
+     *          -> move inward
+     *
+     *
+     * Alternative:
+     *
+     *      current taller closes old valleys
+     *          -> Monotonic Deque
+     *
+     *
+     * Interview sentence:
+     *
+     *      "The reconstruction anchor is that water at each index is bounded
+     *       by the shorter of the tallest wall on its left and right.
+     *       Prefix/suffix stores those maxima explicitly in O(n) space.
+     *       Two pointers preserves the same invariant with O(1) extra space.
+     *       A monotonic deque is an alternate valley-closure interpretation."
+     *
+     * =================================================================================
+     */
+
+
+    // =================================================================================
+    // 1️⃣6️⃣ SELF-VERIFYING TESTS
+    // =================================================================================
+
     public static void main(String[] args) {
 
-        TwoPointerOptimalSolution optimal = new TwoPointerOptimalSolution();
-        PrefixSuffixSolution prefixSuffix = new PrefixSuffixSolution();
-        BruteForceSolution brute = new BruteForceSolution();
-        MonotonicStackSolution stackSol = new MonotonicStackSolution();
+        PrefixSuffixSolution prefixSuffix =
+                new PrefixSuffixSolution();
 
+        TwoPointerSolution twoPointer =
+                new TwoPointerSolution();
 
-        // ------------------------------------------------------------
-        // Happy path: official example
-        // ------------------------------------------------------------
-        int[] example1 = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1};
-        assertEquals(6, optimal.trap(example1), "Example 1 - Optimal");
-        assertEquals(6, prefixSuffix.trap(example1), "Example 1 - PrefixSuffix");
-        assertEquals(6, brute.trap(example1), "Example 1 - Brute");
-        assertEquals(6, stackSol.trap(example1), "Example 1 - Monotonic Stack");
+        MonotonicDequeSolution deque =
+                new MonotonicDequeSolution();
 
-        // ------------------------------------------------------------
-        // Valley with distant tall walls (nearest-greater trap)
-        // ------------------------------------------------------------
-        int[] distantWalls = {5, 0, 1, 0, 2};
-        assertEquals(7, optimal.trap(distantWalls), "Distant walls invariant test");
+        int[][] tests = {
+                {0,1,0,2,1,0,1,3,2,1,2,1},
+                {4,2,0,3,2,5},
+                {5,0,1,0,2},
+                {1,2,3,4,5},
+                {5,4,3,2,1},
+                {3,3,3,3},
+                {5}
+        };
 
-        // ------------------------------------------------------------
-        // Monotonic increasing (no trapping)
-        // ------------------------------------------------------------
-        int[] increasing = {1, 2, 3, 4, 5};
-        assertEquals(0, optimal.trap(increasing), "Increasing heights");
+        int[] expected = {
+                6,
+                9,
+                5,
+                0,
+                0,
+                0,
+                0
+        };
 
-        // ------------------------------------------------------------
-        // Monotonic decreasing (no trapping)
-        // ------------------------------------------------------------
-        int[] decreasing = {5, 4, 3, 2, 1};
-        assertEquals(0, optimal.trap(decreasing), "Decreasing heights");
+        for (int i = 0; i < tests.length; i++) {
 
-        // ------------------------------------------------------------
-        // Flat surface
-        // ------------------------------------------------------------
-        int[] flat = {3, 3, 3, 3};
-        assertEquals(0, optimal.trap(flat), "Flat surface");
+            assertEquals(
+                    expected[i],
+                    prefixSuffix.trap(tests[i]),
+                    "Prefix/Suffix test " + i
+            );
 
-        // ------------------------------------------------------------
-        // Single bar (boundary case)
-        // ------------------------------------------------------------
-        int[] single = {5};
-        assertEquals(0, optimal.trap(single), "Single bar");
+            assertEquals(
+                    expected[i],
+                    twoPointer.trap(tests[i]),
+                    "Two Pointer test " + i
+            );
 
-        System.out.println("✅ All invariant-based tests passed.");
+            assertEquals(
+                    expected[i],
+                    deque.trap(tests[i]),
+                    "Monotonic Deque test " + i
+            );
+        }
+
+        System.out.println("ALL TESTS PASSED");
     }
 
-    // Simple assertion helper (no external libs allowed)
-    private static void assertEquals(int expected, int actual, String testName) {
+
+    private static void assertEquals(
+            int expected,
+            int actual,
+            String name) {
+
         if (expected != actual) {
             throw new AssertionError(
-                    "❌ Test failed [" + testName + "] — expected: "
-                            + expected + ", actual: " + actual
+                    name
+                            + " expected=" + expected
+                            + " actual=" + actual
             );
         }
     }
-
-
-    /*
-     * ============================================================================
-     * 13️⃣ 🧠 CHAPTER COMPLETION CHECKLIST (WITH ANSWERS)
-     * ============================================================================
-     *
-     * • Invariant → min(maxLeft, maxRight) bounds water
-     * • Search target → water trapped at each index
-     * • Discard rule → side with larger boundary is irrelevant
-     * • Termination guarantee → pointers move inward, finite array
-     * • Naive failure → nearest boundary ≠ tallest boundary
-     * • Edge cases → monotonic, flat, single bar
-     * • Variant readiness → container, 2D rainwater
-     * • Pattern boundary → breaks when >2 constraints exist
-     *
-     * ============================================================================
-     */
-
-
-    /*
-     * ============================================================================
-     * 🧘 FINAL CLOSURE STATEMENT (PROBLEM-SPECIFIC)
-     * ============================================================================
-     *
-     * For this problem, the invariant is that trapped water at any index is bounded
-     * by the shorter of the tallest bars on its left and right.
-     *
-     * The answer represents the sum of all such bounded excess heights.
-     *
-     * The search terminates because each index is processed exactly once while
-     * maintaining valid boundaries.
-     *
-     * I can re-derive this solution under pressure by stating the invariant first.
-     *
-     * This chapter is complete.
-     *
-     * 📌 Rule to prevent over-study:
-     * If I can explain the invariant and the discard rule, I am done.
-     *
-     * ============================================================================
-     */
 }

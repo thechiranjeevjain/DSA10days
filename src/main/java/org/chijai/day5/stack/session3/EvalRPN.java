@@ -4,1156 +4,700 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Evaluate Reverse Polish Notation
+ * =====================================================================================
+ * EVALUATE REVERSE POLISH NOTATION — EXPRESSION STACK
+ * =====================================================================================
  *
- * ============================================================
- * 2. 📘 PRIMARY PROBLEM
- * ============================================================
+ * Goal:
+ * See why postfix evaluation naturally becomes:
  *
- * Title:
- * Evaluate Reverse Polish Notation
+ *      operand  -> push
+ *      operator -> pop right, pop left, combine, push result
  *
- * Difficulty:
- * Medium
+ * Governing invariant:
  *
- * Tags:
- * Stack, Simulation, Expression Evaluation
+ *      Every stack value is one completely evaluated sub-expression.
  *
- * Problem Description:
- *
- * Given an array of strings representing an arithmetic expression
- * in Reverse Polish Notation (RPN), evaluate the expression.
- *
- * Every token is either:
- *
- * • an integer
- * • "+"
- * • "-"
- * • "*"
- * • "/"
- *
- * Division truncates toward zero.
- *
- * Every operator always has exactly two operands.
- *
- * The input expression is guaranteed to be valid.
- *
- * Constraints:
- *
- * • 1 <= tokens.length <= 10^4
- * • tokens[i] is an operator or integer
- * • Expression is always valid
- * • No division by zero
- * • Result fits in 32-bit signed integer
- *
- * Representative Example 1
- *
- * Input:
- * ["2","1","+","3","*"]
- *
- * Evaluation:
- *
- * 2 1 +  -> 3
- * 3 3 *  -> 9
- *
- * Output:
- * 9
- *
- * ------------------------------------------------------------
- *
- * Representative Example 2
- *
- * Input:
- *
- * ["4","13","5","/","+"]
- *
- * Evaluation:
- *
- * 13 / 5 = 2
- * 4 + 2 = 6
- *
- * Output:
- * 6
- *
- * ------------------------------------------------------------
- *
- * Representative Example 3
- *
- * Input:
- *
- * ["10","6","9","3","+","-11","*","/","*","17","+","5","+"]
- *
- * Output:
- * 22
- *
- * Official LeetCode:
- *
- * https://leetcode.com/problems/evaluate-reverse-polish-notation/
- *
- *
- * ============================================================
- * 3. 🔵 CORE PATTERN OVERVIEW
- * ============================================================
- *
- * Pattern:
- * Expression Stack
- *
- * Archetype:
- * Last-In-First-Out state reconstruction
- *
- * Core Invariant:
- *
- * After processing every token,
- * the stack stores exactly the values of all completely evaluated
- * sub-expressions encountered so far.
- *
- * The top of the stack is always the most recently completed
- * sub-expression.
- *
- * Why It Works:
- *
- * Reverse Polish Notation postpones operators until both operands
- * have already appeared.
- *
- * Therefore when an operator arrives:
- *
- * • the required operands are guaranteed to be the two newest
- *   completed sub-expressions.
- *
- * Since the stack stores completed sub-expressions in evaluation
- * order, the correct operands are always on top.
- *
- * Recognition Signals:
- *
- * • postfix notation
- * • Reverse Polish Notation
- * • expression evaluation
- * • operands before operator
- * • every operator consumes previous values
- *
- * When To Use:
- *
- * • postfix evaluation
- * • compiler parsing
- * • calculator implementation
- * • expression interpreters
- * • stack machine simulation
- *
- * When NOT To Use:
- *
- * • infix parsing without preprocessing
- * • precedence parsing
- * • recursive expression trees already available
- *
- * Comparison:
- *
- * ------------------------------------------------------------
- * Infix Evaluation
- * ------------------------------------------------------------
- * Requires operator precedence.
- * Usually needs two stacks.
- *
- * ------------------------------------------------------------
- * Prefix Evaluation
- * ------------------------------------------------------------
- * Traverse from right to left.
- *
- * ------------------------------------------------------------
- * Reverse Polish Evaluation
- * ------------------------------------------------------------
- * Traverse once from left to right.
- * One stack is sufficient.
- *
- *
- * ============================================================
- * 4. 🟢 MENTAL MODEL & INVARIANTS
- * ============================================================
- *
- * Mental Model
- *
- * Imagine assembling larger expressions from already completed
- * smaller expressions.
- *
- * Every number starts as a complete expression.
- *
- * Every operator merges the latest two completed expressions into
- * one new completed expression.
- *
- * That newly formed expression becomes available for future
- * operators.
- *
- * The stack therefore represents the frontier between:
- *
- * already solved
- *
- * and
- *
- * not yet combined.
- *
- *
- * ------------------------------------------------------------
- * 🟢 Primary Invariant
- * ------------------------------------------------------------
- *
- * After processing token i,
- * every stack element represents one fully evaluated
- * sub-expression.
- *
- *
- * ------------------------------------------------------------
- * 🟢 Ordering Invariant
- * ------------------------------------------------------------
- *
- * The top of stack corresponds to the most recently completed
- * sub-expression.
- *
- * Therefore:
- *
- * first pop  = right operand
- *
- * second pop = left operand
- *
- * This ordering is essential.
- *
- *
- * ------------------------------------------------------------
- * 🟢 Size Invariant
- * ------------------------------------------------------------
- *
- * Reading an operand:
- *
- * stack size increases by one.
- *
- * Reading an operator:
- *
- * stack size decreases by one.
- *
- * because:
- *
- * two expressions become one.
- *
- *
- * ------------------------------------------------------------
- * 🟢 Operand Invariant
- * ------------------------------------------------------------
- *
- * Before every operator,
- * at least two values already exist.
- *
- * Guaranteed by the problem.
- *
- *
- * ------------------------------------------------------------
- * Variable Meaning
- * ------------------------------------------------------------
- *
- * stack
- *
- * Stores evaluated sub-expressions.
- *
- * right
- *
- * First value popped.
- *
- * left
- *
- * Second value popped.
- *
- * result
- *
- * Combination of left and right.
- *
- *
- * ------------------------------------------------------------
- * Allowed State Transition
- * ------------------------------------------------------------
- *
- * Operand:
- *
- * value
- * ->
- * push(value)
- *
- *
- * Operator:
- *
- * left
- * right
- *
- * ->
- *
- * evaluate(left,right)
- *
- * ->
- *
- * push(result)
- *
- *
- * ------------------------------------------------------------
- * Forbidden Transition
- * ------------------------------------------------------------
- *
- * Never reverse subtraction operands.
- *
- * Incorrect:
- *
- * right - left
- *
- * Correct:
- *
- * left - right
- *
- * Same rule for division.
- *
- *
- * ------------------------------------------------------------
- * Termination
- * ------------------------------------------------------------
- *
- * Every operator reduces the number of unfinished expressions.
- *
- * Eventually exactly one expression remains.
- *
- * That value is the answer.
- *
- *
- * ------------------------------------------------------------
- * Why Naive Solutions Fail
- * ------------------------------------------------------------
- *
- * Building an expression string first appears tempting.
- *
- * Problems:
- *
- * • precedence reconstruction
- * • parentheses management
- * • unnecessary parsing
- * • slower implementation
- *
- * RPN already encodes evaluation order.
- *
- * The stack directly executes that order.
- *
- *
- * ============================================================
- * 5. 🔴 WHY WRONG SOLUTIONS FAIL
- * ============================================================
- *
- * Mistake 1
- *
- * Swapping subtraction operands.
- *
- * Example:
- *
- * 5 2 -
- *
- * Correct:
- *
- * 5-2=3
- *
- * Wrong:
- *
- * 2-5=-3
- *
- * Violated Invariant:
- *
- * First pop is always the right operand.
- *
- * ------------------------------------------------------------
- *
- * Mistake 2
- *
- * Swapping division operands.
- *
- * Example:
- *
- * 8 2 /
- *
- * Correct:
- *
- * 8/2=4
- *
- * Wrong:
- *
- * 2/8=0
- *
- * Violated Invariant:
- *
- * Operand ordering.
- *
- * ------------------------------------------------------------
- *
- * Mistake 3
- *
- * Evaluating operators before enough operands.
- *
- * Impossible for valid inputs,
- * but common during manual implementations if stack operations
- * are written incorrectly.
- *
- * ------------------------------------------------------------
- *
- * Mistake 4
- *
- * Forgetting that integer division truncates toward zero.
- *
- * Java already satisfies this requirement.
- *
- *
- * ------------------------------------------------------------
- * Interview Trap
- * ------------------------------------------------------------
- *
- * Interviewer often asks:
- *
- * "Why are subtraction and division different?"
- *
- * Answer:
- *
- * Because addition and multiplication are commutative.
- *
- * Subtraction and division preserve operand order,
- * therefore first pop is right operand,
- * second pop is left operand.
- *
- *
- * ============================================================
- * ⚙ IMPLEMENTATION BLUEPRINT
- * ============================================================
- *
- * Typing Order
- *
- * 1.
- *
- * public int evalRPN(String[] tokens)
- *
- * 2.
- *
- * create stack
- *
- * 3.
- *
- * iterate through tokens
- *
- * 4.
- *
- * determine whether current token is operator
- *
- * 5.
- *
- * if operand
- *
- *      parse integer
- *      push
- *
- * 6.
- *
- * if operator
- *
- *      right = pop
- *      left = pop
- *
- *      compute
- *
- *      push result
- *
- * 7.
- *
- * return final stack value
- *
- *
- * Loop Skeleton
- *
- * for every token
- *
- *      operand ?
- *          push
- *      else
- *          pop right
- *          pop left
- *          compute
- *          push
- *
- *
- * ============================================================
- * 🧾 ULTRA-COMPACT PSEUDOCODE
- * ============================================================
- *
- * create stack
- *
- * for token
- *
- *      if number
- *          push
- *      else
- *          right=pop
- *          left=pop
- *          push(operation)
- *
- * return pop
- *
- *
- * ============================================================
- * 6. SOLUTION CLASSES
- * ============================================================
- */
-
-/**
- * Exactly one public class as required.
+ * =====================================================================================
  */
 public class EvalRPN {
 
-    /**
-     * --------------------------------------------------------
-     * Brute Force
-     * --------------------------------------------------------
+    /*
+     * =================================================================================
+     * 1️⃣ PROBLEM STATEMENT
+     * =================================================================================
      *
-     * Idea:
+     * LeetCode 150 — Evaluate Reverse Polish Notation
      *
-     * Continuously scan the token list until an operator whose
-     * operands are both numbers is found.
+     * Given an array of tokens representing an arithmetic expression in
+     * Reverse Polish Notation (postfix notation), evaluate the expression.
      *
-     * Replace those three tokens with the computed value.
+     * Each token is either:
      *
-     * Repeat until only one token remains.
+     *   integer
+     *   "+"
+     *   "-"
+     *   "*"
+     *   "/"
      *
-     * Invariant:
+     * Division truncates toward zero.
+     * The expression is valid.
      *
-     * Every replacement shortens the remaining expression.
+     * Example:
      *
-     * Limitation:
+     *   ["2","1","+","3","*"]
      *
-     * Multiple rescans.
+     *   2 1 +  -> 3
+     *   3 3 *  -> 9
      *
-     * Complexity:
+     *   answer = 9
      *
-     * Time:
-     * O(n²)
+     * Another:
      *
-     * Space:
-     * O(n)
+     *   ["4","13","5","/","+"]
      *
-     * Interview Usefulness:
+     *   13 / 5 = 2
+     *   4 + 2  = 6
      *
-     * Good starting discussion only.
+     *   answer = 6
+     *
+     * Constraints:
+     *
+     *   1 <= tokens.length <= 10^4
+     *   valid expression
+     *   no division by zero
+     *   answer fits in 32-bit signed integer
+     *
+     * =================================================================================
      */
-    static class BruteForce {
 
-        public int evalRPN(String[] tokens) {
 
-            java.util.List<String> list = new java.util.ArrayList<>();
-
-            for (String token : tokens) {
-                list.add(token);
-            }
-
-            while (list.size() > 1) {
-
-                for (int i = 0; i < list.size(); i++) {
-
-                    String token = list.get(i);
-
-                    if (!isOperator(token)) {
-                        continue;
-                    }
-
-                    int left = Integer.parseInt(list.get(i - 2));
-                    int right = Integer.parseInt(list.get(i - 1));
-
-                    int value = apply(left, right, token);
-
-                    list.remove(i);
-                    list.remove(i - 1);
-                    list.remove(i - 2);
-
-                    list.add(i - 2, String.valueOf(value));
-
-                    break;
-                }
-            }
-
-            return Integer.parseInt(list.get(0));
-        }        private static boolean isOperator(String token) {
-
-            return token.equals("+")
-                    || token.equals("-")
-                    || token.equals("*")
-                    || token.equals("/");
-        }
-
-        private static int apply(int left, int right, String operator) {
-
-            return switch (operator) {
-
-                case "+" -> left + right;
-
-                case "-" -> left - right;
-
-                case "*" -> left * right;
-
-                default -> left / right;
-            };
-        }
-    }
-
-    /**
-     * --------------------------------------------------------
-     * Improved
-     * --------------------------------------------------------
+    /*
+     * =================================================================================
+     * 2️⃣ HOW THE BRAIN SHOULD SEE IT
+     * =================================================================================
      *
-     * Idea:
+     * Do not begin with:
      *
-     * Maintain a stack containing evaluated sub-expressions.
+     *   "This is a stack problem."
      *
-     * Every operand is pushed exactly once.
+     * Begin with the evaluation dependency.
      *
-     * Every operator consumes two completed sub-expressions and
-     * produces one new completed sub-expression.
+     * In postfix notation:
      *
-     * Invariant:
+     *   operands appear BEFORE the operator that needs them.
      *
-     * The stack always stores only fully evaluated sub-expressions.
+     * Example:
      *
-     * Improvement:
+     *   2 1 +
      *
-     * Single left-to-right traversal.
+     * By the time "+" arrives:
      *
-     * No rescanning.
+     *   2 is already complete
+     *   1 is already complete
      *
-     * Complexity:
+     * The operator needs the TWO MOST RECENT completed expressions.
      *
-     * Time:
-     * O(n)
+     * That phrase is the structural signal:
      *
-     * Space:
-     * O(n)
+     *   TWO MOST RECENT
+     *          ↓
+     *        LIFO
+     *          ↓
+     *        STACK
      *
-     * Interview Usefulness:
+     * After combining them:
      *
-     * Introduces the correct invariant before discussing
-     * implementation refinements.
+     *   two completed expressions disappear
+     *   one new completed expression replaces them
+     *
+     * So the expression repeatedly COLLAPSES:
+     *
+     *   completed pieces
+     *         ↓
+     *   consume latest two
+     *         ↓
+     *   produce one completed piece
+     *
+     * =================================================================================
      */
-    static class Improved {
 
-        public int evalRPN(String[] tokens) {
 
-            Deque<Integer> stack = new ArrayDeque<>();
+    /*
+     * =================================================================================
+     * 3️⃣ UNSEEN-PROBLEM DECODER — WHEN SHOULD A STACK APPEAR?
+     * =================================================================================
+     *
+     * For a random problem, ask:
+     *
+     *   1. WHAT arrives one by one?
+     *
+     *      Here:
+     *          tokens
+     *
+     *   2. WHAT information from the past does current need?
+     *
+     *      Here:
+     *          an operator needs the two newest completed expressions
+     *
+     *   3. WHICH past item is needed first?
+     *
+     *      Here:
+     *          most recent one
+     *
+     *      most recent first -> LIFO -> stack
+     *
+     *   4. WHAT does consuming stack state mean?
+     *
+     *      Here:
+     *          two completed expressions are merged permanently
+     *
+     *   5. WHAT gets pushed back?
+     *
+     *      Here:
+     *          the newly completed expression
+     *
+     *
+     * Mental movie:
+     *
+     *                TOKEN ARRIVES
+     *                     |
+     *              +------+------+
+     *              |             |
+     *          OPERATOR         NUMBER
+     *              |             |
+     *              v             v
+     *         pop RIGHT         PUSH
+     *         pop LEFT
+     *              |
+     *              v
+     *         COMBINE THEM
+     *              |
+     *              v
+     *         PUSH RESULT
+     *
+     *
+     * Generic recognition sentence:
+     *
+     *   "Current input consumes the most recently completed states
+     *    and replaces them with one new completed state."
+     *
+     * That is a strong stack signal.
+     *
+     * =================================================================================
+     */
 
-            for (String token : tokens) {
 
-                if (!isOperator(token)) {
+    /*
+     * =================================================================================
+     * 4️⃣ PATTERN RECOGNITION + BOUNDARY
+     * =================================================================================
+     *
+     * Pattern:
+     *
+     *   Expression Stack / Reduction Stack
+     *
+     * Why it fits:
+     *
+     *   postfix notation already encodes evaluation order
+     *   each operator consumes the newest completed expressions
+     *   no precedence search is required
+     *
+     * Recognition signals:
+     *
+     *   postfix
+     *   Reverse Polish Notation
+     *   operands before operator
+     *   operator consumes previous values
+     *
+     * Boundary:
+     *
+     *   RPN / postfix
+     *      -> one left-to-right stack
+     *
+     *   Prefix
+     *      -> same reduction idea, traverse right-to-left
+     *
+     *   Infix
+     *      -> precedence is NOT already encoded
+     *      -> needs parsing / precedence handling
+     *
+     * =================================================================================
+     */
 
-                    stack.push(Integer.parseInt(token));
 
-                    continue;
-                }
+    /*
+     * =================================================================================
+     * 5️⃣ MENTAL MODEL + CORE INVARIANT
+     * =================================================================================
+     *
+     * Mental model:
+     *
+     *   Stack = shelf of COMPLETED sub-expressions.
+     *
+     * Every number is already a complete expression by itself.
+     *
+     * Every operator:
+     *
+     *   removes two completed expressions
+     *   combines them
+     *   returns one completed expression to the shelf
+     *
+     *
+     * Core invariant:
+     *
+     *   After every processed token,
+     *   every stack element represents one fully evaluated sub-expression.
+     *
+     *
+     * Ordering consequence:
+     *
+     *   first pop  = RIGHT operand
+     *   second pop = LEFT operand
+     *
+     * because the right operand appears later in postfix notation,
+     * so it is closer to the top.
+     *
+     *
+     * Size transition:
+     *
+     *   operand:
+     *       +1 stack element
+     *
+     *   operator:
+     *       pop 2, push 1
+     *       net -1
+     *
+     * =================================================================================
+     */
 
-                int right = stack.pop();
-
-                int left = stack.pop();
-
-                stack.push(apply(left, right, token));
-            }
-
-            return stack.pop();
-        }
-
-        private static boolean isOperator(String token) {
-
-            return token.length() == 1
-                    && "+-*/".indexOf(token.charAt(0)) >= 0;
-        }
-
-        private static int apply(int left,
-                                 int right,
-                                 String operator) {
-
-            return switch (operator.charAt(0)) {
-
-                case '+' -> left + right;
-
-                case '-' -> left - right;
-
-                case '*' -> left * right;
-
-                default -> left / right;
-            };
-        }
-    }
 
     /**
-     * --------------------------------------------------------
-     * Optimal (Interview Preferred)
-     * --------------------------------------------------------
+     * =================================================================================
+     * 6️⃣ REUSABLE REDUCTION SKELETON
+     * =================================================================================
      *
-     * Idea:
+     * Stack<State> stack = new Stack<>();
      *
-     * Traverse once.
+     * for (each input) {
      *
-     * Treat every stack value as one completely evaluated
-     * sub-expression.
+     *     if (input is an operator) {
      *
-     * When an operator appears:
+     *         State right = stack.pop();
+     *         State left  = stack.pop();
      *
-     * • remove the two newest completed expressions
-     * • combine them
-     * • push the new completed expression
+     *         stack.push(combine(left, right, input));
      *
-     * Invariant:
+     *     } else {
      *
-     * After every processed token,
-     * every stack element is a valid completed sub-expression.
+     *         stack.push(state);
+     *     }
+     * }
      *
-     * Correctness:
+     * return stack.pop();
      *
-     * Reverse Polish Notation guarantees that whenever an operator
-     * appears, its operands are precisely the two most recently
-     * completed sub-expressions.
      *
-     * Therefore popping twice always retrieves the correct operands.
+     * Customize only:
      *
-     * Complexity:
+     *   1. What creates a completed state?
+     *   2. How many previous states does an operation consume?
+     *   3. In what order are they consumed?
+     *   4. How are they combined?
      *
-     * Time:
-     * O(n)
      *
-     * Space:
-     * O(n)
+     * THIS PROBLEM:
      *
-     * Interview Usefulness:
+     *   completed state -> integer value
+     *   operator consumes -> 2 values
+     *   first pop -> right
+     *   second pop -> left
+     *   combine -> arithmetic operation
      *
-     * Preferred solution.
-     *
-     * Small.
-     *
-     * Deterministic.
-     *
-     * Easy to derive from the invariant.
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 7️⃣ PRIMARY IMPLEMENTATION
+     * =================================================================================
      */
     static class Optimal {
 
         public int evalRPN(String[] tokens) {
 
-            // 🟢 Invariant:
-            // Stack contains only completed sub-expressions.
             Deque<Integer> stack = new ArrayDeque<>();
 
             for (String token : tokens) {
 
-                // Operand starts a new completed expression.
-                if (!isOperator(token)) {
+                if ("+-*/".contains(token)) {
+
+                    int right = stack.pop();
+                    int left = stack.pop();
+
+                    switch (token) {
+                        case "+" -> stack.push(left + right);
+                        case "-" -> stack.push(left - right);
+                        case "*" -> stack.push(left * right);
+                        case "/" -> stack.push(left / right);
+                    }
+
+                } else {
 
                     stack.push(Integer.parseInt(token));
-
-                    continue;
                 }
-
-                // First pop is always the right operand.
-                int right = stack.pop();
-
-                // Second pop is always the left operand.
-                int left = stack.pop();
-
-                int result;
-
-                switch (token) {
-
-                    case "+" ->
-
-                        // Addition is order independent.
-                            result = left + right;
-
-                    case "-" ->
-
-                        // Preserve operand order.
-                            result = left - right;
-
-                    case "*" ->
-
-                        // Multiplication is order independent.
-                            result = left * right;
-
-                    default ->
-
-                        // Java truncates toward zero.
-                            result = left / right;
-                }
-
-                // Newly completed expression replaces two smaller ones.
-                stack.push(result);
             }
 
-            // Entire expression has collapsed into one value.
             return stack.pop();
-        }
-
-        private static boolean isOperator(String token) {
-
-            return token.length() == 1
-                    && "+-*/".indexOf(token.charAt(0)) >= 0;
         }
     }
 
-/**
- * ============================================================
- * 🟣 INTERVIEW ARTICULATION
- * ============================================================
- *
- * Invariant
- *
- * The stack never stores partial expressions.
- *
- * Every value is already completely evaluated.
- *
- * ------------------------------------------------------------
- *
- * Search Space
- *
- * Remaining unfinished expression.
- *
- * Every operator reduces that search space by merging two
- * completed expressions into one.
- *
- * ------------------------------------------------------------
- *
- * Discard Rule
- *
- * Once two operands are combined into one value,
- * the original operands will never be needed again.
- *
- * Therefore they can safely disappear from the stack.
- *
- * ------------------------------------------------------------
- *
- * Correctness
- *
- * Because postfix notation guarantees operands appear before
- * operators,
- * the top two stack elements are exactly the required operands.
- *
- * ------------------------------------------------------------
- *
- * Termination
- *
- * Every operator decreases stack size by one.
- *
- * Eventually only one completed expression remains.
- *
- * ------------------------------------------------------------
- *
- * In-place Feasibility
- *
- * Not naturally.
- *
- * A stack is required because future operators may reference
- * previously computed values in LIFO order.
- *
- * ------------------------------------------------------------
- *
- * Streaming Feasibility
- *
- * Yes.
- *
- * Tokens can be processed one by one without storing the entire
- * input beyond the evaluation stack.
- *
- * ------------------------------------------------------------
- *
- * When NOT To Use
- *
- * Infix expressions with precedence rules.
- *
- * Those require parsing or operator precedence handling.
- *
- *
- * ============================================================
- * 🎯 INTERVIEW RECALL SHEET
- * ============================================================
- *
- * Trigger
- *
- * Postfix expression.
- *
- * ------------------------------------------------------------
- *
- * Pattern
- *
- * Expression Stack.
- *
- * ------------------------------------------------------------
- *
- * Invariant
- *
- * Stack stores only completed sub-expressions.
- *
- * ------------------------------------------------------------
- *
- * Search Target
- *
- * Final single expression.
- *
- * ------------------------------------------------------------
- *
- * Discard Rule
- *
- * Two completed expressions merge into one.
- *
- * ------------------------------------------------------------
- *
- * Common Trap
- *
- * Reverse subtraction/division operands.
- *
- * ------------------------------------------------------------
- *
- * Edge Cases
- *
- * • one operand
- * • negative numbers
- * • zero
- * • truncating division
- *
- * ------------------------------------------------------------
- *
- * One-Liner
- *
- * Push operands, pop two for every operator,
- * evaluate, push result.
- *
- * ------------------------------------------------------------
- *
- * Re-derivation Cue
- *
- * Every stack value represents one finished expression.
- *
- *
- * ============================================================
- * 🔄 VARIATIONS & TWEAKS
- * ============================================================
- *
- * Variant:
- * Prefix Evaluation
- *
- * Change:
- *
- * Traverse from right to left.
- *
- * Invariant remains identical.
- *
- * ------------------------------------------------------------
- *
- * Variant:
- *
- * Floating Point Evaluation
- *
- * Replace integer stack with double stack.
- *
- * Invariant remains unchanged.
- *
- * ------------------------------------------------------------
- *
- * Variant:
- *
- * Custom Operators
- *
- * Extend operator dispatch.
- *
- * Stack invariant does not change.
- *
- * ------------------------------------------------------------
- *
- * Pattern Break
- *
- * Infix notation.
- *
- * Why?
- *
- * Operator precedence is no longer encoded.
- *
- * One stack is insufficient by itself.
- *
 
- * ============================================================
- * 🧠 MASTERY CHECKLIST
- * ============================================================
- *
- * Can you answer these without looking at the code?
- *
- * □ What is the invariant?
- *
- *   Every stack element is a fully evaluated sub-expression.
- *
- * □ What is the search target?
- *
- *   Reduce all sub-expressions into exactly one final value.
- *
- * □ What is the discard rule?
- *
- *   Two completed sub-expressions are replaced by one newly
- *   completed sub-expression.
- *
- * □ Why does termination happen?
- *
- *   Every operator reduces stack size by one.
- *
- * □ Why does the naive approach fail?
- *
- *   It repeatedly rescans and reconstructs expressions instead
- *   of exploiting the evaluation order already encoded by RPN.
- *
- * □ Which edge cases matter?
- *
- *   • Single operand
- *   • Negative numbers
- *   • Zero
- *   • Division truncation toward zero
- *
- * □ What is the easiest debugging checkpoint?
- *
- *   After every processed token, verify every stack value
- *   represents a complete sub-expression.
- *
- * □ Are subtraction and division handled correctly?
- *
- *   First pop is right operand.
- *   Second pop is left operand.
- *
- * □ Can this invariant extend to prefix notation?
- *
- *   Yes.
- *   Only the traversal direction changes.
- *
- * □ Where does this pattern stop working?
- *
- *   Infix expressions without precedence handling.
- */
-
-    /**
-     * ============================================================
-     * 🧪 MAIN + SELF-VERIFYING TESTS
-     * ============================================================
+    /*
+     * =================================================================================
+     * 8️⃣ FULL STATE-EVOLUTION DRY RUN
+     * =================================================================================
+     *
+     * tokens:
+     *
+     *   ["2","1","+","3","*"]
+     *
+     * stack shown bottom -> top.
+     *
+     * ========================================================================
+     * TOKEN | ACTION                           | STACK
+     * ========================================================================
+     * "2"   | push 2                           | [2]
+     * "1"   | push 1                           | [2,1]
+     * "+"   | right=1, left=2, push 2+1=3     | [3]
+     * "3"   | push 3                           | [3,3]
+     * "*"   | right=3, left=3, push 3*3=9     | [9]
+     * ========================================================================
+     *
+     * Final stack contains exactly one completed expression:
+     *
+     *   9
+     *
+     * =================================================================================
      */
+
+
+    /*
+     * =================================================================================
+     * 9️⃣ FOCUSED HARD-PART TRACE — WHY RIGHT IS POPPED FIRST
+     * =================================================================================
+     *
+     * Example:
+     *
+     *   5 2 -
+     *
+     * Before "-":
+     *
+     *   bottom -> [5,2] <- top
+     *
+     * The token closest to the operator is 2.
+     *
+     * Therefore:
+     *
+     *   first pop  = 2 = right
+     *   second pop = 5 = left
+     *
+     * Correct:
+     *
+     *   left - right
+     *   5 - 2
+     *   = 3
+     *
+     * Wrong:
+     *
+     *   right - left
+     *   2 - 5
+     *   = -3
+     *
+     * Same issue for division.
+     *
+     * Addition and multiplication hide this bug because they are commutative.
+     *
+     * RECALL:
+     *
+     *   FIRST POP  = RIGHT
+     *   SECOND POP = LEFT
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 🔟 HIGH-ROI NUANCES
+     * =================================================================================
+     *
+     * 1. Operator detection stays literal:
+     *
+     *    check whether token is one of the four operator symbols.
+     *
+     *    So "-11" is not mistaken for the minus operator.
+     *    It falls into the number branch and parses normally.
+     *
+     *
+     * 2. Java integer division already truncates toward zero.
+     *
+     *        7 / -3 == -2
+     *
+     *
+     * 3. No precedence handling is needed.
+     *
+     *    RPN already encodes evaluation order.
+     *
+     *
+     * 4. Java `assert` is disabled unless the JVM runs with -ea.
+     *
+     *    Therefore the tests below use explicit checks instead of `assert`,
+     *    so they really verify the implementation on a normal run.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣1️⃣ CORRECTNESS + COMPLEXITY
+     * =================================================================================
+     *
+     * Correctness:
+     *
+     * Base:
+     *
+     *   A number is a fully evaluated expression, so pushing it preserves
+     *   the invariant.
+     *
+     * Operator step:
+     *
+     *   RPN guarantees both operands have already appeared.
+     *
+     *   By the invariant, the stack contains completed sub-expressions.
+     *   The two newest completed expressions are exactly the operator's
+     *   right and left operands.
+     *
+     *   Combining them creates another completed expression, so pushing
+     *   the result preserves the invariant.
+     *
+     * End:
+     *
+     *   A valid complete expression collapses to one stack value.
+     *   That value is the result of the entire expression.
+     *
+     *
+     * Complexity:
+     *
+     *   each token is processed once
+     *   each stack push/pop is O(1)
+     *
+     *   Time  = O(n)
+     *   Space = O(n)
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣2️⃣ SAME-FAMILY VARIANTS
+     * =================================================================================
+     *
+     * Prefix evaluation:
+     *
+     *   same reduction invariant
+     *   traverse right -> left
+     *
+     *
+     * Floating-point RPN:
+     *
+     *   same invariant
+     *   Integer -> Double
+     *
+     *
+     * Custom operators:
+     *
+     *   same invariant
+     *   extend combination logic
+     *
+     *
+     * Operator with different arity:
+     *
+     *   same reduction idea
+     *   number of consumed stack states changes
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣3️⃣ ±Δ — WHEN THE PATTERN SURVIVES / BREAKS
+     * =================================================================================
+     *
+     * +Δ SAME CORE
+     *
+     * Postfix with "^"
+     *
+     *   only combination rule changes
+     *
+     *
+     * Prefix notation
+     *
+     *   traversal direction changes
+     *   reduction invariant survives
+     *
+     *
+     * -------------------------------------------------------------------------
+     * -Δ PATTERN BREAKS
+     * -------------------------------------------------------------------------
+     *
+     * Infix:
+     *
+     *   "2 + 3 * 4"
+     *
+     * Current operator cannot always execute immediately.
+     * Precedence must first be resolved.
+     *
+     * Therefore the simple:
+     *
+     *   operand -> push
+     *   operator -> pop two immediately
+     *
+     * invariant is insufficient.
+     *
+     *
+     * Expression tree already given:
+     *
+     *   structure already stores dependency
+     *   recursive/tree traversal may be more natural than token stack simulation
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣4️⃣ 30-SECOND RECONSTRUCTION + INTERVIEW ARTICULATION
+     * =================================================================================
+     *
+     * Reconstruction:
+     *
+     *   postfix
+     *      ↓
+     *   operator sees operands already completed
+     *      ↓
+     *   needs two MOST RECENT completed values
+     *      ↓
+     *   stack
+     *
+     *   operator?
+     *       right = pop
+     *       left  = pop
+     *       apply
+     *       push
+     *
+     *   else:
+     *       parse number
+     *       push
+     *
+     *   return final value
+     *
+     *
+     * Interview sentence:
+     *
+     *   "I keep a stack where every value represents one fully evaluated
+     *    sub-expression. If the token is an operator, I pop right, then left,
+     *    apply the operator, and push the result. Otherwise I parse the number
+     *    and push it. Each token is processed once, so the solution is O(n)."
+     *
+     * =================================================================================
+     */
+
+
+    // =================================================================================
+    // 1️⃣5️⃣ SELF-VERIFYING TESTS
+    // =================================================================================
+
     public static void main(String[] args) {
 
         Optimal solver = new Optimal();
 
-        // Representative example.
-        assert solver.evalRPN(
-                new String[]{"2", "1", "+", "3", "*"}) == 9;
+        assertEquals(
+                9,
+                solver.evalRPN(new String[]{"2", "1", "+", "3", "*"}),
+                "representative example"
+        );
 
-        // Division before addition.
-        assert solver.evalRPN(
-                new String[]{"4", "13", "5", "/", "+"}) == 6;
+        assertEquals(
+                6,
+                solver.evalRPN(new String[]{"4", "13", "5", "/", "+"}),
+                "division before addition"
+        );
 
-        // Official complex example.
-        assert solver.evalRPN(
-                new String[]{
-                        "10",
-                        "6",
-                        "9",
-                        "3",
-                        "+",
-                        "-11",
-                        "*",
-                        "/",
-                        "*",
-                        "17",
-                        "+",
-                        "5",
-                        "+"
-                }) == 22;
+        assertEquals(
+                22,
+                solver.evalRPN(new String[]{
+                        "10", "6", "9", "3", "+", "-11", "*",
+                        "/", "*", "17", "+", "5", "+"
+                }),
+                "official complex example"
+        );
 
-        // Single operand should return itself.
-        assert solver.evalRPN(
-                new String[]{"42"}) == 42;
+        assertEquals(
+                42,
+                solver.evalRPN(new String[]{"42"}),
+                "single operand"
+        );
 
-        // Verify subtraction preserves operand order.
-        assert solver.evalRPN(
-                new String[]{"5", "2", "-"}) == 3;
+        assertEquals(
+                3,
+                solver.evalRPN(new String[]{"5", "2", "-"}),
+                "subtraction operand order"
+        );
 
-        // Verify division preserves operand order.
-        assert solver.evalRPN(
-                new String[]{"8", "2", "/"}) == 4;
+        assertEquals(
+                4,
+                solver.evalRPN(new String[]{"8", "2", "/"}),
+                "division operand order"
+        );
 
-        // Division truncates toward zero.
-        assert solver.evalRPN(
-                new String[]{"7", "-3", "/"}) == -2;
+        assertEquals(
+                -2,
+                solver.evalRPN(new String[]{"7", "-3", "/"}),
+                "division truncates toward zero"
+        );
 
-        // Negative operand multiplication.
-        assert solver.evalRPN(
-                new String[]{"-2", "4", "*"}) == -8;
+        assertEquals(
+                -8,
+                solver.evalRPN(new String[]{"-2", "4", "*"}),
+                "negative operand"
+        );
 
-        // Nested expression.
-        assert solver.evalRPN(
-                new String[]{
-                        "3",
-                        "4",
-                        "+",
-                        "2",
-                        "*",
-                        "7",
-                        "/"
-                }) == 2;
+        assertEquals(
+                14,
+                solver.evalRPN(new String[]{
+                        "5", "1", "2", "+", "4", "*", "+", "3", "-"
+                }),
+                "mixed operators"
+        );
 
-        // Mixed operators.
-        assert solver.evalRPN(
-                new String[]{
-                        "5",
-                        "1",
-                        "2",
-                        "+",
-                        "4",
-                        "*",
-                        "+",
-                        "3",
-                        "-"
-                }) == 14;
+        System.out.println("ALL TESTS PASSED");
+    }
 
-        // Cross-check all implementations.
+    private static void assertEquals(
+            int expected,
+            int actual,
+            String name) {
 
-        BruteForce brute = new BruteForce();
-        Improved improved = new Improved();
-
-        String[][] suites = {
-
-                {"2", "1", "+", "3", "*"},
-
-                {"4", "13", "5", "/", "+"},
-
-                {"5", "2", "-"},
-
-                {"8", "2", "/"},
-
-                {"-2", "4", "*"},
-
-                {"42"},
-
-                {
-                        "10",
-                        "6",
-                        "9",
-                        "3",
-                        "+",
-                        "-11",
-                        "*",
-                        "/",
-                        "*",
-                        "17",
-                        "+",
-                        "5",
-                        "+"
-                }
-        };
-
-        for (String[] test : suites) {
-
-            int expected = brute.evalRPN(test);
-
-            assert improved.evalRPN(test) == expected;
-
-            assert solver.evalRPN(test) == expected;
+        if (expected != actual) {
+            throw new AssertionError(
+                    name
+                            + " expected=" + expected
+                            + " actual=" + actual
+            );
         }
-
-        System.out.println("All assertions passed.");
     }
 }

@@ -3,232 +3,455 @@ package org.chijai.day1.Arrays.session2;
 import java.util.Arrays;
 
 /**
- * Container With Most Water — V2
+ * =====================================================================================
+ * CONTAINER WITH MOST WATER — OPPOSITE-END TWO POINTERS
+ * =====================================================================================
  *
- * Primary classification:
+ * Primary recognition:
  *
- * Array
- * -> Two Pointers
- * -> Opposite-End Two Pointers
- * -> Greedy Search-Space Elimination
+ *      BEST ENDPOINT PAIR
+ *      +
+ *      SAFE DISCARD PROOF
+ *          -> TWO POINTERS
  *
  * Core motto:
  *
- * "Discard an endpoint only when you can prove it is exhausted forever."
+ *      "Discard an endpoint only when you can prove
+ *       every future pair using it is dominated."
+ *
+ * =====================================================================================
  */
 public class ContainerWithMostWater {
 
     /*
-     * ============================================================
-     * 📘 PROBLEM
-     * ============================================================
+     * =================================================================================
+     * 1️⃣ PROBLEM STATEMENT
+     * =================================================================================
      *
-     * Given height[], choose two indices left < right.
+     * Given height[], choose two indices:
+     *
+     *      left < right
      *
      * Area:
      *
-     *     (right - left)
-     *     *
-     *     min(height[left], height[right])
+     *      width
+     *          = right - left
+     *
+     *      limitingHeight
+     *          = min(height[left], height[right])
+     *
+     *      area
+     *          = width * limitingHeight
      *
      * Return the maximum possible area.
      *
+     *
      * Example:
      *
-     * [1,8,6,2,5,4,8,3,7]
+     *      [1,8,6,2,5,4,8,3,7]
      *
-     * answer = 49
+     * answer:
      *
-     * Target:
+     *      49
      *
-     * Time  : O(n)
-     * Space : O(1)
+     *
+     * Mental image:
+     *
+     *      LEFT ENDPOINT                    RIGHT ENDPOINT
+     *
+     *            █~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~█
+     *            █~~~~ interior irrelevant ~~~~~█
+     *            █~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~█
+     *
+     * Only:
+     *
+     *      endpoint heights
+     *      +
+     *      distance between them
+     *
+     * determine the area.
+     *
+     * =================================================================================
      */
 
-    /*
-     * ============================================================
-     * 🧠 PATTERN + MENTAL MODEL
-     * ============================================================
-     *
-     * Pattern:
-     *
-     * OPPOSITE-END TWO POINTERS
-     *
-     * Archetype:
-     *
-     * SEARCH-SPACE ELIMINATION
-     *
-     * Start with:
-     *
-     * left  = 0
-     * right = n - 1
-     *
-     * This gives the widest possible container.
-     *
-     * ------------------------------------------------------------
-     * FORMULA
-     * ------------------------------------------------------------
-     *
-     * area = width * limitingHeight
-     *
-     * width:
-     *
-     *     right - left
-     *
-     * limitingHeight:
-     *
-     *     min(height[left], height[right])
-     *
-     * ------------------------------------------------------------
-     * KEY OBSERVATION
-     * ------------------------------------------------------------
-     *
-     * Every pointer movement inward makes width SMALLER.
-     *
-     * Therefore, after moving inward, the only way area can improve
-     * is if the limiting height becomes larger.
-     *
-     * The SHORTER wall is the limiting wall.
-     *
-     * So only replacing the shorter wall can possibly help.
-     *
-     * ------------------------------------------------------------
-     * DISCARD RULE
-     * ------------------------------------------------------------
-     *
-     * if height[left] <= height[right]
-     *
-     *     left++
-     *
-     * else
-     *
-     *     right--
-     *
-     * ------------------------------------------------------------
-     * ONE-LINER
-     * ------------------------------------------------------------
-     *
-     * "Width always decreases, so only increasing the limiting
-     *  height can compensate."
-     */
 
     /*
-     * ============================================================
-     * 🔬 WHY DISCARDING THE SHORTER WALL IS SAFE
-     * ============================================================
+     * =================================================================================
+     * 2️⃣ HOW THE BRAIN SHOULD SEE IT
+     * =================================================================================
+     *
+     * Do NOT begin with:
+     *
+     *      "Container -> Two Pointers."
+     *
+     * Begin with:
+     *
+     *      "What exactly am I choosing?"
+     *
+     * Here:
+     *
+     *      exactly TWO endpoints.
+     *
+     *
+     * Then ask:
+     *
+     *      "What determines the score of this pair?"
+     *
+     *      area
+     *          = distance
+     *          *
+     *          shorter endpoint
+     *
+     *
+     * Key observation:
+     *
+     *      width always DECREASES when pointers move inward.
+     *
+     * Therefore:
+     *
+     *      after moving inward,
+     *      area can improve only if the limiting height improves enough.
+     *
+     *
+     * The SHORTER endpoint is the bottleneck.
+     *
+     * That immediately suggests the real question:
+     *
+     *      "Can I prove the shorter endpoint is exhausted forever?"
+     *
+     * If yes:
+     *
+     *      discard it.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 3️⃣ UNSEEN-PROBLEM DECODER — SEE TWO POINTERS BEFORE CODING
+     * =================================================================================
+     *
+     * For a random problem, ask:
+     *
+     *
+     * 1. AM I choosing a PAIR of ordered endpoints?
+     *
+     *      yes / no
+     *
+     *
+     * 2. DOES the score depend on both endpoints together?
+     *
+     *      yes / no
+     *
+     *
+     * 3. DOES moving inward monotonically reduce one resource?
+     *
+     * Here:
+     *
+     *      width always decreases.
+     *
+     *
+     * 4. CAN I prove one endpoint can NEVER help again?
+     *
+     * Here:
+     *
+     *      yes.
+     *
+     *      the shorter endpoint has already been tested
+     *      with its widest possible partner.
+     *
+     *
+     * 5. DOES the interior matter?
+     *
+     * Here:
+     *
+     *      NO.
+     *
+     *
+     * If:
+     *
+     *      pair
+     *      +
+     *      monotonic shrink
+     *      +
+     *      safe endpoint discard
+     *
+     * then opposite-end two pointers should be strongly suspected.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 4️⃣ 3 × 3 ANTI-CONFUSION MATRIX
+     * =================================================================================
+     *
+     * =============================================================================================================
+     * ASK ↓ / TOOL →    | MONOTONIC STACK          | PREFIX / SUFFIX               | TWO POINTERS
+     * =============================================================================================================
+     *
+     * NEAREST BLOCKER   | ✅ exact fit             | ❌ stores BEST, not nearest    | ❌ no endpoint discard proof
+     *                    | Largest Rectangle        |                               |
+     *
+     * -------------------------------------------------------------------------------------------------------------
+     *
+     * BEST SIDE SUPPORT | ⚠️ possible with         | ✅ exact fit                   | ✅ space optimization
+     *                    | alternate valley model   | Trapping Rain Water           | Trapping Rain Water
+     *
+     * -------------------------------------------------------------------------------------------------------------
+     *
+     * BEST ENDPOINT PAIR| ❌ nearest irrelevant    | ❌ side summaries insufficient | ✅ exact fit
+     *                    |                          |                                | Container
+     *
+     * =============================================================================================================
+     *
+     *
+     * LOCK:
+     *
+     *      NEAREST -> MONOTONIC STACK
+     *
+     *      BEST    -> PREFIX / SUFFIX
+     *
+     *      PAIR    -> TWO POINTERS
+     *
+     *
+     * Deepest interior discriminator:
+     *
+     *      Largest Rectangle:
+     *          interior = CONSTRAINT
+     *
+     *      Trapping Rain Water:
+     *          interior = CONTRIBUTION / VALLEY
+     *
+     *      Container:
+     *          interior = IRRELEVANT
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 5️⃣ CORE INVARIANT + DISCARD PROOF
+     * =================================================================================
      *
      * Suppose:
      *
-     *     height[left] <= height[right]
+     *      height[left] <= height[right]
      *
-     * Current area:
+     * Current pair:
      *
-     *     (right - left) * height[left]
+     *      area
+     *          = (right - left) * height[left]
      *
-     * Now consider ANY future pair that keeps this same left:
      *
-     *     (left, right - 1)
-     *     (left, right - 2)
-     *     ...
+     * Now keep the SAME left endpoint
+     * and move right inward:
      *
-     * Every such pair has:
+     *      (left, right - 1)
+     *      (left, right - 2)
+     *      ...
      *
-     * 1. smaller width
      *
-     * 2. limiting height <= height[left]
+     * Every such future pair has:
      *
-     * Therefore:
+     *      smaller width
      *
-     * futureArea
-     * <= smallerWidth * height[left]
-     * <  currentWidth * height[left]
+     * AND:
      *
-     * So this left endpoint has already produced its largest
-     * possible container.
+     *      limitingHeight <= height[left]
      *
-     * It is EXHAUSTED FOREVER.
      *
      * Therefore:
      *
-     *     left++
+     *      futureArea
+     *          <= smallerWidth * height[left]
      *
-     * is mathematically safe.
+     *          < currentWidth * height[left]
      *
-     * Symmetric proof applies when the right wall is shorter.
+     *
+     * So this left endpoint has ALREADY produced
+     * the best possible area it can ever produce.
+     *
+     * It is:
+     *
+     *      EXHAUSTED FOREVER.
+     *
+     *
+     * Therefore:
+     *
+     *      left++
+     *
+     * is safe.
+     *
+     *
+     * Symmetrically:
+     *
+     *      if height[right] < height[left]
+     *
+     *      right--
+     *
+     *
+     * CORE INVARIANT:
+     *
+     *      Every discarded endpoint has already been evaluated
+     *      in the best-width situation it could ever have,
+     *      so no discarded endpoint can belong to a better
+     *      remaining solution.
+     *
+     * =================================================================================
      */
 
+
     /*
-     * ============================================================
-     * 📈 APPROACH PROGRESSION
-     * ============================================================
+     * =================================================================================
+     * 6️⃣ HOW SOMEONE COULD INVENT THIS
+     * =================================================================================
      *
-     * 1. BRUTE FORCE
+     * Do NOT try to invent:
      *
-     * Try every pair.
+     *      while (left < right) { ... }
+     *
+     * directly.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 1 — BRUTE FORCE PAIR SEARCH
+     * -------------------------------------------------------------------------
+     *
+     * Natural first attempt:
+     *
+     *      try every pair (L, R)
      *
      * Number of pairs:
      *
-     *     C(n, 2)
+     *      O(n^2)
      *
-     * Time:
      *
-     *     O(n^2)
+     * -------------------------------------------------------------------------
+     * STEP 2 — ASK WHAT MAKES A PAIR GOOD
+     * -------------------------------------------------------------------------
      *
-     * Space:
+     *      area
+     *          = width * limitingHeight
      *
-     *     O(1)
+     * Start with maximum possible width:
      *
-     * ------------------------------------------------------------
+     *      left = 0
+     *      right = n - 1
      *
-     * 2. PROVE DOMINATED PAIRS CAN BE DISCARDED
      *
-     * Once the shorter endpoint is evaluated against its widest
-     * possible partner, every remaining pair using that endpoint
-     * is worse.
+     * -------------------------------------------------------------------------
+     * STEP 3 — WIDTH CAN ONLY GET WORSE
+     * -------------------------------------------------------------------------
      *
-     * So one whole row/column of the pair search space disappears.
+     * Once either pointer moves inward:
      *
-     * ------------------------------------------------------------
+     *      width decreases.
      *
-     * 3. OPPOSITE-END TWO POINTERS
+     * Therefore:
      *
-     * Evaluate current pair.
+     *      improvement requires a better limiting height.
      *
-     * Permanently discard the shorter endpoint.
      *
-     * Exactly one endpoint disappears per iteration.
+     * -------------------------------------------------------------------------
+     * STEP 4 — IDENTIFY THE BOTTLENECK
+     * -------------------------------------------------------------------------
      *
-     * Time:
+     *      limitingHeight
+     *          = min(height[left], height[right])
      *
-     *     O(n)
+     * The shorter endpoint is the bottleneck.
      *
-     * Space:
      *
-     *     O(1)
+     * -------------------------------------------------------------------------
+     * STEP 5 — PROVE ONE WHOLE SET OF PAIRS IS DOMINATED
+     * -------------------------------------------------------------------------
+     *
+     * If LEFT is shorter:
+     *
+     *      keeping LEFT
+     *      +
+     *      shrinking width
+     *
+     * can never improve the current area.
+     *
+     * Therefore every remaining pair using LEFT is useless.
+     *
+     * Discard LEFT.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * STEP 6 — REPEAT
+     * -------------------------------------------------------------------------
+     *
+     * Exactly one endpoint disappears each iteration.
+     *
+     *      n endpoints
+     *          -> O(n) iterations
+     *
+     *
+     * GENERAL INVENTION TEMPLATE:
+     *
+     *      brute-force search space
+     *          ↓
+     *      identify monotonic resource loss
+     *          ↓
+     *      identify bottleneck
+     *          ↓
+     *      prove one candidate class is dominated
+     *          ↓
+     *      discard safely
+     *
+     * =================================================================================
      */
 
-    static final class BruteForce {
 
-        static int maxArea(int[] height) {
+    /**
+     * =================================================================================
+     * 7️⃣ REUSABLE OPPOSITE-END TWO-POINTER SKELETON
+     * =================================================================================
+     *
+     * int left = 0;
+     * int right = n - 1;
+     *
+     * while (left < right) {
+     *
+     *     evaluate(left, right);
+     *
+     *     if (left endpoint is provably exhausted) {
+     *         left++;
+     *     } else {
+     *         right--;
+     *     }
+     * }
+     *
+     *
+     * Customize:
+     *
+     *      1. pair score
+     *
+     *      2. bottleneck / ordering relation
+     *
+     *      3. proof for discarding one endpoint
+     *
+     *
+     * Never use this skeleton unless:
+     *
+     *      you can state WHY the discarded endpoint
+     *      cannot participate in a better remaining answer.
+     *
+     * =================================================================================
+     */
 
-            int best = 0;
 
-            for (int left = 0; left < height.length - 1; left++) {
-
-                for (int right = left + 1; right < height.length; right++) {
-
-                    int area =
-                            (right - left)
-                            * Math.min(height[left], height[right]);
-
-                    best = Math.max(best, area);
-                }
-            }
-
-            return best;
-        }
-    }
-
+    /*
+     * =================================================================================
+     * 8️⃣ PRIMARY IMPLEMENTATION
+     * =================================================================================
+     */
     static final class Optimal {
 
         static int maxArea(int[] height) {
@@ -244,16 +467,21 @@ public class ContainerWithMostWater {
 
             while (left < right) {
 
-                int width = right - left;
+                int width =
+                        right - left;
 
                 int limitingHeight =
-                        Math.min(height[left], height[right]);
+                        Math.min(
+                                height[left],
+                                height[right]
+                        );
 
-                int area = width * limitingHeight;
+                int area =
+                        width * limitingHeight;
 
-                best = Math.max(best, area);
+                best =
+                        Math.max(best, area);
 
-                // Discard only the exhausted / limiting endpoint.
                 if (height[left] <= height[right]) {
                     left++;
                 } else {
@@ -265,345 +493,468 @@ public class ContainerWithMostWater {
         }
     }
 
-    /*
-     * ============================================================
-     * ⚠️ COMMON WRONG MOVES
-     * ============================================================
-     *
-     * 1. Move the taller wall.
-     *
-     * Wrong because:
-     *
-     * width decreases
-     * +
-     * shorter wall still limits the height
-     *
-     * so improvement is impossible.
-     *
-     * ------------------------------------------------------------
-     *
-     * 2. Move both pointers.
-     *
-     * Wrong because:
-     *
-     * two endpoints are discarded without proving both are useless.
-     *
-     * ------------------------------------------------------------
-     *
-     * 3. Pick the two tallest walls.
-     *
-     * Wrong because:
-     *
-     * area depends on BOTH:
-     *
-     * height
-     * and
-     * distance.
-     *
-     * ------------------------------------------------------------
-     *
-     * 4. Sort the heights.
-     *
-     * Wrong because:
-     *
-     * sorting destroys original index distance.
-     */
 
     /*
-     * ============================================================
-     * 🔍 WHY THIS IS NOT BINARY SEARCH
-     * ============================================================
+     * =================================================================================
+     * 9️⃣ FULL STATE-EVOLUTION DRY RUN
+     * =================================================================================
      *
-     * It LOOKS similar:
+     * height:
      *
-     * left
-     * right
-     * while (left < right)
-     * discard something
+     *      [1,8,6,2,5,4,8,3,7]
      *
-     * But the discard reason is different.
+     * =========================================================================================
+     * L | R | h[L] | h[R] | width | limit | area | best | discard
+     * =========================================================================================
+     * 0 | 8 |  1   |  7   |   8   |   1   |   8  |   8  | LEFT
+     * 1 | 8 |  8   |  7   |   7   |   7   |  49  |  49  | RIGHT
+     * 1 | 7 |  8   |  3   |   6   |   3   |  18  |  49  | RIGHT
+     * 1 | 6 |  8   |  8   |   5   |   8   |  40  |  49  | LEFT*
+     * 2 | 6 |  6   |  8   |   4   |   6   |  24  |  49  | LEFT
+     * 3 | 6 |  2   |  8   |   3   |   2   |   6  |  49  | LEFT
+     * 4 | 6 |  5   |  8   |   2   |   5   |  10  |  49  | LEFT
+     * 5 | 6 |  4   |  8   |   1   |   4   |   4  |  49  | LEFT
+     * =========================================================================================
      *
-     * Binary Search:
+     * * Equal heights:
      *
-     *     discard using sorted order / monotonic predicate
+     *      either endpoint may be discarded.
      *
-     * Container With Most Water:
+     * Final:
      *
-     *     discard using a dominance proof from the objective formula
+     *      49
      *
-     * Binary-search question:
-     *
-     *     "Which half cannot contain the answer?"
-     *
-     * Two-pointer question:
-     *
-     *     "Which endpoint has become useless forever?"
+     * =================================================================================
      */
 
-    /*
-     * ============================================================
-     * 🧭 EXACT CLASSIFICATION
-     * ============================================================
-     *
-     * arrays/
-     *   twoPointers/
-     *     oppositeEnds/
-     *       ContainerWithMostWater.java
-     *
-     * Primary:
-     *
-     *     Two Pointers
-     *
-     * Subtype:
-     *
-     *     Opposite-End Two Pointers
-     *
-     * Reasoning:
-     *
-     *     Greedy / Search-Space Elimination
-     *
-     * NOT:
-     *
-     *     Stack
-     *     Monotonic Stack
-     *     Sliding Window
-     *     Binary Search
-     */
 
     /*
-     * ============================================================
-     * 🔗 RELATED PROBLEMS
-     * ============================================================
+     * =================================================================================
+     * 🔟 FOCUSED HARD PART — WHY MOVE THE SHORTER WALL?
+     * =================================================================================
      *
-     * SAME OPPOSITE-END FAMILY
-     * ------------------------
+     * Suppose:
      *
-     * Two Sum II
+     *      L height = 4
+     *      R height = 9
      *
-     *     sum too small -> left++
-     *     sum too large -> right--
+     * Current:
      *
-     * 3Sum
+     *      area = width * 4
      *
-     *     sort once, then use opposite-end two pointers
-     *     inside each fixed first element.
      *
-     * Boats to Save People
+     * If you move R inward but keep L:
      *
-     *     heaviest person creates the greedy endpoint decision.
+     *      width becomes smaller
      *
-     * Trapping Rain Water — two-pointer version
+     * while:
      *
-     *     process the side whose boundary is already determined.
+     *      limiting height can NEVER exceed 4
      *
-     * ------------------------------------------------------------
-     * LOOKS SIMILAR, DIFFERENT PATTERN
-     * ------------------------------------------------------------
+     * because L is still only 4.
      *
-     * Largest Rectangle in Histogram
      *
-     *     Monotonic Stack
+     * So:
      *
-     * Why?
+     *      smaller width
+     *      *
+     *      no better limiting height
      *
-     *     Need nearest smaller boundaries for MANY unresolved bars.
+     * can never beat the current pair using L.
      *
-     * Daily Temperatures
      *
-     *     Monotonic Stack
+     * Therefore:
      *
-     * Why?
+     *      do NOT move the taller wall.
      *
-     *     Need to remember MANY unresolved earlier indices.
+     *      discard the shorter wall.
      *
-     * ------------------------------------------------------------
-     * SEPARATOR
-     * ------------------------------------------------------------
      *
-     * Can one endpoint be permanently discarded with proof?
+     * RECALL:
      *
-     *     -> Opposite-End Two Pointers
+     *      WIDTH WILL ONLY SHRINK.
      *
-     * Need to remember many unresolved previous items?
+     *      SO CHANGE THE BOTTLENECK.
      *
-     *     -> Monotonic Stack
+     * =================================================================================
      */
 
-    /*
-     * ============================================================
-     * 🔄 USEFUL VARIATIONS
-     * ============================================================
-     *
-     * Return indices instead of area:
-     *
-     * store bestLeft / bestRight whenever area improves.
-     *
-     * ------------------------------------------------------------
-     *
-     * Equal heights:
-     *
-     * either endpoint may be discarded.
-     *
-     * ------------------------------------------------------------
-     *
-     * Skip dominated heights:
-     *
-     * after discarding a wall of height h,
-     * you may skip inward walls with height <= h.
-     *
-     * Same proof:
-     *
-     * smaller width + no better limiting height.
-     *
-     * Complexity remains O(n).
-     *
-     * ------------------------------------------------------------
-     *
-     * Count ALL containers:
-     *
-     * this pattern no longer works.
-     *
-     * The discard proof preserves the optimum,
-     * not complete enumeration.
-     */
 
     /*
-     * ============================================================
-     * 🎯 INTERVIEW RECALL
-     * ============================================================
+     * =================================================================================
+     * 1️⃣1️⃣ CONTAINER vs RAIN vs LARGEST RECTANGLE
+     * =================================================================================
      *
-     * Trigger:
+     * CONTAINER:
      *
-     * opposite ends
-     * +
-     * score depends on both boundaries
-     * +
-     * one endpoint can be proved useless forever
+     *      "Which TWO walls should I choose?"
      *
-     * ------------------------------------------------------------
+     *      interior = IRRELEVANT
      *
-     * Formula:
+     *      PAIR + discard proof
+     *          -> TWO POINTERS
      *
-     * area = width * min(leftHeight, rightHeight)
      *
-     * ------------------------------------------------------------
+     * TRAPPING RAIN WATER:
      *
-     * Invariant:
+     *      "How much can sit above EVERY position?"
      *
-     * every discarded endpoint has already produced its best
-     * possible container.
+     *      interior = CONTRIBUTION / VALLEY
      *
-     * ------------------------------------------------------------
+     *      BEST support on both sides
+     *          -> PREFIX / SUFFIX
      *
-     * Discard rule:
+     *      two pointers are later space optimization.
      *
-     * move the shorter wall.
      *
-     * ------------------------------------------------------------
+     * LARGEST RECTANGLE:
      *
-     * Re-derive:
+     *      "How far can THIS chosen height survive?"
      *
-     * width only decreases
-     * -> improvement needs greater limiting height
-     * -> shorter wall is the limiter
-     * -> discard shorter wall
+     *      interior = CONSTRAINT
      *
-     * ------------------------------------------------------------
+     *      NEAREST smaller blocker
+     *          -> MONOTONIC STACK
+     *
+     *
+     * Ultra-short:
+     *
+     *      RECTANGLE -> NEAREST
+     *
+     *      RAIN      -> BEST
+     *
+     *      CONTAINER -> PAIR
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣2️⃣ WHY THIS IS NOT BINARY SEARCH / SLIDING WINDOW
+     * =================================================================================
+     *
+     * BINARY SEARCH:
+     *
+     *      discard a half using sorted order
+     *      or a monotonic predicate.
+     *
+     * CONTAINER:
+     *
+     *      discard ONE endpoint using dominance
+     *      from the objective formula.
+     *
+     *
+     * SLIDING WINDOW:
+     *
+     *      usually maintains a valid contiguous window
+     *      while expanding/shrinking around a window condition.
+     *
+     * CONTAINER:
+     *
+     *      does NOT maintain all elements between pointers as a window state.
+     *
+     *      interior elements are irrelevant.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣3️⃣ ±Δ — HORIZONTAL MASTERY
+     * =================================================================================
+     *
+     * +Δ SAME FAMILY:
+     *
+     *      pair score changes
+     *
+     * but still:
+     *
+     *      opposite ends
+     *      +
+     *      one endpoint can be safely discarded
+     *
+     *      -> two pointers may survive.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * -Δ: INTERIOR BECOMES A CONSTRAINT
+     * -------------------------------------------------------------------------
+     *
+     * Change:
+     *
+     *      interior irrelevant
+     *
+     * to:
+     *
+     *      every interior value must satisfy threshold H
+     *
+     * Result:
+     *
+     *      endpoint-only discard proof may die.
+     *
+     *      range / nearest-boundary reasoning becomes relevant.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * -Δ: ONE BEST PAIR -> EVERY POSITION CONTRIBUTES
+     * -------------------------------------------------------------------------
+     *
+     * Change:
+     *
+     *      choose one pair
+     *
+     * to:
+     *
+     *      compute bounded contribution at every index
+     *
+     * Result:
+     *
+     *      becomes Rain-like.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * -Δ: OPTIMUM ONLY -> ENUMERATE ALL VALID PAIRS
+     * -------------------------------------------------------------------------
+     *
+     * The discard proof preserves:
+     *
+     *      the optimum.
+     *
+     * It does NOT preserve:
+     *
+     *      every possible pair.
+     *
+     * Therefore:
+     *
+     *      counting/listing all pairs
+     *      may require a different method.
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣4️⃣ COMPLEXITY — DERIVE, DON'T MEMORIZE
+     * =================================================================================
+     *
+     * Time:
+     *
+     *      left only moves right.
+     *
+     *      right only moves left.
+     *
+     *      exactly one pointer moves each iteration.
+     *
+     * Therefore:
+     *
+     *      at most O(n) pointer movements.
+     *
+     *      Time = O(n)
+     *
+     *
+     * Space:
+     *
+     *      only:
+     *
+     *          left
+     *          right
+     *          width
+     *          limitingHeight
+     *          area
+     *          best
+     *
+     *      Space = O(1)
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
+     * 1️⃣5️⃣ 30-SECOND RECONSTRUCTION + INTERVIEW ARTICULATION
+     * =================================================================================
+     *
+     * Reconstruction:
+     *
+     *      choose TWO endpoints
+     *
+     *      area
+     *          = width * min(leftHeight, rightHeight)
+     *
+     *      start with maximum width
+     *
+     *      width only decreases
+     *
+     *      so improvement needs a better limiting height
+     *
+     *      shorter endpoint is limiting
+     *
+     *      prove every future pair keeping it is worse
+     *
+     *      discard shorter endpoint
+     *
+     *      repeat
+     *
+     *
+     * Code shape:
+     *
+     *      EVALUATE PAIR
+     *          -> DISCARD BOTTLENECK END
+     *
      *
      * Interview proof:
      *
-     * "If left is shorter, every future pair using left has
-     *  smaller width and limiting height no greater than left.
-     *  Therefore none can beat the current pair using left,
-     *  so left is safe to discard."
+     *      "If the left wall is shorter, every future pair that keeps
+     *       that same left wall has smaller width while its limiting
+     *       height cannot exceed the left wall. So none can beat the
+     *       current pair using that left endpoint, which makes left
+     *       safe to discard. The right side is symmetric."
+     *
+     * =================================================================================
      */
 
-    /*
-     * ============================================================
-     * 🧪 SELF-VERIFYING TESTS
-     * ============================================================
-     */
 
-    private static void assertEquals(int expected,
-                                     int actual,
-                                     String reason) {
+    // =================================================================================
+    // 1️⃣6️⃣ SELF-VERIFYING TESTS
+    // =================================================================================
+
+    private static void assertEquals(
+            int expected,
+            int actual,
+            String reason) {
 
         if (expected != actual) {
             throw new AssertionError(
-                    reason +
-                    "\nExpected: " + expected +
-                    "\nActual:   " + actual
+                    reason
+                            + "\nExpected: " + expected
+                            + "\nActual:   " + actual
             );
         }
     }
 
-    private static void assertMatchesBruteForce(int[] height) {
 
-        int brute = BruteForce.maxArea(height);
-        int optimal = Optimal.maxArea(height);
+    /*
+     * Test oracle only.
+     *
+     * This is intentionally NOT presented as a second study implementation.
+     * It exists to cross-check the optimal solution on regression cases.
+     */
+    private static int bruteMaxArea(int[] height) {
+
+        int best = 0;
+
+        for (int left = 0;
+             left < height.length - 1;
+             left++) {
+
+            for (int right = left + 1;
+                 right < height.length;
+                 right++) {
+
+                int area =
+                        (right - left)
+                        * Math.min(
+                                height[left],
+                                height[right]
+                        );
+
+                best =
+                        Math.max(best, area);
+            }
+        }
+
+        return best;
+    }
+
+
+    private static void assertMatchesBruteForce(
+            int[] height) {
+
+        int brute =
+                bruteMaxArea(height);
+
+        int optimal =
+                Optimal.maxArea(height);
 
         if (brute != optimal) {
             throw new AssertionError(
-                    "Mismatch for " + Arrays.toString(height) +
-                    "\nBrute:   " + brute +
-                    "\nOptimal: " + optimal
+                    "Mismatch for "
+                            + Arrays.toString(height)
+                            + "\nBrute:   " + brute
+                            + "\nOptimal: " + optimal
             );
         }
     }
+
 
     public static void main(String[] args) {
 
         assertEquals(
                 49,
                 Optimal.maxArea(
-                        new int[]{1, 8, 6, 2, 5, 4, 8, 3, 7}
+                        new int[]{
+                                1,8,6,2,5,4,8,3,7
+                        }
                 ),
-                "Classic example failed"
+                "classic example"
         );
 
         assertEquals(
                 1,
-                Optimal.maxArea(new int[]{1, 1}),
-                "Minimum input failed"
+                Optimal.maxArea(
+                        new int[]{1,1}
+                ),
+                "minimum input"
         );
 
         assertEquals(
                 6,
-                Optimal.maxArea(new int[]{1, 2, 3, 4, 5}),
-                "Increasing heights failed"
+                Optimal.maxArea(
+                        new int[]{1,2,3,4,5}
+                ),
+                "increasing heights"
         );
 
         assertEquals(
                 6,
-                Optimal.maxArea(new int[]{5, 4, 3, 2, 1}),
-                "Decreasing heights failed"
+                Optimal.maxArea(
+                        new int[]{5,4,3,2,1}
+                ),
+                "decreasing heights"
         );
 
         assertEquals(
                 400,
-                Optimal.maxArea(new int[]{100, 1, 1, 1, 100}),
-                "Tall endpoints failed"
+                Optimal.maxArea(
+                        new int[]{100,1,1,1,100}
+                ),
+                "tall endpoints"
         );
 
         assertEquals(
                 16,
-                Optimal.maxArea(new int[]{4, 4, 4, 4, 4}),
-                "Equal heights failed"
+                Optimal.maxArea(
+                        new int[]{4,4,4,4,4}
+                ),
+                "equal heights"
         );
 
         int[][] regression = {
-                {1, 8, 6, 2, 5, 4, 8, 3, 7},
-                {1, 1},
-                {5, 5},
-                {1, 2, 3, 4, 5},
-                {5, 4, 3, 2, 1},
-                {2, 3, 10, 5, 7, 8, 9},
-                {100, 1, 1, 1, 100},
-                {4, 4, 4, 4, 4},
-                {0, 2, 0, 4, 0},
-                {9, 1, 2, 3, 9},
-                {2, 4, 2, 4, 2},
-                {6, 9, 3, 4, 5, 8}
+                {1,8,6,2,5,4,8,3,7},
+                {1,1},
+                {5,5},
+                {1,2,3,4,5},
+                {5,4,3,2,1},
+                {2,3,10,5,7,8,9},
+                {100,1,1,1,100},
+                {4,4,4,4,4},
+                {0,2,0,4,0},
+                {9,1,2,3,9},
+                {2,4,2,4,2},
+                {6,9,3,4,5,8}
         };
 
         for (int[] test : regression) {
@@ -611,7 +962,7 @@ public class ContainerWithMostWater {
         }
 
         System.out.println(
-                "All ContainerWithMostWaterV2 assertions passed."
+                "ALL TESTS PASSED"
         );
     }
 }
