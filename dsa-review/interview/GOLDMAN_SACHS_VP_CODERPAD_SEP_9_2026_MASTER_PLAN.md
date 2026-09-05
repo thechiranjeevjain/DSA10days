@@ -195,33 +195,33 @@ If energy is low, do a spoken derivation plus Java skeleton and three tests. Do 
 **Start state:** the plan begins at 16:30 IST.  
 **Hard stop:** 23:10. Lights out by 23:30.
 
-| Time | Exact work | Hourly WIN |
-|---|---|---|
-| 16:30–17:00 | Send/verify interview confirmation; fill water; eat light snack; phone on Do Not Disturb; open blank `Main.java`; paper + pen; close all solution tabs | Confirmation handled and environment ready |
-| 17:00–17:18 | Intersection of Two Linked Lists | 18-minute protocol + score |
-| 17:18–17:36 | Min Stack | 18-minute protocol + score |
-| 17:36–17:54 | Implement Queue Using Stacks | 18-minute protocol + score |
-| 17:54–18:00 | Record scores; stand; water | Three scores recorded |
-| 18:00–18:18 | Implement Stack Using Queues | 18-minute protocol + score |
-| 18:18–18:36 | Next Greater Element I | 18-minute protocol + score |
-| 18:36–18:54 | Next Greater Element II | 18-minute protocol + score |
-| 18:54–19:00 | Record scores; choose first repair candidate | No solution reading yet |
-| 19:00–19:45 | Dinner, 10-minute walk, no phone/problem content | Return fed and calm |
-| 19:45–20:03 | Online Stock Span | 18-minute protocol + score |
-| 20:03–20:21 | Largest Rectangle in Histogram | 18-minute protocol + score |
-| 20:21–20:39 | Sum of Subarray Minimums | 18-minute protocol + score; cut first if late |
-| 20:39–20:45 | Record scores; water | Three scores recorded |
-| 20:45–21:03 | Kth Largest in a Stream | 18-minute protocol + score |
-| 21:03–21:21 | K Closest Points to Origin | 18-minute protocol + score |
-| 21:21–21:39 | Evaluate Reverse Polish Notation | 18-minute protocol + score |
-| 21:39–21:45 | Record scores; stand | Three scores recorded |
-| 21:45–22:03 | Letter Combinations of a Phone Number | 18-minute protocol + score |
-| 22:03–22:21 | Time Based Key-Value Store | 18-minute protocol + score |
-| 22:21–22:39 | Implement Trie | 18-minute protocol + score |
-| 22:39–22:45 | Write Day 5 totals and rank worst gaps | Red list has evidence, not feelings |
-| 22:45–23:03 | Repair the single worst `R`, else worst `Y` | Closed-book reconstruction completed |
-| 23:03–23:10 | Put Saturday materials on desk; close laptop | No more coding |
-| 23:10–23:30 | Wash, breathing, lights down | Asleep by 23:30 |
+| Time | Exact work | LeetCode | Local Java | Hourly WIN |
+|---|---|---|---|---|
+| 16:30–17:00 | Send/verify interview confirmation; fill water; eat light snack; phone on Do Not Disturb; open blank `Main.java`; paper + pen; close all solution tabs | — | — | Confirmation handled and environment ready |
+| 17:00–17:18 | Intersection of Two Linked Lists | [LeetCode](https://leetcode.com/problems/intersection-of-two-linked-lists/) | [Intersection.java](../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) | 18-minute protocol + score |
+| 17:18–17:36 | Min Stack | [LeetCode](https://leetcode.com/problems/min-stack/) | [MinStackDesign.java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | 18-minute protocol + score |
+| 17:36–17:54 | Implement Queue Using Stacks | [LeetCode](https://leetcode.com/problems/implement-queue-using-stacks/) | [StackQueue.java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | 18-minute protocol + score |
+| 17:54–18:00 | Record scores; stand; water | — | — | Three scores recorded |
+| 18:00–18:18 | Implement Stack Using Queues | [LeetCode](https://leetcode.com/problems/implement-stack-using-queues/) | [StackQueue.java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | 18-minute protocol + score |
+| 18:18–18:36 | Next Greater Element I | [LeetCode](https://leetcode.com/problems/next-greater-element-i/) | [NextGreaterElement.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | 18-minute protocol + score |
+| 18:36–18:54 | Next Greater Element II | [LeetCode](https://leetcode.com/problems/next-greater-element-ii/) | [NextGreaterElement.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | 18-minute protocol + score |
+| 18:54–19:00 | Record scores; choose first repair candidate | — | — | No solution reading yet |
+| 19:00–19:45 | Dinner, 10-minute walk, no phone/problem content | — | — | Return fed and calm |
+| 19:45–20:03 | Online Stock Span | [LeetCode](https://leetcode.com/problems/online-stock-span/) | [OnlineStockSpan.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/OnlineStockSpan.java) | 18-minute protocol + score |
+| 20:03–20:21 | Largest Rectangle in Histogram | [LeetCode](https://leetcode.com/problems/largest-rectangle-in-histogram/) | [LargestRectangle.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java) | 18-minute protocol + score |
+| 20:21–20:39 | Sum of Subarray Minimums | [LeetCode](https://leetcode.com/problems/sum-of-subarray-minimums/) | [SumOfSubarrayMinimums.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SumOfSubarrayMinimums.java) | 18-minute protocol + score; cut first if late |
+| 20:39–20:45 | Record scores; water | — | — | Three scores recorded |
+| 20:45–21:03 | Kth Largest in a Stream | [LeetCode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | 18-minute protocol + score |
+| 21:03–21:21 | K Closest Points to Origin | [LeetCode](https://leetcode.com/problems/k-closest-points-to-origin/) | [KClosestPointsToOrigin.java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java) | 18-minute protocol + score |
+| 21:21–21:39 | Evaluate Reverse Polish Notation | [LeetCode](https://leetcode.com/problems/evaluate-reverse-polish-notation/) | [EvalRPN.java](../../src/main/java/org/chijai/day5/stack/session3/EvalRPN.java) | 18-minute protocol + score |
+| 21:39–21:45 | Record scores; stand | — | — | Three scores recorded |
+| 21:45–22:03 | Letter Combinations of a Phone Number | [LeetCode](https://leetcode.com/problems/letter-combinations-of-a-phone-number/) | [LetterCombinationsOfAPhoneNumber.java](../../src/main/java/org/chijai/day11/backtracking/session1/LetterCombinationsOfAPhoneNumber.java) | 18-minute protocol + score |
+| 22:03–22:21 | Time Based Key-Value Store | [LeetCode](https://leetcode.com/problems/time-based-key-value-store/) | [TimeBasedKeyValueStore.java](../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | 18-minute protocol + score |
+| 22:21–22:39 | Implement Trie | [LeetCode](https://leetcode.com/problems/implement-trie-prefix-tree/) | [TriePrefix.java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | 18-minute protocol + score |
+| 22:39–22:45 | Write Day 5 totals and rank worst gaps | — | — | Red list has evidence, not feelings |
+| 22:45–23:03 | Repair the single worst `R`, else worst `Y` | — | — | Closed-book reconstruction completed |
+| 23:03–23:10 | Put Saturday materials on desk; close laptop | — | — | No more coding |
+| 23:10–23:30 | Wash, breathing, lights down | — | — | Asleep by 23:30 |
 
 ### Friday local references
 
@@ -259,55 +259,55 @@ Saturday 08:00 recalls: 1) ______ 2) ______ 3) ______
 
 ## 09:00–16:00 — remaining Day 6, fixed order
 
-| Time | Exact work | Invariant to say before code |
-|---|---|---|
-| 09:00–09:18 | Design Add and Search Words | Exact char follows one edge; `.` branches; success requires terminal node at end |
-| 09:18–09:36 | Gas Station | If tank becomes negative at `i`, no start since the candidate can reach `i+1` |
-| 09:36–09:54 | Task Scheduler | Most frequent tasks create the minimum frame/idle pressure |
-| 09:54–10:00 | Score/break | Three scores |
-| 10:00–10:18 | Number of Provinces | Each unseen city starts exactly one component |
-| 10:18–10:36 | Network Delay Time | Popped minimum non-stale distance is finalized; relax outgoing edges |
-| 10:36–10:54 | Word Ladder | First BFS discovery gives the shortest transformation count |
-| 10:54–11:00 | Score/break | Three scores |
-| 11:00–11:18 | Accounts Merge | Shared email proves component/DSU connectivity |
-| 11:18–11:36 | 01 Matrix | Multi-source BFS first arrival is nearest-zero distance |
-| 11:36–11:54 | Pacific Atlantic Water Flow | Reverse traversal climbs from each ocean; answer is intersection |
-| 11:54–12:00 | Score/break | Three scores |
-| 12:00–13:00 | Lunch + 15-minute walk; zero DSA | Full reset |
-| 13:00–13:18 | Surrounded Regions | Only border-connected `O` cells survive |
-| 13:18–13:36 | Binary Tree Right Side View | Last node of each BFS level is visible |
-| 13:36–13:54 | Path Sum | Remaining target travels down; success is checked only at a leaf |
-| 13:54–14:00 | Score/break | Three scores |
-| 14:00–14:18 | Search in BST | Ordering eliminates one subtree at every node |
-| 14:18–14:36 | Insert into BST | Follow ordering until the first null child; attach exactly once |
-| 14:36–14:54 | Invert Binary Tree | Every node swaps its two children exactly once |
-| 14:54–15:00 | Score/break | Three scores |
-| 15:00–15:18 | Repair morning’s worst `R` | Closed-book reconstruction |
-| 15:18–15:36 | Repair next `R`, else worst `Y` | Closed-book reconstruction |
-| 15:36–15:54 | Repair next `R`, else fixed mutation: Network Delay with unweighted edges | Explain what changes from Dijkstra to BFS |
-| 15:54–16:00 | Final scores; close the syllabus | Write “COVERAGE CLOSED” |
+| Time | Exact work | LeetCode | Local Java | Invariant to say before code |
+|---|---|---|---|---|
+| 09:00–09:18 | Design Add and Search Words | [LeetCode](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | [TrieWordDictionary.java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | Exact char follows one edge; `.` branches; success requires terminal node at end |
+| 09:18–09:36 | Gas Station | [LeetCode](https://leetcode.com/problems/gas-station/) | [GasStation.java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | If tank becomes negative at `i`, no start since the candidate can reach `i+1` |
+| 09:36–09:54 | Task Scheduler | [LeetCode](https://leetcode.com/problems/task-scheduler/) | [TaskScheduler.java](../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | Most frequent tasks create the minimum frame/idle pressure |
+| 09:54–10:00 | Score/break | — | — | Three scores |
+| 10:00–10:18 | Number of Provinces | [LeetCode](https://leetcode.com/problems/number-of-provinces/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Each unseen city starts exactly one component |
+| 10:18–10:36 | Network Delay Time | [LeetCode](https://leetcode.com/problems/network-delay-time/) | [NetworkDelayTime.java](../../src/main/java/org/chijai/day8/graph/session2/NetworkDelayTime.java) | Popped minimum non-stale distance is finalized; relax outgoing edges |
+| 10:36–10:54 | Word Ladder | [LeetCode](https://leetcode.com/problems/word-ladder/) | [WordLadder.java](../../src/main/java/org/chijai/day8/graph/session3/WordLadder.java) | First BFS discovery gives the shortest transformation count |
+| 10:54–11:00 | Score/break | — | — | Three scores |
+| 11:00–11:18 | Accounts Merge | [LeetCode](https://leetcode.com/problems/accounts-merge/) | [AccountsMerge.java](../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | Shared email proves component/DSU connectivity |
+| 11:18–11:36 | 01 Matrix | [LeetCode](https://leetcode.com/problems/01-matrix/) | [Matrix01.java](../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | Multi-source BFS first arrival is nearest-zero distance |
+| 11:36–11:54 | Pacific Atlantic Water Flow | [LeetCode](https://leetcode.com/problems/pacific-atlantic-water-flow/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Reverse traversal climbs from each ocean; answer is intersection |
+| 11:54–12:00 | Score/break | — | — | Three scores |
+| 12:00–13:00 | Lunch + 15-minute walk; zero DSA | — | — | Full reset |
+| 13:00–13:18 | Surrounded Regions | [LeetCode](https://leetcode.com/problems/surrounded-regions/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Only border-connected `O` cells survive |
+| 13:18–13:36 | Binary Tree Right Side View | [LeetCode](https://leetcode.com/problems/binary-tree-right-side-view/) | [BinaryTreeSideView.java](../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeSideView.java) | Last node of each BFS level is visible |
+| 13:36–13:54 | Path Sum | [LeetCode](https://leetcode.com/problems/path-sum/) | [BinaryTreePathProblems.java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | Remaining target travels down; success is checked only at a leaf |
+| 13:54–14:00 | Score/break | — | — | Three scores |
+| 14:00–14:18 | Search in BST | [LeetCode](https://leetcode.com/problems/search-in-a-binary-search-tree/) | [LCA_BST.java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | Ordering eliminates one subtree at every node |
+| 14:18–14:36 | Insert into BST | [LeetCode](https://leetcode.com/problems/insert-into-a-binary-search-tree/) | [LCA_BST.java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | Follow ordering until the first null child; attach exactly once |
+| 14:36–14:54 | Invert Binary Tree | [LeetCode](https://leetcode.com/problems/invert-binary-tree/) | [InvertBinaryTree.java](../../src/main/java/org/chijai/day6/trees/session3/InvertBinaryTree.java) | Every node swaps its two children exactly once |
+| 14:54–15:00 | Score/break | — | — | Three scores |
+| 15:00–15:18 | Repair morning’s worst `R` | — | — | Closed-book reconstruction |
+| 15:18–15:36 | Repair next `R`, else worst `Y` | — | — | Closed-book reconstruction |
+| 15:36–15:54 | Repair next `R`, else fixed mutation: Network Delay with unweighted edges | [Network Delay Time](https://leetcode.com/problems/network-delay-time/) | [NetworkDelayTime.java](../../src/main/java/org/chijai/day8/graph/session2/NetworkDelayTime.java) | Explain what changes from Dijkstra to BFS |
+| 15:54–16:00 | Final scores; close the syllabus | — | — | Write “COVERAGE CLOSED” |
 
 ## 16:00–22:15 — Goldman qualification block
 
-| Time | Exact work | Pass condition |
-|---|---|---|
-| 16:00–16:15 | Snack and walk | No screen |
-| 16:15–17:00 | **Mock 1:** Highest Average Score + String Compression | Two runnable Java solutions using the 45-minute compressed two-problem timing below |
-| 17:00–17:15 | Postmortem | First failure only; no self-judgment |
-| 17:15–18:00 | **Mock 2:** Trapping Rain Water | 45-minute one-problem protocol, constant space |
-| 18:00–19:00 | Dinner + movement | Zero study |
-| 19:00–19:45 | **Mock 3:** Maximum Path from bottom-left to top-right | Correct DP state, boundaries, negative-value policy clarified |
-| 19:45–20:00 | Postmortem | Repair scheduled or G1 recorded |
-| 20:00–20:18 | Validate BST | Ancestor bounds, not parent-only comparisons |
-| 20:18–20:36 | Word Break | `dp[i]` prefix meaning said before code |
-| 20:36–20:54 | Find Minimum in Rotated Sorted Array | Sorted-half reasoning and duplicate assumption clarified |
-| 20:54–21:00 | Score/break | Three scores |
-| 21:00–21:18 | Repair worst mock failure | Reconstruction |
-| 21:18–21:36 | Repair second failure | Reconstruction |
-| 21:36–21:54 | Write Goldman Red List, maximum 10 items | Each entry is a concrete failure, not a topic |
-| 21:54–22:05 | Read Sunday schedule, place paper/charger/water | No decision tomorrow |
-| 22:05–22:15 | Close laptop | Preparation stops |
-| 22:15–22:45 | Wind down | Lights out |
+| Time | Exact work | LeetCode / closest analogue | Local Java | Pass condition |
+|---|---|---|---|---|
+| 16:00–16:15 | Snack and walk | — | — | No screen |
+| 16:15–17:00 | **Mock 1:** Highest Average Score + String Compression | [High Five - closest analogue](https://leetcode.com/problems/high-five/)<br>[String Compression](https://leetcode.com/problems/string-compression/) | — | Two runnable Java solutions using the 45-minute compressed two-problem timing below |
+| 17:00–17:15 | Postmortem | — | — | First failure only; no self-judgment |
+| 17:15–18:00 | **Mock 2:** Trapping Rain Water | [LeetCode](https://leetcode.com/problems/trapping-rain-water/) | [TrappingRainwater.java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | 45-minute one-problem protocol, constant space |
+| 18:00–19:00 | Dinner + movement | — | — | Zero study |
+| 19:00–19:45 | **Mock 3:** Maximum Path from bottom-left to top-right | Custom prompt; no exact LeetCode match | — | Correct DP state, boundaries, negative-value policy clarified |
+| 19:45–20:00 | Postmortem | — | — | Repair scheduled or G1 recorded |
+| 20:00–20:18 | Validate BST | [LeetCode](https://leetcode.com/problems/validate-binary-search-tree/) | [ValidateBST.java](../../src/main/java/org/chijai/day6/trees/session3/ValidateBST.java) | Ancestor bounds, not parent-only comparisons |
+| 20:18–20:36 | Word Break | [LeetCode](https://leetcode.com/problems/word-break/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | `dp[i]` prefix meaning said before code |
+| 20:36–20:54 | Find Minimum in Rotated Sorted Array | [LeetCode](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) | [BinarySearchPatternLab.java](../../src/main/java/org/chijai/patterns/binarysearch/BinarySearchPatternLab.java) | Sorted-half reasoning and duplicate assumption clarified |
+| 20:54–21:00 | Score/break | — | — | Three scores |
+| 21:00–21:18 | Repair worst mock failure | — | — | Reconstruction |
+| 21:18–21:36 | Repair second failure | — | — | Reconstruction |
+| 21:36–21:54 | Write Goldman Red List, maximum 10 items | — | — | Each entry is a concrete failure, not a topic |
+| 21:54–22:05 | Read Sunday schedule, place paper/charger/water | — | — | No decision tomorrow |
+| 22:05–22:15 | Close laptop | — | — | Preparation stops |
+| 22:15–22:45 | Wind down | — | — | Lights out |
 
 ### Saturday Mock 1 compressed timing
 
@@ -341,37 +341,37 @@ Goldman Red List:
 **Mission:** three realistic mocks, repairs, Java reliability, and role articulation.  
 **No new syllabus. Heavy DSA stops at 18:00.**
 
-| Time | Exact work | WIN |
-|---|---|---|
-| 07:15–08:00 | Wake, breakfast, quiet reset | Seated at 08:00 |
-| 08:00–08:18 | Red-list recall 1 | G1/G2/Y/R |
-| 08:18–08:36 | Red-list recall 2 | G1/G2/Y/R |
-| 08:36–08:54 | Red-list recall 3 | G1/G2/Y/R |
-| 08:54–09:00 | Scores/break | References closed |
-| 09:00–10:00 | **Full Mock A:** Number of Islands + Score Aggregation | Use exact 60-minute protocol |
-| 10:00–10:15 | Postmortem | First correctness failure + first communication failure |
-| 10:15–10:33 | Repair Mock A | Closed-book reconstruction |
-| 10:33–11:00 | Break/snack/walk | No screen |
-| 11:00–12:00 | **Full Mock B:** Unique Substrings of Size K + Fraction to Recurring Decimal | Fixed window, then remainder-cycle map |
-| 12:00–12:15 | Postmortem | First failures recorded |
-| 12:15–12:33 | Repair Mock B | Closed-book reconstruction |
-| 12:33–13:30 | Lunch + walk | Zero study |
-| 13:30–14:30 | **Full Mock C:** Shortest Subarray to Remove + Validate BST | Two unrelated families; communicate transitions |
-| 14:30–14:45 | Postmortem | First failures recorded |
-| 14:45–15:03 | Repair Mock C | Closed-book reconstruction |
-| 15:03–15:20 | Break | No screen |
-| 15:20–15:38 | Java reliability 1: HashMap frequency + deterministic tie | Compile from blank |
-| 15:38–15:56 | Java reliability 2: BFS queue + direction array | Compile from blank |
-| 15:56–16:14 | Java reliability 3: `PriorityQueue<int[]>` comparator + `long` distance | Compile from blank |
-| 16:14–16:20 | Break | Water |
-| 16:20–16:38 | Mutation: Highest Average → top five averages per student | Explain heap size 5 and missing-count policy |
-| 16:38–16:56 | Mutation: Number of Islands → max area | DFS returns component size |
-| 16:56–17:14 | Mutation: rotated minimum → duplicates | Explain ambiguous `mid == right` shrink |
-| 17:14–17:20 | Break | Scores recorded |
-| 17:20–17:40 | Speak 30-second introduction + “Why Goldman/Why this role?” three times | Third version natural and under 90 seconds total |
-| 17:40–18:00 | Speak three behavioral answers from Section 12 | Situation/action/result/learning clear |
-| 18:00 onward | Gym/walk, dinner, leisure | No heavy DSA |
-| 22:30 | Lights out | Sleep protected |
+| Time | Exact work | LeetCode / closest analogue | Local Java | WIN |
+|---|---|---|---|---|
+| 07:15–08:00 | Wake, breakfast, quiet reset | — | — | Seated at 08:00 |
+| 08:00–08:18 | Red-list recall 1 | — | — | G1/G2/Y/R |
+| 08:18–08:36 | Red-list recall 2 | — | — | G1/G2/Y/R |
+| 08:36–08:54 | Red-list recall 3 | — | — | G1/G2/Y/R |
+| 08:54–09:00 | Scores/break | — | — | References closed |
+| 09:00–10:00 | **Full Mock A:** Number of Islands + Score Aggregation | [Number of Islands](https://leetcode.com/problems/number-of-islands/)<br>[High Five - closest analogue](https://leetcode.com/problems/high-five/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Use exact 60-minute protocol |
+| 10:00–10:15 | Postmortem | — | — | First correctness failure + first communication failure |
+| 10:15–10:33 | Repair Mock A | — | — | Closed-book reconstruction |
+| 10:33–11:00 | Break/snack/walk | — | — | No screen |
+| 11:00–12:00 | **Full Mock B:** Unique Substrings of Size K + Fraction to Recurring Decimal | [Find K-Length Substrings With No Repeated Characters](https://leetcode.com/problems/find-k-length-substrings-with-no-repeated-characters/)<br>[Fraction to Recurring Decimal](https://leetcode.com/problems/fraction-to-recurring-decimal/) | [LongestSubstringVariations.java](../../src/main/java/org/chijai/day3/session1/LongestSubstringVariations.java) | Fixed window, then remainder-cycle map |
+| 12:00–12:15 | Postmortem | — | — | First failures recorded |
+| 12:15–12:33 | Repair Mock B | — | — | Closed-book reconstruction |
+| 12:33–13:30 | Lunch + walk | — | — | Zero study |
+| 13:30–14:30 | **Full Mock C:** Shortest Subarray to Remove + Validate BST | [Shortest Subarray to be Removed to Make Array Sorted](https://leetcode.com/problems/shortest-subarray-to-be-removed-to-make-array-sorted/)<br>[Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/) | [ValidateBST.java](../../src/main/java/org/chijai/day6/trees/session3/ValidateBST.java) | Two unrelated families; communicate transitions |
+| 14:30–14:45 | Postmortem | — | — | First failures recorded |
+| 14:45–15:03 | Repair Mock C | — | — | Closed-book reconstruction |
+| 15:03–15:20 | Break | — | — | No screen |
+| 15:20–15:38 | Java reliability 1: HashMap frequency + deterministic tie | — | — | Compile from blank |
+| 15:38–15:56 | Java reliability 2: BFS queue + direction array | — | — | Compile from blank |
+| 15:56–16:14 | Java reliability 3: `PriorityQueue<int[]>` comparator + `long` distance | — | — | Compile from blank |
+| 16:14–16:20 | Break | — | — | Water |
+| 16:20–16:38 | Mutation: Highest Average → top five averages per student | [High Five](https://leetcode.com/problems/high-five/) | — | Explain heap size 5 and missing-count policy |
+| 16:38–16:56 | Mutation: Number of Islands → max area | [Max Area of Island](https://leetcode.com/problems/max-area-of-island/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | DFS returns component size |
+| 16:56–17:14 | Mutation: rotated minimum → duplicates | [Find Minimum in Rotated Sorted Array II](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/) | [BinarySearchPatternLab.java](../../src/main/java/org/chijai/patterns/binarysearch/BinarySearchPatternLab.java) | Explain ambiguous `mid == right` shrink |
+| 17:14–17:20 | Break | — | — | Scores recorded |
+| 17:20–17:40 | Speak 30-second introduction + “Why Goldman/Why this role?” three times | — | — | Third version natural and under 90 seconds total |
+| 17:40–18:00 | Speak three behavioral answers from Section 12 | — | — | Situation/action/result/learning clear |
+| 18:00 onward | Gym/walk, dinner, leisure | — | — | No heavy DSA |
+| 22:30 | Lights out | — | — | Sleep protected |
 
 ### Sunday pass gate
 
@@ -502,45 +502,66 @@ Do not apologize repeatedly. One correction, one explanation, continue.
 
 ## 11.1 Friday Day 5 answer cards
 
-| Problem | Recognition and optimal solution | Correctness contract | Complexity | Must-test cases |
-|---|---|---|---|---|
-| Intersection of Two Linked Lists | Walk `a` and `b`; on null, switch each to the other head; compare node identity | Each pointer travels `m+n`; unequal prefixes cancel, so they meet at intersection or both null | `O(m+n)` time, `O(1)` space | either null; disjoint; intersect at head; unequal lengths |
-| Min Stack | Each pushed node/pair stores value and minimum-so-far, or use synchronized value/min stacks | Top min equals minimum of every value currently below it; duplicate minima are stored separately | all operations `O(1)` | duplicate min; pop min; one element; negative values |
-| Queue Using Stacks | Push to `in`; pop/peek from `out`; transfer only when `out` is empty | `out` contains oldest items in dequeue order; `in` contains newer items in reverse order | amortized `O(1)`, `O(n)` space | alternating push/pop; transfer once; empty policy |
-| Stack Using Queues | After push, rotate the queue until new value is at front | Queue front is always the stack top | push `O(n)`, pop/top `O(1)`; `O(n)` space | multiple pushes; pop then push; empty policy |
-| Next Greater Element I | Scan `nums2`; decreasing stack; current value resolves all smaller tops into a map | Stack values are unresolved in decreasing order; each pop has found its first greater right value | `O(n+m)`, `O(n)` | decreasing; increasing; unresolved; single element |
-| Next Greater Element II | Scan indices `0..2n-1` using `% n`; resolve stack; push original indices only during first pass | Unresolved indices remain decreasing by value and get exactly one answer | `O(n)`, `O(n)` | wraparound; all equal; decreasing; one value |
-| Online Stock Span | Store `(price, compressedSpan)`; pop and add spans while top price `<= current` | Stack prices decrease; each pair summarizes consecutive dominated days | amortized `O(1)` per call, `O(n)` | equal prices; increasing; decreasing; one price |
-| Largest Rectangle | Increasing index stack; append conceptual height 0; when lower bar arrives, pop height, left boundary is new top, width is `i-left-1` | A stacked bar waits until its first smaller right boundary; new top marks previous smaller left boundary | `O(n)`, `O(n)` | `[2,1,5,6,2,3]`; equal bars; increasing; empty |
-| Sum of Subarray Minimums | Contribution: `arr[i] * leftChoices * rightChoices`; make one boundary strict and the other non-strict | Asymmetric tie rule assigns every subarray with equal minima to exactly one index | `O(n)`, `O(n)` | duplicates `[2,2]`; increasing; decreasing; modulo/overflow |
-| Kth Largest in Stream | Maintain min-heap of at most `k`; discard smallest when size exceeds `k` | Heap contains exactly the `k` largest values seen; root is kth largest | initialization `O(n log k)`, add `O(log k)`, space `O(k)` | duplicates; initial size `<k` policy; negative values |
-| K Closest Points | Keep size-`k` max-heap by squared distance, or sort when simplicity wins | Heap contains best `k` points seen; root is worst retained point | heap `O(n log k)`, `O(k)` | ties; origin; large coordinates use `long`; `k=n` |
-| Evaluate RPN | Push numbers; operator pops `right` then `left`; push `left op right` | Stack contains values of fully evaluated prefix expressions | `O(n)`, `O(n)` | subtraction/division order; negative; multi-digit |
-| Phone Letter Combinations | Backtrack by digit index; append one mapped letter, recurse, delete | Path length equals processed digit count; recursion enumerates Cartesian product | `O(4^n * n)` output work, `O(n)` stack | empty input; digits 7/9; one digit |
-| TimeMap | Map key to timestamp-sorted list; binary search greatest timestamp `<= query` | Search interval always contains possible floor timestamp | set `O(1)` if ordered input, get `O(log m)`, space `O(n)` | missing key; before first; exact; after last; out-of-order assumption |
-| Trie | Node has children and `terminal`; insert creates path, search requires terminal, prefix does not | Node reached after `i` chars represents exactly that prefix | `O(L)` each, space proportional to inserted chars | word vs prefix; duplicate insert; missing edge; empty policy |
+| Problem | LeetCode | Local Java | Recognition and optimal solution | Correctness contract | Complexity | Must-test cases |
+|---|---|---|---|---|---|---|
+| Intersection of Two Linked Lists | [LeetCode](https://leetcode.com/problems/intersection-of-two-linked-lists/) | [Intersection.java](../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) | Walk `a` and `b`; on null, switch each to the other head; compare node identity | Each pointer travels `m+n`; unequal prefixes cancel, so they meet at intersection or both null | `O(m+n)` time, `O(1)` space | either null; disjoint; intersect at head; unequal lengths |
+| Min Stack | [LeetCode](https://leetcode.com/problems/min-stack/) | [MinStackDesign.java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | Each pushed node/pair stores value and minimum-so-far, or use synchronized value/min stacks | Top min equals minimum of every value currently below it; duplicate minima are stored separately | all operations `O(1)` | duplicate min; pop min; one element; negative values |
+| Queue Using Stacks | [LeetCode](https://leetcode.com/problems/implement-queue-using-stacks/) | [StackQueue.java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | Push to `in`; pop/peek from `out`; transfer only when `out` is empty | `out` contains oldest items in dequeue order; `in` contains newer items in reverse order | amortized `O(1)`, `O(n)` space | alternating push/pop; transfer once; empty policy |
+| Stack Using Queues | [LeetCode](https://leetcode.com/problems/implement-stack-using-queues/) | [StackQueue.java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | After push, rotate the queue until new value is at front | Queue front is always the stack top | push `O(n)`, pop/top `O(1)`; `O(n)` space | multiple pushes; pop then push; empty policy |
+| Next Greater Element I | [LeetCode](https://leetcode.com/problems/next-greater-element-i/) | [NextGreaterElement.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | Scan `nums2`; decreasing stack; current value resolves all smaller tops into a map | Stack values are unresolved in decreasing order; each pop has found its first greater right value | `O(n+m)`, `O(n)` | decreasing; increasing; unresolved; single element |
+| Next Greater Element II | [LeetCode](https://leetcode.com/problems/next-greater-element-ii/) | [NextGreaterElement.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | Scan indices `0..2n-1` using `% n`; resolve stack; push original indices only during first pass | Unresolved indices remain decreasing by value and get exactly one answer | `O(n)`, `O(n)` | wraparound; all equal; decreasing; one value |
+| Online Stock Span | [LeetCode](https://leetcode.com/problems/online-stock-span/) | [OnlineStockSpan.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/OnlineStockSpan.java) | Store `(price, compressedSpan)`; pop and add spans while top price `<= current` | Stack prices decrease; each pair summarizes consecutive dominated days | amortized `O(1)` per call, `O(n)` | equal prices; increasing; decreasing; one price |
+| Largest Rectangle | [LeetCode](https://leetcode.com/problems/largest-rectangle-in-histogram/) | [LargestRectangle.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java) | Increasing index stack; append conceptual height 0; when lower bar arrives, pop height, left boundary is new top, width is `i-left-1` | A stacked bar waits until its first smaller right boundary; new top marks previous smaller left boundary | `O(n)`, `O(n)` | `[2,1,5,6,2,3]`; equal bars; increasing; empty |
+| Sum of Subarray Minimums | [LeetCode](https://leetcode.com/problems/sum-of-subarray-minimums/) | [SumOfSubarrayMinimums.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SumOfSubarrayMinimums.java) | Contribution: `arr[i] * leftChoices * rightChoices`; make one boundary strict and the other non-strict | Asymmetric tie rule assigns every subarray with equal minima to exactly one index | `O(n)`, `O(n)` | duplicates `[2,2]`; increasing; decreasing; modulo/overflow |
+| Kth Largest in Stream | [LeetCode](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | Maintain min-heap of at most `k`; discard smallest when size exceeds `k` | Heap contains exactly the `k` largest values seen; root is kth largest | initialization `O(n log k)`, add `O(log k)`, space `O(k)` | duplicates; initial size `<k` policy; negative values |
+| K Closest Points | [LeetCode](https://leetcode.com/problems/k-closest-points-to-origin/) | [KClosestPointsToOrigin.java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java) | Keep size-`k` max-heap by squared distance, or sort when simplicity wins | Heap contains best `k` points seen; root is worst retained point | heap `O(n log k)`, `O(k)` | ties; origin; large coordinates use `long`; `k=n` |
+| Evaluate RPN | [LeetCode](https://leetcode.com/problems/evaluate-reverse-polish-notation/) | [EvalRPN.java](../../src/main/java/org/chijai/day5/stack/session3/EvalRPN.java) | Push numbers; operator pops `right` then `left`; push `left op right` | Stack contains values of fully evaluated prefix expressions | `O(n)`, `O(n)` | subtraction/division order; negative; multi-digit |
+| Phone Letter Combinations | [LeetCode](https://leetcode.com/problems/letter-combinations-of-a-phone-number/) | [LetterCombinationsOfAPhoneNumber.java](../../src/main/java/org/chijai/day11/backtracking/session1/LetterCombinationsOfAPhoneNumber.java) | Backtrack by digit index; append one mapped letter, recurse, delete | Path length equals processed digit count; recursion enumerates Cartesian product | `O(4^n * n)` output work, `O(n)` stack | empty input; digits 7/9; one digit |
+| TimeMap | [LeetCode](https://leetcode.com/problems/time-based-key-value-store/) | [TimeBasedKeyValueStore.java](../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | Map key to timestamp-sorted list; binary search greatest timestamp `<= query` | Search interval always contains possible floor timestamp | set `O(1)` if ordered input, get `O(log m)`, space `O(n)` | missing key; before first; exact; after last; out-of-order assumption |
+| Trie | [LeetCode](https://leetcode.com/problems/implement-trie-prefix-tree/) | [TriePrefix.java](../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | Node has children and `terminal`; insert creates path, search requires terminal, prefix does not | Node reached after `i` chars represents exactly that prefix | `O(L)` each, space proportional to inserted chars | word vs prefix; duplicate insert; missing edge; empty policy |
 
 ## 11.2 Saturday Day 6 answer cards
 
-| Problem | Optimal solution and invariant | Complexity | Must-test cases |
-|---|---|---|---|
-| Add and Search Words | Trie DFS. Letter follows one child; `.` recursively tries every child; at pattern end return `terminal` | exact search `O(L)`; wildcard worst `O(26^L)` | exact, prefix only, one/multiple `.`, missing length |
-| Gas Station | If total gas < total cost return `-1`; otherwise accumulate tank and reset start to `i+1` when negative | `O(n)`, `O(1)` | impossible; valid start 0; reset late; one station |
-| Task Scheduler | Count frequencies. Let `max` be largest count and `ties` count tasks with `max`; answer `max(n, (max-1)*(cooldown+1)+ties)` | `O(n)` time, `O(1)` alphabet space | cooldown 0; no idle; one dominant task; tied maxima |
-| Number of Provinces | Scan cities; each unvisited city starts DFS/BFS over adjacency matrix and increments components | `O(n^2)`, `O(n)` | all isolated; all connected; one city |
-| Network Delay Time | Adjacency list + Dijkstra min-heap. Skip `(d,u)` when `d != dist[u]`; relax nonnegative edges | `O((V+E) log V)`, `O(V+E)` | unreachable; parallel edges; stale entry; source only |
-| Word Ladder | BFS words by one-letter mutations; remove/mark on enqueue; level is path length | `O(N*L*26)` typical, `O(N)` space | end absent; begin=end policy; one-step; unreachable |
-| Accounts Merge | Map email to owner index and union repeated owners; collect emails by DSU root and sort | near `O(E α(A) + E log E)` | transitive merge; same name separate; single email |
-| 01 Matrix | Enqueue all zeros with distance 0; mark others unknown; BFS four directions | `O(rows*cols)`, `O(rows*cols)` | all zero; one zero; corners; rectangular |
-| Pacific Atlantic | Reverse DFS/BFS from Pacific borders and Atlantic borders, moving to equal/higher cells; intersect visited sets | `O(rows*cols)`, `O(rows*cols)` | one cell; plateau; monotone grid |
-| Surrounded Regions | Mark `O` connected to border as safe; flip remaining `O` to `X`; restore safe marks | `O(rows*cols)`, traversal space | all border-connected; enclosed; one row/column |
-| Right Side View | BFS levels and record last node, or right-first DFS first node per depth | `O(n)`, `O(width)` BFS | null; left-only; sparse tree |
-| Path Sum | DFS subtracting node values; success only when at leaf and remaining equals leaf value | `O(n)`, `O(height)` | null; negative values; equal sum at non-leaf; one node |
-| Search BST | Iteratively compare and choose one branch | `O(height)`, `O(1)` | found root/leaf; absent; skewed |
-| Insert BST | Descend by comparison; attach at first null child; return original root | `O(height)`, `O(1)` iterative | empty; left/right; skewed; duplicate policy |
-| Invert Tree | Swap left/right at each node, recursively or BFS | `O(n)`, `O(height)` recursion | null; one node; asymmetric tree |
+| Problem | LeetCode | Local Java | Optimal solution and invariant | Complexity | Must-test cases |
+|---|---|---|---|---|---|
+| Add and Search Words | [LeetCode](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | [TrieWordDictionary.java](../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | Trie DFS. Letter follows one child; `.` recursively tries every child; at pattern end return `terminal` | exact search `O(L)`; wildcard worst `O(26^L)` | exact, prefix only, one/multiple `.`, missing length |
+| Gas Station | [LeetCode](https://leetcode.com/problems/gas-station/) | [GasStation.java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | If total gas < total cost return `-1`; otherwise accumulate tank and reset start to `i+1` when negative | `O(n)`, `O(1)` | impossible; valid start 0; reset late; one station |
+| Task Scheduler | [LeetCode](https://leetcode.com/problems/task-scheduler/) | [TaskScheduler.java](../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | Count frequencies. Let `max` be largest count and `ties` count tasks with `max`; answer `max(n, (max-1)*(cooldown+1)+ties)` | `O(n)` time, `O(1)` alphabet space | cooldown 0; no idle; one dominant task; tied maxima |
+| Number of Provinces | [LeetCode](https://leetcode.com/problems/number-of-provinces/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Scan cities; each unvisited city starts DFS/BFS over adjacency matrix and increments components | `O(n^2)`, `O(n)` | all isolated; all connected; one city |
+| Network Delay Time | [LeetCode](https://leetcode.com/problems/network-delay-time/) | [NetworkDelayTime.java](../../src/main/java/org/chijai/day8/graph/session2/NetworkDelayTime.java) | Adjacency list + Dijkstra min-heap. Skip `(d,u)` when `d != dist[u]`; relax nonnegative edges | `O((V+E) log V)`, `O(V+E)` | unreachable; parallel edges; stale entry; source only |
+| Word Ladder | [LeetCode](https://leetcode.com/problems/word-ladder/) | [WordLadder.java](../../src/main/java/org/chijai/day8/graph/session3/WordLadder.java) | BFS words by one-letter mutations; remove/mark on enqueue; level is path length | `O(N*L*26)` typical, `O(N)` space | end absent; begin=end policy; one-step; unreachable |
+| Accounts Merge | [LeetCode](https://leetcode.com/problems/accounts-merge/) | [AccountsMerge.java](../../src/main/java/org/chijai/day8/graph/session3/AccountsMerge.java) | Map email to owner index and union repeated owners; collect emails by DSU root and sort | near `O(E α(A) + E log E)` | transitive merge; same name separate; single email |
+| 01 Matrix | [LeetCode](https://leetcode.com/problems/01-matrix/) | [Matrix01.java](../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | Enqueue all zeros with distance 0; mark others unknown; BFS four directions | `O(rows*cols)`, `O(rows*cols)` | all zero; one zero; corners; rectangular |
+| Pacific Atlantic | [LeetCode](https://leetcode.com/problems/pacific-atlantic-water-flow/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Reverse DFS/BFS from Pacific borders and Atlantic borders, moving to equal/higher cells; intersect visited sets | `O(rows*cols)`, `O(rows*cols)` | one cell; plateau; monotone grid |
+| Surrounded Regions | [LeetCode](https://leetcode.com/problems/surrounded-regions/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Mark `O` connected to border as safe; flip remaining `O` to `X`; restore safe marks | `O(rows*cols)`, traversal space | all border-connected; enclosed; one row/column |
+| Right Side View | [LeetCode](https://leetcode.com/problems/binary-tree-right-side-view/) | [BinaryTreeSideView.java](../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeSideView.java) | BFS levels and record last node, or right-first DFS first node per depth | `O(n)`, `O(width)` BFS | null; left-only; sparse tree |
+| Path Sum | [LeetCode](https://leetcode.com/problems/path-sum/) | [BinaryTreePathProblems.java](../../src/main/java/org/chijai/day6/trees/session4/BinaryTreePathProblems.java) | DFS subtracting node values; success only when at leaf and remaining equals leaf value | `O(n)`, `O(height)` | null; negative values; equal sum at non-leaf; one node |
+| Search BST | [LeetCode](https://leetcode.com/problems/search-in-a-binary-search-tree/) | [LCA_BST.java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | Iteratively compare and choose one branch | `O(height)`, `O(1)` | found root/leaf; absent; skewed |
+| Insert BST | [LeetCode](https://leetcode.com/problems/insert-into-a-binary-search-tree/) | [LCA_BST.java](../../src/main/java/org/chijai/day6/trees/session1/LCA_BST.java) | Descend by comparison; attach at first null child; return original root | `O(height)`, `O(1)` iterative | empty; left/right; skewed; duplicate policy |
+| Invert Tree | [LeetCode](https://leetcode.com/problems/invert-binary-tree/) | [InvertBinaryTree.java](../../src/main/java/org/chijai/day6/trees/session3/InvertBinaryTree.java) | Swap left/right at each node, recursively or BFS | `O(n)`, `O(height)` recursion | null; one node; asymmetric tree |
 
 ## 11.3 Research-ranked Goldman drill cards
+
+| Drill | LeetCode / closest analogue | Local Java |
+|---|---|---|
+| A. Highest Average Score | [High Five - closest analogue](https://leetcode.com/problems/high-five/) | — |
+| B. String Compression | [String Compression](https://leetcode.com/problems/string-compression/) | — |
+| C. Trapping Rain Water | [Trapping Rain Water](https://leetcode.com/problems/trapping-rain-water/) | [TrappingRainwater.java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) |
+| D. Maximum path from bottom-left to top-right | Custom prompt; no exact LeetCode match | — |
+| E. Number of Islands | [Number of Islands](https://leetcode.com/problems/number-of-islands/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) |
+| F. Validate BST | [Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/) | [ValidateBST.java](../../src/main/java/org/chijai/day6/trees/session3/ValidateBST.java) |
+| G. Word Break | [Word Break](https://leetcode.com/problems/word-break/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
+| H. Find Minimum in Rotated Sorted Array | [Find Minimum in Rotated Sorted Array](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) | [BinarySearchPatternLab.java](../../src/main/java/org/chijai/patterns/binarysearch/BinarySearchPatternLab.java) - closest local pattern lab |
+| I. Minimum Window Substring | [Minimum Window Substring](https://leetcode.com/problems/minimum-window-substring/) | [MinimumWindowSubstring.java](../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java) |
+| J. Unique substrings of length K | [Find K-Length Substrings With No Repeated Characters](https://leetcode.com/problems/find-k-length-substrings-with-no-repeated-characters/) | [LongestSubstringVariations.java](../../src/main/java/org/chijai/day3/session1/LongestSubstringVariations.java) - closest local family |
+| K. Fraction to Recurring Decimal | [Fraction to Recurring Decimal](https://leetcode.com/problems/fraction-to-recurring-decimal/) | — |
+| L. First Unique Character / streaming first non-repeating | [First Unique Character in a String](https://leetcode.com/problems/first-unique-character-in-a-string/) | [FirstNonRepeatingCharacterUsingStreams.java](../../src/main/java/org/chijai/java/FirstNonRepeatingCharacterUsingStreams.java) |
+| M. Shortest Subarray to Remove to Make Array Sorted | [Shortest Subarray to be Removed to Make Array Sorted](https://leetcode.com/problems/shortest-subarray-to-be-removed-to-make-array-sorted/) | — |
+| N. Random Pick with Weight | [Random Pick with Weight](https://leetcode.com/problems/random-pick-with-weight/) | — |
+| O. Interval/calendar conflict variation | [Meeting Rooms - closest analogue](https://leetcode.com/problems/meeting-rooms/) | [IntervalSortByStart.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) |
+| P. IP address(es) with highest frequency | Custom prompt; no exact LeetCode match | — |
+| Q. Forest from child-parent pairs | Custom prompt; no exact LeetCode match | — |
+| R. Vehicle capacity / car pooling | [Car Pooling](https://leetcode.com/problems/car-pooling/) | [BoundaryDelta.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/BoundaryDelta.java) |
 
 ### A. Highest Average Score — highest priority
 

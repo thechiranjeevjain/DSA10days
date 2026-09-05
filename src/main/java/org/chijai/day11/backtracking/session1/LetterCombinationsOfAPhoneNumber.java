@@ -13,7 +13,7 @@ import java.util.List;
  * Difficulty:
  * Medium
  *
- * Tags:
+ * Tags:git add
  * Backtracking
  * DFS
  * Recursion
@@ -184,6 +184,92 @@ import java.util.List;
  * Simply enumerate.
  *
  * ============================================================
+ */
+
+/**
+ * Top-level public class exactly matching the problem title.
+ */
+public class LetterCombinationsOfAPhoneNumber {
+
+    private static final String[] KEYPAD = {
+            "0",
+            "1",
+            "abc",
+            "def",
+            "ghi",
+            "jkl",
+            "mno",
+            "pqrs",
+            "tuv",
+            "wxyz"
+    };
+
+    /**
+     * ============================================================
+     * ⭐ PRIMARY PHOTOGRAPHIC-MEMORY SOLUTION
+     * ============================================================
+     *
+     * One recursion level decides one digit.
+     *
+     * current.length() == index.
+     *
+     * Choose -> Explore -> Unchoose.
+     */
+    static class Primary {
+
+        public List<String> letterCombinations(String digits) {
+
+            List<String> result = new ArrayList<>();
+
+            if (digits == null || digits.isEmpty()) {
+                return result;
+            }
+
+            StringBuilder current = new StringBuilder();
+
+            dfs(
+                    current,
+                    0,
+                    digits,
+                    result
+            );
+
+            return result;
+        }
+
+        private void dfs(
+                StringBuilder current,
+                int index,
+                String digits,
+                List<String> result
+        ) {
+
+            if (index == digits.length()) {
+                result.add(current.toString());
+                return;
+            }
+
+            String options = KEYPAD[digits.charAt(index) - '0'];
+
+            for (int i = 0; i < options.length(); i++) {
+
+                char choice = options.charAt(i);
+
+                current.append(choice);
+
+                dfs(
+                        current,
+                        index + 1,
+                        digits,
+                        result
+                );
+
+                current.deleteCharAt(current.length() - 1);
+            }
+        }
+    }
+
+/**
  * 🟢 MENTAL MODEL & INVARIANTS
  * ============================================================
  *
@@ -527,23 +613,6 @@ import java.util.List;
  * ============================================================
  */
 
-/**
- * Top-level public class exactly matching the problem title.
- */
-public class LetterCombinationsOfAPhoneNumber {
-
-    private static final String[] KEYPAD = {
-            "0",
-            "1",
-            "abc",
-            "def",
-            "ghi",
-            "jkl",
-            "mno",
-            "pqrs",
-            "tuv",
-            "wxyz"
-    };
 
     /**
      * ============================================================
@@ -1468,5 +1537,6 @@ public static void main(String[] args) {
     System.out.println("All assertions passed. Run with -ea to enable assertions.");
 }
 }
+
 
 

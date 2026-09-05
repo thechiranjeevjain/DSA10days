@@ -53,381 +53,9 @@ import java.util.*;
  * Official Link
  * https://leetcode.com/problems/implement-trie-prefix-tree/
  *
- * ============================================================================
- * 🔵 CORE PATTERN OVERVIEW
- * ============================================================================
- *
- * Pattern
- * -------
- * Trie (Prefix Tree)
- *
- * Archetype
- * ---------
- * Hierarchical prefix indexing.
- *
- * Core Invariant
- * --------------
- * Every node uniquely represents ONE prefix from the root.
- *
- * Root
- * ""
- *
- * root
- *   |
- *   a
- *   |
- *   ap
- *   |
- *   app
- *   |
- *   appl
- *   |
- *   apple
- *
- * A node NEVER represents multiple prefixes.
- *
- * Every edge corresponds to exactly one character.
- *
- * A word exists iff
- *
- * 1) every character path exists
- * AND
- * 2) last node is marked as terminal.
- *
- * Why it Works
- * ------------
- * Shared prefixes are stored once.
- *
- * Example
- *
- * apple
- * app
- * apply
- *
- * All share
- *
- * app
- *
- * so only one path is created.
- *
- * Time
- * ----
- * O(length of string)
- *
- * independent of number of stored words.
- *
- * Recognition Signals
- * -------------------
- *
- * ✓ Prefix queries
- *
- * ✓ Autocomplete
- *
- * ✓ Dictionary
- *
- * ✓ Word lookup
- *
- * ✓ StartsWith
- *
- * ✓ Replace words
- *
- * ✓ Longest common prefix using inserted words
- *
- * Differences vs HashSet
- * ----------------------
- *
- * HashSet
- *
- * Exact lookup only.
- *
- * startsWith("app")
- *
- * requires scanning.
- *
- * Trie
- *
- * Prefix search is naturally supported.
- *
- * Differences vs Binary Search Tree
- * ---------------------------------
- *
- * BST orders complete keys.
- *
- * Trie indexes character-by-character.
- *
- * ============================================================================
- * 🟢 MENTAL MODEL
- * ============================================================================
- *
- * Imagine every character is one road.
- *
- * root
- *   |
- *   a
- *  / \
- * p   n
- *
- * Continue walking.
- *
- * If road exists
- *      move.
- *
- * Otherwise
- *      create it (insert)
- *      or fail (search).
- *
- * ============================================================================
- * 🟢 VARIABLES
- * ============================================================================
- *
- * Node
- *
- * children
- *      outgoing character edges
- *
- * isWord
- *      whether current prefix is a complete word
- *
- * current
- *      current prefix while traversing
- *
- * ============================================================================
- * 🟢 INVARIANTS
- * ============================================================================
- *
- * Invariant 1
- * -----------
- * Root always represents empty prefix.
- *
- * Invariant 2
- * -----------
- * Each edge adds exactly one character.
- *
- * Invariant 3
- * -----------
- * Current node always equals the prefix processed so far.
- *
- * Invariant 4
- * -----------
- * Missing edge means no word containing that prefix exists.
- *
- * Invariant 5
- * -----------
- * Terminal marker distinguishes
- *
- * app
- *
- * from
- *
- * apple
- *
- * even though both share nodes.
- *
- * Invariant 6
- * -----------
- * insert() never destroys existing paths.
- *
- * It only extends them.
- *
- * Invariant 7
- * -----------
- * search() succeeds ONLY if
- *
- * final node exists
- * &&
- * final node.isWord == true
- *
- * Invariant 8
- * -----------
- * startsWith() ignores terminal marker.
- *
- * It only requires path existence.
- *
- * ============================================================================
- * 🟢 ALLOWED MOVES
- * ============================================================================
- *
- * Move to child.
- *
- * Create child.
- *
- * Mark terminal.
- *
- * Stop when character missing.
- *
- * ============================================================================
- * 🔴 FORBIDDEN MOVES
- * ============================================================================
- *
- * Never delete shared prefix accidentally.
- *
- * Never return true from search()
- * without checking terminal flag.
- *
- * Never create nodes during search().
- *
- * Never stop traversal before all characters are processed.
- *
- * ============================================================================
- * 🟡 TERMINATION
- * ============================================================================
- *
- * Insert
- * ------
- * After final character,
- * mark node as terminal.
- *
- * Search
- * ------
- * After final character,
- * verify terminal.
- *
- * StartsWith
- * ----------
- * After final character,
- * return true immediately.
- *
- * ============================================================================
- * 🟡 WHY NAIVE APPROACHES FAIL
- * ============================================================================
- *
- * Using ArrayList<String>
- *
- * insert
- * O(1)
- *
- * search
- * O(N)
- *
- * startsWith
- * O(N)
- *
- * because every string may need checking.
- *
- * HashSet
- *
- * search
- * O(1)
- *
- * startsWith
- * O(N)
- *
- * because prefixes are not indexed.
- *
- * Trie stores prefixes directly.
- *
- * ============================================================================
- * 🔴 COMMON WRONG SOLUTIONS
- * ============================================================================
- *
- * Wrong #1
- * --------
- * Returning true after walking path.
- *
- * Counterexample
- *
- * insert("apple")
- *
- * search("app")
- *
- * Incorrectly returns true.
- *
- * Broken invariant:
- * terminal node ignored.
- *
- * Wrong #2
- * --------
- * Creating nodes during search.
- *
- * This mutates the dictionary.
- *
- * Search must never modify state.
- *
- * Wrong #3
- * --------
- * Overwriting children during insert.
- *
- * Existing words disappear.
- *
- * Broken invariant:
- * insert only extends.
- *
- * ============================================================================
- * 🛠 IMPLEMENTATION BLUEPRINT
- * ============================================================================
- *
- * Step 1
- * -------
- * Create TrieNode.
- *
- * Step 2
- * -------
- * Root node.
- *
- * Step 3
- * -------
- * insert(word)
- *
- * current = root
- *
- * for every character
- *
- *      create child if absent
- *
- *      move
- *
- * mark terminal
- *
- * Step 4
- * -------
- * search(word)
- *
- * current=root
- *
- * walk path
- *
- * missing child -> false
- *
- * return current.isWord
- *
- * Step 5
- * -------
- * startsWith(prefix)
- *
- * walk path
- *
- * missing child -> false
- *
- * otherwise true
- *
- * ============================================================================
- * MEMORY SCAFFOLD
- * ============================================================================
- *
- * insert
- *
- * root
- * loop chars
- * create if absent
- * move
- * mark word
- *
- * search
- *
- * root
- * loop chars
- * missing -> false
- * move
- * return terminal
- *
- * prefix
- *
- * root
- * loop chars
- * missing -> false
- * move
- * return true
- *
+ */
+
+/**
  * ============================================================================
  * PUBLIC CLASS
  * ============================================================================
@@ -437,109 +65,16 @@ public class TriePrefix {
 
     /**
      * ==============================================================
-     * Brute Force
+     * 🎯 RECOGNITION CUE
      * ==============================================================
+     * Pattern Trigger
+     * ---------------
+     * Prefix queries.
+     * Dictionary.
+     * Autocomplete.
+     * Spell checker.
      *
-     * Store every word.
-     *
-     * Search scans.
-     *
-     * Prefix scans.
-     *
-     * Good for intuition only.
      */
-
-    static class BruteForceTrie {
-
-        private final List<String> words = new ArrayList<>();
-
-        public void insert(String word) {
-            words.add(word);
-        }
-
-        public boolean search(String word) {
-            for (String s : words) {
-                if (s.equals(word)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean startsWith(String prefix) {
-            for (String s : words) {
-                if (s.startsWith(prefix)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * ==============================================================
-     * Improved Solution
-     * ==============================================================
-     *
-     * Core Idea
-     * ---------
-     * Use a HashSet to make exact-word lookup O(1).
-     *
-     * Prefix lookup is still O(N) because every stored word may need
-     * to be examined.
-     *
-     * Invariant
-     * ---------
-     * The HashSet always contains every inserted word exactly once.
-     *
-     * Limitation Fixed
-     * ----------------
-     * Improves exact search compared to brute force.
-     *
-     * Remaining Limitation
-     * --------------------
-     * Prefix queries are not indexed.
-     *
-     * Time
-     * ----
-     * insert      O(1) average
-     * search      O(1) average
-     * startsWith  O(N * L)
-     *
-     * Space
-     * -----
-     * O(total characters)
-     *
-     * Interview Preference
-     * --------------------
-     * Mention briefly, then move to Trie.
-     */
-
-    static class HashSetTrie {
-
-        private final Set<String> dictionary = new HashSet<>();
-
-        public void insert(String word) {
-            dictionary.add(word);
-        }
-
-        public boolean search(String word) {
-            return dictionary.contains(word);
-        }
-
-        public boolean startsWith(String prefix) {
-
-            for (String word : dictionary) {
-
-                if (word.startsWith(prefix)) {
-                    return true;
-                }
-
-            }
-
-            return false;
-        }
-    }
 
     /**
      * ==============================================================
@@ -727,19 +262,520 @@ public class TriePrefix {
 
     }
 
-/**
- * ==============================================================
- * 🟣 INTERVIEW ARTICULATION
- * ==============================================================
+    /**
+     * ==============================================================
+     * ⚖ COMPLEXITY & TRADE-OFFS
+     * ==============================================================
+     */
+
+    /**
+ * --------------------------------------------------------------
+ * In-place feasibility
+ * --------------------------------------------------------------
  *
- * Explain the Invariant
- * ---------------------
+ * Not applicable.
  *
- * Every node represents exactly one prefix.
+ * Trie is a separate indexing structure.
  *
- * During traversal,
- * current always equals the prefix processed so far.
+ * --------------------------------------------------------------
+ * Streaming feasibility
+ * --------------------------------------------------------------
  *
+ * Excellent.
+ *
+ * New words can be inserted online
+ * without rebuilding existing data.
+ *
+ * --------------------------------------------------------------
+ * When NOT to use Trie
+ * --------------------------------------------------------------
+ *
+ * Small datasets.
+ *
+ * Large alphabets with sparse prefixes.
+ *
+ * Memory-constrained systems.
+     */
+
+    /**
+ * ============================================================================
+ * MEMORY SCAFFOLD
+ * ============================================================================
+ *
+ * insert
+ *
+ * root
+ * loop chars
+ * create if absent
+ * move
+ * mark word
+ *
+ * search
+ *
+ * root
+ * loop chars
+ * missing -> false
+ * move
+ * return terminal
+ *
+ * prefix
+ *
+ * root
+ * loop chars
+ * missing -> false
+ * move
+ * return true
+ *
+     */
+
+    /**
+ * ============================================================================
+ * 🛠 IMPLEMENTATION BLUEPRINT
+ * ============================================================================
+ *
+ * Step 1
+ * -------
+ * Create TrieNode.
+ *
+ * Step 2
+ * -------
+ * Root node.
+ *
+ * Step 3
+ * -------
+ * insert(word)
+ *
+ * current = root
+ *
+ * for every character
+ *
+ *      create child if absent
+ *
+ *      move
+ *
+ * mark terminal
+ *
+ * Step 4
+ * -------
+ * search(word)
+ *
+ * current=root
+ *
+ * walk path
+ *
+ * missing child -> false
+ *
+ * return current.isWord
+ *
+ * Step 5
+ * -------
+ * startsWith(prefix)
+ *
+ * walk path
+ *
+ * missing child -> false
+ *
+ * otherwise true
+ *
+     */
+
+    /**
+ * ============================================================================
+ * 🟢 MENTAL MODEL
+ * ============================================================================
+ *
+ * Imagine every character is one road.
+ *
+ * root
+ *   |
+ *   a
+ *  / \
+ * p   n
+ *
+ * Continue walking.
+ *
+ * If road exists
+ *      move.
+ *
+ * Otherwise
+ *      create it (insert)
+ *      or fail (search).
+ *
+ * ============================================================================
+ * 🟢 VARIABLES
+ * ============================================================================
+ *
+ * Node
+ *
+ * children
+ *      outgoing character edges
+ *
+ * isWord
+ *      whether current prefix is a complete word
+ *
+ * current
+ *      current prefix while traversing
+ *
+     */
+
+    /**
+ * ============================================================================
+ * 🔵 CORE PATTERN OVERVIEW
+ * ============================================================================
+ *
+ * Pattern
+ * -------
+ * Trie (Prefix Tree)
+ *
+ * Archetype
+ * ---------
+ * Hierarchical prefix indexing.
+ *
+ * Core Invariant
+ * --------------
+ * Every node uniquely represents ONE prefix from the root.
+ *
+ * Root
+ * ""
+ *
+ * root
+ *   |
+ *   a
+ *   |
+ *   ap
+ *   |
+ *   app
+ *   |
+ *   appl
+ *   |
+ *   apple
+ *
+ * A node NEVER represents multiple prefixes.
+ *
+ * Every edge corresponds to exactly one character.
+ *
+ * A word exists iff
+ *
+ * 1) every character path exists
+ * AND
+ * 2) last node is marked as terminal.
+ *
+ * Why it Works
+ * ------------
+ * Shared prefixes are stored once.
+ *
+ * Example
+ *
+ * apple
+ * app
+ * apply
+ *
+ * All share
+ *
+ * app
+ *
+ * so only one path is created.
+ *
+ * Time
+ * ----
+ * O(length of string)
+ *
+ * independent of number of stored words.
+ *
+ * Recognition Signals
+ * -------------------
+ *
+ * ✓ Prefix queries
+ *
+ * ✓ Autocomplete
+ *
+ * ✓ Dictionary
+ *
+ * ✓ Word lookup
+ *
+ * ✓ StartsWith
+ *
+ * ✓ Replace words
+ *
+ * ✓ Longest common prefix using inserted words
+ *
+ * Differences vs HashSet
+ * ----------------------
+ *
+ * HashSet
+ *
+ * Exact lookup only.
+ *
+ * startsWith("app")
+ *
+ * requires scanning.
+ *
+ * Trie
+ *
+ * Prefix search is naturally supported.
+ *
+ * Differences vs Binary Search Tree
+ * ---------------------------------
+ *
+ * BST orders complete keys.
+ *
+ * Trie indexes character-by-character.
+ *
+     */
+
+    /**
+ * ============================================================================
+ * 🟢 INVARIANTS
+ * ============================================================================
+ *
+ * Invariant 1
+ * -----------
+ * Root always represents empty prefix.
+ *
+ * Invariant 2
+ * -----------
+ * Each edge adds exactly one character.
+ *
+ * Invariant 3
+ * -----------
+ * Current node always equals the prefix processed so far.
+ *
+ * Invariant 4
+ * -----------
+ * Missing edge means no word containing that prefix exists.
+ *
+ * Invariant 5
+ * -----------
+ * Terminal marker distinguishes
+ *
+ * app
+ *
+ * from
+ *
+ * apple
+ *
+ * even though both share nodes.
+ *
+ * Invariant 6
+ * -----------
+ * insert() never destroys existing paths.
+ *
+ * It only extends them.
+ *
+ * Invariant 7
+ * -----------
+ * search() succeeds ONLY if
+ *
+ * final node exists
+ * &&
+ * final node.isWord == true
+ *
+ * Invariant 8
+ * -----------
+ * startsWith() ignores terminal marker.
+ *
+ * It only requires path existence.
+ *
+     */
+
+    /**
+ * ============================================================================
+ * 🟢 ALLOWED MOVES
+ * ============================================================================
+ *
+ * Move to child.
+ *
+ * Create child.
+ *
+ * Mark terminal.
+ *
+ * Stop when character missing.
+ *
+ * ============================================================================
+ * 🔴 FORBIDDEN MOVES
+ * ============================================================================
+ *
+ * Never delete shared prefix accidentally.
+ *
+ * Never return true from search()
+ * without checking terminal flag.
+ *
+ * Never create nodes during search().
+ *
+ * Never stop traversal before all characters are processed.
+ *
+ * ============================================================================
+ * 🟡 TERMINATION
+ * ============================================================================
+ *
+ * Insert
+ * ------
+ * After final character,
+ * mark node as terminal.
+ *
+ * Search
+ * ------
+ * After final character,
+ * verify terminal.
+ *
+ * StartsWith
+ * ----------
+ * After final character,
+ * return true immediately.
+ *
+     */
+
+    /**
+     * ==============================================================
+     * 📈 APPROACH PROGRESSION
+     * ==============================================================
+     */
+
+    /**
+     * ==============================================================
+     * Brute Force
+     * ==============================================================
+     *
+     * Store every word.
+     *
+     * Search scans.
+     *
+     * Prefix scans.
+     *
+     * Good for intuition only.
+     */
+
+    static class BruteForceTrie {
+
+        private final List<String> words = new ArrayList<>();
+
+        public void insert(String word) {
+            words.add(word);
+        }
+
+        public boolean search(String word) {
+            for (String s : words) {
+                if (s.equals(word)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean startsWith(String prefix) {
+            for (String s : words) {
+                if (s.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * ==============================================================
+     * Improved Solution
+     * ==============================================================
+     *
+     * Core Idea
+     * ---------
+     * Use a HashSet to make exact-word lookup O(1).
+     *
+     * Prefix lookup is still O(N) because every stored word may need
+     * to be examined.
+     *
+     * Invariant
+     * ---------
+     * The HashSet always contains every inserted word exactly once.
+     *
+     * Limitation Fixed
+     * ----------------
+     * Improves exact search compared to brute force.
+     *
+     * Remaining Limitation
+     * --------------------
+     * Prefix queries are not indexed.
+     *
+     * Time
+     * ----
+     * insert      O(1) average
+     * search      O(1) average
+     * startsWith  O(N * L)
+     *
+     * Space
+     * -----
+     * O(total characters)
+     *
+     * Interview Preference
+     * --------------------
+     * Mention briefly, then move to Trie.
+     */
+
+    static class HashSetTrie {
+
+        private final Set<String> dictionary = new HashSet<>();
+
+        public void insert(String word) {
+            dictionary.add(word);
+        }
+
+        public boolean search(String word) {
+            return dictionary.contains(word);
+        }
+
+        public boolean startsWith(String prefix) {
+
+            for (String word : dictionary) {
+
+                if (word.startsWith(prefix)) {
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+    }
+
+    /**
+ * ============================================================================
+ * 🟡 WHY NAIVE APPROACHES FAIL
+ * ============================================================================
+ *
+ * Using ArrayList<String>
+ *
+ * insert
+ * O(1)
+ *
+ * search
+ * O(N)
+ *
+ * startsWith
+ * O(N)
+ *
+ * because every string may need checking.
+ *
+ * HashSet
+ *
+ * search
+ * O(1)
+ *
+ * startsWith
+ * O(N)
+ *
+ * because prefixes are not indexed.
+ *
+ * Trie stores prefixes directly.
+ *
+     */
+
+    /**
+     * ==============================================================
+     * ✅ DERIVATION / CORRECTNESS / COMPLEXITY PROOF
+     * ==============================================================
+     */
+
+    /**
  * --------------------------------------------------------------
  * Why insert works
  * --------------------------------------------------------------
@@ -786,6 +822,109 @@ public class TriePrefix {
  * successful traversal plus terminal flag
  * is equivalent to exact-word existence.
  *
+     */
+
+    /**
+     * --------------------------------------------------------------
+     * Complexity Derivation
+     * --------------------------------------------------------------
+     *
+     * Let L = length of the word or prefix being processed.
+     *
+     * insert / search / startsWith each process exactly L characters.
+     * Each character performs O(1) array indexing into children[26].
+     * Therefore each operation is O(L).
+     *
+     * Across all inserted words, a new TrieNode is created only when
+     * a previously unseen prefix edge is needed.
+     * With a fixed 26-letter alphabet, each node has constant-size storage.
+     * Therefore total Trie space is O(number of created nodes), bounded by
+     * O(total inserted characters).
+     */
+
+    /**
+     * ==============================================================
+     * 👁 VISUAL DRY RUN & HARD-PART TRACE
+     * ==============================================================
+     */
+
+    /**
+     * --------------------------------------------------------------
+     * Focused Dry Run
+     * --------------------------------------------------------------
+     *
+     * insert("apple")
+     *
+     * "" -> a -> ap -> app -> appl -> apple
+     *
+     * Only the final node is marked:
+     *
+     * apple.isWord = true
+     *
+     * search("app")
+     *
+     * Path exists up to app,
+     * but app.isWord == false
+     *
+     * therefore false.
+     *
+     * startsWith("app")
+     *
+     * Path existence is enough,
+     * therefore true.
+     *
+     * Hard Part
+     * ---------
+     * Path existence answers PREFIX existence.
+     * Terminal marker answers EXACT-WORD existence.
+     */
+
+    /**
+     * ==============================================================
+     * 🔴 TRAPS / WORDING CHANGES / PATTERN BREAKS
+     * ==============================================================
+     */
+
+    /**
+ * ============================================================================
+ * 🔴 COMMON WRONG SOLUTIONS
+ * ============================================================================
+ *
+ * Wrong #1
+ * --------
+ * Returning true after walking path.
+ *
+ * Counterexample
+ *
+ * insert("apple")
+ *
+ * search("app")
+ *
+ * Incorrectly returns true.
+ *
+ * Broken invariant:
+ * terminal node ignored.
+ *
+ * Wrong #2
+ * --------
+ * Creating nodes during search.
+ *
+ * This mutates the dictionary.
+ *
+ * Search must never modify state.
+ *
+ * Wrong #3
+ * --------
+ * Overwriting children during insert.
+ *
+ * Existing words disappear.
+ *
+ * Broken invariant:
+ * insert only extends.
+ *
+     */
+
+    /**
  * --------------------------------------------------------------
  * What breaks if terminal flag is removed?
  * --------------------------------------------------------------
@@ -796,86 +935,23 @@ public class TriePrefix {
  *
  * would incorrectly return true.
  *
- * --------------------------------------------------------------
- * In-place feasibility
- * --------------------------------------------------------------
- *
- * Not applicable.
- *
- * Trie is a separate indexing structure.
- *
- * --------------------------------------------------------------
- * Streaming feasibility
- * --------------------------------------------------------------
- *
- * Excellent.
- *
- * New words can be inserted online
- * without rebuilding existing data.
- *
- * --------------------------------------------------------------
- * When NOT to use Trie
- * --------------------------------------------------------------
- *
- * Small datasets.
- *
- * Large alphabets with sparse prefixes.
- *
- * Memory-constrained systems.
- */
+     */
 
     /**
-     * ==============================================================
-     * 🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
-     * ==============================================================
+     * --------------------------------------------------------------
+     * Pattern Break Signals
+     * --------------------------------------------------------------
      *
-     * Pattern Trigger
-     * ---------------
-     * Prefix queries.
-     * Dictionary.
-     * Autocomplete.
-     * Spell checker.
+     * Need sorted iteration.
      *
-     * Core Invariant
-     * --------------
-     * One node == one prefix.
+     * Need substring search.
      *
-     * Search Target
-     * -------------
-     * Follow one edge per character.
+     * Need edit distance.
      *
-     * Discard Rule
-     * ------------
-     * Missing edge immediately proves
-     * the requested prefix cannot exist.
-     *
-     * Common Trap
-     * -----------
-     * Forgetting isWord.
-     *
-     * Edge Cases
-     * ----------
-     * Prefix equals complete word.
-     * Prefix longer than any stored word.
-     * Shared prefixes.
-     * Duplicate insertion.
-     *
-     * Interview One-Liner
-     * -------------------
-     * "I index prefixes instead of whole strings."
-     *
-     * Re-Derivation Cue
-     * -----------------
-     * Root
-     * ↓
-     * Character
-     * ↓
-     * Child
-     * ↓
-     * Repeat
-     * ↓
-     * Terminal?
-     *
+     * Trie alone is insufficient.
+     */
+
+    /**
      * ==============================================================
      * 🔄 VARIATIONS & TWEAKS
      * ==============================================================
@@ -929,18 +1005,32 @@ public class TriePrefix {
      *
      * Same invariant.
      *
+     */
+
+    /**
+     * ==============================================================
+     * ±Δ / CROSS-PRODUCT CONFUSION BOUNDARY
+     * ==============================================================
+     *
+     * Problem / wording change           What changes?
      * --------------------------------------------------------------
-     * Pattern Break Signals
-     * --------------------------------------------------------------
+     * LC 208 exact search                Path + final isWord.
+     * LC 208 startsWith                  Path only; ignore isWord.
+     * LC 211 wildcard                    One character may branch to every child.
+     * LC 648 shortest root               Stop at FIRST terminal node.
+     * LC 820 suffix sharing              Reverse traversal so suffix becomes prefix.
+     * LC 14 longest common prefix        Continue only while exactly one child exists
+     *                                    and current node is not terminal.
+     * LC 720 every prefix must be word   Check isWord at EVERY intermediate node.
+     * LC 1268 suggestions                Locate prefix node, then enumerate below it.
+     * Arbitrary substring search         Prefix invariant no longer directly matches;
+     *                                    Trie alone is insufficient.
      *
-     * Need sorted iteration.
-     *
-     * Need substring search.
-     *
-     * Need edit distance.
-     *
-     * Trie alone is insufficient.
-     *
+     * Same data structure does NOT mean same stopping condition.
+     * Usually the invariant survives; the branching / stopping / validation rule changes.
+     */
+
+    /**
      * ==============================================================
      * ⚫ REINFORCEMENT PROBLEM 1
      * ==============================================================
@@ -1080,6 +1170,9 @@ public class TriePrefix {
      * Wildcard changes branching,
      * not the prefix invariant.
      *
+     */
+
+    /**
      * ==============================================================
      * ⚫ REINFORCEMENT PROBLEM 2
      * ==============================================================
@@ -1241,6 +1334,9 @@ public class TriePrefix {
      * The Trie invariant is unchanged.
      * Only the stopping condition changes.
      *
+     */
+
+    /**
      * ==============================================================
      * ⚫ REINFORCEMENT PROBLEM 3
      * ==============================================================
@@ -1360,6 +1456,9 @@ public class TriePrefix {
      * --------------
      * Forgetting to sort by decreasing length.
      *
+     */
+
+    /**
      * ==============================================================
      * 🧩 RELATED PROBLEM 1
      * ==============================================================
@@ -1440,6 +1539,9 @@ public class TriePrefix {
      * --------------
      * Branching destroys commonality.
      *
+     */
+
+    /**
      * ==============================================================
      * 🧩 RELATED PROBLEM 2
      * ==============================================================
@@ -1506,7 +1608,6 @@ public class TriePrefix {
 
     }
 
-
     /**
      * Same / Modified / Broken Invariant
      * ----------------------------------
@@ -1538,6 +1639,9 @@ public class TriePrefix {
      * but every intermediate node must satisfy
      * isWord == true.
      *
+     */
+
+    /**
      * ==============================================================
      * 🧩 RELATED PROBLEM 3
      * ==============================================================
@@ -1662,6 +1766,71 @@ public class TriePrefix {
      * Search phase and enumeration phase
      * are independent.
      *
+     */
+
+    /**
+ * ==============================================================
+ * 🟣 INTERVIEW ARTICULATION
+ * ==============================================================
+ *
+ * Explain the Invariant
+ * ---------------------
+ *
+ * Every node represents exactly one prefix.
+ *
+ * During traversal,
+ * current always equals the prefix processed so far.
+ *
+     */
+
+    /**
+     * ==============================================================
+     * 🎯 INTERVIEW RECALL SHEET (30-SECOND RECALL)
+     * ==============================================================
+     *
+     * Core Invariant
+     * --------------
+     * One node == one prefix.
+     *
+     * Search Target
+     * -------------
+     * Follow one edge per character.
+     *
+     * Discard Rule
+     * ------------
+     * Missing edge immediately proves
+     * the requested prefix cannot exist.
+     *
+     * Common Trap
+     * -----------
+     * Forgetting isWord.
+     *
+     * Edge Cases
+     * ----------
+     * Prefix equals complete word.
+     * Prefix longer than any stored word.
+     * Shared prefixes.
+     * Duplicate insertion.
+     *
+     * Interview One-Liner
+     * -------------------
+     * "I index prefixes instead of whole strings."
+     *
+     * Re-Derivation Cue
+     * -----------------
+     * Root
+     * ↓
+     * Character
+     * ↓
+     * Child
+     * ↓
+     * Repeat
+     * ↓
+     * Terminal?
+     *
+     */
+
+    /**
      * ==============================================================
      * 🧠 MASTERY CHECKLIST
      * ==============================================================
@@ -1747,6 +1916,9 @@ public class TriePrefix {
      * It is not appropriate for
      * arbitrary substring search.
      *
+     */
+
+    /**
      * ==============================================================
      * TEST UTILITIES
      * ==============================================================

@@ -161,31 +161,33 @@ These are reference models. Never imply that every project feature was part of y
 
 These are performance probes, not a predicted exam. They span the highest-return families and reported shapes.
 
-| # | Anchor | Generator that must be retrievable |
-|---:|---|---|
-| 1 | Highest Average Score / IP frequency | map aggregation; sum/count; tie and ordering policy |
-| 2 | String Compression | run boundary; read/write indices; multi-digit count |
-| 3 | Trapping Rain Water | finalize the side with the safe lower boundary |
-| 4 | Container With Most Water | move the limiting wall; prove discarded widths cannot win |
-| 5 | Minimum Window / at most K distinct | validity count; expand then shrink under a precise condition |
-| 6 | Koko / first-true binary search | monotonic feasibility; smallest true boundary; overflow-safe math |
-| 7 | Number of Islands | every unseen land cell starts one component traversal |
-| 8 | 01 Matrix / grid shortest path | multi-source BFS; first reach is shortest |
-| 9 | Validate BST | ancestor bounds, not parent-only comparisons |
-| 10 | Word Break or Coin Change | explicit DP state, base case, transition, iteration order |
-| 11 | Gas Station | total feasibility plus why a negative prefix invalidates starts |
-| 12 | Largest Rectangle or Task Scheduler | boundary/frequency invariant and adversarial ties |
+| # | Anchor | LeetCode / closest analogue | Local Java | Generator that must be retrievable |
+|---:|---|---|---|---|
+| 1 | Highest Average Score / IP frequency | [High Five - closest analogue](https://leetcode.com/problems/high-five/) | — | map aggregation; sum/count; tie and ordering policy |
+| 2 | String Compression | [String Compression](https://leetcode.com/problems/string-compression/) | — | run boundary; read/write indices; multi-digit count |
+| 3 | Trapping Rain Water | [Trapping Rain Water](https://leetcode.com/problems/trapping-rain-water/) | [TrappingRainwater.java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) | finalize the side with the safe lower boundary |
+| 4 | Container With Most Water | [Container With Most Water](https://leetcode.com/problems/container-with-most-water/) | [ContainerWithMostWater.java](../../src/main/java/org/chijai/day1/Arrays/session2/ContainerWithMostWater.java) | move the limiting wall; prove discarded widths cannot win |
+| 5 | Minimum Window / at most K distinct | [Minimum Window Substring](https://leetcode.com/problems/minimum-window-substring/)<br>[Longest Substring with At Most K Distinct Characters](https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/) | [MinimumWindowSubstring.java](../../src/main/java/org/chijai/day3/session1/MinimumWindowSubstring.java)<br>[LongestSubstringVariations.java](../../src/main/java/org/chijai/day3/session1/LongestSubstringVariations.java) | validity count; expand then shrink under a precise condition |
+| 6 | Koko / first-true binary search | [Koko Eating Bananas](https://leetcode.com/problems/koko-eating-bananas/) | [KokoBananas.java](../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | monotonic feasibility; smallest true boundary; overflow-safe math |
+| 7 | Number of Islands | [Number of Islands](https://leetcode.com/problems/number-of-islands/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | every unseen land cell starts one component traversal |
+| 8 | 01 Matrix / grid shortest path | [01 Matrix](https://leetcode.com/problems/01-matrix/) | [Matrix01.java](../../src/main/java/org/chijai/day8/graph/session1/Matrix01.java) | multi-source BFS; first reach is shortest |
+| 9 | Validate BST | [Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/) | [ValidateBST.java](../../src/main/java/org/chijai/day6/trees/session3/ValidateBST.java) | ancestor bounds, not parent-only comparisons |
+| 10 | Word Break or Coin Change | [Word Break](https://leetcode.com/problems/word-break/)<br>[Coin Change](https://leetcode.com/problems/coin-change/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | explicit DP state, base case, transition, iteration order |
+| 11 | Gas Station | [Gas Station](https://leetcode.com/problems/gas-station/) | [GasStation.java](../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | total feasibility plus why a negative prefix invalidates starts |
+| 12 | Largest Rectangle or Task Scheduler | [Largest Rectangle in Histogram](https://leetcode.com/problems/largest-rectangle-in-histogram/)<br>[Task Scheduler](https://leetcode.com/problems/task-scheduler/) | [LargestRectangle.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java)<br>[TaskScheduler.java](../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | boundary/frequency invariant and adversarial ties |
 
 ### Secondary probes - use only when the diagnostic says the family is weak
 
-- Meeting Rooms / Merge Intervals
-- Top K Frequent / Kth Largest Stream
-- Reverse Linked List / Linked List Cycle
-- TimeMap
-- Evaluate RPN
-- Word Ladder
-- LRU Cache
-- Fraction to Recurring Decimal
+| Probe | LeetCode | Local Java |
+|---|---|---|
+| Meeting Rooms / Merge Intervals | [Meeting Rooms](https://leetcode.com/problems/meeting-rooms/)<br>[Merge Intervals](https://leetcode.com/problems/merge-intervals/) | [IntervalSortByStart.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) |
+| Top K Frequent / Kth Largest Stream | [Top K Frequent Elements](https://leetcode.com/problems/top-k-frequent-elements/)<br>[Kth Largest Element in a Stream](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java)<br>[KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) |
+| Reverse Linked List / Linked List Cycle | [Reverse Linked List](https://leetcode.com/problems/reverse-linked-list/)<br>[Linked List Cycle](https://leetcode.com/problems/linked-list-cycle/) | [ReverseLinkedList.java](../../src/main/java/org/chijai/day4/LinkedList/session1/ReverseLinkedList.java)<br>[LinkedListCycle.java](../../src/main/java/org/chijai/day4/LinkedList/session1/LinkedListCycle.java) |
+| TimeMap | [Time Based Key-Value Store](https://leetcode.com/problems/time-based-key-value-store/) | [TimeBasedKeyValueStore.java](../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) |
+| Evaluate RPN | [Evaluate Reverse Polish Notation](https://leetcode.com/problems/evaluate-reverse-polish-notation/) | [EvalRPN.java](../../src/main/java/org/chijai/day5/stack/session3/EvalRPN.java) |
+| Word Ladder | [Word Ladder](https://leetcode.com/problems/word-ladder/) | [WordLadder.java](../../src/main/java/org/chijai/day8/graph/session3/WordLadder.java) |
+| LRU Cache | [LRU Cache](https://leetcode.com/problems/lru-cache/) | [LruCache.java](../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) |
+| Fraction to Recurring Decimal | [Fraction to Recurring Decimal](https://leetcode.com/problems/fraction-to-recurring-decimal/) | — |
 
 No problem outside Core-12 or this secondary list is added before Wednesday unless it is selected by the blind mock.
 
@@ -256,16 +258,16 @@ Lunch, 20-minute walk, and zero interview content.
 
 These are 25-minute cold reps: 3 clarify, 4 baseline/invariant, 12 code, 4 tests, 2 complexity.
 
-| Time | Action |
-|---|---|
-| 14:00-14:25 | Highest Average Score / IP frequency |
-| 14:25-14:32 | break |
-| 14:32-14:57 | Trapping Rain Water |
-| 14:57-15:12 | break, snack, eyes away |
-| 15:12-15:37 | String Compression |
-| 15:37-15:44 | break |
-| 15:44-16:09 | Number of Islands, use BFS once |
-| 16:09-16:15 | scores and failure codes |
+| Time | Action | LeetCode / closest analogue | Local Java |
+|---|---|---|---|
+| 14:00-14:25 | Highest Average Score / IP frequency | [High Five - closest analogue](https://leetcode.com/problems/high-five/) | — |
+| 14:25-14:32 | break | — | — |
+| 14:32-14:57 | Trapping Rain Water | [LeetCode](https://leetcode.com/problems/trapping-rain-water/) | [TrappingRainwater.java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/TrappingRainwater.java) |
+| 14:57-15:12 | break, snack, eyes away | — | — |
+| 15:12-15:37 | String Compression | [LeetCode](https://leetcode.com/problems/string-compression/) | — |
+| 15:37-15:44 | break | — | — |
+| 15:44-16:09 | Number of Islands, use BFS once | [LeetCode](https://leetcode.com/problems/number-of-islands/) | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) |
+| 16:09-16:15 | scores and failure codes | — | — |
 
 Open the solution only for Y/R, and only during the later repair block.
 

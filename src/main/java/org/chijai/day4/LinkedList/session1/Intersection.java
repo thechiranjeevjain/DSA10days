@@ -1,259 +1,68 @@
 package org.chijai.day4.LinkedList.session1;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * =====================================================================================
- * 📘 ALGORITHM TEXTBOOK CHAPTER (HARD-LOCKED)
- * =====================================================================================
- * <p>
- * Title:
  * Intersection of Two Linked Lists
- * <p>
- * Core Pattern:
+ *
+ * Primary pattern:
  * OFFSET NEUTRALIZATION VIA TOTAL TRAVERSAL EQUALIZATION
- * <p>
- * ⚠️ This is a RARE pattern.
- * ⚠️ This is NOT a generic two-pointer pattern.
- * ⚠️ This chapter is intentionally narrow and deep.
- * <p>
- * =====================================================================================
+ *
+ * Reconstruction goal:
+ * identify node IDENTITY, understand the offset problem,
+ * derive length alignment, then compress it into head switching.
  */
 public class Intersection {
 
     // =====================================================================================
-    // 📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
+    // 1. PRIMARY PROBLEM
     // =====================================================================================
     /*
-     * 160. Intersection of Two Linked Lists
+     * LeetCode 160 — Intersection of Two Linked Lists
      *
-     * Given the heads of two singly linked-lists headA and headB,
-     * return the node at which the two lists intersect.
-     * If the two linked lists have no intersection at all, return null.
-     *
-     * The test cases are generated such that there are no cycles anywhere
-     * in the entire linked structure.
-     *
-     * Note that the linked lists must retain their original structure
-     * after the function returns.
-     *
-     * 🔗 https://leetcode.com/problems/intersection-of-two-linked-lists/
-     * 🧩 Difficulty: Easy
-     * 🏷️ Tags: Linked List, Two Pointers, Hash Table
+     * Return the first node shared by BOTH acyclic singly linked lists.
+     * Intersection means SAME NODE OBJECT, not same value.
+     * If they never intersect, return null.
+     * Do not modify either list.
      */
 
-    // =====================================================================================
-    // 🔵 PATTERN DECLARATION (HARD-LOCKED)
-    // =====================================================================================
-    /*
-     * 🔵 PATTERN NAME (EXACT):
-     * Offset Neutralization via Total Traversal Equalization
-     *
-     * 🔒 HARD LOCK:
-     * This pattern applies ONLY when ALL conditions below hold.
-     * If even ONE is violated — ABANDON this pattern immediately.
-     *
-     * Required Conditions:
-     * 1. Two sequences are traversed FORWARD-ONLY
-     * 2. They may share a COMMON SUFFIX by IDENTITY (not value)
-     * 3. Starting offsets are UNKNOWN and UNEQUAL
-     * 4. Backtracking is impossible
-     * 5. Extra memory is disallowed or undesirable
-     *
-     * Linked lists are merely the container here.
-     * The pattern is CONTAINER-INDEPENDENT.
-     */
-
-    // =====================================================================================
-    // 🟢 MENTAL MODEL & INVARIANT (HARD-LOCKED)
-    // =====================================================================================
-    /*
-     * 🟢 Mental Model:
-     * Two forward-only processes start at unknown offsets
-     * and may converge at a shared suffix.
-     *
-     * 🟢 Core Invariant (NON-NEGOTIABLE):
-     * Both traversals MUST cover the SAME TOTAL DISTANCE.
-     *
-     * This is NOT about speed difference.
-     * This is NOT about cycle detection.
-     * This is about OFFSET NEUTRALIZATION.
-     *
-     * If total traversal is equalized,
-     * convergence (or lack thereof) becomes inevitable.
-     */
-
-    // =====================================================================================
-    // 🔴 PATTERN BOUNDARIES — DO NOT CROSS
-    // =====================================================================================
-    /*
-     * 🔴 DO NOT USE THIS PATTERN IF:
-     *
-     * ❌ Random access exists (arrays, strings)
-     * ❌ Lengths are trivial to compute and store
-     * ❌ Backtracking is allowed
-     * ❌ Equality is by VALUE, not IDENTITY
-     * ❌ Cycles exist
-     * ❌ Relative speed difference is the intended invariant
-     *
-     * ⚠️ WARNING:
-     * Fast/slow pointer problems are a DIFFERENT PATTERN.
-     * Treating them as the same is a conceptual error.
-     */
-
-    // =====================================================================================
-    // 🟡 WHY THIS PATTERN HAS FEW REINFORCEMENTS (EXPLICIT)
-    // =====================================================================================
-    /*
-     * 🟡 IMPORTANT TRUTH:
-     * This pattern has VERY FEW pure reinforcements.
-     *
-     * Reason:
-     * Most problems violate at least one required constraint:
-     * - They allow indexing
-     * - They allow memory
-     * - They allow backtracking
-     * - They rely on value equality
-     *
-     * This rarity is STRUCTURAL, not pedagogical.
-     *
-     * Do NOT force unrelated problems into this chapter.
-     */
-
-    // =====================================================================================
-    // 🧱 LIST NODE DEFINITION
-    // =====================================================================================
     static class ListNode {
         int val;
         ListNode next;
 
-        ListNode(int value) {
-            this.val = value;
+        ListNode(int val) {
+            this.val = val;
         }
     }
 
     // =====================================================================================
-    // 🟥 BRUTE FORCE (REFERENCE CHECK)
+    // 2. PRIMARY INTERVIEW SOLUTION — SEE THIS FIRST
     // =====================================================================================
-    static class BruteForceSolution {
-        static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
-            for (ListNode a = headA; a != null; a = a.next) {
-                for (ListNode b = headB; b != null; b = b.next) {
-                    if (a == b) return a;
-                }
-            }
-            return null;
-        }
-    }
-
-    // =====================================================================================
-    // 🟡 USER HASHSET SOLUTION (CORRECT, SPACE-HEAVY)
-    // =====================================================================================
-    static class UserHashSetSolution {
-        static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
-            java.util.HashSet<ListNode> visited = new java.util.HashSet<>();
-            ListNode curr = headA;
-            while (curr != null) {
-                visited.add(curr);
-                curr = curr.next;
-            }
-            curr = headB;
-            while (curr != null) {
-                if (visited.contains(curr)) return curr;
-                curr = curr.next;
-            }
-            return null;
-        }
-    }
-
-    // =====================================================================================
-    // 🟢 OPTIMAL SOLUTION — PATTERN EMBODIMENT
-    // =====================================================================================
-
     /*
-    =====================================================================================
-    🟢 TERMINATION PROOF — WHY BOTH POINTERS HIT FINAL null AT THE SAME ITERATION
-    =====================================================================================
-
-    Step 2: Define the total path each pointer is allowed to walk
-
-    Let:
-    - LA = number of nodes in list A
-    - LB = number of nodes in list B
-
-    We analyze the code behavior MECHANICALLY, not conceptually.
-
-    -------------------------------------
-    Pointer A path (NO intersection case)
-    -------------------------------------
-    1. Walks all LA nodes of list A
-    2. Hits null
-    3. Redirects to headB
-    4. Walks all LB nodes of list B
-    5. Hits null again
-
-    👉 Total steps until FINAL null = LA + LB
-
-
-    -------------------------------------
-    Pointer B path
-    -------------------------------------
-    1. Walks all LB nodes of list B
-    2. Hits null
-    3. Redirects to headA
-    4. Walks all LA nodes of list A
-    5. Hits null again
-
-    👉 Total steps until FINAL null = LB + LA
-
-    Which is the SAME number.
-
-
-    =====================================================================================
-    Step 3: Why they MUST hit final null at the SAME iteration
-    =====================================================================================
-
-    Now combine Step 1 (loop mechanics) and Step 2 (path length).
-
-    Facts:
-    1. In EACH loop iteration, BOTH pointers advance EXACTLY ONCE
-    2. Neither pointer can advance more than (LA + LB) steps
-    3. The structure is finite and acyclic
-
-    Therefore:
-    - At iteration (LA + LB):
-        • pointerA has exhausted its entire allowed path
-        • pointerB has exhausted its entire allowed path
-
-    So at that EXACT iteration:
-        pointerA == null
-        pointerB == null
-
-    This makes the loop condition fail:
-        while (pointerA != pointerB)  →  while (null != null) → false
-
-    No earlier iteration can exhaust BOTH paths.
-    No later iteration is possible because the loop terminates immediately.
-
-    This is a HARD termination guarantee, not intuition.
-    =====================================================================================
-    */
-
-    static class OptimalOffsetNeutralizationSolution {
+     * RECOGNIZE:
+     * same node identity + shared suffix + unequal prefix lengths
+     *
+     * REMEMBER:
+     * "Walk mine, then yours. You walk yours, then mine."
+     * Both pointers pay for both prefixes, so the offset disappears.
+     *
+     * TYPE FROM MEMORY:
+     * p = headA, q = headB
+     * while (p != q)
+     *     p = p == null ? headB : p.next
+     *     q = q == null ? headA : q.next
+     * return p
+     *
+     * INTERVIEW COMPLEXITY:
+     * Time  O(m + n)
+     * Space O(1)
+     */
+    static class OptimalSolution {
         static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
-
             ListNode pointerA = headA;
             ListNode pointerB = headB;
 
-            /*
-             * 🟢 HARD-LOCKED INVARIANT ENFORCEMENT
-             *
-             * Redirecting a pointer at null is NOT a trick.
-             * It forces both traversals to cover:
-             *
-             * lengthA + lengthB
-             *
-             * thereby neutralizing unknown offset.
-             * once own list is fully traversed , traverse the other list.
-             */
             while (pointerA != pointerB) {
                 pointerA = (pointerA == null) ? headB : pointerA.next;
                 pointerB = (pointerB == null) ? headA : pointerB.next;
@@ -264,50 +73,372 @@ public class Intersection {
     }
 
     // =====================================================================================
-    // ⚫ CUSTOM REINFORCEMENT PROBLEMS (INVARIANT-PURE)
+    // 3. APPROACH TRADE-OFF — KNOW WHY EACH VERSION EXISTS
     // =====================================================================================
     /*
-     * ⚫ NOTE:
+     * Approach          Time       Extra Space   Trade-off
+     * -------------------------------------------------------------------------------
+     * Brute force       O(mn)      O(1)          No memory, but repeats comparisons
+     * HashSet           O(m+n)     O(m)          Linear time by remembering A
+     * Length alignment  O(m+n)     O(1)          Optimal; explicit and easy to derive
+     * Head switching    O(m+n)     O(1)          Optimal; least bookkeeping <- PRIMARY
+     *
+     * PROGRESSION QUESTION:
+     * Why move from one approach to the next?
+     *
+     * Brute force -> HashSet
+     *     Spend memory to remove repeated searches.
+     *
+     * HashSet -> Length alignment
+     *     Keep linear time, remove O(m) extra memory by using list lengths.
+     *
+     * Length alignment -> Head switching
+     *     Keep the SAME optimal O(m+n) time and O(1) space,
+     *     but remove explicit length calculation, difference calculation, and skipping.
+     *
+     * IMPORTANT:
+     * Head switching does NOT improve Big-O over length alignment.
+     * Its advantage is smaller state, less bookkeeping, and compact interview code.
+     */
+
+    // =====================================================================================
+    // 4. FULL APPROACH PROGRESSION — KEEP ALL RUNNABLE VERSIONS TOGETHER
+    // =====================================================================================
+    /*
+     * 1. Brute force
+     *    Compare every node in A with every node in B.
+     *    Time O(mn), space O(1).
+     *
+     * 2. HashSet
+     *    Store all node references from A; scan B for first contained node.
+     *    Time O(m+n), space O(m).
+     *
+     * 3. Length alignment
+     *    Compute lengths, advance the longer list by |m-n|, then walk together.
+     *    Time O(m+n), space O(1).
+     *
+     * 4. Head switching — PRIMARY (shown up top)
+     *    Make each pointer traverse A+B / B+A.
+     *    Time O(m+n), space O(1).
+     *    Same asymptotic cost as length alignment, but less bookkeeping.
+     *
+     * RETENTION LADDER:
+     * brute force
+     *     -> spend memory to remember visited nodes
+     *     -> remove memory by explicitly aligning lengths
+     *     -> remove length bookkeeping by switching heads.
+     *
+     * INTERVIEW CHOICE:
+     * - If asked for simplest correct idea: HashSet is easy to explain.
+     * - If asked for O(1) space: length alignment is the most explicit derivation.
+     * - For final production/interview answer: head switching is compact and optimal.
+     */
+
+    static class BruteForceSolution {
+        static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+            for (ListNode a = headA; a != null; a = a.next) {
+                for (ListNode b = headB; b != null; b = b.next) {
+                    if (a == b) {
+                        return a;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    static class HashSetSolution {
+        static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+            Set<ListNode> visited = new HashSet<>();
+
+            ListNode current = headA;
+            while (current != null) {
+                visited.add(current);
+                current = current.next;
+            }
+
+            current = headB;
+            while (current != null) {
+                if (visited.contains(current)) {
+                    return current;
+                }
+                current = current.next;
+            }
+
+            return null;
+        }
+    }
+
+    static class LengthAlignmentSolution {
+        static ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+            int lengthA = length(headA);
+            int lengthB = length(headB);
+
+            ListNode pointerA = headA;
+            ListNode pointerB = headB;
+
+            if (lengthA > lengthB) {
+                pointerA = advance(pointerA, lengthA - lengthB);
+            } else {
+                pointerB = advance(pointerB, lengthB - lengthA);
+            }
+
+            while (pointerA != pointerB) {
+                pointerA = pointerA.next;
+                pointerB = pointerB.next;
+            }
+
+            return pointerA;
+        }
+
+        private static int length(ListNode head) {
+            int length = 0;
+
+            for (ListNode current = head; current != null; current = current.next) {
+                length++;
+            }
+
+            return length;
+        }
+
+        private static ListNode advance(ListNode node, int steps) {
+            while (steps-- > 0) {
+                node = node.next;
+            }
+            return node;
+        }
+    }
+
+
+    // =====================================================================================
+    // 5. HOW THE BRAIN SHOULD THINK
+    // =====================================================================================
+    /*
+     * Shape:
+     *
+     * A: a1 -> a2 --------\
+     *                       c1 -> c2 -> null
+     * B: b1 -> b2 -> b3 --/
+     *
+     * Once two singly linked lists share a node,
+     * every node after it is shared too: they have a COMMON SUFFIX.
+     *
+     * The only difficulty is OFFSET:
+     * one pointer may have more private nodes before the common suffix.
+     *
+     * First natural fix:
+     *     measure lengths -> skip the difference -> walk together.
+     *
+     * Better compression:
+     *     let each pointer walk BOTH lists.
+     *     A + B and B + A have equal total length,
+     *     so the original offset cancels automatically.
+     */
+
+    // =====================================================================================
+    // 6. PATTERN + BOUNDARY
+    // =====================================================================================
+    /*
+     * RECOGNITION TRIGGER:
+     * - two forward-only acyclic chains
+     * - possible shared suffix by IDENTITY
+     * - unequal unknown prefix lengths
+     * - want O(1) extra space
+     *
+     * CORE INVARIANT:
+     * Both pointers eventually traverse the same total distance.
+     *
+     * NOT THIS PATTERN:
+     * - middle/cycle       -> relative-speed fast/slow
+     * - nth from end       -> fixed-gap pointers
+     * - equal values       -> value comparison problem
+     * - cyclic lists       -> different case analysis
+     */
+
+    // =====================================================================================
+    // 7. RECONSTRUCTION SKELETON — MECHANICAL RECALL
+    // =====================================================================================
+    /*
+     * pointerA = headA
+     * pointerB = headB
+     *
+     * while pointerA != pointerB:
+     *     pointerA = next node, or headB after null
+     *     pointerB = next node, or headA after null
+     *
+     * return pointerA
+     *
+     * MEMORY LINE:
+     * "Walk my list, then yours. You walk yours, then mine."
+     */
+
+    // =====================================================================================
+    // 8. WHY THE PRIMARY WORKS — DERIVATION, NOT TRICK
+    // =====================================================================================
+    /*
+     * Let:
+     * a = private prefix length of A
+     * b = private prefix length of B
+     * c = shared suffix length
+     *
+     * Pointer A route:
+     *     a + c + b
+     *
+     * Pointer B route:
+     *     b + c + a
+     *
+     * These are equal.
+     *
+     * So after each pointer pays for BOTH private prefixes,
+     * the original offset disappears and they enter the common suffix aligned.
+     *
+     * If there is NO intersection:
+     * A walks m+n nodes and B walks n+m nodes.
+     * Both finally become null together.
+     */
+
+    // =====================================================================================
+    // 9. DRY RUN — STATE EVOLUTION
+    // =====================================================================================
+    /*
+     * A: A1 -> A2 ------\
+     *                     C1 -> C2 -> null
+     * B: B1 -> B2 -> B3 /
+     *
+     * iteration     pointerA     pointerB
+     * -----------------------------------
+     * 0             A1           B1
+     * 1             A2           B2
+     * 2             C1           B3
+     * 3             C2           C1
+     * 4             null         C2
+     * 5             B1           null
+     * 6             B2           A1
+     * 7             B3           A2
+     * 8             C1           C1   <- meet
+     *
+     * Switching does not make either pointer faster.
+     * It only makes both pay the same TOTAL route length.
+     */
+
+    // =====================================================================================
+    // 10. HIGH-ROI NUANCES / TRAPS
+    // =====================================================================================
+    /*
+     * 1. Compare references:
+     *        pointerA == pointerB
+     *    NOT values:
+     *        pointerA.val == pointerB.val
+     *
+     * 2. No special null pre-check is required.
+     *    The loop naturally handles an empty list.
+     *
+     * 3. Redirect only when the pointer itself is null:
+     *        p == null ? otherHead : p.next
+     *
+     * 4. The lists must be acyclic for this proof.
+     *
+     * 5. We never mutate next pointers.
+     *
+     * 6. Head switching is not asymptotically faster than length alignment.
+     *    Its advantage is less state and less bookkeeping.
+     */
+
+    // =====================================================================================
+    // 11. CORRECTNESS + COMPLEXITY
+    // =====================================================================================
+    /*
+     * CORRECTNESS:
+     * - If an intersection exists, both routes contain the same private-prefix
+     *   distances in opposite order, so the offset is neutralized and both pointers
+     *   reach the first common node together.
+     * - If no intersection exists, both traverse exactly m+n nodes and become null
+     *   together, so null is returned.
+     *
+     * COMPLEXITY + PRACTICAL TRADE-OFF:
+     *
+     * Brute force
+     *     Time  O(mn)
+     *     Space O(1)
+     *     Cost: repeatedly scans B for every node of A.
+     *
+     * HashSet
+     *     Time  O(m+n) expected
+     *     Space O(m) when storing A
+     *     Gain: removes repeated comparisons.
+     *     Cost: extra memory and hashing.
+     *
+     * Length alignment
+     *     Time  O(m+n)
+     *     Space O(1)
+     *     Gain: optimal bounds with a very explicit correctness story.
+     *     Cost: two length counts + difference bookkeeping before aligned scan.
+     *
+     * Head switching
+     *     Time  O(m+n)
+     *     Space O(1)
+     *     Gain: same optimal bounds with fewer variables/bookkeeping.
+     *     Cost: less obvious until you understand traversal equalization.
+     *
+     * FINAL TRADE-OFF:
+     * Head switching wins on implementation simplicity, NOT asymptotic complexity.
+     */
+
+    // =====================================================================================
+    // 12. ±Δ — SMALL WORDING CHANGE, DIFFERENT PATTERN
+    // =====================================================================================
+    /*
+     * "same node object / shared suffix"     -> HEAD SWITCHING
+     * "same value appears in both lists"     -> set / search by VALUE
+     * "find middle"                          -> FAST/SLOW
+     * "detect a cycle"                       -> FAST/SLOW
+     * "remove nth node from end"             -> FIXED GAP
+     * "lists may contain cycles"             -> CYCLE CASE ANALYSIS
+     * "lengths are already known"            -> LENGTH ALIGNMENT is very natural
+     *
+     * This problem is tagged Two Pointers,
+     * but "two pointers" is the mechanism, not the invariant.
+     */
+
+    // =====================================================================================
+    // 13. CUSTOM REINFORCEMENTS — SAME INVARIANT, DIFFERENT DOMAIN
+    // =====================================================================================
+    /*
+     * WHY KEEP THESE:
+     * These are deliberately NOT new algorithms.
+     * They are transfer exercises for the SAME invariant:
+     *
+     *     unequal starting offsets
+     *     + forward-only traversal
+     *     + possible shared suffix by IDENTITY
+     *     + no buffering
+     *     -> equalize TOTAL traversal
+     *
+     * Their value is abstraction:
+     * can you recognize the structure when the word "linked list" disappears?
+     *
      * These are NOT LeetCode problems.
-     * They are REAL invariant-preserving reinforcements.
-     *
-     * 1. Two forward-only log streams that may share a replicated suffix
-     * 2. Two distributed timelines that may converge after reconciliation
-     * 3. Two append-only iterators with unknown offset and no buffering
-     *
-     * All share the SAME mental move:
-     * → Equalize TOTAL traversal, not starting position.
      */
 
     /*
-    =====================================================================================
-    ⚫ REINFORCEMENT PROBLEM 1 — FORWARD-ONLY LOG STREAM INTERSECTION
-    =====================================================================================
-
-    📘 PROBLEM STATEMENT:
-    You are given two log streams, StreamA and StreamB.
-
-    Properties:
-    - Append-only
-    - Forward-only traversal
-    - Logs are immutable objects
-    - Streams MAY share a replicated suffix (same object references)
-    - Replication point is UNKNOWN
-    - No buffering of full streams is allowed
-
-    Task:
-    Return the FIRST shared log entry by REFERENCE.
-    If no shared suffix exists, return null.
-
-    🧠 PATTERN MAPPING:
-    - LogEntry  → ListNode
-    - next      → next pointer
-    - Stream    → linked structure
-
-    🟢 INVARIANT:
-    Both traversals must consume the SAME TOTAL number of log entries.
-    */
-
+     * -----------------------------------------------------------------------------
+     * REINFORCEMENT 1 — FORWARD-ONLY LOG STREAM INTERSECTION
+     * -----------------------------------------------------------------------------
+     *
+     * Two append-only log streams may share a replicated suffix.
+     * Entries are immutable objects and traversal is forward-only.
+     * The replication point is unknown and full buffering is disallowed.
+     *
+     * Return the first shared LogEntry by REFERENCE, or null.
+     *
+     * MAPPING:
+     * LogEntry -> ListNode
+     * next     -> next
+     * stream   -> linked chain
+     *
+     * SAME INVARIANT:
+     * both readers consume the same total route.
+     */
     static class LogEntry {
         final String message;
         LogEntry next;
@@ -318,51 +449,33 @@ public class Intersection {
     }
 
     static class LogStreamIntersection {
-
         static LogEntry findIntersection(LogEntry headA, LogEntry headB) {
-
             LogEntry readerA = headA;
             LogEntry readerB = headB;
 
-            // Offset neutralization via total traversal equalization
             while (readerA != readerB) {
                 readerA = (readerA == null) ? headB : readerA.next;
                 readerB = (readerB == null) ? headA : readerB.next;
             }
 
-            return readerA; // first shared log entry or null
+            return readerA;
         }
     }
 
     /*
-    =====================================================================================
-    ⚫ REINFORCEMENT PROBLEM 2 — DISTRIBUTED TIMELINE CONVERGENCE
-    =====================================================================================
-
-    📘 PROBLEM STATEMENT:
-    Two distributed systems maintain independent timelines of events.
-
-    Properties:
-    - Forward-only traversal
-    - Events are immutable objects
-    - Timelines MAY converge after reconciliation
-    - Convergence point is UNKNOWN
-    - No timestamps or global ordering
-    - No full timeline buffering allowed
-
-    Task:
-    Return the FIRST shared event object by IDENTITY.
-    If timelines never converge, return null.
-
-    🧠 PATTERN MAPPING:
-    - Event        → ListNode
-    - next         → next pointer
-    - Timeline     → linked structure
-
-    🟢 INVARIANT:
-    Both traversals must consume the SAME TOTAL number of events.
-    */
-
+     * -----------------------------------------------------------------------------
+     * REINFORCEMENT 2 — DISTRIBUTED TIMELINE CONVERGENCE
+     * -----------------------------------------------------------------------------
+     *
+     * Two systems maintain forward-only immutable event timelines.
+     * They may eventually converge onto the same Event objects after reconciliation.
+     * There is no timestamp/global ordering and no full buffering.
+     *
+     * Return the first shared Event object by IDENTITY, or null.
+     *
+     * SAME INVARIANT:
+     * equalize total traversal, not starting position.
+     */
     static class Event {
         final int id;
         Event next;
@@ -373,13 +486,10 @@ public class Intersection {
     }
 
     static class TimelineConvergence {
-
         static Event findFirstCommonEvent(Event headA, Event headB) {
-
             Event cursorA = headA;
             Event cursorB = headB;
 
-            // Structural offset neutralization
             while (cursorA != cursorB) {
                 cursorA = (cursorA == null) ? headB : cursorA.next;
                 cursorB = (cursorB == null) ? headA : cursorB.next;
@@ -390,31 +500,19 @@ public class Intersection {
     }
 
     /*
-    =====================================================================================
-    ⚫ REINFORCEMENT PROBLEM 3 — APPEND-ONLY ITERATOR CONVERGENCE
-    =====================================================================================
-
-    📘 PROBLEM STATEMENT:
-    You are given two append-only iterators.
-
-    Properties:
-    - Forward-only traversal
-    - No rewind
-    - No buffering of past elements
-    - Iterators may start at different offsets
-    - Iterators may converge to the same underlying iterator
-
-    Task:
-    Return the FIRST shared element by IDENTITY.
-    If no convergence exists, return null.
-
-    🧠 PATTERN MAPPING:
-    - IteratorNode → ListNode
-    - next         → next pointer
-
-    🟢 INVARIANT:
-    Equalize TOTAL traversal length, not starting position.
-    */
+     * -----------------------------------------------------------------------------
+     * REINFORCEMENT 3 — APPEND-ONLY ITERATOR CONVERGENCE
+     * -----------------------------------------------------------------------------
+     *
+     * Two forward-only append-only iterator chains may begin at unequal offsets
+     * and later converge onto the same underlying IteratorNode objects.
+     * Rewind and buffering are unavailable.
+     *
+     * Return the first shared IteratorNode by IDENTITY, or null.
+     *
+     * SAME INVARIANT:
+     * each iterator traverses both routes, so the unknown offset cancels.
+     */
     static class IteratorNode {
         final int value;
         IteratorNode next;
@@ -425,70 +523,285 @@ public class Intersection {
     }
 
     static class IteratorConvergence {
-
         static IteratorNode findConvergence(IteratorNode startA, IteratorNode startB) {
+            IteratorNode iteratorA = startA;
+            IteratorNode iteratorB = startB;
 
-            IteratorNode itA = startA;
-            IteratorNode itB = startB;
-
-            while (itA != itB) {
-                itA = (itA == null) ? startB : itA.next;
-                itB = (itB == null) ? startA : itB.next;
+            while (iteratorA != iteratorB) {
+                iteratorA = (iteratorA == null) ? startB : iteratorA.next;
+                iteratorB = (iteratorB == null) ? startA : iteratorB.next;
             }
 
-            return itA;
+            return iteratorA;
         }
     }
 
+    // =====================================================================================
+    // 14. RELATED REINFORCEMENT — SAME TWO-POINTER MECHANISM, DIFFERENT INVARIANT
+    // =====================================================================================
+    /*
+     * PURE same-pattern LeetCode reinforcement is rare: LC160 is essentially the canonical one.
+     * So reinforce the FAMILY by contrasting the invariant.
+     *
+     * A. LC876 Middle of the Linked List
+     *    Invariant: fast moves 2x, so slow reaches the middle.
+     *
+     * B. LC141 Linked List Cycle
+     *    Invariant: relative speed forces collision inside a cycle.
+     *
+     * C. LC19 Remove Nth Node From End
+     *    Invariant: preserve an n-node gap between fast and slow.
+     *
+     * D. LC142 Linked List Cycle II
+     *    Invariant: after collision, distance geometry identifies cycle entry.
+     */
+
+    static class MiddleOfLinkedListReinforcement {
+        static ListNode middleNode(ListNode head) {
+            ListNode slow = head;
+            ListNode fast = head;
+
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
+            }
+
+            return slow;
+        }
+    }
+
+    static class LinkedListCycleReinforcement {
+        static boolean hasCycle(ListNode head) {
+            ListNode slow = head;
+            ListNode fast = head;
+
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
+
+                if (slow == fast) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    static class RemoveNthFromEndReinforcement {
+        static ListNode removeNthFromEnd(ListNode head, int n) {
+            ListNode dummy = new ListNode(0);
+            dummy.next = head;
+
+            ListNode slow = dummy;
+            ListNode fast = dummy;
+
+            for (int i = 0; i <= n; i++) {
+                fast = fast.next;
+            }
+
+            while (fast != null) {
+                slow = slow.next;
+                fast = fast.next;
+            }
+
+            slow.next = slow.next.next;
+            return dummy.next;
+        }
+    }
+
+    static class LinkedListCycleIIReinforcement {
+        static ListNode detectCycle(ListNode head) {
+            ListNode slow = head;
+            ListNode fast = head;
+
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
+
+                if (slow == fast) {
+                    ListNode entry = head;
+
+                    while (entry != slow) {
+                        entry = entry.next;
+                        slow = slow.next;
+                    }
+
+                    return entry;
+                }
+            }
+
+            return null;
+        }
+    }
 
     // =====================================================================================
-    // 🧪 SELF-VERIFYING TESTS
+    // 15. INTERVIEW ARTICULATION
+    // =====================================================================================
+    /*
+     * BEFORE CODING:
+     * "Intersection is by node identity. Because the lists are singly linked and acyclic,
+     *  any intersection forms a shared suffix. The problem is unequal prefix lengths.
+     *  I can align them explicitly by length, or avoid storing lengths by letting each
+     *  pointer traverse both lists. Then both cover m+n distance, which cancels the offset."
+     *
+     * AFTER CODING:
+     * "Each pointer visits at most both lists once, so time is O(m+n), space is O(1),
+     *  and the input structure is unchanged. If there is no intersection, both end at null."
+     */
+
+    // =====================================================================================
+    // 16. 30-SECOND RECALL CARD
+    // =====================================================================================
+    /*
+     * TRIGGER:
+     * two acyclic lists + shared node identity + unequal prefixes
+     *
+     * DERIVE:
+     * align lengths -> then compress alignment by switching heads
+     *
+     * TYPE:
+     * p = headA, q = headB
+     * while (p != q)
+     *     p = p == null ? headB : p.next
+     *     q = q == null ? headA : q.next
+     * return p
+     *
+     * WHY:
+     * A+B == B+A in total traversal length
+     *
+     * TRAP:
+     * identity, not value
+     */
+
+    // =====================================================================================
+    // 17. SELF-VERIFYING TESTS — LAST
     // =====================================================================================
     public static void main(String[] args) {
-
-        // Shared suffix
-        ListNode common = new ListNode(8);
-        common.next = new ListNode(10);
-
-        // List A
-        ListNode a = new ListNode(3);
-        a.next = new ListNode(7);
-        a.next.next = common;
-
-        // List B
-        ListNode b = new ListNode(99);
-        b.next = new ListNode(1);
-        b.next.next = common;
-
-        assert BruteForceSolution.getIntersectionNode(a, b) == common;
-        assert UserHashSetSolution.getIntersectionNode(a, b) == common;
-        assert OptimalOffsetNeutralizationSolution.getIntersectionNode(a, b) == common;
-
-        // No intersection
-        ListNode x = new ListNode(1);
-        ListNode y = new ListNode(2);
-        assert OptimalOffsetNeutralizationSolution.getIntersectionNode(x, y) == null;
-
-        // Same head
-        assert OptimalOffsetNeutralizationSolution.getIntersectionNode(common, common) == common;
+        testIntersectionApproaches();
+        testEdgeCases();
+        testCustomReinforcements();
+        testReinforcements();
 
         System.out.println("All tests passed ✔");
     }
 
-    // =====================================================================================
-    // 🧘 FINAL CLOSURE — HARD-LOCKED
-    // =====================================================================================
-    /*
-     * This pattern is rare by necessity.
-     * Its constraints are strict.
-     * Its invariant is absolute.
-     *
-     * When the constraints match,
-     * the solution is inevitable.
-     *
-     * When they do not,
-     * this pattern must be abandoned immediately.
-     *
-     * This chapter is complete.
-     */
+    private static void testIntersectionApproaches() {
+        ListNode common = chain(8, 10);
+
+        ListNode headA = chain(3, 7);
+        tail(headA).next = common;
+
+        ListNode headB = chain(99, 1, 5);
+        tail(headB).next = common;
+
+        check(BruteForceSolution.getIntersectionNode(headA, headB) == common);
+        check(HashSetSolution.getIntersectionNode(headA, headB) == common);
+        check(LengthAlignmentSolution.getIntersectionNode(headA, headB) == common);
+        check(OptimalSolution.getIntersectionNode(headA, headB) == common);
+    }
+
+    private static void testEdgeCases() {
+        ListNode common = chain(8, 10);
+        check(OptimalSolution.getIntersectionNode(common, common) == common);
+
+        ListNode a = chain(1, 2, 3);
+        ListNode b = chain(4, 5);
+        check(OptimalSolution.getIntersectionNode(a, b) == null);
+
+        check(OptimalSolution.getIntersectionNode(null, b) == null);
+        check(OptimalSolution.getIntersectionNode(null, null) == null);
+    }
+
+    private static void testCustomReinforcements() {
+        LogEntry commonLog = new LogEntry("shared-1");
+        commonLog.next = new LogEntry("shared-2");
+
+        LogEntry logA = new LogEntry("a-1");
+        logA.next = commonLog;
+
+        LogEntry logB = new LogEntry("b-1");
+        logB.next = new LogEntry("b-2");
+        logB.next.next = commonLog;
+
+        check(LogStreamIntersection.findIntersection(logA, logB) == commonLog);
+
+        Event commonEvent = new Event(100);
+        commonEvent.next = new Event(101);
+
+        Event eventA = new Event(1);
+        eventA.next = commonEvent;
+
+        Event eventB = new Event(2);
+        eventB.next = new Event(3);
+        eventB.next.next = commonEvent;
+
+        check(TimelineConvergence.findFirstCommonEvent(eventA, eventB) == commonEvent);
+
+        IteratorNode commonIteratorNode = new IteratorNode(50);
+        commonIteratorNode.next = new IteratorNode(60);
+
+        IteratorNode iteratorA = new IteratorNode(10);
+        iteratorA.next = commonIteratorNode;
+
+        IteratorNode iteratorB = new IteratorNode(20);
+        iteratorB.next = new IteratorNode(30);
+        iteratorB.next.next = commonIteratorNode;
+
+        check(IteratorConvergence.findConvergence(iteratorA, iteratorB) == commonIteratorNode);
+    }
+
+    private static void testReinforcements() {
+        ListNode middleList = chain(1, 2, 3, 4, 5);
+        check(MiddleOfLinkedListReinforcement.middleNode(middleList).val == 3);
+
+        ListNode cycle = chain(1, 2, 3, 4);
+        ListNode cycleEntry = cycle.next;
+        tail(cycle).next = cycleEntry;
+        check(LinkedListCycleReinforcement.hasCycle(cycle));
+        check(LinkedListCycleIIReinforcement.detectCycle(cycle) == cycleEntry);
+
+        ListNode removable = chain(1, 2, 3, 4, 5);
+        ListNode result = RemoveNthFromEndReinforcement.removeNthFromEnd(removable, 2);
+        check(toString(result).equals("1->2->3->5"));
+    }
+
+    private static ListNode chain(int... values) {
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+
+        for (int value : values) {
+            current.next = new ListNode(value);
+            current = current.next;
+        }
+
+        return dummy.next;
+    }
+
+    private static ListNode tail(ListNode head) {
+        ListNode current = head;
+        while (current.next != null) {
+            current = current.next;
+        }
+        return current;
+    }
+
+    private static String toString(ListNode head) {
+        StringBuilder result = new StringBuilder();
+
+        for (ListNode current = head; current != null; current = current.next) {
+            if (!result.isEmpty()) {
+                result.append("->");
+            }
+            result.append(current.val);
+        }
+
+        return result.toString();
+    }
+
+    private static void check(boolean condition) {
+        if (!condition) {
+            throw new AssertionError("Test failed");
+        }
+    }
 }

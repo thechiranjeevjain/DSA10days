@@ -1,956 +1,457 @@
 package org.chijai.day2.session3;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TimeBasedKeyValueStore {
 
     /*
      =====================================================================================
-     2. 📘 PRIMARY PROBLEM
+     1. 📘 PROBLEM STATEMENT + FEW EXAMPLES
      =====================================================================================
 
-     Title:
-     Time Based Key Value Store
-
-     Difficulty:
-     Medium
-
-     Tags:
-     - Binary Search
-     - HashMap
-     - Ordered Data Structure
-     - Design
-     - TreeMap
-
-     LeetCode:
-     https://leetcode.com/problems/time-based-key-value-store/
-
-     -------------------------------------------------------------------------------------
-
-     Problem Description
-
-     Design a data structure that supports storing multiple values for the same key,
-     each associated with a timestamp.
-
-     Operations:
-
-     TimeMap()
-
-         Creates an empty data structure.
+     Design a time-based key-value store.
 
      set(key, value, timestamp)
 
          Store value for key at timestamp.
 
-         For every individual key, timestamps supplied to set() are strictly increasing.
+         For every individual key,
+         timestamps passed to set() are STRICTLY INCREASING.
 
      get(key, timestamp)
 
-         Return the value associated with the largest timestamp that is
+         Return the value belonging to the LARGEST stored timestamp such that
 
-             timestampStored <= timestamp
+             storedTimestamp <= timestamp
 
-         If no such timestamp exists, return an empty string.
-
-     -------------------------------------------------------------------------------------
+         If no such timestamp exists, return "".
 
      Constraints
 
-     • 1 <= key.length <= 100
-     • 1 <= value.length <= 100
-     • key/value contain lowercase letters and digits
-     • 1 <= timestamp <= 10^7
-     • timestamps for each key are strictly increasing
-     • At most 2 * 10^5 total operations
+         • 1 <= key.length <= 100
+         • 1 <= value.length <= 100
+         • 1 <= timestamp <= 10^7
+         • timestamps for each key are strictly increasing
+         • at most 2 * 10^5 total operations
 
      -------------------------------------------------------------------------------------
+     EXAMPLE 1
 
-     Example
+         set("foo", "bar", 1)
+         set("foo", "bar2", 4)
+         set("foo", "bar3", 9)
 
-     TimeMap tm = new TimeMap();
+         foo
 
-     tm.set("foo","bar",1);
+             (1,"bar") ---- (4,"bar2") ---- (9,"bar3")
 
-     tm.get("foo",1)
-         -> "bar"
+         get("foo", 7)
 
-     tm.get("foo",3)
-         -> "bar"
+             largest timestamp <= 7
+                        = 4
 
-     tm.set("foo","bar2",4);
-
-     tm.get("foo",4)
-         -> "bar2"
-
-     tm.get("foo",5)
-         -> "bar2"
+             answer = "bar2"
 
      -------------------------------------------------------------------------------------
+     EXAMPLE 2 — BEFORE FIRST TIMESTAMP
 
-     Important Observation
+         history
 
-     The problem explicitly guarantees:
+             (5,"A")
 
-         timestamps are inserted in increasing order.
+         query = 3
 
-     This single guarantee completely changes the optimal solution.
+             no timestamp <= 3
 
-     Because insertions are already sorted,
+         answer = ""
 
-         we never need to sort later.
+     -------------------------------------------------------------------------------------
+     THE GUARANTEE THAT CHANGES THE SOLUTION
 
-     Every key naturally owns a sorted timeline.
-
-     The entire interview revolves around recognizing and exploiting this invariant.
+         timestamps arrive increasing
+             -> append preserves sorted order
+             -> no sorting / ordered insertion is needed
+             -> get() can binary-search the already-sorted history
      */
 
 
     /*
      =====================================================================================
-     3. 🔵 CORE PATTERN OVERVIEW
+     2. 🧠 15-SECOND RETRIEVAL ANCHOR
      =====================================================================================
 
-     Pattern
+         KEY -> SORTED HISTORY
 
-         HashMap + Binary Search over Sorted History
+         SET
+             GET / CREATE HISTORY
+             APPEND
 
-     Archetype
+         GET
+             FIRST timestamp > query
+             STEP BACK ONE
 
-         Indexed history lookup.
+         Binary-search boundary at termination
 
-     Search Space
+             [ valid valid valid | invalid invalid ]
+                                 ^
+                                left
 
-         All historical versions of ONE key.
+         valid
+             timestamp <= query
 
-     State
-
-         Sorted list of
-
-             (timestamp, value)
-
-     Transition
-
-         Binary search discards half the timestamps each iteration.
-
-     Search Target
-
-         Largest timestamp
-
-             <= queryTimestamp
-
-     -------------------------------------------------------------------------------------
-
-     Core Invariant
-
-         Every key owns a strictly increasing timestamp sequence.
-
-     Therefore
-
-         append preserves sorted order forever.
-
-     No insertion can invalidate previous ordering.
-
-     Binary search is therefore always legal.
-
-     -------------------------------------------------------------------------------------
-
-     Why This Works
-
-     HashMap solves
-
-         key lookup.
-
-     Binary search solves
-
-         historical version lookup.
-
-     They solve orthogonal problems.
-
-         HashMap reduces
-
-             O(number of keys)
-
-         to
-
-             O(1)
-
-     Binary search reduces
-
-             O(history size)
-
-         to
-
-             O(log history size)
-
-     Combined complexity
-
-         set()
-
-             O(1)
-
-         get()
-
-             O(log N)
-
-     -------------------------------------------------------------------------------------
-
-     Recognition Signals
-
-     Think of this pattern whenever you see
-
-     ✓ history of updates
-
-     ✓ immutable past entries
-
-     ✓ append-only timeline
-
-     ✓ monotonic timestamps
-
-     ✓ latest version before X
-
-     ✓ predecessor search
-
-     ✓ versioned objects
-
-     ✓ temporal database
-
-     ✓ event sourcing
-
-     -------------------------------------------------------------------------------------
-
-     When To Use
-
-     Use whenever
-
-     - data only grows
-     - ordering is guaranteed
-     - predecessor queries dominate
-     - updates never rearrange history
-
-     -------------------------------------------------------------------------------------
-
-     When NOT To Use
-
-     Avoid this pattern when
-
-     - timestamps arrive randomly
-     - history must remain mutable
-     - deletions occur frequently
-     - ordering is not guaranteed
-
-     Then
-
-     TreeMap,
-
-     balanced BST,
-
-     skip list,
-
-     or another ordered structure
-     becomes necessary.
-
-     -------------------------------------------------------------------------------------
-
-     Comparison
-
-     HashMap + Binary Search
-
-         insert
-             O(1)
-
-         query
-             O(log N)
-
-         Requires increasing timestamps.
-
-     TreeMap
-
-         insert
-             O(log N)
-
-         query
-             O(log N)
-
-         Works even without monotonic insertion.
-
-     Linear Scan
-
-         insert
-             O(1)
-
-         query
-             O(N)
-
-         Too slow.
-
-     HashMap only
-
-         Cannot answer predecessor queries.
-
-     Binary Search only
-
-         Cannot locate the correct key efficiently.
-     */
-
-
-    /*
-     =====================================================================================
-     4. 🟢 MENTAL MODEL & INVARIANTS
-     =====================================================================================
-
-     Mental Model
-
-     Imagine every key owns a personal timeline.
-
-     Example
-
-         apple
-
-         time
-
-         2 ---- 5 ---- 9 ---- 15
-
-         value
-
-         red   green yellow black
-
-     Query
-
-         timestamp = 11
-
-     We are NOT searching values.
-
-     We are searching history.
-
-     We want
-
-         the newest event
-         that is still not after
-         the requested time.
-
-     Binary search repeatedly asks
-
-         "Can every timestamp on the left still contain the answer?"
-
-     If yes
-
-         continue right.
-
-     Otherwise
-
-         discard right.
-
-     -------------------------------------------------------------------------------------
-
-     🟢 Invariant 1
-
-     Every timeline is sorted.
-
-     Why?
-
-     Because set() guarantees increasing timestamps.
-
-     Therefore
-
-         append()
-
-     preserves sorted order forever.
-
-     -------------------------------------------------------------------------------------
-
-     🟢 Invariant 2
-
-     Answer always lies inside
-
-         [left, right)
-
-     during binary search.
-
-     Anything removed can never become correct again.
-
-     -------------------------------------------------------------------------------------
-
-     🟢 Invariant 3
-
-     When
-
-         timestamp[mid] <= query
-
-     mid is a VALID candidate.
-
-     But maybe
-
-         an even newer valid timestamp exists.
-
-     Therefore
-
-         keep searching right.
-
-     Never return immediately.
-
-     -------------------------------------------------------------------------------------
-
-     🟢 Invariant 4
-
-     When
-
-         timestamp[mid] > query
-
-     every element after mid is also invalid.
-
-     Sorted order guarantees this.
-
-     Entire right half can be discarded.
-
-     -------------------------------------------------------------------------------------
-
-     🟢 Invariant 5
-
-     At termination
-
-         left == right
-
-     Both point to
-
-         first timestamp > query.
-
-     Therefore
-
-         predecessor
-
-             right - 1
-
-     is automatically
-
-         largest timestamp <= query.
-
-     This is the entire correctness proof.
-
-     -------------------------------------------------------------------------------------
-
-     Variable Meaning
-
-     map
-
-         key
-             ->
-         sorted timeline
-
-     timeline
-
-         chronological history
-
-     left
-
-         first undecided candidate
-
-     right
-
-         first impossible position
-
-     mid
-
-         decision point
-
-     -------------------------------------------------------------------------------------
-
-     Allowed Moves
-
-     timestamp[mid] <= query
-
-         keep mid
-
-         move left = mid + 1
-
-     timestamp[mid] > query
-
-         discard mid
-
-         move right = mid
-
-     -------------------------------------------------------------------------------------
-
-     Forbidden Moves
-
-     Returning immediately when
-
-         timestamp[mid] <= query
-
-     Why?
-
-     There may exist
-
-         a later timestamp
-
-         still <= query.
-
-     That later timestamp must win.
-
-     This is the most common bug in interviews.
-     */
-
-    /*
-     -------------------------------------------------------------------------------------
-
-     Forbidden Move
-
-         right = mid - 1
-
-     This changes the search interval from
-
-         [left, right)
-
-     into
-
-         [left, right]
-
-     Mixing interval conventions almost always creates
-
-         off-by-one bugs.
-
-     Keep one convention throughout the implementation.
-
-     We intentionally use
-
-         left inclusive
-         right exclusive
-
-     because termination becomes extremely mechanical.
-
-     -------------------------------------------------------------------------------------
-
-     Termination
-
-     Loop
-
-         while (left < right)
-
-     shrinks the search interval every iteration.
-
-     Either
-
-         left increases
-
-     or
-
-         right decreases.
-
-     Therefore
-
-         termination is guaranteed.
-
-     -------------------------------------------------------------------------------------
-
-     Correctness Intuition
-
-     We never discard a possible answer.
-
-     If timestamp[mid] <= query
-
-         mid remains a legal candidate,
-         so we search only to see whether an even newer legal timestamp exists.
-
-     If timestamp[mid] > query
-
-         sorted order guarantees everything to the right is also too large.
-
-     Thus every discard is mathematically justified.
-
-     -------------------------------------------------------------------------------------
-
-     Why Naive Solutions Fail
-
-     Linear scan from the beginning
-
-         O(N)
-
-     wastes the sorted property.
-
-     Reverse scan
-
-         still O(N)
-
-     in the worst case.
-
-     Sorting during every get()
-
-         O(N log N)
-
-     repeats unnecessary work.
-
-     TreeMap works but ignores the important interview hint:
-
-         timestamps are already increasing.
-
-     The optimal solution exploits the guarantee instead of replacing it.
-     */
-
-
-    /*
-     =====================================================================================
-     5. 🔴 WHY WRONG SOLUTIONS FAIL
-     =====================================================================================
-
-     -------------------------------------------------------------------------------------
-     Mistake 1
-
-     Return immediately after finding
-
-         timestamp[mid] <= query
-
-     Looks reasonable because
-
-         the timestamp is valid.
-
-     Violated Invariant
-
-         We need the LARGEST valid timestamp.
-
-     Counterexample
-
-         timeline
-
-         1 4 8
-
-         query = 6
-
-     Returning 4 immediately may accidentally work.
-
-     But
-
-         timeline
-
-         1 4 5
-
-         query = 6
-
-     Returning 4 is now incorrect.
-
-     Correct answer is 5.
-
-     -------------------------------------------------------------------------------------
-     Mistake 2
-
-     Using
-
-         right = size - 1
-
-     together with
-
-         while(left < right)
-
-     and
-
-         right = mid
-
-     mixes inclusive and exclusive intervals.
-
-     Symptoms
-
-     • infinite loops
-     • missing final element
-     • predecessor errors
-
-     -------------------------------------------------------------------------------------
-     Mistake 3
-
-     Forgetting to handle
-
-         key absent.
-
-     Binary search on null history causes exceptions.
-
-     Always eliminate impossible cases before searching.
-
-     -------------------------------------------------------------------------------------
-     Mistake 4
-
-     Forgetting timestamps earlier than the first insertion.
-
-     Example
-
-         (5,"A")
-
-     query = 3
-
-     Binary search finishes with
-
-         predecessor = -1
-
-     Accessing it crashes.
-
-     Always verify predecessor exists.
-
-     -------------------------------------------------------------------------------------
-     Mistake 5
-
-     Sorting after every insertion.
-
-     Interview Trap
-
-         Candidate notices binary search
-         but ignores increasing timestamp guarantee.
-
-     Complexity becomes
-
-         O(N log N)
-
-     instead of
-
-         O(1)
-
-     append.
-
-     -------------------------------------------------------------------------------------
-     Mistake 6
-
-     One global timeline.
-
-     Different keys must own independent histories.
-
-     Mixing histories destroys correctness immediately.
-
-     -------------------------------------------------------------------------------------
-     Interview Trap
-
-     Interviewer may ask
-
-         "Why not TreeMap?"
-
-     Correct answer
-
-         TreeMap is perfectly valid.
-
-         However,
-
-         the problem already guarantees increasing timestamps.
+         invalid
+             timestamp > query
 
          Therefore
 
-         an ArrayList stays sorted forever,
+             left     = first timestamp > query
+             left - 1 = largest timestamp <= query
 
-         making insertion O(1)
-         instead of O(log N).
+         Memory sentence
 
-         Binary search still provides O(log N) retrieval.
+             SEARCH FOR FIRST TOO LARGE.
+             ANSWER IS ONE BEFORE.
 
-         This is strictly better under the stated constraints.
+         Trap
+
+             VALID DOES NOT MEAN FINAL.
+
+         Constraint flip
+
+             timestamps not increasing -> TreeMap / ordered structure
      */
 
 
     /*
      =====================================================================================
-     ⚙ IMPLEMENTATION BLUEPRINT
+     3. 🟢 PRIMARY PHOTOGRAPHIC MEMORY SOLUTION
+     =====================================================================================
+     */
+    static class OptimalTimeMap {
+
+        private final Map<String, List<Entry>> store = new HashMap<>();
+
+        private record Entry(
+                int timestamp,
+                String value) {
+        }
+
+        public void set(String key, String value, int timestamp) {
+
+            List<Entry> history =
+                    store.computeIfAbsent(key, ignored -> new ArrayList<>());
+
+            history.add(new Entry(timestamp, value));
+        }
+
+        public String get(String key, int timestamp) {
+
+            List<Entry> history = store.get(key);
+
+            if (history == null) {
+                return "";
+            }
+
+            int left = 0;
+            int right = history.size();
+
+            while (left < right) {
+
+                int mid = left + (right - left) / 2;
+
+                Entry current = history.get(mid);
+
+                if (current.timestamp() <= timestamp) {
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+            }
+
+            if (left == 0) {
+                return "";
+            }
+
+            return history.get(left - 1).value();
+        }
+    }
+
+
+    /*
+     =====================================================================================
+     4. 🧭 FIRST-PRINCIPLES INVENTION PATH
      =====================================================================================
 
-     Goal
+     Start from the obstacle, not from the data structure name.
 
-         Mechanically reconstruct the optimal implementation.
+     1. One key can have many historical values.
 
-     -------------------------------------------------------------------------------------
+            key -> history
 
-     Step 1
+        So an outer HashMap naturally answers
 
-         Create
+            WHICH KEY?
 
-             Map<String, List<Entry>>
+     2. get() does not ask for an exact timestamp.
 
-     Every key maps to its own sorted timeline.
+        It asks for
 
-     -------------------------------------------------------------------------------------
+            largest timestamp <= query
 
-     Step 2
+        This is a PREDECESSOR query.
+
+     3. For each key, timestamps arrive strictly increasing.
+
+        Therefore
+
+            append keeps history sorted forever.
+
+        We do NOT need
+
+            sorting after insertion
+            ordered insertion
+            TreeMap maintenance
+
+     4. A sorted random-access history suggests ArrayList + binary search.
+
+     5. Search for a boundary that is easy to prove:
+
+            first timestamp > query
+
+        Then the predecessor is automatically
+
+            left - 1
+
+     Final structure
+
+         HashMap<String, List<Entry>>
 
          set()
-
-     Locate timeline.
-
-     If absent
-
-         create one.
-
-     Append
-
-         (timestamp, value)
-
-     Never insert in the middle.
-
-     Never sort.
-
-     -------------------------------------------------------------------------------------
-
-     Step 3
+             get/create history
+             append
 
          get()
+             binary-search first > query
+             return predecessor
 
-     If key absent
+     Implementation devices solve different problems
 
-         return "".
+         HashMap
+             -> locate the key
 
-     Obtain timeline.
+         ArrayList
+             -> preserve append-only sorted history with O(1) random access
 
-     -------------------------------------------------------------------------------------
-
-     Step 4
-
-         Initialize
-
-         left = 0
-
-         right = timeline.size()
-
-     Remember
-
-         right is exclusive.
-
-     -------------------------------------------------------------------------------------
-
-     Step 5
-
-         Binary Search
-
-         while(left < right)
-
-             mid
-
-             compare timestamp
-
-             move boundary
-
-     -------------------------------------------------------------------------------------
-
-     Step 6
-
-     If
-
-         timestamp(mid) <= query
-
-     move
-
-         left = mid + 1
-
-     because
-
-         mid is valid,
-         but maybe not the newest valid timestamp.
-
-     -------------------------------------------------------------------------------------
-
-     Step 7
-
-     Else
-
-         right = mid
-
-     Entire right half is impossible.
-
-     -------------------------------------------------------------------------------------
-
-     Step 8
-
-     Binary search finishes.
-
-     Candidate index
-
-         left - 1
-
-     If
-
-         left == 0
-
-     there is no predecessor.
-
-     Return empty string.
-
-     Otherwise
-
-         return timeline.get(left - 1).value
-
-     Done.
+         Binary search
+             -> locate predecessor in O(log H)
      */
 
 
     /*
      =====================================================================================
-     🧾 ULTRA-COMPACT PSEUDOCODE
+     5. 🎞 ONE CANONICAL VISUAL DRY RUN
      =====================================================================================
 
-     create map
+         history
 
-     set
+             index        0       1       2        3
+             timestamp    2       5       8       20
+             value       "A"     "B"     "C"      "D"
 
-         append(timestamp,value)
+         query = 7
 
-     get
+         Desired answer
 
-         locate history
+             timestamp 5
+             value "B"
 
-         binary search first greater timestamp
+         We search for FIRST timestamp > 7.
 
-         predecessor = left - 1
+         +------+-------+-----+----------------+----------------------+-------------+
+         | left | right | mid | timestamp[mid] | meaning              | move        |
+         +------+-------+-----+----------------+----------------------+-------------+
+         | 0    | 4     | 2   | 8              | too large            | right = 2   |
+         | 0    | 2     | 1   | 5              | valid; seek newer    | left = 2    |
+         +------+-------+-----+----------------+----------------------+-------------+
 
-         if none
-             return ""
+         stop
 
-         return predecessor value
+             left == right == 2
+
+         boundary picture
+
+             [ 2   5 | 8   20 ]
+                     ^
+                    left
+
+         first > 7
+             index 2 -> timestamp 8
+
+         predecessor
+             index 1 -> timestamp 5
+
+         answer
+             "B"
+
+     -------------------------------------------------------------------------------------
+     WHY left = mid + 1 WHEN current <= query?
+
+         current is VALID,
+         but it may not be the NEWEST valid timestamp.
+
+         So we deliberately move past it and search right.
+
+         Eventually left lands one position AFTER the best valid answer.
+
+         Hence
+
+             answer = left - 1
+
+     -------------------------------------------------------------------------------------
+     EDGE CASES FALL OUT OF THE SAME BOUNDARY
+
+         query before everything
+
+             [ | 5 8 20 ]
+               ^
+              left = 0
+
+             no predecessor -> ""
+
+         query after everything
+
+             [ 5 8 20 | ]
+                       ^
+                      left = size
+
+             predecessor = size - 1 -> latest value
+
+         exact match
+
+             still search first > query;
+             exact match becomes the predecessor of that boundary.
      */
 
 
     /*
      =====================================================================================
-     6. SOLUTION CLASSES
+     6. ✅ CORRECTNESS + COMPLEXITY
      =====================================================================================
-     */
 
+     Correctness contract
 
-    /*
-     -------------------------------------------------------------------------------------
-     Brute Force
-     -------------------------------------------------------------------------------------
+         The search returns the first index whose timestamp is > query.
 
-     Idea
+         Therefore
 
-         Store complete history.
+             every index before left has timestamp <= query
+             every index from left onward has timestamp > query
 
-         Scan backwards until
-         first timestamp <= query.
+         So left - 1, when it exists, is exactly the largest timestamp <= query.
 
-     Invariant
+     Why each move is safe
 
-         Reverse scan encounters newest timestamps first.
+         timestamp[mid] <= query
+             mid is valid; only a later valid timestamp can beat it
+             -> search right
 
-     Limitation
+         timestamp[mid] > query
+             mid and everything after it are too large
+             -> cut right
 
-         Worst-case O(N).
+     Termination
+
+         [left, right) strictly shrinks every iteration.
 
      Complexity
 
-         set()
+         Let H = history size for the queried key.
+         Let S = total number of set operations.
 
-             O(1)
+         set()
+             HashMap lookup + ArrayList append
+             O(1) average / amortized
 
          get()
+             HashMap lookup + binary search
+             O(log H)
 
-             O(N)
+         total space
+             O(S)
+     */
 
-     Interview Usefulness
 
-         Good baseline before optimization.
+    /*
+     =====================================================================================
+     7. 🧭 APPROACH / DATA-STRUCTURE TRADE-OFF MATRIX
+     =====================================================================================
+
+     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
+     | Approach                             | Per-key history               | set()       | get()       | Custom BS?           | Best use                                     |
+     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
+     | Reverse scan baseline                | ArrayList<Entry>              | O(1) amort. | O(H)        | No                   | First correct baseline                       |
+     | TreeMap predecessor                  | TreeMap<timestamp,value>      | O(log H)    | O(log H)    | No                   | Arbitrary timestamp insertion                |
+     | ArrayList + manual upper bound       | ArrayList<Entry>              | O(1) amort. | O(log H)    | Yes                  | LEETCODE PRIMARY / monotonic writes          |
+     | ArrayList + Collections.binarySearch | ArrayList<Entry>              | O(1) amort. | O(log H)    | Library call          | Avoid handwritten loop; API decoding cost    |
+     | Encapsulated Timeline                | Timeline -> ArrayList<Entry>  | O(1) amort. | O(log H)    | Inside Timeline       | OOP / LLD responsibility separation          |
+     | Concurrent append-only Timeline      | locked ArrayList<Version>     | O(1) amort. | O(log H)    | Inside Timeline       | Concurrent monotonic in-memory production    |
+     | ConcurrentSkipListMap Timeline       | ordered concurrent map        | O(log H)    | O(log H)    | No                   | Concurrent out-of-order writes               |
+     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
+
+     Primary interview distinction
+
+         TreeMap solves the REQUIREMENT.
+         ArrayList + binary search exploits the CONSTRAINT.
+
+     Why not the other tempting structures?
+
+         HashMap<timestamp,value>
+             exact lookup is easy; predecessor relationship is absent.
+
+         LinkedList<Entry>
+             append is easy; random access makes binary search a bad fit.
+
+         Deque<Entry>
+             good for latest-only access; arbitrary historical predecessor is O(H).
+
+         PriorityQueue<Entry>
+             gives one global min/max, not predecessor around arbitrary query X.
+
+         TreeMap<String,...> as outer map
+             orders keys even though we only need exact key lookup.
+     */
+
+
+    /*
+     =====================================================================================
+     8. 🔄 RUNNABLE ALGORITHM ALTERNATIVES
+     =====================================================================================
+     */
+
+    /*
+     Brute baseline
+
+         set() O(1)
+         get() O(H)
+
+         Reverse scan is correct because newest timestamps are visited first.
      */
     static class BruteForceTimeMap {
 
-        private static class Entry {
-            final int timestamp;
-            final String value;
-
-            Entry(int timestamp, String value) {
-                this.timestamp = timestamp;
-                this.value = value;
-            }
+        private record Entry(
+                int timestamp,
+                String value) {
         }
 
         private final Map<String, List<Entry>> store = new HashMap<>();
@@ -972,9 +473,8 @@ public class TimeBasedKeyValueStore {
 
                 Entry current = history.get(i);
 
-                // Invariant: later timestamps were already checked.
-                if (current.timestamp <= timestamp) {
-                    return current.value;
+                if (current.timestamp() <= timestamp) {
+                    return current.value();
                 }
             }
 
@@ -984,38 +484,15 @@ public class TimeBasedKeyValueStore {
 
 
     /*
-     -------------------------------------------------------------------------------------
-     Improved
-     -------------------------------------------------------------------------------------
+     TreeMap fallback / constraint-flip solution
 
-     Idea
+         floorKey(timestamp)
+             -> largest stored timestamp <= query
 
-         Use TreeMap.
+         set() O(log H)
+         get() O(log H)
 
-         floorKey() directly returns the predecessor timestamp.
-
-     Invariant
-
-         TreeMap always maintains sorted timestamps.
-
-     Improvement
-
-         Supports arbitrary insertion order.
-
-     Complexity
-
-         set()
-
-             O(log N)
-
-         get()
-
-             O(log N)
-
-     Interview Usefulness
-
-         Excellent generic solution when monotonic insertion
-         is NOT guaranteed.
+         Prefer when timestamps may arrive out of order.
      */
     static class ImprovedTreeMapTimeMap {
 
@@ -1045,546 +522,626 @@ public class TimeBasedKeyValueStore {
         }
     }
 
+
     /*
- -------------------------------------------------------------------------------------
- Optimal (Interview Preferred)
- -------------------------------------------------------------------------------------
+     Library binary-search alternative
 
- Idea
+         Same ArrayList representation and asymptotic complexity as primary.
 
-     Exploit the problem guarantee that timestamps for every key are inserted
-     in strictly increasing order.
+         Trade-off
 
-     Therefore every history remains permanently sorted simply by appending.
+             less handwritten binary-search code
+             but must remember Java's negative insertion-point contract:
 
-     Query becomes a predecessor search using binary search.
+                 result = -(insertionPoint) - 1
 
- 🟢 Invariant
+         That API decoding is why this is not the photographic-memory primary.
+     */
+    static class LibraryBinarySearchTimeMap {
 
-     For every key,
+        private record Entry(
+                int timestamp,
+                String value) {
+        }
 
-         history[i].timestamp < history[i + 1].timestamp
+        private static final Comparator<Entry> BY_TIMESTAMP =
+                Comparator.comparingInt(Entry::timestamp);
 
-     During binary search,
-
-         answer always remains inside [left, right).
-
-     After termination,
-
-         left
-
-     equals
-
-         first timestamp > query.
-
-     Therefore
-
-         left - 1
-
-     is the largest timestamp <= query.
-
- Correctness
-
-     Binary search never discards a possible predecessor.
-
-     Valid timestamps stay on the left.
-
-     Invalid timestamps are removed from consideration.
-
- Complexity
-
-     set()
-
-         O(1)
-
-     get()
-
-         O(log N)
-
-     Space
-
-         O(total number of set operations)
-
- Interview Usefulness
-
-     This is the expected optimal solution because it exploits the strongest
-     guarantee given in the problem statement.
- */
-    static class OptimalTimeMap {
-
-        /*
-         Every key owns an independent immutable history.
-         Histories never need reordering because timestamps are monotonic.
-         */
         private final Map<String, List<Entry>> store = new HashMap<>();
-
-        /*
-         Small immutable record describing one historical version.
-         */
-        private static class Entry {
-
-            final int timestamp;
-            final String value;
-
-            Entry(int timestamp, String value) {
-                this.timestamp = timestamp;
-                this.value = value;
-            }
-        }
-
-        public OptimalTimeMap() {
-        }
 
         public void set(String key, String value, int timestamp) {
 
-            // Invariant: history stays sorted forever because timestamps increase.
-            store.computeIfAbsent(key, ignored -> new ArrayList<>())
-                    .add(new Entry(timestamp, value));
+            List<Entry> history =
+                    store.computeIfAbsent(key, ignored -> new ArrayList<>());
+
+            history.add(new Entry(timestamp, value));
         }
 
         public String get(String key, int timestamp) {
 
-            // Empty input handled early.
             List<Entry> history = store.get(key);
 
             if (history == null) {
                 return "";
             }
 
-            int left = 0;
-            int right = history.size();
+            int index = Collections.binarySearch(
+                    history,
+                    new Entry(timestamp, ""),
+                    BY_TIMESTAMP);
 
-            // Invariant: answer always lies inside [left, right).
-            while (left < right) {
-
-                int mid = left + (right - left) / 2;
-
-                Entry current = history.get(mid);
-
-                if (current.timestamp <= timestamp) {
-
-                    // Current timestamp is valid.
-                    // Search right for a newer valid timestamp.
-                    left = mid + 1;
-
-                } else {
-
-                    // Discard right half including current.
-                    right = mid;
-                }
+            if (index >= 0) {
+                return history.get(index).value();
             }
 
-            // No predecessor exists.
-            if (left == 0) {
+            int insertionPoint = -index - 1;
+            int predecessor = insertionPoint - 1;
+
+            if (predecessor < 0) {
                 return "";
             }
 
-            // left is first timestamp greater than query.
-            return history.get(left - 1).value;
+            return history.get(predecessor).value();
         }
     }
 
 
     /*
      =====================================================================================
-     🟣 INTERVIEW ARTICULATION
+     9. 🟦 OOP / LOW-LEVEL DESIGN VERSION
      =====================================================================================
 
-     If asked
+     New purpose
 
-         "Explain your solution."
+         Separate responsibilities without changing the algorithm.
 
-     A concise answer is:
+         TimeMap
+             -> WHICH key / Timeline?
 
-     I maintain one history list for every key.
+         Timeline
+             -> append history
+             -> predecessor lookup
 
-     Because the problem guarantees timestamps arrive in strictly increasing
-     order, appending automatically keeps every history sorted.
+     Benefit
 
-     During get(), I perform a binary search over only that key's history.
+         Timeline internals can later change from ArrayList to another ordered
+         representation without changing the outer store API.
 
-     The search invariant is that the answer always remains inside the current
-     search interval.
+     Cost
 
-     Whenever I see
+         more classes / indirection than the DSA solution.
 
-         timestamp <= query
+     Use this to discuss LLD, not as the simplest coding-interview implementation.
+     */
+    static class EncapsulatedTimeMap {
 
-     I keep searching right because I want the newest valid timestamp.
+        private final Map<String, Timeline> store = new HashMap<>();
 
-     Whenever I see
+        public void set(String key, String value, int timestamp) {
 
-         timestamp > query
+            Timeline timeline =
+                    store.computeIfAbsent(key, ignored -> new Timeline());
 
-     I discard the entire right portion because sorted order guarantees every
-     later timestamp is also invalid.
+            timeline.append(timestamp, value);
+        }
 
-     The search ends at the first timestamp greater than the query.
+        public String get(String key, int timestamp) {
 
-     Therefore the predecessor immediately before it is the required answer.
+            Timeline timeline = store.get(key);
 
-     -------------------------------------------------------------------------------------
+            if (timeline == null) {
+                return "";
+            }
 
-     Why Binary Search Works
+            return timeline.valueAt(timestamp);
+        }
 
-     Sorted timestamps.
+        private static final class Timeline {
 
-     Nothing more is required.
+            private final List<Entry> history = new ArrayList<>();
 
-     -------------------------------------------------------------------------------------
+            void append(int timestamp, String value) {
+                history.add(new Entry(timestamp, value));
+            }
 
-     Discard Rule
+            String valueAt(int timestamp) {
 
-     timestamp <= query
+                int left = 0;
+                int right = history.size();
 
-         keep searching right
+                while (left < right) {
 
-     timestamp > query
+                    int mid = left + (right - left) / 2;
 
-         discard right half
+                    if (history.get(mid).timestamp() <= timestamp) {
+                        left = mid + 1;
+                    } else {
+                        right = mid;
+                    }
+                }
 
-     -------------------------------------------------------------------------------------
+                if (left == 0) {
+                    return "";
+                }
 
-     Correctness
+                return history.get(left - 1).value();
+            }
+        }
 
-     Every discarded element is mathematically impossible to become the answer.
+        private record Entry(
+                int timestamp,
+                String value) {
+        }
+    }
 
-     Every retained element may still become the predecessor.
 
-     -------------------------------------------------------------------------------------
+    /*
+     =====================================================================================
+     10. 🏭 PRODUCTION LLD — CONCURRENT APPEND-ONLY IN-MEMORY STORE
+     =====================================================================================
 
-     Termination
+     New purpose
 
-     Search interval strictly shrinks.
+         Add production concerns absent from LeetCode:
 
-     Therefore
+             explicit API contract
+             validation
+             long timestamps
+             Optional instead of magic empty-string absence
+             concurrent access
+             per-timeline synchronization
+             monotonic timestamp enforcement
 
-         left == right
+     Concurrency model
 
-     eventually.
+         ConcurrentHashMap
+             protects key -> Timeline lookup / creation.
 
-     -------------------------------------------------------------------------------------
+         ReentrantReadWriteLock inside each Timeline
+             protects that key's ArrayList history.
 
-     In-place Feasibility
+         Therefore unrelated keys do not share one global lock.
 
-     Not applicable.
+     Important
 
-     We must preserve complete history.
+         ConcurrentHashMap<String, List<Entry>> alone is NOT sufficient.
+         The map would be concurrent; ArrayList would not.
+     */
+    interface ProductionTimeBasedStore {
 
-     -------------------------------------------------------------------------------------
+        void put(String key, String value, long timestamp);
 
-     Streaming Feasibility
+        Optional<String> get(String key, long timestamp);
+    }
 
-     Excellent.
 
-     Appending is O(1).
+    static class ConcurrentAppendOnlyTimeBasedStore
+            implements ProductionTimeBasedStore {
 
-     Query remains O(log N).
+        private final ConcurrentHashMap<String, ConcurrentTimeline> store =
+                new ConcurrentHashMap<>();
 
-     -------------------------------------------------------------------------------------
+        @Override
+        public void put(String key, String value, long timestamp) {
 
-     When NOT To Use
+            validate(key, value, timestamp);
 
-     Do not use this approach if timestamps are not inserted in sorted order.
+            ConcurrentTimeline timeline =
+                    store.computeIfAbsent(
+                            key,
+                            ignored -> new ConcurrentTimeline());
 
-     In that case,
+            timeline.append(timestamp, value);
+        }
 
-         TreeMap
+        @Override
+        public Optional<String> get(String key, long timestamp) {
 
-     or another balanced ordered structure becomes the correct choice.
+            Objects.requireNonNull(key, "key");
+
+            ConcurrentTimeline timeline = store.get(key);
+
+            if (timeline == null) {
+                return Optional.empty();
+            }
+
+            return timeline.valueAt(timestamp);
+        }
+
+        private static void validate(
+                String key,
+                String value,
+                long timestamp) {
+
+            Objects.requireNonNull(key, "key");
+            Objects.requireNonNull(value, "value");
+
+            if (key.isBlank()) {
+                throw new IllegalArgumentException("key cannot be blank");
+            }
+
+            if (timestamp < 0) {
+                throw new IllegalArgumentException(
+                        "timestamp cannot be negative");
+            }
+        }
+
+        private static final class ConcurrentTimeline {
+
+            private final List<Version> history = new ArrayList<>();
+
+            private final ReentrantReadWriteLock lock =
+                    new ReentrantReadWriteLock();
+
+            void append(long timestamp, String value) {
+
+                lock.writeLock().lock();
+
+                try {
+
+                    if (!history.isEmpty()) {
+
+                        long latestTimestamp =
+                                history.get(history.size() - 1).timestamp();
+
+                        if (timestamp <= latestTimestamp) {
+                            throw new IllegalArgumentException(
+                                    "timestamps must be strictly increasing per key");
+                        }
+                    }
+
+                    history.add(new Version(timestamp, value));
+
+                } finally {
+                    lock.writeLock().unlock();
+                }
+            }
+
+            Optional<String> valueAt(long timestamp) {
+
+                lock.readLock().lock();
+
+                try {
+
+                    int left = 0;
+                    int right = history.size();
+
+                    while (left < right) {
+
+                        int mid = left + (right - left) / 2;
+
+                        if (history.get(mid).timestamp() <= timestamp) {
+                            left = mid + 1;
+                        } else {
+                            right = mid;
+                        }
+                    }
+
+                    if (left == 0) {
+                        return Optional.empty();
+                    }
+
+                    return Optional.of(
+                            history.get(left - 1).value());
+
+                } finally {
+                    lock.readLock().unlock();
+                }
+            }
+        }
+
+        private record Version(
+                long timestamp,
+                String value) {
+        }
+    }
+
+
+    /*
+     =====================================================================================
+     11. 🏭 PRODUCTION CONSTRAINT FLIP — OUT-OF-ORDER CONCURRENT WRITES
+     =====================================================================================
+
+     Changed requirement
+
+         timestamps are no longer guaranteed to arrive increasing.
+
+     Consequence
+
+         append-only ArrayList no longer preserves sorted order.
+
+     Replacement
+
+         ConcurrentSkipListMap<Long, String>
+
+         put(timestamp, value)
+             O(log H)
+
+         floorEntry(timestamp)
+             O(log H)
+
+     Duplicate policy in this runnable example
+
+         later put overwrites the existing value at the same timestamp.
+
+         A real product must explicitly choose overwrite / reject / idempotent semantics.
+     */
+    static class ConcurrentOrderedTimeBasedStore
+            implements ProductionTimeBasedStore {
+
+        private final ConcurrentHashMap<String, ConcurrentSkipListMap<Long, String>> store =
+                new ConcurrentHashMap<>();
+
+        @Override
+        public void put(String key, String value, long timestamp) {
+
+            Objects.requireNonNull(key, "key");
+            Objects.requireNonNull(value, "value");
+
+            if (key.isBlank()) {
+                throw new IllegalArgumentException("key cannot be blank");
+            }
+
+            if (timestamp < 0) {
+                throw new IllegalArgumentException(
+                        "timestamp cannot be negative");
+            }
+
+            ConcurrentSkipListMap<Long, String> timeline =
+                    store.computeIfAbsent(
+                            key,
+                            ignored -> new ConcurrentSkipListMap<>());
+
+            timeline.put(timestamp, value);
+        }
+
+        @Override
+        public Optional<String> get(String key, long timestamp) {
+
+            Objects.requireNonNull(key, "key");
+
+            ConcurrentSkipListMap<Long, String> timeline = store.get(key);
+
+            if (timeline == null) {
+                return Optional.empty();
+            }
+
+            Map.Entry<Long, String> entry =
+                    timeline.floorEntry(timestamp);
+
+            if (entry == null) {
+                return Optional.empty();
+            }
+
+            return Optional.of(entry.getValue());
+        }
+    }
+
+
+    /*
+     =====================================================================================
+     12. ↔ CONSTRAINT CROSS-PRODUCT + PRODUCTION EVOLUTION
+     =====================================================================================
+
+     +--------------------------------------+----------------------------------------------+
+     | Changed requirement                  | Best direction                               |
+     +--------------------------------------+----------------------------------------------+
+     | Base problem: monotonic timestamps   | ArrayList + binary search                    |
+     | Timestamps arrive out of order       | TreeMap / ordered map                        |
+     | Exact timestamp only                 | HashMap timestamp -> value                   |
+     | Latest value only                    | Keep only latest version                     |
+     | Need timestamp range queries         | NavigableMap / persistent ordered index      |
+     | Concurrent + monotonic writes        | ConcurrentHashMap + locked append Timeline   |
+     | Concurrent + arbitrary-order writes  | ConcurrentSkipListMap                        |
+     | Durable / very large history         | database index on (key, timestamp) + cache   |
+     +--------------------------------------+----------------------------------------------+
+
+     Production evolution
+
+         DSA
+
+             Map<String, List<Entry>>
+
+         OOP / LLD
+
+             Map<String, Timeline>
+
+         Concurrent in-memory
+
+             ConcurrentHashMap<String, ConcurrentTimeline>
+
+         Durable service
+
+             API
+              |
+              v
+             Service
+              |
+              +---- cache / in-memory timeline
+              |
+              +---- repository
+                       |
+                       v
+                     database
+
+     Persistent physical model
+
+         key       timestamp       value
+         foo       1               bar
+         foo       4               bar2
+
+     Important index
+
+         (key, timestamp)
+
+     Logical predecessor query
+
+         WHERE key = ?
+           AND timestamp <= ?
+         ORDER BY timestamp DESC
+         LIMIT 1
+
+     Production questions LeetCode intentionally leaves unspecified
+
+         - client timestamp or server timestamp?
+         - duplicate timestamp semantics?
+         - out-of-order writes?
+         - retention / TTL / compaction?
+         - can history grow forever?
+         - durability and restart behavior?
+         - read-after-write consistency?
+         - key/value/history size limits?
+         - observability and failure metrics?
+
+     Transfer principle
+
+         key lookup + predecessor search
+
+         appears as
+
+             HashMap + binary search
+             HashMap + TreeMap.floorEntry()
+             database composite index seek
      */
 
 
     /*
      =====================================================================================
-     🎯 INTERVIEW RECALL SHEET
+     13. ⚔ HIGH-ROI TRAPS / CONFUSION KILLERS
      =====================================================================================
 
-     Trigger
+     1. VALID DOES NOT MEAN FINAL
 
-         Version history.
+         timestamp[mid] <= query
 
-         Time travel.
+         means mid is a candidate,
+         not necessarily the newest candidate.
 
-         Historical lookup.
+         Therefore continue right.
 
-         Largest timestamp <= query.
+     2. DO NOT MIX INTERVAL CONVENTIONS
+
+         This implementation uses
+
+             [left, right)
+
+         so
+
+             right = history.size()
+             while (left < right)
+             right = mid
+
+         Do not randomly switch to right = mid - 1.
+
+     3. BEFORE FIRST TIMESTAMP
+
+         left == 0
+             -> no predecessor
+             -> return ""
+
+     4. DO NOT SORT AFTER EVERY INSERT
+
+         Monotonic timestamps already preserve order.
+
+     5. DO NOT USE ONE GLOBAL HISTORY
+
+         Each key owns an independent timeline.
+
+     6. TreeMap vs ArrayList + binary search
+
+         TreeMap
+             maintains ordering dynamically.
+
+         ArrayList
+             receives ordering for free from the problem guarantee.
+     */
+
+
+    /*
+     =====================================================================================
+     14. 🎯 INTERVIEW ARTICULATION + BLANK-BRAIN RECONSTRUCTION
+     =====================================================================================
+
+     Concise explanation
+
+         I keep one history list per key.
+
+         Because timestamps for each key arrive strictly increasing, appending keeps
+         every history sorted in O(1) amortized time.
+
+         get() is a predecessor query: I binary-search for the first timestamp greater
+         than the query. The element immediately before that boundary is therefore the
+         largest timestamp less than or equal to the query.
+
+         set() is O(1) average/amortized, get() is O(log H), and total space is O(S).
 
      -------------------------------------------------------------------------------------
+     BLANK-BRAIN RECONSTRUCTION
 
-     Pattern
+         What am I storing?
+             multiple historical values per key
 
-         HashMap
+         Structure?
+             key -> history
 
-             +
+         Why can history be a List?
+             timestamps arrive increasing
 
-         Binary Search
+         set()?
+             get/create history + append
 
-     -------------------------------------------------------------------------------------
+         get() asks for?
+             largest timestamp <= query
 
-     Search Target
+         Convert to boundary?
+             first timestamp > query
 
-         First timestamp greater than query.
-
-     -------------------------------------------------------------------------------------
-
-     Invariant
-
-         History remains permanently sorted because insertion order is monotonic.
-
-     -------------------------------------------------------------------------------------
-
-     Discard Rule
-
-         <= query
-
-             move right
-
-         > query
-
-             discard right half
-
-     -------------------------------------------------------------------------------------
-
-     Answer
-
-         predecessor
-
+         Answer?
              left - 1
 
-     -------------------------------------------------------------------------------------
+         No predecessor?
+             left == 0 -> ""
 
-     Common Trap
+     One-line recall
 
-         Returning immediately after finding a valid timestamp.
-
-     -------------------------------------------------------------------------------------
-
-     Edge Cases
-
-         Missing key
-
-         Empty history
-
-         Query before first timestamp
-
-         Query after latest timestamp
-
-         Single element history
-
-     -------------------------------------------------------------------------------------
-
-     One-Liner
-
-         Binary search for the first timestamp greater than the query, then
-         return the predecessor.
-
-     -------------------------------------------------------------------------------------
-
-     Re-Derivation Cue
-
-         Think
-
-             upper_bound()
-
-         from C++ STL.
+         PER-KEY SORTED HISTORY + UPPER BOUND + PREDECESSOR.
      */
 
 
     /*
      =====================================================================================
-     🔄 VARIATIONS & TWEAKS
-     =====================================================================================
-
-     Variant
-
-         Arbitrary timestamp insertion.
-
-     Change
-
-         Replace ArrayList with TreeMap.
-
-     Reason
-
-         Ordering must now be maintained dynamically.
-
-     -------------------------------------------------------------------------------------
-
-     Variant
-
-         Millions of queries.
-
-     Change
-
-         Current solution remains optimal.
-
-     Binary search scales well.
-
-     -------------------------------------------------------------------------------------
-
-     Variant
-
-         Need deletion.
-
-     Pattern Break
-
-         ArrayList append-only invariant no longer holds.
-
-         TreeMap becomes preferable.
-
-     -------------------------------------------------------------------------------------
-
-     Variant
-
-         Need latest value only.
-
-     Pattern Changes
-
-         HashMap<String,String>
-
-     is sufficient.
-
-     No history required.
-
-     -------------------------------------------------------------------------------------
-
-     Variant
-
-         Need timestamp range queries.
-
-     Better Structure
-
-         TreeMap
-
-         because
-
-             subMap()
-
-         naturally supports intervals.
-
-     -------------------------------------------------------------------------------------
-
-     Variant
-
-         Random insertion order.
-
-     Why Current Solution Fails
-
-         Binary search requires sorted history.
-
-         Appending no longer preserves ordering.
-
-         Core invariant is violated.
-     */
-
-
-    /*
-     =====================================================================================
-     🧠 MASTERY CHECKLIST
-     =====================================================================================
-
-     Can you explain the invariant?
-
-         □ Every history stays sorted forever.
-
-     Can you identify the search target?
-
-         □ First timestamp greater than query.
-
-     Can you justify the discard rule?
-
-         □ Sorted order proves discarded timestamps cannot be answers.
-
-     Can you prove termination?
-
-         □ Search interval shrinks every iteration.
-
-     Can you explain why linear scan is inferior?
-
-         □ Ignores sorted property.
-
-     Can you handle all edge cases?
-
-         □ Missing key
-         □ Before first timestamp
-         □ After last timestamp
-         □ One element
-         □ Exact match
-
-     Can you debug off-by-one errors?
-
-         □ Understand left-inclusive right-exclusive interval.
-
-     Can you switch to TreeMap when insertion order changes?
-
-         □ Yes.
-
-     Do you know the pattern boundary?
-
-         □ Binary search requires sorted search space.
-     */
-
-
-    /*
-     =====================================================================================
-     🧪 MAIN + SELF-VERIFYING TESTS
+     15. 🧪 MAIN + SELF-VERIFYING TESTS
      =====================================================================================
      */
-
     public static void main(String[] args) {
+
+        testPrimary();
+        testBruteForce();
+        testTreeMap();
+        testLibraryBinarySearch();
+        testOopVersion();
+        testConcurrentAppendOnlyVersion();
+        testConcurrentOrderedVersion();
+
+        System.out.println("All assertions passed.");
+    }
+
+    private static void testPrimary() {
 
         OptimalTimeMap timeMap = new OptimalTimeMap();
 
-        /*
-         Happy path from the problem statement.
-         */
         timeMap.set("foo", "bar", 1);
 
-        assert "bar".equals(timeMap.get("foo", 1))
-                : "Exact timestamp lookup should succeed.";
-
-        assert "bar".equals(timeMap.get("foo", 3))
-                : "Latest value before query should be returned.";
+        assert "bar".equals(timeMap.get("foo", 1));
+        assert "bar".equals(timeMap.get("foo", 3));
 
         timeMap.set("foo", "bar2", 4);
 
-        assert "bar2".equals(timeMap.get("foo", 4))
-                : "Exact match after second insertion.";
+        assert "bar2".equals(timeMap.get("foo", 4));
+        assert "bar2".equals(timeMap.get("foo", 5));
+        assert "".equals(timeMap.get("foo", 0));
+        assert "".equals(timeMap.get("missing", 100));
 
-        assert "bar2".equals(timeMap.get("foo", 5))
-                : "Newest predecessor should be returned.";
-
-        /*
-         Query before the first timestamp.
-         */
-        assert "".equals(timeMap.get("foo", 0))
-                : "No predecessor exists before first insertion.";
-
-        /*
-         Missing key.
-         */
-        assert "".equals(timeMap.get("missing", 100))
-                : "Unknown key should return empty string.";
-
-        /*
-         Single history element.
-         */
-        OptimalTimeMap single = new OptimalTimeMap();
-
-        single.set("a", "x", 10);
-
-        assert "".equals(single.get("a", 5))
-                : "Earlier query should fail.";
-
-        assert "x".equals(single.get("a", 10))
-                : "Exact match should succeed.";
-
-        assert "x".equals(single.get("a", 100))
-                : "Latest value should persist.";
-
-        /*
-         Multiple predecessor checks.
-         */
         OptimalTimeMap history = new OptimalTimeMap();
 
         history.set("k", "v1", 2);
@@ -1592,84 +1149,82 @@ public class TimeBasedKeyValueStore {
         history.set("k", "v3", 8);
         history.set("k", "v4", 20);
 
-        assert "v1".equals(history.get("k", 2))
-                : "Exact first timestamp.";
-
-        assert "v1".equals(history.get("k", 4))
-                : "Predecessor between first and second.";
-
-        assert "v2".equals(history.get("k", 5))
-                : "Exact middle timestamp.";
-
-        assert "v2".equals(history.get("k", 7))
-                : "Binary search should locate predecessor.";
-
-        assert "v3".equals(history.get("k", 8))
-                : "Exact third timestamp.";
-
-        assert "v3".equals(history.get("k", 19))
-                : "Largest timestamp below query.";
-
-        assert "v4".equals(history.get("k", 20))
-                : "Exact latest timestamp.";
-
-        assert "v4".equals(history.get("k", 1000))
-                : "Latest value should remain valid.";
-
-        /*
-         Independent histories.
-         */
-        OptimalTimeMap independent = new OptimalTimeMap();
-
-        independent.set("alice", "A1", 1);
-        independent.set("bob", "B1", 2);
-        independent.set("alice", "A2", 3);
-
-        assert "A2".equals(independent.get("alice", 100))
-                : "Alice history must remain independent.";
-
-        assert "B1".equals(independent.get("bob", 100))
-                : "Bob history must remain independent.";
-
-        /*
-         Improved TreeMap implementation sanity check.
-         */
-        ImprovedTreeMapTimeMap tree = new ImprovedTreeMapTimeMap();
-
-        tree.set("x", "one", 5);
-        tree.set("x", "two", 10);
-
-        assert "one".equals(tree.get("x", 8))
-                : "TreeMap predecessor lookup.";
-
-        assert "two".equals(tree.get("x", 10))
-                : "TreeMap exact match.";
-
-        /*
-         Brute force implementation sanity check.
-         */
-        BruteForceTimeMap brute = new BruteForceTimeMap();
-
-        brute.set("z", "first", 1);
-        brute.set("z", "second", 9);
-
-        assert "first".equals(brute.get("z", 4))
-                : "Reverse scan predecessor.";
-
-        assert "second".equals(brute.get("z", 100))
-                : "Reverse scan latest value.";
-
-        System.out.println("All assertions passed.");
+        assert "v1".equals(history.get("k", 4));
+        assert "v2".equals(history.get("k", 7));
+        assert "v3".equals(history.get("k", 19));
+        assert "v4".equals(history.get("k", 1000));
     }
 
+    private static void testBruteForce() {
+
+        BruteForceTimeMap timeMap = new BruteForceTimeMap();
+
+        timeMap.set("z", "first", 1);
+        timeMap.set("z", "second", 9);
+
+        assert "first".equals(timeMap.get("z", 4));
+        assert "second".equals(timeMap.get("z", 100));
+    }
+
+    private static void testTreeMap() {
+
+        ImprovedTreeMapTimeMap timeMap = new ImprovedTreeMapTimeMap();
+
+        timeMap.set("x", "one", 10);
+        timeMap.set("x", "zero", 5);
+
+        assert "zero".equals(timeMap.get("x", 8));
+        assert "one".equals(timeMap.get("x", 10));
+    }
+
+    private static void testLibraryBinarySearch() {
+
+        LibraryBinarySearchTimeMap timeMap = new LibraryBinarySearchTimeMap();
+
+        timeMap.set("k", "v1", 2);
+        timeMap.set("k", "v2", 5);
+        timeMap.set("k", "v3", 8);
+
+        assert "".equals(timeMap.get("k", 1));
+        assert "v2".equals(timeMap.get("k", 7));
+        assert "v3".equals(timeMap.get("k", 8));
+    }
+
+    private static void testOopVersion() {
+
+        EncapsulatedTimeMap timeMap = new EncapsulatedTimeMap();
+
+        timeMap.set("foo", "A", 2);
+        timeMap.set("foo", "B", 5);
+
+        assert "A".equals(timeMap.get("foo", 4));
+        assert "B".equals(timeMap.get("foo", 5));
+    }
+
+    private static void testConcurrentAppendOnlyVersion() {
+
+        ProductionTimeBasedStore timeMap =
+                new ConcurrentAppendOnlyTimeBasedStore();
+
+        timeMap.put("foo", "A", 2);
+        timeMap.put("foo", "B", 5);
+
+        assert Optional.of("A").equals(timeMap.get("foo", 4));
+        assert Optional.of("B").equals(timeMap.get("foo", 100));
+        assert Optional.empty().equals(timeMap.get("foo", 1));
+    }
+
+    private static void testConcurrentOrderedVersion() {
+
+        ProductionTimeBasedStore timeMap =
+                new ConcurrentOrderedTimeBasedStore();
+
+        timeMap.put("foo", "C", 20);
+        timeMap.put("foo", "A", 2);
+        timeMap.put("foo", "B", 5);
+
+        assert Optional.of("A").equals(timeMap.get("foo", 4));
+        assert Optional.of("B").equals(timeMap.get("foo", 7));
+        assert Optional.of("C").equals(timeMap.get("foo", 100));
+    }
 }
-
-/*
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
-*/
