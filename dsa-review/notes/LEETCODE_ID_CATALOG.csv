@@ -2,9 +2,11 @@ id,slug,title
 1,two-sum,Two Sum
 3,longest-substring-without-repeating-characters,Longest Substring Without Repeating Characters
 14,longest-common-prefix,Longest Common Prefix
+19,remove-nth-node-from-end-of-list,Remove Nth Node From End of List
 23,merge-k-sorted-lists,Merge K Sorted Lists
 25,reverse-nodes-in-k-group,Reverse Nodes in k-Group
 37,sudoku-solver,Sudoku Solver
+42,trapping-rain-water,Trapping Rain Water
 51,n-queens,N-Queens
 55,jump-game,Jump Game
 56,merge-intervals,Merge Intervals
@@ -26,6 +28,11 @@ id,slug,title
 133,clone-graph,Clone Graph
 134,gas-station,Gas Station
 139,word-break,Word Break
+141,linked-list-cycle,Linked List Cycle
+142,linked-list-cycle-ii,Linked List Cycle II
+150,evaluate-reverse-polish-notation,Evaluate Reverse Polish Notation
+155,min-stack,Min Stack
+160,intersection-of-two-linked-lists,Intersection of Two Linked Lists
 163,missing-ranges,Missing Ranges
 167,two-sum-ii-input-array-is-sorted,Two Sum II - Input Array Is Sorted
 169,majority-element,Majority Element
@@ -39,7 +46,9 @@ id,slug,title
 211,design-add-and-search-words-data-structure,Design Add and Search Words Data Structure
 212,word-search-ii,Word Search II
 215,kth-largest-element-in-an-array,Kth Largest Element in an Array
+225,implement-stack-using-queues,Implement Stack Using Queues
 230,kth-smallest-element-in-a-bst,Kth Smallest Element in a BST
+232,implement-queue-using-stacks,Implement Queue Using Stacks
 239,sliding-window-maximum,Sliding Window Maximum
 252,meeting-rooms,Meeting Rooms
 253,meeting-rooms-ii,Meeting Rooms II
@@ -64,10 +73,13 @@ id,slug,title
 444,sequence-reconstruction,Sequence Reconstruction
 451,sort-characters-by-frequency,Sort Characters By Frequency
 452,minimum-number-of-arrows-to-burst-balloons,Minimum Number of Arrows to Burst Balloons
+496,next-greater-element-i,Next Greater Element I
+503,next-greater-element-ii,Next Greater Element II
 516,longest-palindromic-subsequence,Longest Palindromic Subsequence
 543,diameter-of-binary-tree,Diameter of Binary Tree
 547,number-of-provinces,Number of Provinces
 583,delete-operation-for-two-strings,Delete Operation for Two Strings
+621,task-scheduler,Task Scheduler
 646,maximum-length-of-pair-chain,Maximum Length of Pair Chain
 648,replace-words,Replace Words
 673,number-of-longest-increasing-subsequence,Number of Longest Increasing Subsequence
@@ -89,6 +101,7 @@ id,slug,title
 862,shortest-subarray-with-sum-at-least-k,Shortest Subarray with Sum at Least K
 863,all-nodes-distance-k-in-binary-tree,All Nodes Distance K in Binary Tree
 875,koko-eating-bananas,Koko Eating Bananas
+876,middle-of-the-linked-list,Middle of the Linked List
 886,possible-bipartition,Possible Bipartition
 901,online-stock-span,Online Stock Span
 905,sort-array-by-parity,Sort Array By Parity
@@ -101,6 +114,7 @@ id,slug,title
 1203,sort-items-by-groups-respecting-dependencies,Sort Items by Groups Respecting Dependencies
 1244,design-a-leaderboard,Design A Leaderboard
 1268,search-suggestions-system,Search Suggestions System
+1381,design-a-stack-with-increment-operation,Design a Stack With Increment Operation
 1425,constrained-subsequence-sum,Constrained Subsequence Sum
 1438,longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit,Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit
 1462,course-schedule-iv,Course Schedule IV

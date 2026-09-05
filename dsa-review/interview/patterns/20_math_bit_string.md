@@ -25,7 +25,7 @@ flowchart TD
   Invariant --> Sub03["SUB-PATTERN<br/>KMP / rolling hash<br/>1 problem(s)"]
   Sub03 --> Sub03A01["ANCHOR<br/>rank 158: Longest Happy Prefix"]
   Invariant --> Sub04["SUB-PATTERN<br/>KMP string matching<br/>3 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 105: Find The Index Of The First Occurrence In A String"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 106: Find The Index Of The First Occurrence In A String"]
   Sub04 --> Sub04A02["ANCHOR<br/>rank 155: Repeated Substring Pattern"]
   Sub04 --> Sub04A03["ANCHOR<br/>rank 175: Shortest Palindrome"]
   Invariant --> Sub05["SUB-PATTERN<br/>Math / sieve<br/>1 problem(s)"]
@@ -36,7 +36,7 @@ flowchart TD
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 105 | Phase 3 - Important | Find The Index Of The First Occurrence In A String | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/) | KMP reuses the longest proper prefix that is also a suffix after a mismatch. | Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch. |
+| 106 | Phase 3 - Important | Find The Index Of The First Occurrence In A String | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/) | KMP reuses the longest proper prefix that is also a suffix after a mismatch. | Build LPS for needle, scan haystack with i/j, and fallback j = lps[j - 1] on mismatch. |
 | 155 | Phase 5 - If Time | Repeated Substring Pattern | KMP string matching | [Java](../../../src/main/java/org/chijai/day7/session2/KmpPatterns.java) | [LC](https://leetcode.com/problems/repeated-substring-pattern/) | A repeated pattern exists when the final LPS leaves a block length that divides n. | Let len = lps[n - 1]; return len > 0 and n % (n - len) == 0. |
 | 158 | Phase 5 - If Time | Longest Happy Prefix | KMP / rolling hash | [Java](../../../src/main/java/org/chijai/day7/session2/LongestHappyPrefix.java) | [LC](https://leetcode.com/problems/longest-happy-prefix/) | The answer is the final LPS value: longest proper prefix that is also suffix. | Build LPS over the string and return substring(0, lps[n - 1]). |
 | 171 | Phase 5 - If Time | Add Binary | Bit/string addition | [Java](../../../src/main/java/org/chijai/day10/session2/AddBinary.java) | [LC](https://leetcode.com/problems/add-binary/) | Add bits from right to left with carry, exactly like decimal addition. | Use i,j,carry; append (sum % 2), update carry=sum/2, reverse result. |

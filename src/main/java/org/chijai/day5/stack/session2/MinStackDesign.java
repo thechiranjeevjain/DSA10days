@@ -4,6 +4,8 @@ package org.chijai.day5.stack.session2;
  * =====================================================================================
  * AUGMENTED STACK DESIGN — V2
  * =====================================================================================
+ * LeetCode 155 - Min Stack
+ * LeetCode 1381 - Design a Stack With Increment Operation
  *
  * MASTER QUESTION
  * ---------------

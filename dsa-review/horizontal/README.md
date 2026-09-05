@@ -61,4 +61,4 @@ The command prints the full 3-loop drill for one problem: problem signal, winner
 
 This folder intentionally stays under 21 human-facing Markdown files. If a new file does not improve discrimination, merge it into an existing family file.
 
-Generated ranked entries: 207
+Generated ranked entries: 206

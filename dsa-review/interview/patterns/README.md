@@ -8,10 +8,10 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 |---:|---|---:|---:|---:|---:|---:|---:|---|
 | 1 | HashMap / Frequency / Set | 5 | 1 | 2 | 2 | 1 | 0 | [01_hashmap_hashset.md](01_hashmap_hashset.md) |
 | 2 | Binary Search / Answer Search | 13 | 2 | 4 | 0 | 8 | 1 | [02_binary_search.md](02_binary_search.md) |
-| 3 | Sliding Window | 7 | 3 | 2 | 2 | 2 | 1 | [03_sliding_window.md](03_sliding_window.md) |
+| 3 | Sliding Window | 7 | 3 | 2 | 2 | 1 | 2 | [03_sliding_window.md](03_sliding_window.md) |
 | 4 | Prefix Sum / Prefix-Suffix | 2 | 4 | 1 | 1 | 0 | 0 | [04_prefix_suffix.md](04_prefix_suffix.md) |
-| 5 | Linked List Pointers | 14 | 6 | 5 | 6 | 2 | 1 | [05_linked_list.md](05_linked_list.md) |
-| 6 | Two Pointers | 6 | 10 | 4 | 1 | 1 | 0 | [06_two_pointers.md](06_two_pointers.md) |
+| 5 | Linked List Pointers | 15 | 6 | 5 | 6 | 2 | 2 | [05_linked_list.md](05_linked_list.md) |
+| 6 | Two Pointers | 7 | 10 | 4 | 1 | 2 | 0 | [06_two_pointers.md](06_two_pointers.md) |
 | 7 | Heap / Priority Queue | 12 | 11 | 1 | 3 | 3 | 5 | [07_heap.md](07_heap.md) |
 | 8 | Tree BFS / Level Order | 2 | 15 | 1 | 1 | 0 | 0 | [08_tree_bfs.md](08_tree_bfs.md) |
 | 9 | Tree DFS / Recursion | 31 | 16 | 5 | 5 | 5 | 16 | [09_tree_dfs.md](09_tree_dfs.md) |
@@ -20,13 +20,13 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 | 12 | Graph BFS / Shortest Path | 6 | 21 | 2 | 2 | 1 | 1 | [12_graph_bfs.md](12_graph_bfs.md) |
 | 13 | Dynamic Programming | 26 | 32 | 0 | 5 | 2 | 19 | [13_dynamic_programming.md](13_dynamic_programming.md) |
 | 14 | Backtracking / Combinatorial DFS | 6 | 34 | 0 | 3 | 0 | 3 | [14_backtracking.md](14_backtracking.md) |
-| 15 | Stack / Monotonic Stack | 14 | 35 | 0 | 2 | 4 | 8 | [15_stack.md](15_stack.md) |
+| 15 | Stack / Monotonic Stack | 12 | 35 | 0 | 2 | 4 | 6 | [15_stack.md](15_stack.md) |
 | 16 | Trie | 14 | 39 | 0 | 1 | 2 | 11 | [16_trie.md](16_trie.md) |
 | 17 | Intervals / Sorting Greedy | 7 | 42 | 0 | 1 | 1 | 5 | [17_intervals_greedy.md](17_intervals_greedy.md) |
 | 18 | Union Find / DSU | 2 | 70 | 0 | 1 | 0 | 1 | [18_union_find.md](18_union_find.md) |
 | 19 | Greedy | 4 | 72 | 0 | 0 | 4 | 0 | [22_greedy.md](22_greedy.md) |
-| 20 | Design Data Structures | 7 | 89 | 0 | 0 | 1 | 6 | [19_design_lld.md](19_design_lld.md) |
-| 21 | Math / Bit / String | 7 | 105 | 0 | 0 | 1 | 6 | [20_math_bit_string.md](20_math_bit_string.md) |
+| 20 | Design Data Structures | 6 | 89 | 0 | 0 | 1 | 5 | [19_design_lld.md](19_design_lld.md) |
+| 21 | Math / Bit / String | 7 | 106 | 0 | 0 | 1 | 6 | [20_math_bit_string.md](20_math_bit_string.md) |
 | 22 | Basics / Implementation | 2 | 153 | 0 | 0 | 0 | 2 | [21_core_basics.md](21_core_basics.md) |
 
-Total ranked entries: 207
+Total ranked entries: 206

@@ -26,7 +26,7 @@ flowchart TD
   Sub03 --> Sub03A01["ANCHOR<br/>rank 36: Top K Frequent Elements"]
   Sub03 --> Sub03A02["ANCHOR<br/>rank 140: Sort Characters By Frequency"]
   Invariant --> Sub04["SUB-PATTERN<br/>Greedy / heap<br/>1 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 98: Task Scheduler"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 99: Task Scheduler"]
   Invariant --> Sub05["SUB-PATTERN<br/>Heap / divide and conquer<br/>1 problem(s)"]
   Sub05 --> Sub05A01["ANCHOR<br/>rank 11: Merge K Sorted Lists"]
   Invariant --> Sub06["SUB-PATTERN<br/>Heap / quickselect<br/>1 problem(s)"]
@@ -36,8 +36,8 @@ flowchart TD
   Invariant --> Sub08["SUB-PATTERN<br/>Intervals / heap<br/>1 problem(s)"]
   Sub08 --> Sub08A01["ANCHOR<br/>rank 38: Meeting Rooms II"]
   Invariant --> Sub09["SUB-PATTERN<br/>Min-heap size K<br/>2 problem(s)"]
-  Sub09 --> Sub09A01["ANCHOR<br/>rank 99: Kth Largest Element In An Array"]
-  Sub09 --> Sub09A02["ANCHOR<br/>rank 100: Kth Largest Element In A Stream"]
+  Sub09 --> Sub09A01["ANCHOR<br/>rank 100: Kth Largest Element In An Array"]
+  Sub09 --> Sub09A02["ANCHOR<br/>rank 101: Kth Largest Element In A Stream"]
   Invariant --> Sub10["SUB-PATTERN<br/>Two heaps<br/>1 problem(s)"]
   Sub10 --> Sub10A01["ANCHOR<br/>rank 49: Find Median From Data Stream"]
 ```
@@ -50,9 +50,9 @@ flowchart TD
 | 36 | Phase 2 - Strong Core | Top K Frequent Elements | Frequency + heap/bucket | [Java](../../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LC](https://leetcode.com/problems/top-k-frequent-elements/) | Count frequencies, then keep only the k highest-frequency entries. | Build frequency map, then use bucket lists by frequency or a min-heap of size k. |
 | 38 | Phase 2 - Strong Core | Meeting Rooms II | Intervals / heap | [Java](../../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalActiveMinHeap.java) | [LC](https://leetcode.com/problems/meeting-rooms-ii/) | Sort meetings by start; a min-heap of end times counts active rooms. | Sort intervals, pop heap while end <= start, push current end, track max heap size. |
 | 49 | Phase 2 - Strong Core | Find Median From Data Stream | Two heaps | [Java](../../../src/main/java/org/chijai/day7/session1/heap/Median.java) | [LC](https://leetcode.com/problems/find-median-from-data-stream/) | Two heaps split lower and upper halves; median comes from heap tops. | Push into maxHeap/minHeap, rebalance sizes, median is top or average of tops. |
-| 98 | Phase 3 - Important | Task Scheduler | Greedy / heap | [Java](../../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | [LC](https://leetcode.com/problems/task-scheduler/) | CPU idles only when the most frequent tasks cannot be spaced by cooldown gaps. | Use maxFreq and countMax: max(tasks.length, (maxFreq-1)*(n+1)+countMax). |
-| 99 | Phase 3 - Important | Kth Largest Element In An Array | Min-heap size K | [Java](../../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LC](https://leetcode.com/problems/kth-largest-element-in-an-array/) | A size-k min-heap keeps the k largest seen so far; top is kth largest. | Push each number, pop when heap size > k, return heap top. |
-| 100 | Phase 3 - Important | Kth Largest Element In A Stream | Min-heap size K | [Java](../../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LC](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | Maintain a size-k min-heap after every add; top is the kth largest in the stream. | On add, push value, trim heap to k, return heap.peek(). |
+| 99 | Phase 3 - Important | Task Scheduler | Greedy / heap | [Java](../../../src/main/java/org/chijai/day7/session1/heap/TaskScheduler.java) | [LC](https://leetcode.com/problems/task-scheduler/) | CPU idles only when the most frequent tasks cannot be spaced by cooldown gaps. | Use maxFreq and countMax: max(tasks.length, (maxFreq-1)*(n+1)+countMax). |
+| 100 | Phase 3 - Important | Kth Largest Element In An Array | Min-heap size K | [Java](../../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LC](https://leetcode.com/problems/kth-largest-element-in-an-array/) | A size-k min-heap keeps the k largest seen so far; top is kth largest. | Push each number, pop when heap size > k, return heap top. |
+| 101 | Phase 3 - Important | Kth Largest Element In A Stream | Min-heap size K | [Java](../../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java) | [LC](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | Maintain a size-k min-heap after every add; top is the kth largest in the stream. | On add, push value, trim heap to k, return heap.peek(). |
 | 137 | Phase 4 - Secondary | K Closest Points To Origin | Heap / quickselect | [Java](../../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java) | [LC](https://leetcode.com/problems/k-closest-points-to-origin/) | Keep the k smallest squared distances; compare without taking square roots. | Use max-heap of size k by distance, or quickselect by squared distance. |
 | 138 | Phase 4 - Secondary | Top K Frequent Words | Bounded heap with tie ordering | [Java](../../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LC](https://leetcode.com/problems/top-k-frequent-words/) | A size-k min-heap stores the k strongest words, with the weakest winner at the root: lower frequency, or lexicographically larger on a tie. | Count words, offer each distinct word, evict when size > k, then remove from weakest to strongest and prepend to produce final order. |
 | 139 | Phase 4 - Secondary | H-Index | Bounded frequency buckets | [Java](../../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | [LC](https://leetcode.com/problems/h-index/) | buckets[h] counts papers with exactly h citations, except every citation >= n is capped into bucket n. | Accumulate paper counts from h = n downward; the first h with papers >= h is the maximum valid H-index. |

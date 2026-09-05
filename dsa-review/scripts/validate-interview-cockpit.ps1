@@ -27,6 +27,7 @@ $requiredFiles = @(
     "10_AFTER_7_DAY_EXTENSION_PLAN.md",
     "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md",
     "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md",
+    "13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -239,6 +240,64 @@ if ($missingCurriculumSlugs.Count -gt 0 -or $extraCurriculumSlugs.Count -gt 0) {
     Fail "LeetCode curriculum TOC slug mismatch. Missing: $($missingCurriculumSlugs -join ', '); Extra: $($extraCurriculumSlugs -join ', ')"
 }
 
+$complexityPath = Join-Path $interviewRoot "13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md"
+$complexityText = Get-Content -LiteralPath $complexityPath -Raw
+$complexityLines = Get-Content -LiteralPath $complexityPath
+$complexityProblemLines = @($complexityLines | Where-Object { $_ -match '^\| \[[^]]+\]\(https://leetcode\.com/problems/[a-z0-9-]+/\) \(' })
+$complexityHeaders = @($complexityLines | Where-Object { $_ -eq '| Problem | Pattern | Time | Space | One-sentence proof |' })
+$complexityDividers = @($complexityLines | Where-Object { $_ -match '^\| \*\*.+\*\* \| \*\*Complexity family\*\* \| \| \| \|$' })
+
+if ($complexityHeaders.Count -ne 1) {
+    Fail "master complexity artifact must contain exactly one continuous table header; found $($complexityHeaders.Count)"
+}
+if ($complexityProblemLines.Count -ne $recursiveLeetCodeSlugs.Count) {
+    Fail "master complexity artifact must contain $($recursiveLeetCodeSlugs.Count) recursive LeetCode rows; found $($complexityProblemLines.Count)"
+}
+if ($complexityDividers.Count -lt 15) {
+    Fail "master complexity artifact needs visible family dividers inside the single table; found $($complexityDividers.Count)"
+}
+if ($complexityText -match '(?m)^## ' -or $complexityText -match 'VERIFY FROM SOURCE') {
+    Fail "master complexity artifact contains a subsection table or an unverified complexity contract"
+}
+
+$complexitySlugs = New-Object System.Collections.Generic.List[string]
+foreach ($line in $complexityProblemLines) {
+    $cells = [regex]::Split($line, '(?<!\\)\|')
+    if ($cells.Count -ne 7) {
+        Fail "complexity row must have exactly five columns: $line"
+    }
+    if ($line -notmatch '^\| \[[^]]+\]\(https://leetcode\.com/problems/(?<slug>[a-z0-9-]+)/\)') {
+        Fail "complexity row has no canonical LeetCode problem link: $line"
+    }
+    $complexitySlugs.Add($Matches['slug'])
+    $time = $cells[3].Trim()
+    $space = $cells[4].Trim()
+    $reason = $cells[5].Trim()
+    if ($time -notmatch 'O\(' -or $space -notmatch 'O\(') {
+        Fail "complexity row lacks explicit Big-O time/space: $line"
+    }
+    if ($reason.Length -lt 35 -or -not $reason.EndsWith('.')) {
+        Fail "complexity proof must be one defensible sentence: $line"
+    }
+    $javaTargets = @([regex]::Matches($line, '\[Java\]\((?<target>\.\./\.\./src/main/java/org/chijai/[^)]+\.java)\)'))
+    if ($javaTargets.Count -eq 0) {
+        Fail "complexity row has no local Java link: $line"
+    }
+    foreach ($javaTarget in $javaTargets) {
+        $resolvedTarget = [System.IO.Path]::GetFullPath((Join-Path $interviewRoot $javaTarget.Groups['target'].Value))
+        if (-not (Test-Path -LiteralPath $resolvedTarget)) {
+            Fail "complexity row points to missing Java source: $($javaTarget.Groups['target'].Value)"
+        }
+    }
+}
+
+$duplicateComplexitySlugs = @($complexitySlugs | Group-Object | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+$missingComplexitySlugs = @($recursiveLeetCodeSlugs | Where-Object { $_ -notin $complexitySlugs })
+$extraComplexitySlugs = @($complexitySlugs | Where-Object { $_ -notin $recursiveLeetCodeSlugs })
+if ($duplicateComplexitySlugs.Count -gt 0 -or $missingComplexitySlugs.Count -gt 0 -or $extraComplexitySlugs.Count -gt 0) {
+    Fail "complexity slug mismatch. Duplicate: $($duplicateComplexitySlugs -join ', '); Missing: $($missingComplexitySlugs -join ', '); Extra: $($extraComplexitySlugs -join ', ')"
+}
+
 if (-not $topRankMatch.Success) {
     Fail "could not parse the current rank 1 title"
 }
@@ -297,6 +356,8 @@ if ($articulationRows.Count -ne $rankLines.Count) {
 
 $articulationByTitle = @{}
 $articulationContracts = New-Object System.Collections.Generic.List[string]
+$articulationTraps = New-Object System.Collections.Generic.List[string]
+$articulationMutations = New-Object System.Collections.Generic.List[string]
 foreach ($line in $articulationRows) {
     $cells = @([regex]::Split($line, '(?<!\\)\|') | ForEach-Object { $_.Trim() })
     if ($cells.Count -ne 5) {
@@ -330,7 +391,14 @@ foreach ($line in $articulationRows) {
         Fail "articulation row is missing a trap or explicit mutation-to-pattern shift: $title"
     }
 
+    $trapMutation = [regex]::Match($cells[3], '^\*\*Trap:\*\* (?<trap>.+?) \*\*Mutation:\*\* (?<mutation>.+)$')
+    if (-not $trapMutation.Success) {
+        Fail "could not parse articulation trap/mutation: $title"
+    }
+
     $articulationContracts.Add($cells[2])
+    $articulationTraps.Add($trapMutation.Groups['trap'].Value)
+    $articulationMutations.Add($trapMutation.Groups['mutation'].Value)
 }
 
 foreach ($rankedRow in $rankedByRank.Values) {
@@ -345,6 +413,13 @@ if ($duplicateArticulationContracts.Count -gt 0) {
     Fail "problem-specific articulation rows contain duplicated reconstruction contracts: $($examples -join '; ')"
 }
 
+if (@($articulationTraps | Sort-Object -Unique).Count -ne $articulationRows.Count) {
+    Fail "every articulation row must own a problem-specific trap"
+}
+if (@($articulationMutations | Sort-Object -Unique).Count -lt ($articulationRows.Count - 10)) {
+    Fail "articulation mutations are still too generic: $(@($articulationMutations | Sort-Object -Unique).Count) unique for $($articulationRows.Count) rows"
+}
+
 $genericArticulationPhrases = @(
     "Name the candidate space and the monotonic predicate",
     "The window state must describe exactly the current contiguous range",
@@ -353,7 +428,12 @@ $genericArticulationPhrases = @(
     "The heap contains only candidates still eligible",
     "State the exact meaning of dp before the recurrence",
     "Each edge consumes one character and each node represents the prefix",
-    "The path is the current partial decision"
+    "The path is the current partial decision",
+    "Ask for level order, right side view by level, or minimum tree depth",
+    "Ask for kth largest, median stream, or next best task",
+    "Ask for pairs/counts/complements over the same values",
+    "Ask only whether a node repeats/intersects, allowing extra memory",
+    "Constrain the problem so earliest finish, farthest reach, or cheapest immediate choice is always safe"
 )
 foreach ($genericPhrase in $genericArticulationPhrases) {
     if ($articulationText -match [regex]::Escape($genericPhrase)) {
@@ -430,6 +510,9 @@ if ($readmeText -notmatch '09_LEETCODE_CURRICULUM_TOC\.md') {
 }
 if ($readmeText -notmatch '12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE\.md') {
     Fail "main README does not link to the master articulation table"
+}
+if ($readmeText -notmatch '13_MASTER_TIME_SPACE_COMPLEXITY_TABLE\.md') {
+    Fail "main README does not link to the master complexity table"
 }
 if ($readmeText -notmatch '10_AFTER_7_DAY_EXTENSION_PLAN\.md') {
     Fail "main README does not link to the post-7-day extension plan"
@@ -771,7 +854,6 @@ $expectedHorizontalSemantics = @(
     @{ Title = "Meeting Rooms"; Winner = "Intervals / Sorting Greedy"; MustContain = "output asks for room count"; MustNotContain = "Heap / Priority Queue" },
     @{ Title = "First Unique Number"; Winner = "Design Data Structures"; MustContain = "first unique in arrival order"; MustNotContain = "node repeats/intersects" },
     @{ Title = "Moving Average From Data Stream"; Winner = "Sliding Window"; MustContain = "fixed-window sum"; MustNotContain = "node repeats/intersects" },
-    @{ Title = "Design Circular Queue"; Winner = "Design Data Structures"; MustContain = "fixed-capacity FIFO"; MustNotContain = "most-recent unresolved" },
     @{ Title = "Maximum XOR With an Element From Array"; Winner = "Trie"; MustContain = "nums <= mi"; MustNotContain = "word-prefix" },
     @{ Title = "Maximum Genetic Difference Query"; Winner = "Trie"; MustContain = "current ancestors"; MustNotContain = "word-prefix" },
     @{ Title = "Count Pairs With XOR in a Range"; Winner = "Trie"; MustContain = "less-than counts by bit"; MustNotContain = "word-prefix" },
@@ -892,6 +974,7 @@ if ($controlByteFiles.Count -gt 0) {
     missingJavaLinks = $missingJavaLinks.Count
     leetcodeLinks = $leetcodeLinkCount
     recursiveLeetCodeIndex = $leetcodeIndexRows.Count
+    complexityRows = $complexityProblemLines.Count
     localOnlyEntries = $localOnlyCount
     patternFiles = $patternFiles.Count
     patternRows = $patternProblemRows

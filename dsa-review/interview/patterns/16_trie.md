@@ -36,11 +36,11 @@ flowchart TD
   Sub07 --> Sub07A01["ANCHOR<br/>rank 159: Longest Common Prefix"]
   Invariant --> Sub08["SUB-PATTERN<br/>Trie<br/>2 problem(s)"]
   Sub08 --> Sub08A01["ANCHOR<br/>rank 39: Implement Trie (Prefix Tree)"]
-  Sub08 --> Sub08A02["ANCHOR<br/>rank 95: Design Add and Search Words Data Structure"]
+  Sub08 --> Sub08A02["ANCHOR<br/>rank 96: Design Add and Search Words Data Structure"]
   Invariant --> Sub09["SUB-PATTERN<br/>Trie / ranking<br/>1 problem(s)"]
-  Sub09 --> Sub09A01["ANCHOR<br/>rank 185: Hotel Reviews"]
+  Sub09 --> Sub09A01["ANCHOR<br/>rank 184: Hotel Reviews"]
   Invariant --> Sub10["SUB-PATTERN<br/>Trie + backtracking<br/>1 problem(s)"]
-  Sub10 --> Sub10A01["ANCHOR<br/>rank 102: Word Search II"]
+  Sub10 --> Sub10A01["ANCHOR<br/>rank 103: Word Search II"]
 ```
 
 ## Problems
@@ -48,8 +48,8 @@ flowchart TD
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
 | 39 | Phase 2 - Strong Core | Implement Trie (Prefix Tree) | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/implement-trie-prefix-tree/) | Each trie node represents one prefix; terminal marks distinguish full words from prefixes. | For insert/search/startsWith, walk chars through children; create on insert, fail on missing child. |
-| 95 | Phase 3 - Important | Design Add and Search Words Data Structure | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | Trie search branches only on '.', otherwise it follows exactly one child. | DFS over trie and word index; on '.', try every child, otherwise follow the matching child. |
-| 102 | Phase 3 - Important | Word Search II | Trie + backtracking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/WordSearchII.java) | [LC](https://leetcode.com/problems/word-search-ii/) | Trie prunes dictionary prefixes while board DFS chooses, marks, explores, and unmarks cells. | Build trie, DFS board paths, stop when prefix missing, collect terminal words, mark cells in-place. |
+| 96 | Phase 3 - Important | Design Add and Search Words Data Structure | Trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | Trie search branches only on '.', otherwise it follows exactly one child. | DFS over trie and word index; on '.', try every child, otherwise follow the matching child. |
+| 103 | Phase 3 - Important | Word Search II | Trie + backtracking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/WordSearchII.java) | [LC](https://leetcode.com/problems/word-search-ii/) | Trie prunes dictionary prefixes while board DFS chooses, marks, explores, and unmarks cells. | Build trie, DFS board paths, stop when prefix missing, collect terminal words, mark cells in-place. |
 | 156 | Phase 5 - If Time | Maximum XOR of Two Numbers in an Array | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/) | Binary trie chooses the opposite bit greedily to maximize each XOR bit from high to low. | Insert numbers by bits, then for each number walk preferred opposite bits and update max. |
 | 159 | Phase 5 - If Time | Longest Common Prefix | Single-branch prefix walk | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TriePrefix.java) | [LC](https://leetcode.com/problems/longest-common-prefix/) | The common prefix continues only while the trie path has exactly one child and the current node is not terminal. | Insert all strings, walk the sole child while childCount == 1 && !isWord, append that edge, and stop at branch or terminal. |
 | 160 | Phase 5 - If Time | Longest Word in Dictionary | Every-prefix-terminal trie | [Java](../../../src/main/java/org/chijai/day10/session1/trie/TrieWordDictionary.java) | [LC](https://leetcode.com/problems/longest-word-in-dictionary/) | A candidate is legal only if every trie node on its path is terminal, meaning every prefix is also a word. | Insert all words, validate terminal after every consumed character, and choose greatest length with lexicographically smallest tie. |
@@ -60,7 +60,7 @@ flowchart TD
 | 165 | Phase 5 - If Time | Maximum XOR With an Element From Array | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-xor-with-an-element-from-array/) | Offline sort queries by limit; insert eligible numbers into a bitwise trie before maximizing XOR. | Sort nums and queries by mi, insert nums <= mi, answer each query by opposite-bit trie walk. |
 | 166 | Phase 5 - If Time | Maximum Genetic Difference Query | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/maximum-genetic-difference-query/) | DFS the tree while the current root-to-node path is stored in a bitwise trie. | On entering node insert value, answer attached queries, DFS children, then remove value. |
 | 167 | Phase 5 - If Time | Count Pairs With XOR in a Range | Binary trie / bit | [Java](../../../src/main/java/org/chijai/day10/session1/trie/MaximumXOR.java) | [LC](https://leetcode.com/problems/count-pairs-with-xor-in-a-range/) | Count pairs with XOR < bound using bitwise trie prefixes, then subtract low from high+1. | For each num, add countLessThan(high+1) - countLessThan(low), then insert num. |
-| 185 | Phase 5 - If Time | Hotel Reviews | Trie / ranking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java) | - | Use trie or keyword set to count good words per review, then rank hotels by score. | Normalize review words, count keyword hits, aggregate per hotel, sort by score and id. |
+| 184 | Phase 5 - If Time | Hotel Reviews | Trie / ranking | [Java](../../../src/main/java/org/chijai/day10/session1/trie/HotelReviews.java) | - | Use trie or keyword set to count good words per review, then rank hotels by score. | Normalize review words, count keyword hits, aggregate per hotel, sort by score and id. |
 
 ## Drill
 

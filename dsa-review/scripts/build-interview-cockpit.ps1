@@ -1269,7 +1269,10 @@ function Get-Category {
     $text = (($Pattern + " " + $File + " " + $Title).ToLowerInvariant())
     $titleText = $Title.ToLowerInvariant()
 
-    if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl") { return "Design/LLD" }
+    if ($titleText -match "api integration|design fraud|design redis|token bucket|tinyurl|stock price fluctuation|design a leaderboard|design an ordered stream|design hit counter|design parking system") { return "Design/LLD" }
+    if ($titleText -match "^ipo$|sliding window median|number of orders in the backlog") { return "Heap" }
+    if ($titleText -match "n-queens|sudoku solver") { return "Backtracking" }
+    if ($titleText -match "^car pooling$") { return "Intervals/Greedy" }
     if ($titleText -match "^gas station$|^jump game$|^best time to buy and sell stock$|^best time to buy and sell stock ii$") { return "Greedy" }
     if ($titleText -match "^distinct subsequences ii$|best time to buy and sell stock (iii|iv|with cooldown|with transaction fee)") { return "Dynamic Programming" }
     if ($titleText -match "^longest continuous increasing subsequence$") { return "Sliding Window" }
@@ -1391,6 +1394,19 @@ function Get-PatternOverride {
         "shortencodingofwords" { return "Reversed suffix trie" }
         "mapsumpairs" { return "Prefix aggregate with overwrite delta" }
         "accountsmerge" { return "Email ownership + DSU grouping" }
+        "stockpricefluctuation" { return "Ordered price multiset + latest timestamp" }
+        "numberofordersinthebacklog" { return "Two-sided price priority queues" }
+        "ipo" { return "Capital sort + max-profit heap" }
+        "slidingwindowmedian" { return "Two heaps + outgoing-value removal" }
+        "nqueens" { return "Constraint-pruned row backtracking" }
+        "sudokusolver" { return "Constraint-pruned cell backtracking" }
+        "carpooling" { return "Difference array / sweep line" }
+        "designaleaderboard" { return "Player scores + ordered score counts" }
+        "designanorderedstream" { return "Array slots + advancing pointer" }
+        "designhitcounter" { return "Fixed-time-window queue" }
+        "designparkingsystem" { return "Fixed capacity counters" }
+        "missingnumber" { return "XOR / arithmetic invariant" }
+        "missingranges" { return "Sentinel boundary scan" }
         default { return $Pattern }
     }
 }
@@ -2265,6 +2281,205 @@ function Get-ArticulationMutation {
         [string] $Title
     )
 
+    $key = Get-NormalizedKey $Title
+    switch -Regex ($key) {
+        '^twosum$' { return 'Sort the input and ask for the pair values rather than original indices. -> Two Pointers: Sum comparison now proves which endpoint can be discarded.' }
+        '^validanagram$' { return 'Ask whether any fixed-length substring of s is an anagram of p. -> Sliding Window: The same frequency balance must now follow a moving contiguous region.' }
+        '^majorityelement$' { return 'Ask for the k most frequent values instead of the one value occurring over n/2. -> Heap: The majority cancellation guarantee disappears and bounded ranking becomes necessary.' }
+        '^ransomnote$' { return 'Ask for the shortest contiguous magazine substring that supplies the ransom characters. -> Sliding Window: Need counts must be maintained while shrinking one valid region.' }
+        '^longestpalindrome$' { return 'Require the chosen characters to be contiguous in the original string. -> Expand Around Center: Global frequency pairs no longer prove substring placement.' }
+
+        '^binarysearch$' { return 'Allow duplicates and ask for the first target occurrence. -> Boundary Binary Search: A hit must be preserved while the search continues left.' }
+        '^searchinsertposition$' { return 'Ask only whether target exists, not where it should be inserted. -> Exact Binary Search: Equality can return immediately; no lower-bound answer must be preserved.' }
+        '^firstbadversion$' { return 'Permit good versions after a bad version. -> Linear Scan: The predicate is no longer monotonic, so discarding half is unsound.' }
+        '^(kokoeatingbananas|splitarraylargestsum|capacitytoshippackageswithinddays|minimumnumberofdaystomakembouquets)$' { return 'Fix the candidate speed/capacity/day and ask only whether it is feasible. -> Greedy Linear Scan: The outer monotonic answer search disappears and only its proof checker remains.' }
+        '^searchinrotatedsortedarray$' { return 'Allow arbitrary unsorted order while keeping one target lookup. -> HashMap: Sorted-half elimination disappears, so direct value-to-index lookup becomes the reusable state.' }
+        '^findfirstandlastpositionofelementinsortedarray$' { return 'Remove sorted order and ask for the first and last target positions. -> Linear Scan: Order no longer supports boundary elimination.' }
+        '^searchinrotatedsortedarrayii$' { return 'Require the first matching index among duplicates. -> Boundary-Aware Linear/Binary Hybrid: Duplicate ambiguity now affects both half choice and answer ownership.' }
+        '^findpeakelement$' { return 'Ask for every peak index instead of any one peak. -> Linear Scan: Binary search can discard peaks that the output now requires.' }
+        '^sqrtx$' { return 'Ask for the integer kth root rather than square root. -> Binary Search on Answer: Replace square feasibility with overflow-safe power comparison.' }
+        '^timebasedkeyvaluestore$' { return 'Allow set calls to arrive out of timestamp order. -> Ordered Map: Append-only arrays lose sorted order, so each key needs ordered insertion and floor lookup.' }
+
+        '^longestsubstringwithoutrepeatingcharacters$' { return 'Ask only how many distinct characters occur in the whole string. -> HashSet: Contiguous boundaries disappear and global membership is sufficient.' }
+        '^minimumwindowsubstring$' { return 'Require t as an ordered subsequence rather than an unordered multiset. -> Dynamic Programming / Two-Pass Subsequence Scan: Need/have frequency validity no longer captures order.' }
+        '^longestsubstringwithatmostkdistinctcharacters$' { return 'Ask for the number of substrings with exactly k distinct characters. -> Two At-Most Windows: Longest-window tracking becomes atMost(k) minus atMost(k-1) counting.' }
+        '^findallanagramsinastring$' { return 'Ask only whether the two complete strings are anagrams. -> Frequency Count: Fixed moving boundaries are no longer part of the workload.' }
+        '^countnumberofnicesubarrays$' { return 'Allow arbitrary positive and negative values and ask for exact subarray sum k. -> Prefix Sum + HashMap: Removing left no longer changes the sum monotonically.' }
+
+        '^productofarrayexceptself$' { return 'Ask many immutable range-product queries instead of one except-self array. -> Prefix Products: Precomputed cumulative products answer repeated interval workload when division/zero policy permits.' }
+        '^binarysubarrayswithsum$' { return 'Allow arbitrary integers while keeping exact-sum subarray counting. -> Prefix Sum + HashMap: The at-most window identity depends on nonnegative values and now breaks.' }
+
+        '^reverselinkedlist$' { return 'Forbid in-place mutation and ask for values in reverse order. -> Stack: LIFO output replaces pointer rewiring.' }
+        '^linkedlistcycle$' { return 'Allow O(n) extra memory and ask only whether a node repeats. -> HashSet: Identity membership detects the first revisit without speed-distance reasoning.' }
+        '^middleoflinkedlist$' { return 'Ask repeated random index queries on the same immutable list. -> Array Indexing: One materialization amortizes traversal across many queries.' }
+        '^mergetwosortedlists$' { return 'Increase the input from two sorted lists to k sorted lists. -> Min-Heap: The next node must be selected among k current heads.' }
+        '^designbrowserhistory$' { return 'Retain every forward branch after visiting from the middle. -> Tree: History is no longer one chain; each page can own multiple future branches.' }
+        '^copylistwithrandompointer$' { return 'Remove random pointers and require an in-place structural copy. -> Linked List Pointers: Identity mapping is unnecessary when only next edges remain.' }
+        '^intersectionoftwolinkedlists$' { return 'Allow O(n) extra memory and return the first shared node. -> HashSet: Stored node identity replaces path-length equalization.' }
+        '^linkedlistcycleii$' { return 'Ask only whether a cycle exists, not its entry. -> Floyd Detection: The second head-to-meeting phase is no longer required.' }
+        '^reversenodesinkgroup$' { return 'Ask to reverse only node values while preserving links. -> Stack: Group values can be emitted/popped without structural reconnection.' }
+        '^oddevenlinkedlist$' { return 'Partition nodes stably by an arbitrary predicate rather than index parity. -> Two Dummy Lists: Predicate ownership replaces implicit odd/even pointer cadence.' }
+        '^rotatelist$' { return 'Store the sequence in an array instead of a linked list. -> Reversal / Modular Indexing: Random access removes the need to form and break a cycle.' }
+        '^swapnodesinpairs$' { return 'Swap adjacent values rather than nodes. -> Linear Scan: Pointer topology remains unchanged, so pairwise value exchange is sufficient.' }
+        '^reverselinkedlistii$' { return 'Make the segment immutable and request its reversed values. -> Stack: The bounded segment can be buffered without reconnecting links.' }
+        '^removenthnodefromendoflist$' { return 'Provide the node to delete in a doubly linked list. -> Direct Pointer Deletion: Prev/next links remove it in O(1) without a lead-gap scan.' }
+
+        '^validpalindrome$' { return 'Allow deleting at most one mismatching character. -> Branching Two Pointers: The first mismatch creates exactly two remaining ranges to validate.' }
+        '^containerwithmostwater$' { return 'Ask for the k largest container areas, not only the maximum. -> Heap + Pair Enumeration: The single dominance move cannot preserve every top pair.' }
+        '^twosumiiinputarrayissorted$' { return 'Remove sorted order but keep original index output. -> HashMap: Complement lookup replaces endpoint elimination.' }
+        '^trappingrainwater$' { return 'Change the elevation map from one dimension to a 2D grid. -> Min-Heap BFS: Water escapes through the globally lowest processed boundary.' }
+        '^sortcolors$' { return 'Increase from three colors to k arbitrary values. -> Counting Sort: Three fixed regions no longer represent every color.' }
+        '^longestpalindromicsubstring$' { return 'Allow skipping characters while preserving order. -> Interval DP: Contiguity and center expansion no longer characterize the answer.' }
+
+        '^topkfrequentelements$' { return 'Ask for every distinct value sorted by frequency. -> Full Sort: Bounded top-k retention no longer saves ordering work.' }
+        '^sortcharactersbyfrequency$' { return 'Receive characters online and repeatedly ask for the current most frequent. -> Heap + Frequency Map: The ranking must be maintained across updates.' }
+        '^findmedianfromdatastream$' { return 'Ask for the median of every fixed-size sliding window. -> Two Heaps + Lazy Deletion: Values must expire as the window advances.' }
+        '^taskscheduler$' { return 'Give each task type its own cooldown. -> Heap Simulation: The closed-form maximum-frequency formula no longer captures release times.' }
+        '^kthlargestelementinanarray$' { return 'Require expected linear time on one static array. -> Quickselect: Partitioning avoids maintaining a logarithmic heap.' }
+        '^kthlargestelementinastream$' { return 'Ask for the kth smallest as well as kth largest after every update. -> Two Ordered Multisets: One bounded min-heap cannot expose both tails.' }
+        '^kclosestpointstoorigin$' { return 'Ask for all points ordered by distance. -> Full Sort: Every relative rank is now required.' }
+        '^topkfrequentwords$' { return 'Ask top suggestions for every typed prefix. -> Trie + Bounded Ranking: Frequency selection must be scoped to shared prefixes.' }
+        '^hindex$' { return 'Guarantee citations are sorted and ask for h only once. -> Binary Search: The h-feasibility boundary is monotonic by index.' }
+        '^awardtopkhotels$' { return 'Ask for the complete hotel ranking rather than top k. -> Full Sort: Every score tie and rank must be materialized.' }
+
+        '^binarytreelevelordertraversal$' { return 'Ask only for maximum tree depth. -> Tree DFS: A subtree height return replaces level snapshots.' }
+        '^binarytreerightsideview$' { return 'Ask for the leftmost and rightmost value at every depth. -> Tree BFS: Each level now needs both boundary positions.' }
+        '^validatebinarysearchtree$' { return 'Ask to repair exactly two swapped BST values. -> Inorder Violation Tracking: Boolean bounds do not identify the offenders.' }
+        '^binarytreeinordertraversal$' { return 'Require values grouped by depth rather than inorder position. -> Tree BFS: Queue levels replace the traversal stack.' }
+        '^binarytreepostordertraversal$' { return 'Ask for parent-before-children serialization. -> Preorder DFS: The required emission point moves before recursive calls.' }
+        '^binarytreepreordertraversal$' { return 'Ask to delete every subtree safely after processing children. -> Postorder DFS: Parent work must wait for both child results.' }
+        '^lowestcommonancestorofabinarytree$' { return 'Add parent pointers to every node. -> Ancestor Alignment: Root-based subtree recursion is unnecessary when both nodes can walk upward.' }
+        '^lowestcommonancestorofabinarytreeii$' { return 'Guarantee both targets exist. -> Standard LCA DFS: Existence counters can be removed.' }
+        '^lowestcommonancestorofabinarytreeiii$' { return 'Remove parent pointers and provide only the root. -> Tree DFS Return Contract: Ancestor paths must be discovered from the root.' }
+        '^lowestcommonancestorofabinarytreeiv$' { return 'Reduce the target set to exactly two guaranteed nodes. -> Standard LCA DFS: Set membership/count aggregation collapses to two target checks.' }
+        '^kthsmallestelementinabst$' { return 'Ask many kth-smallest queries while the BST is updated. -> Order-Statistic Tree: Subtree sizes make rank queries and updates logarithmic.' }
+        '^recoverbinarysearchtree$' { return 'Allow any number of misplaced values and ask to restore sorted order. -> Inorder Collect + Sort: Two-inversion logic no longer identifies all corrections.' }
+        '^binarysearchtreeiterator$' { return 'Require predecessor as well as successor iteration. -> Bidirectional Stack/Parent Links: One left-spine stack supports only forward order.' }
+        '^convertbsttogreatertree$' { return 'Ask many range-sum queries without mutating the BST. -> Augmented BST / Prefix Index: Persistent subtree sums replace one destructive reverse-inorder pass.' }
+        '^diameterofbinarytree$' { return 'Ask for the actual longest path nodes, not only its length. -> Tree DP + Parent Reconstruction: Height values need endpoint/choice ownership.' }
+        '^sumroottoleafnumbers$' { return 'Allow edges with arbitrary multi-digit weights and ask minimum path sum. -> Tree DFS Min DP: Decimal prefix construction becomes weighted optimization.' }
+        '^binarytreemaximumpathsum$' { return 'Restrict the path to start at root and end at a leaf. -> Root-to-Leaf DFS: The two-branch global update is no longer legal.' }
+        '^pathsum$' { return 'Count every downward path, not only root-to-leaf paths. -> Prefix Sum on DFS Path: A boolean remaining-sum check misses arbitrary starts.' }
+        '^pathsumii$' { return 'Ask only how many matching root-to-leaf paths exist. -> Tree DP Counting: Concrete path copying is no longer required.' }
+        '^lowestcommonancestorofabinarysearchtree$' { return 'Remove the BST ordering guarantee. -> General Tree LCA DFS: Value comparison can no longer discard a subtree.' }
+        '^insertintoabinarysearchtree$' { return 'Require the tree to remain height-balanced after insertion. -> AVL/Red-Black Tree: Rotations and balance metadata become part of the contract.' }
+        '^minimumabsolutedifferenceinbst$' { return 'Remove BST ordering. -> Sort Values: Inorder is no longer sorted, so values must be ordered explicitly before adjacent comparison.' }
+        '^rangesumofbst$' { return 'Allow frequent updates and repeated range-sum queries. -> Augmented Balanced BST: Subtree aggregates amortize the new workload.' }
+        '^searchinabinarysearchtree$' { return 'Remove the BST order property. -> Tree DFS/BFS: Both children can contain the target.' }
+        '^invertbinarytree$' { return 'Ask whether two trees are mirrors without modifying either. -> Paired Tree DFS: Corresponding opposite children must be compared.' }
+        '^constructbinarysearchtreefrompreordertraversal$' { return 'Provide arbitrary preorder plus inorder for a non-BST. -> Index-Map Tree Reconstruction: Value bounds no longer identify subtree limits.' }
+        '^verifypreorderserializationofabinarytree$' { return 'Ask to reconstruct the tree, not only validate slots. -> Preorder Deserialization: Nodes and recursive child ownership must be materialized.' }
+        '^constructbinarytreefrominorderandpostordertraversal$' { return 'Replace postorder with preorder. -> Preorder + Inorder Reconstruction: Consume roots from the front and build left before right.' }
+        '^constructbinarytreefrompreorderandinordertraversal$' { return 'Replace preorder with postorder. -> Postorder + Inorder Reconstruction: Consume roots from the end and build right first.' }
+        '^serializeanddeserializebinarytree$' { return 'Require sorted-key range queries after reconstruction. -> BST Encoding: Ordering can eliminate null markers and support search semantics.' }
+        '^allnodesdistancekinbinarytree$' { return 'Ask the same distance-k query for many targets. -> Preprocessing / Centroid Decomposition: Rebuilding parent BFS per query repeats whole-tree work.' }
+        '^amountoftimeforbinarytreetobeinfected$' { return 'Give weighted transmission times on edges. -> Dijkstra: BFS layers no longer represent equal elapsed time.' }
+
+        '^numberofislands$' { return 'Add land cells online and ask island count after each addition. -> Union Find: Incremental component merges replace repeated full-grid traversal.' }
+        '^pacificatlanticwaterflow$' { return 'Ask for the minimum downhill steps from each cell to an ocean. -> Multi-Source BFS/Dijkstra: Reachability sets no longer capture distance.' }
+        '^surroundedregions$' { return 'Ask for the size of every enclosed region without modifying the board. -> Component DFS: Each component must be measured and classified before output.' }
+        '^numberofclosedislands$' { return 'Add land online and query whether components remain closed. -> Union Find with Border Flag: Static DFS ownership must survive incremental merges.' }
+        '^maxareaofisland$' { return 'Add land cells online and report maximum area after each addition. -> Union Find with Component Size: Incremental merges update area without rescanning.' }
+        '^floodfill$' { return 'Assign different costs to crossing adjacent cells and ask cheapest recoloring reach. -> Dijkstra: Connectivity alone no longer chooses the minimum-cost frontier.' }
+        '^isgraphbipartite$' { return 'Ask for a valid dependency order in a directed graph. -> Topological Sort: Two-color ownership does not model prerequisite direction.' }
+        '^clonegraph$' { return 'Ask only whether all nodes are reachable from the start. -> Graph DFS: Clone identity allocation is unnecessary.' }
+        '^graphvalidtree$' { return 'Add edges online and reject the first cycle. -> Union Find: Each new edge only needs component-root comparison.' }
+        '^possiblebipartition$' { return 'Add dislike edges online and query consistency after each edge. -> DSU with Parity: Static recoloring cannot cheaply preserve dynamic opposite-set constraints.' }
+        '^coloringaborder$' { return 'Ask for distance of every component cell from the border. -> Multi-Source BFS: Layer number, not binary border membership, becomes the output.' }
+
+        '^courseschedule$' { return 'Ask for one valid course order. -> Topological Ordering: Cycle feasibility now must also record dequeue order.' }
+        '^coursescheduleii$' { return 'Ask whether the valid order is unique. -> Unique Kahn BFS: Queue size must stay one at every step.' }
+        '^minimumheighttrees$' { return 'Add arbitrary cycles to the graph and ask for minimum eccentricity roots. -> All-Pairs/Repeated BFS: Leaf trimming relies on the input being a tree.' }
+        '^parallelcourses$' { return 'Give each course a duration. -> DAG Longest-Path DP: One Kahn layer no longer equals one semester of elapsed time.' }
+        '^aliendictionary$' { return 'Ask whether the inferred alphabet order is unique. -> Unique Topological Sort: Every unlocked frontier must contain one letter.' }
+        '^findeventualsafestates$' { return 'Ask for the minimum steps from each node to any terminal node. -> Reverse BFS Distance: Outdegree elimination needs a layer/distance state.' }
+        '^sequencereconstruction$' { return 'Ask for any valid reconstruction rather than proving uniqueness. -> Standard Topological Sort: Multiple zero-indegree choices become acceptable.' }
+        '^sortitemsbygroupsrespectingdependencies$' { return 'Remove group-contiguity requirements. -> Single Topological Sort: The group-level dependency graph is no longer needed.' }
+        '^coursescheduleiv$' { return 'Ask prerequisite reachability online as edges are added. -> Dynamic Reachability Index: One static transitive-closure table can become stale.' }
+
+        '^wordladder$' { return 'Ask for every shortest transformation sequence. -> BFS + Backtracking: Distance layers must retain all shortest parents for reconstruction.' }
+        '^rottingoranges$' { return 'Give each cell a different rotting delay. -> Multi-Source Dijkstra: One BFS layer no longer equals one minute.' }
+        '^01matrix$' { return 'Assign weighted movement costs between cells. -> Multi-Source Dijkstra: First unweighted discovery no longer proves minimum cost.' }
+        '^networkdelaytime$' { return 'Make every edge weight exactly one. -> BFS: Priority ordering is unnecessary when all transitions have equal cost.' }
+        '^numberofprovinces$' { return 'Add connections online and query province count after each update. -> Union Find: Component roots update incrementally.' }
+        '^khighestrankeditemswithinapricerange$' { return 'Remove distance from the ranking and ask global top k eligible cells. -> Bounded Heap: BFS layers are no longer part of the order.' }
+
+        '^houserobber$' { return 'Arrange houses in a circle. -> Two-Case DP: First and last cannot both be included, so solve two linear ranges.' }
+        '^climbingstairsfib$' { return 'Allow an arbitrary set of jump lengths. -> Unbounded DP: Two rolling Fibonacci states no longer cover every predecessor.' }
+        '^coinchange$' { return 'Ask to list every coin combination instead of the minimum count. -> Backtracking: Concrete choices become output and DP value compression is insufficient.' }
+        '^climbingstairs$' { return 'Add blocked steps. -> Indexed DP: The fixed Fibonacci recurrence must check per-position legality.' }
+        '^mincostclimbingstairs$' { return 'Allow jumps up to k steps. -> Sliding Minimum DP: Each state depends on a variable predecessor window.' }
+        '^perfectsquares$' { return 'Ask to output one minimum square decomposition. -> DP + Parent Reconstruction: Counts alone no longer satisfy the output.' }
+        '^uniquepaths$' { return 'Add obstacles to the grid. -> Grid DP with Legality: Blocked cells reset path count to zero.' }
+        '^partitionequalsubsetsum$' { return 'Ask to output every subset reaching half the total. -> Backtracking: The actual membership paths, not boolean reachability, are required.' }
+        '^longestincreasingsubsequence$' { return 'Ask how many longest increasing subsequences exist. -> Quadratic DP with Counts: Minimal tails preserve length but discard multiplicity.' }
+        '^maximumprofitinjobscheduling$' { return 'Remove job profits and maximize the number of non-overlapping jobs. -> Earliest-Finish Greedy: Every accepted job has equal value.' }
+        '^kadanemaxsubarray$' { return 'Ask for maximum sum of non-adjacent values. -> House-Robber DP: Contiguous ending-state reasoning no longer applies.' }
+        '^editdistance$' { return 'Disallow replacement and count only insertions/deletions. -> LCS-Derived DP: Shared subsequence length determines deletions and insertions.' }
+        '^distinctsubsequences$' { return 'Ask to print all matching subsequences for small input. -> Backtracking: Individual index paths become required output.' }
+        '^deleteoperationfortwostrings$' { return 'Give different deletion costs per character. -> Weighted 2D DP: LCS length alone no longer determines minimum cost.' }
+        '^longestpalindromicsubsequence$' { return 'Require a contiguous palindrome. -> Expand Around Center: Skipping characters is no longer legal.' }
+        '^minimumasciideletesumfortwostrings$' { return 'Make every deletion cost one. -> LCS DP: Minimum deletions depend only on the longest common subsequence length.' }
+
+        '^subsets$' { return 'Ask only for the number of subsets reaching a target sum. -> Knapsack DP: Repeated sum states replace explicit subset emission.' }
+        '^combinationsum$' { return 'Forbid candidate reuse. -> 0/1 Backtracking: The recursive next index changes from i to i + 1.' }
+        '^wordsearch$' { return 'Provide a dictionary of many words. -> Trie + Backtracking: Shared prefixes prune repeated board searches.' }
+        '^lettercombinationsofaphonenumber$' { return 'Ask only for the number of possible strings. -> Product Counting: Multiply mapping sizes without generating paths.' }
+        '^permutations$' { return 'Allow duplicate values but require unique permutations. -> Sorted Duplicate-Aware Backtracking: Equal siblings need a used-predecessor guard.' }
+        '^permutationsii$' { return 'Ask only for the count of distinct permutations. -> Frequency Math / DP: Multiset factorial counts replace path generation.' }
+
+        '^validparentheses$' { return 'Allow one wildcard that can act as open, close, or empty. -> Greedy Range of Open Counts: One deterministic stack meaning is insufficient.' }
+        '^evaluatereversepolishnotation$' { return 'Change postfix input to infix with parentheses. -> Operator/Operand Stacks: Precedence and deferred operators must now be represented.' }
+        '^dailytemperatures$' { return 'Ask for the warmest future temperature, not the nearest warmer day. -> Suffix Maximum: Nearest unresolved ownership is no longer required.' }
+        '^nextgreaterelementii$' { return 'Remove circular wraparound. -> Monotonic Stack: The second simulated pass disappears.' }
+        '^slidingwindowmaximum$' { return 'Ask for the median of every window. -> Two Heaps / Ordered Multiset: A monotonic deque preserves only extrema.' }
+        '^implementqueueusingstacks$' { return 'Require worst-case O(1) dequeue instead of amortized O(1). -> Real-Time Queue / Incremental Transfer: Bulk transfer latency must be spread across operations.' }
+        '^implementstackusingqueues$' { return 'Make push O(1) and allow pop O(n). -> Pop-Heavy Queue Simulation: Rotation moves from push to pop.' }
+        '^basiccalculator$' { return 'Add multiplication and division precedence. -> Two-Stack / Precedence Parser: Sign-only deferred state is no longer sufficient.' }
+        '^largestrectangle$' { return 'Ask for the maximum rectangle in a binary matrix. -> Row Histograms + Monotonic Stack: Each matrix row becomes one histogram instance.' }
+        '^minstack$' { return 'Add popMax that removes the topmost maximum. -> Doubly Linked List + Ordered Map: Per-depth extrema cannot delete a non-top node.' }
+        '^nextgreaterelementi$' { return 'Allow duplicate values in nums2 and query by index. -> Monotonic Stack on Indices: Value-to-answer mapping is no longer unique.' }
+        '^onlinestockspan$' { return 'Ask for spans after arbitrary historical price updates. -> Segment Tree: The append-only monotonic compression becomes invalid.' }
+        '^designastackwithincrementoperation$' { return 'Allow range increments on arbitrary stack indices. -> Fenwick/Segment Tree: One lazy bottom-k boundary cannot represent general ranges.' }
+
+        '^implementtrieprefixtree$' { return 'Remove prefix queries and keep only exact membership. -> HashSet: Shared prefix nodes no longer serve the workload.' }
+        '^designaddandsearchwordsdatastructure$' { return 'Remove wildcard dots. -> Plain Trie: Search follows one deterministic path.' }
+        '^wordsearchii$' { return 'Reduce the dictionary to one word. -> Board Backtracking: Trie prefix sharing is unnecessary.' }
+        '^longestcommonprefix$' { return 'Ask the query repeatedly while words are inserted online. -> Trie: Stored prefix structure amortizes repeated scans.' }
+        '^longestwordindictionary$' { return 'Drop the rule that every prefix must itself be a word. -> Sort / Lexicographic Selection: Terminal-prefix validation disappears.' }
+        '^replacewords$' { return 'Ask for the longest matching root instead of the shortest. -> Trie Full-Prefix Walk: Search cannot stop at the first terminal node.' }
+        '^searchsuggestionssystem$' { return 'Make product popularity update online. -> Trie + Per-Node Heap: Static lexicographic DFS no longer maintains top suggestions.' }
+        '^shortencodingofwords$' { return 'Ask for shared prefixes instead of shared suffixes. -> Forward Trie: Reversal is no longer needed.' }
+        '^mapsumpairs$' { return 'Remove prefix-sum queries and keep only exact key lookup. -> HashMap: Trie aggregates and overwrite deltas become unnecessary.' }
+        '^hotelreviews$' { return 'Ask for top hotels after every incoming review. -> Trie/Hash Counts + Heap: Ranking must be maintained online.' }
+
+        '^minimumnumberofarrowstoburstballoons$' { return 'Ask for the maximum number of simultaneously active balloons. -> Sweep Line: Endpoint event balance replaces minimum stabbing selection.' }
+        '^insertinterval$' { return 'Insert many intervals online with overlap queries. -> Ordered Interval Tree: One linear insertion is repeated too often.' }
+        '^mergeintervals$' { return 'Ask only whether any overlap exists. -> Sort + Adjacent Check: Building merged output is unnecessary.' }
+        '^nonoverlappingintervals$' { return 'Add a profit to each interval and maximize retained profit. -> Weighted Interval DP: Earliest finish can discard a more valuable schedule.' }
+        '^partitionlabels$' { return 'Allow each character to appear in at most two partitions. -> Dynamic Programming: The last-occurrence forced boundary is no longer mandatory.' }
+
+        '^accountsmerge$' { return 'Ask whether two accounts are connected under online email additions. -> Dynamic Union Find: Roots answer incremental connectivity without rebuilding groups.' }
+        '^redundantconnection$' { return 'Direct every edge and ask for the extra edge in a rooted graph. -> Directed Indegree + DSU: Two-parent conflicts must be handled before cycle detection.' }
+
+        '^encodeanddecodetinyurl$' { return 'Require short codes to be sortable by creation order and collision-free on one node. -> Base62 Counter: A monotonic ID can be encoded directly instead of retried random keys.' }
+        '^designfraudpatterndetection$' { return 'Change the batch rule to detect threshold breaches in a live time window. -> Sliding Window per Entity: Expired events must leave state as new events arrive.' }
+        '^apiintegrationexample$' { return 'Require independent downstream calls to complete under one latency budget. -> CompletableFuture Fan-Out: Parallel composition replaces sequential transport calls.' }
+        '^designredis$' { return 'Add TTL expiration with many keys. -> HashMap + Expiry Heap: Direct key lookup must be paired with ordered expiration work.' }
+        '^designtokenbucketratelimiter$' { return 'Share one rate limit across multiple service instances. -> Atomic Redis/Lua State: Process-local refill and consume are no longer globally consistent.' }
+
+        '^findtheindexofthefirstoccurrenceinastring$' { return 'Search many needles against one fixed text. -> Suffix Array / Text Index: Rebuilding one KMP prefix table per query repeats work.' }
+        '^repeatedsubstringpattern$' { return 'Allow one mismatching character in the repetitions. -> DP / Approximate Matching: Exact LPS periodicity no longer proves validity.' }
+        '^shortestpalindrome$' { return 'Allow appending characters at either end. -> Interval DP / Two-Sided Matching: Longest palindromic prefix alone no longer determines the optimum.' }
+        '^longesthappyprefix$' { return 'Ask for every border length, not only the longest. -> LPS Border Chain: Repeatedly following lps[len - 1] enumerates all borders.' }
+        '^addbinary$' { return 'Receive a long stream of binary additions to one accumulator. -> Mutable Bit Buffer: Rebuilding immutable result strings repeats carry work and allocation.' }
+        '^countprimes$' { return 'Ask primality for isolated very large numbers instead of all values below n. -> Miller-Rabin / Trial Division: Sieve storage over the full range is no longer appropriate.' }
+        '^countuniquecharactersofallsubstringsofagivenstring$' { return 'Ask the unique-character count for many explicit substring ranges. -> Offline/Indexed Range Queries: Whole-string occurrence contribution no longer answers each range directly.' }
+
+        '^spiralmatrix$' { return 'Ask for repeated rectangular submatrix sums. -> 2D Prefix Sum: Boundary traversal does not amortize aggregate queries.' }
+        '^stringtointegeratoi$' { return 'Parse arithmetic expressions with operators and parentheses. -> Stack Parser: A single numeric state no longer represents nested syntax.' }
+    }
+
     $switches = @(Get-HorizontalSwitches -Category $Category -Title $Title)
     if ($switches.Count -eq 0) {
         return "VERIFY FROM SOURCE - choose the smallest statement change that breaks this invariant."
@@ -2565,6 +2780,7 @@ function Get-RecursiveLeetCodeIndexRows {
                 if ([string]::IsNullOrWhiteSpace($pattern)) {
                     $pattern = Get-DisplayCategory $category
                 }
+                $pattern = Get-PatternOverride -Title $title -Pattern $pattern
 
                 $bySlug[$slug] = [pscustomobject]@{
                     Slug = $slug
@@ -2851,6 +3067,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
 | Need reconstruction plus exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | One continuous pattern -> sub-pattern table with skeletons, correctness contracts, traps, and mutations. |
+| Need time/space complexity recall | `13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md` | One continuous source-linked table with exact bounds, symbols, qualifiers, and one-sentence proofs. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -3250,6 +3467,200 @@ function Build-MasterArticulationTable {
                 $trapCell = "**Trap:** $trap **Mutation:** $mutation"
                 $lines.Add("| $problemCell | $(Escape-Md $reconstructionCell) | $(Escape-Md $trapCell) |")
             }
+        }
+    }
+
+    return ($lines -join "`r`n").TrimEnd()
+}
+
+function New-ComplexityResult {
+    param([string] $Time, [string] $Space, [string] $Reason)
+    return [pscustomobject]@{ Time = $Time; Space = $Space; Reason = $Reason }
+}
+
+function Get-ProblemComplexity {
+    param([string] $Slug)
+
+    switch -Regex ($Slug) {
+        '^two-sum$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each value is stored once and its complement is queried once.' }
+        '^(valid-anagram|ransom-note)$' { return New-ComplexityResult 'O(n + m)' 'O(sigma)' 'Each character is counted once; sigma is the represented alphabet.' }
+        '^majority-element$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Boyer-Moore performs one cancellation pass with one candidate and counter.' }
+        '^longest-palindrome$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'One frequency pass determines all pairs and the optional center.' }
+
+        '^(binary-search|search-insert-position|first-bad-version|find-peak-element|sqrtx)$' { return New-ComplexityResult 'O(log n)' 'O(1)' 'Every predicate comparison discards half of the remaining ordered candidates.' }
+        '^(search-in-rotated-sorted-array|find-first-and-last-position-of-element-in-sorted-array)$' { return New-ComplexityResult 'O(log n)' 'O(1)' 'One or two binary searches discard a provably impossible half each iteration.' }
+        '^search-in-rotated-sorted-array-ii$' { return New-ComplexityResult 'O(n) worst case' 'O(1)' 'Equal left/mid/right values can force one-step shrinking; otherwise it behaves logarithmically.' }
+        '^(koko-eating-bananas|split-array-largest-sum|capacity-to-ship-packages-within-d-days|minimum-number-of-days-to-make-m-bouquets)$' { return New-ComplexityResult 'O(n log R)' 'O(1)' 'Each of log R candidate answers is checked by one linear feasibility scan.' }
+        '^time-based-key-value-store$' { return New-ComplexityResult 'set O(1), get O(log m)' 'O(total values)' 'Append preserves per-key time order; get binary-searches that key''s m versions.' }
+
+        '^(longest-substring-without-repeating-characters|longest-substring-with-at-most-k-distinct-characters|longest-repeating-character-replacement)$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'Both window boundaries move forward at most n times while counts describe the active substring.' }
+        '^minimum-window-substring$' { return New-ComplexityResult 'O(n + m)' 'O(sigma)' 'The target is counted once and each source character enters and leaves the window at most once.' }
+        '^find-all-anagrams-in-a-string$' { return New-ComplexityResult 'O(n + m)' 'O(sigma)' 'The pattern is counted once and a fixed window updates two character counts per shift.' }
+        '^moving-average-from-data-stream$' { return New-ComplexityResult 'O(1) per next' 'O(k)' 'A running sum adds one value and evicts at most one of the last k values.' }
+        '^(count-number-of-nice-subarrays|binary-subarrays-with-sum)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Two monotone at-most windows each move left and right only forward.' }
+        '^longest-continuous-increasing-subsequence$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan carries only the current increasing streak and best length.' }
+        '^(constrained-subsequence-sum|jump-game-vi)$' { return New-ComplexityResult 'O(n)' 'O(k)' 'Each index enters and leaves the monotonic deque at most once; only the last k states remain eligible.' }
+        '^longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each index enters and leaves the max and min deques at most once.' }
+        '^max-value-of-equation$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Ordered points enter and leave one monotonic eligible-candidate deque once.' }
+        '^maximum-number-of-robots-within-budget$' { return New-ComplexityResult 'O(n)' 'O(n)' 'A monotonic deque and running sum add/remove each robot at most once.' }
+        '^shortest-subarray-with-sum-at-least-k$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each prefix index is pushed and popped at most once from the monotonic deque.' }
+        '^product-of-array-except-self$' { return New-ComplexityResult 'O(n)' 'O(1) auxiliary' 'Two linear products reuse the output array; the returned n-element array is not counted as auxiliary space.' }
+
+        '^reverse-linked-list$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Every node is rewired once using three pointers.' }
+        '^(linked-list-cycle|middle-of-the-linked-list|linked-list-cycle-ii)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Slow/fast pointers traverse only a constant number of list lengths.' }
+        '^merge-two-sorted-lists$' { return New-ComplexityResult 'O(n + m)' 'O(1)' 'Each existing node is attached once; no nodes are copied.' }
+        '^lru-cache$' { return New-ComplexityResult 'O(1) get/put expected' 'O(capacity)' 'Hash lookup plus constant-time doubly-linked-list detach/attach implements every operation.' }
+        '^design-browser-history$' { return New-ComplexityResult 'visit O(1), back/forward O(steps)' 'O(history)' 'Visit appends one node; navigation advances at most the requested number of links.' }
+        '^copy-list-with-random-pointer$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Two passes create one identity-map entry per original node and then wire both edges.' }
+        '^intersection-of-two-linked-lists$' { return New-ComplexityResult 'O(n + m)' 'O(1)' 'Head switching makes each pointer traverse each list at most once.' }
+        '^(reverse-nodes-in-k-group|odd-even-linked-list|rotate-list|swap-nodes-in-pairs|reverse-linked-list-ii|remove-nth-node-from-end-of-list)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'A constant set of pointers visits or rewires each list node at most a constant number of times.' }
+
+        '^valid-palindrome$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Two pointers inspect each character at most once while skipping punctuation.' }
+        '^container-with-most-water$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Exactly one boundary moves inward per comparison.' }
+        '^two-sum-ii-input-array-is-sorted$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Each sum comparison permanently discards one endpoint.' }
+        '^trapping-rain-water$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Two pointers finalize one side per step while retaining only left/right maxima.' }
+        '^sort-colors$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Dutch-flag pointers classify each element with at most a constant number of swaps.' }
+        '^longest-palindromic-substring$' { return New-ComplexityResult 'O(n^2)' 'O(1)' 'There are O(n) centers and an expansion can inspect O(n) characters.' }
+
+        '^merge-k-sorted-lists$' { return New-ComplexityResult 'O(N log k)' 'O(k)' 'Each of N nodes is polled and offered through a heap containing at most k list heads.' }
+        '^(top-k-frequent-elements|top-k-frequent-words)$' { return New-ComplexityResult 'O(n log k)' 'O(n)' 'Frequency counting stores up to n keys and a bounded heap processes each distinct key.' }
+        '^sort-characters-by-frequency$' { return New-ComplexityResult 'O(n + sigma log sigma)' 'O(sigma)' 'Count n characters, then order only the sigma distinct characters.' }
+        '^meeting-rooms-ii$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Sorting dominates; each meeting end is inserted into or removed from the active-room heap.' }
+        '^find-median-from-data-stream$' { return New-ComplexityResult 'add O(log n), median O(1)' 'O(n)' 'Insertion changes one heap and constant rebalancing; median reads one or two roots.' }
+        '^task-scheduler$' { return New-ComplexityResult 'O(T log sigma)' 'O(sigma)' 'The heap/cooldown simulation schedules T slots while holding at most sigma task types.' }
+        '^kth-largest-element-in-an-array$' { return New-ComplexityResult 'O(n log k)' 'O(k)' 'A size-k min-heap processes every number and retains only the k largest.' }
+        '^kth-largest-element-in-a-stream$' { return New-ComplexityResult 'init O(n log k), add O(log k)' 'O(k)' 'Each value is inserted into a heap capped at k; the root is the kth largest.' }
+        '^k-closest-points-to-origin$' { return New-ComplexityResult 'O(n log k)' 'O(k)' 'A size-k max-heap retains only the closest k of n points.' }
+        '^h-index$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Bucket counts cap every citation at n and one reverse scan finds the boundary.' }
+        '^ipo$' { return New-ComplexityResult 'O(n log n + k log n)' 'O(n)' 'Sort projects by capital, then each of at most k selections uses a profit heap.' }
+        '^sliding-window-median$' { return New-ComplexityResult 'O(n log k)' 'O(k)' 'Each slide inserts and removes one value from balanced ordered halves of size k.' }
+
+        '^(binary-tree-level-order-traversal|binary-tree-right-side-view)$' { return New-ComplexityResult 'O(n)' 'O(w)' 'Every node is queued once; w is the maximum tree width.' }
+        '^(validate-binary-search-tree|binary-tree-inorder-traversal|binary-tree-postorder-traversal|binary-tree-preorder-traversal|lowest-common-ancestor-of-a-binary-tree|lowest-common-ancestor-of-a-binary-tree-ii|lowest-common-ancestor-of-a-binary-tree-iv|recover-binary-search-tree|convert-bst-to-greater-tree|diameter-of-binary-tree|path-sum-iii|sum-root-to-leaf-numbers|binary-tree-maximum-path-sum|path-sum|path-sum-ii|minimum-absolute-difference-in-bst|range-sum-of-bst|invert-binary-tree)$' { return New-ComplexityResult 'O(n)' 'O(h)' 'Each node is processed once; the recursion/explicit stack holds at most tree height h.' }
+        '^lowest-common-ancestor-of-a-binary-tree-iii$' { return New-ComplexityResult 'O(h)' 'O(1)' 'Two parent-pointer walks cover at most both root paths.' }
+        '^kth-smallest-element-in-a-bst$' { return New-ComplexityResult 'O(h + k)' 'O(h)' 'The initial left spine costs h and inorder stops after visiting k nodes.' }
+        '^binary-search-tree-iterator$' { return New-ComplexityResult 'constructor O(h), next amortized O(1)' 'O(h)' 'Every node is pushed and popped once across the full iterator sequence.' }
+        '^(lowest-common-ancestor-of-a-binary-search-tree|insert-into-a-binary-search-tree|search-in-a-binary-search-tree)$' { return New-ComplexityResult 'O(h)' 'O(h) recursive, O(1) iterative' 'BST ordering follows one root-to-leaf path of height h.' }
+        '^(construct-binary-search-tree-from-preorder-traversal|construct-binary-tree-from-inorder-and-postorder-traversal|construct-binary-tree-from-preorder-and-inorder-traversal|serialize-and-deserialize-binary-tree)$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Indices/maps or serialization tokens make each node/token enter the construction exactly once.' }
+        '^verify-preorder-serialization-of-a-binary-tree$' { return New-ComplexityResult 'O(n)' 'O(1)' 'A slot counter consumes each serialization token once.' }
+        '^(all-nodes-distance-k-in-binary-tree|amount-of-time-for-binary-tree-to-be-infected)$' { return New-ComplexityResult 'O(n)' 'O(n)' 'One pass creates parent access and one visited BFS reaches each node at most once.' }
+
+        '^(number-of-islands|pacific-atlantic-water-flow|surrounded-regions|number-of-closed-islands|max-area-of-island|flood-fill|coloring-a-border|01-matrix)$' { return New-ComplexityResult 'O(rows * cols)' 'O(rows * cols)' 'Each grid cell is marked/queued only a constant number of times; worst-case frontier/visited state spans the grid.' }
+        '^(is-graph-bipartite|clone-graph|graph-valid-tree|possible-bipartition|course-schedule|course-schedule-ii|minimum-height-trees|parallel-courses|alien-dictionary|find-eventual-safe-states|sequence-reconstruction|sort-items-by-groups-respecting-dependencies|number-of-provinces)$' { return New-ComplexityResult 'O(V + E)' 'O(V + E)' 'Adjacency state stores E edges and traversal/topological processing consumes each vertex and edge once.' }
+        '^course-schedule-iv$' { return New-ComplexityResult 'O(V^3 + Q)' 'O(V^2)' 'The local transitive-closure DP tests every intermediate/source/target triple, then answers Q queries directly.' }
+        '^word-ladder$' { return New-ComplexityResult 'O(N * L * sigma)' 'O(N)' 'Each of N dictionary words is visited once and generates L positions times sigma replacements.' }
+        '^rotting-oranges$' { return New-ComplexityResult 'O(rows * cols)' 'O(rows * cols)' 'Multi-source BFS enqueues each orange cell at most once.' }
+        '^network-delay-time$' { return New-ComplexityResult 'O((V + E) log V)' 'O(V + E)' 'Dijkstra stores the graph and heap-relaxes each edge with logarithmic priority updates.' }
+        '^k-highest-ranked-items-within-a-price-range$' { return New-ComplexityResult 'O(rows * cols + C log C)' 'O(rows * cols)' 'BFS visits the grid once and sorts/ranks the C eligible candidates encountered.' }
+
+        '^(house-robber|climbing-stairs|min-cost-climbing-stairs)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Each position depends only on the previous constant number of DP states.' }
+        '^coin-change$' { return New-ComplexityResult 'O(amount * coins)' 'O(amount)' 'Every amount tests every denomination against one reusable one-dimensional table.' }
+        '^word-break$' { return New-ComplexityResult 'O(n^2)' 'O(n)' 'Each prefix endpoint may test all earlier cut positions; dp stores one reachability bit per prefix.' }
+        '^perfect-squares$' { return New-ComplexityResult 'O(n * sqrt(n))' 'O(n)' 'Each value up to n tests every square not exceeding it.' }
+        '^unique-paths$' { return New-ComplexityResult 'O(rows * cols)' 'O(rows * cols)' 'The table computes each grid state once from top and left.' }
+        '^partition-equal-subset-sum$' { return New-ComplexityResult 'O(n * target)' 'O(target)' 'Each number scans subset sums up to total/2 once in descending order.' }
+        '^longest-increasing-subsequence$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Each value binary-searches the minimal-tail array.' }
+        '^number-of-longest-increasing-subsequence$' { return New-ComplexityResult 'O(n^2)' 'O(n)' 'Each ending index compares with every earlier index while storing length and count.' }
+        '^russian-doll-envelopes$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Sorting plus binary-search LIS on heights dominates.' }
+        '^maximum-profit-in-job-scheduling$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Each sorted job binary-searches its compatible boundary and fills one DP state.' }
+        '^kadane-max-sub-array$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan keeps only best sum ending here and global best.' }
+        '^(edit-distance|distinct-subsequences|interleaving-string|longest-common-subsequence|delete-operation-for-two-strings|longest-palindromic-subsequence|minimum-ascii-delete-sum-for-two-strings)$' { return New-ComplexityResult 'O(n * m)' 'O(n * m)' 'The local implementation fills one state for every pair of prefix/interval positions.' }
+        '^(best-time-to-buy-and-sell-stock-with-transaction-fee|best-time-to-buy-and-sell-stock-with-cooldown|best-time-to-buy-and-sell-stock-iii)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'A constant number of hold/cash/rest transaction states is updated per price.' }
+        '^best-time-to-buy-and-sell-stock-iv$' { return New-ComplexityResult 'O(n * k)' 'O(k)' 'Each day updates buy/sell state for each allowed transaction count.' }
+        '^distinct-subsequences-ii$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'Each character updates total subsequences and one last-contribution slot.' }
+        '^stock-price-fluctuation$' { return New-ComplexityResult 'update O(log n), current O(1), max/min O(log n)' 'O(n)' 'Timestamp replacement updates ordered price counts while current uses the latest timestamp.' }
+
+        '^subsets$' { return New-ComplexityResult 'O(n * 2^n)' 'O(n) auxiliary' 'There are 2^n subsets and copying each output can cost O(n); recursion depth is n.' }
+        '^combination-sum$' { return New-ComplexityResult 'O(c^(target / minCandidate)) worst case' 'O(target / minCandidate)' 'The decision tree can branch across c candidates until the remaining target reaches zero.' }
+        '^word-search$' { return New-ComplexityResult 'O(rows * cols * 4^L)' 'O(L)' 'Each start may explore four choices for up to word length L; the path stack has depth L.' }
+        '^letter-combinations-of-a-phone-number$' { return New-ComplexityResult 'O(d * 4^d)' 'O(d) auxiliary' 'At most 4^d strings of length d must be generated and copied.' }
+        '^(permutations|permutations-ii)$' { return New-ComplexityResult 'O(n * n!)' 'O(n) auxiliary' 'Up to n! permutations are emitted and each length-n result is copied.' }
+        '^n-queens$' { return New-ComplexityResult 'O(n!) upper bound' 'O(n) auxiliary' 'Column/diagonal pruning explores permutations of queen columns with recursion depth n.' }
+        '^sudoku-solver$' { return New-ComplexityResult 'O(9^m) worst case' 'O(m)' 'For m empty cells, backtracking can try nine digits per cell; recursion depth is m.' }
+
+        '^valid-parentheses$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each bracket is pushed or popped once.' }
+        '^evaluate-reverse-polish-notation$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each token is processed once and the operand stack can hold n values.' }
+        '^(daily-temperatures|next-greater-element-i|next-greater-element-ii|online-stock-span|remove-k-digits|sum-of-subarray-minimums)$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each item is pushed once and popped at most once from a monotonic stack.' }
+        '^sliding-window-maximum$' { return New-ComplexityResult 'O(n)' 'O(k)' 'Each index enters and leaves the decreasing deque once; only window candidates remain.' }
+        '^basic-calculator$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each character is consumed once and nested signs/results occupy at most expression depth.' }
+        '^largest-rectangle-in-histogram$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each bar is pushed once and popped once when its maximal width becomes known.' }
+        '^min-stack$' { return New-ComplexityResult 'O(1) per operation' 'O(n)' 'Each stack depth stores or synchronizes its minimum, so no operation scans.' }
+        '^design-a-stack-with-increment-operation$' { return New-ComplexityResult 'O(1) per operation' 'O(capacity)' 'Lazy increment is recorded at one boundary and propagated once when popped.' }
+        '^implement-queue-using-stacks$' { return New-ComplexityResult 'push O(1), pop/peek amortized O(1)' 'O(n)' 'Each value moves from input to output stack at most once.' }
+        '^implement-stack-using-queues$' { return New-ComplexityResult 'push O(n), pop/top O(1)' 'O(n)' 'Each push rotates the old queue so the new value becomes the front.' }
+
+        '^implement-trie-prefix-tree$' { return New-ComplexityResult 'O(L) per operation' 'O(total characters)' 'Each operation follows one edge per character; nodes store inserted prefixes.' }
+        '^design-add-and-search-words-data-structure$' { return New-ComplexityResult 'add O(L), search O(26^d * L) worst case' 'O(total characters + L)' 'Each dot can branch over 26 children; recursion depth is word length L.' }
+        '^word-search-ii$' { return New-ComplexityResult 'O(rows * cols * 4^L) worst case' 'O(dictionary characters + L)' 'Trie pruning reduces practical branches, but a board path can still branch four ways to depth L.' }
+        '^maximum-xor-of-two-numbers-in-an-array$' { return New-ComplexityResult 'O(n * B)' 'O(n * B)' 'Each number inserts and queries exactly B bits in the binary trie.' }
+        '^maximum-xor-with-an-element-from-array$' { return New-ComplexityResult 'O((n + q) log(n + q) + (n + q)B)' 'O(n * B + q)' 'Offline sorting controls eligibility; every inserted number/query then walks B trie bits.' }
+        '^maximum-genetic-difference-query$' { return New-ComplexityResult 'O((n + q) * B)' 'O(n * B + q)' 'DFS adds/removes each node once and each query walks B active-ancestor trie levels.' }
+        '^count-pairs-with-xor-in-a-range$' { return New-ComplexityResult 'O(n * B)' 'O(n * B)' 'Each number performs two B-bit less-than queries and one trie insertion.' }
+        '^(longest-common-prefix|longest-word-in-dictionary|replace-words|search-suggestions-system|short-encoding-of-words|map-sum-pairs)$' { return New-ComplexityResult 'O(total characters)' 'O(total characters)' 'Trie construction and required prefix/suffix walks touch each stored character a constant number of times.' }
+
+        '^(minimum-number-of-arrows-to-burst-balloons|meeting-rooms|merge-intervals|non-overlapping-intervals|maximum-length-of-pair-chain)$' { return New-ComplexityResult 'O(n log n)' 'O(n) sort-dependent' 'Sorting dominates; the greedy/merge scan is linear after ordering.' }
+        '^insert-interval$' { return New-ComplexityResult 'O(n)' 'O(n) output' 'Already-sorted non-overlapping intervals are scanned once and emitted once.' }
+        '^partition-labels$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'One pass records last occurrences and one pass closes each partition boundary.' }
+        '^car-pooling$' { return New-ComplexityResult 'O(n + U)' 'O(U)' 'A difference array records n trip endpoints and scans coordinate range U once.' }
+        '^accounts-merge$' { return New-ComplexityResult 'O(E alpha(E) + E log E)' 'O(E)' 'DSU nearly-linearly merges E email references; sorting emails inside output groups dominates.' }
+        '^redundant-connection$' { return New-ComplexityResult 'O(n alpha(n))' 'O(n)' 'Each edge performs two compressed finds and at most one union.' }
+
+        '^best-time-to-buy-and-sell-stock$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan maintains the minimum earlier price and best sell profit.' }
+        '^best-time-to-buy-and-sell-stock-ii$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Every positive adjacent price increase is inspected and added once.' }
+        '^(gas-station|jump-game)$' { return New-ComplexityResult 'O(n)' 'O(1)' 'A failed prefix or unreachable boundary is summarized by one running scalar, so each index is visited once.' }
+
+        '^first-unique-number$' { return New-ComplexityResult 'add/show amortized O(1)' 'O(n)' 'Counts plus an ordered candidate queue remove each duplicated value at most once.' }
+        '^encode-and-decode-tinyurl$' { return New-ComplexityResult 'O(1) expected per operation' 'O(n)' 'Two hash indexes perform constant expected lookup and store one entry per URL.' }
+        '^design-a-leaderboard$' { return New-ComplexityResult 'add/reset O(log n), top O(k + log n)' 'O(n)' 'Player updates maintain ordered score counts; top walks at most k highest-scoring contributions.' }
+        '^design-an-ordered-stream$' { return New-ComplexityResult 'O(1) amortized per inserted value' 'O(n)' 'Each stored value is returned once when the advancing pointer reaches its contiguous block.' }
+        '^design-hit-counter$' { return New-ComplexityResult 'O(1) amortized per operation' 'O(W)' 'Each hit enters and expires from the fixed-window queue once; W is hits retained in 300 seconds.' }
+        '^design-parking-system$' { return New-ComplexityResult 'O(1)' 'O(1)' 'A fixed counter per car type is checked and decremented directly.' }
+
+        '^find-the-index-of-the-first-occurrence-in-a-string$' { return New-ComplexityResult 'O(n + m)' 'O(m)' 'KMP builds m LPS entries and never moves the n-character text pointer backward.' }
+        '^(repeated-substring-pattern|longest-happy-prefix)$' { return New-ComplexityResult 'O(n)' 'O(n)' 'One LPS construction processes each character with amortized fallback.' }
+        '^shortest-palindrome$' { return New-ComplexityResult 'O(n)' 'O(n)' 'One combined-string LPS pass finds the longest palindromic prefix.' }
+        '^add-binary$' { return New-ComplexityResult 'O(n + m)' 'O(n + m)' 'Each input bit and the final carry are consumed once into the result.' }
+        '^count-primes$' { return New-ComplexityResult 'O(n log log n)' 'O(n)' 'The sieve marks prime multiples, whose harmonic work sums to n log log n.' }
+        '^count-unique-characters-of-all-substrings-of-a-given-string$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'Previous/next occurrence state gives one constant-time contribution per character occurrence.' }
+        '^spiral-matrix$' { return New-ComplexityResult 'O(rows * cols)' 'O(1) auxiliary' 'Four shrinking boundaries emit every matrix cell exactly once.' }
+        '^string-to-integer-atoi$' { return New-ComplexityResult 'O(n)' 'O(1)' 'The parser consumes a prefix of the input once while retaining sign and numeric accumulator.' }
+        '^missing-number$' { return New-ComplexityResult 'O(n)' 'O(1)' 'XOR or arithmetic accumulation consumes each value once.' }
+        '^missing-ranges$' { return New-ComplexityResult 'O(n)' 'O(1) auxiliary' 'Sentinel boundaries scan the sorted values once; returned ranges are output space.' }
+        '^number-of-orders-in-the-backlog$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Each order is inserted/removed through one of two price heaps that can hold n orders.' }
+    }
+
+    return New-ComplexityResult 'VERIFY FROM SOURCE' 'VERIFY FROM SOURCE' 'No complexity contract is registered for this discovered slug.'
+}
+
+function Build-MasterComplexityTable {
+    param([object[]] $LeetCodeRows)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('# Master DSA Time + Space Complexity Table')
+    $lines.Add('')
+    $lines.Add("Corpus: $($LeetCodeRows.Count) distinct LeetCode problems discovered recursively from Java URLs and cataloged LC IDs. The count is evidence, not a target; add a URL or cataloged ID beside a new solution and regenerate.")
+    $lines.Add('')
+    $lines.Add('Symbols: `n/m` input lengths, `V/E` vertices/edges, `rows*cols` grid cells, `k` retained/window/transaction limit, `c` candidate count, `R` numeric answer range, `L` word length, `B` bit width, `sigma` alphabet/distinct key space, `h/w` tree height/width, `U` coordinate range, `W` live time-window items, `alpha` inverse Ackermann. Space excludes returned output only when stated.')
+    $lines.Add('')
+    $lines.Add('| Problem | Pattern | Time | Space | One-sentence proof |')
+    $lines.Add('|---|---|---|---|---|')
+
+    $categoryGroups = @($LeetCodeRows | Group-Object Category | ForEach-Object {
+        $items = @($_.Group | Sort-Object IndexRank)
+        [pscustomobject]@{ Category = $_.Name; FirstRank = [int]($items | Select-Object -First 1).IndexRank; Items = $items }
+    } | Sort-Object FirstRank, Category)
+
+    foreach ($group in $categoryGroups) {
+        $displayCategory = Get-DisplayCategory $group.Category
+        $lines.Add("| **$(Escape-Md $displayCategory)** | **Complexity family** | | | |")
+        foreach ($row in $group.Items) {
+            $complexity = Get-ProblemComplexity -Slug $row.Slug
+            $javaLinks = @($row.Files | Sort-Object | ForEach-Object {
+                $target = '../../src/main/java/org/chijai/' + $_.Replace('\', '/')
+                New-Link 'Java' $target
+            })
+            $problem = (New-Link (Escape-Md $row.Title) ("https://leetcode.com/problems/$($row.Slug)/")) + ' (' + ($javaLinks -join ', ') + ')'
+            $lines.Add("| $problem | $(Escape-Md $row.Pattern) | $($complexity.Time) | $($complexity.Space) | $(Escape-Md $complexity.Reason) |")
         }
     }
 
@@ -4989,6 +5400,7 @@ Write-TextFile -Path (Join-Path $outDir "09_LEETCODE_CURRICULUM_TOC.md") -Conten
 Write-TextFile -Path (Join-Path $outDir "10_AFTER_7_DAY_EXTENSION_PLAN.md") -Content (Build-PostSevenDayExtensionPlan -Rows $rows -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md") -Content (Build-ActiveNinetyPlanCutoff -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md") -Content (Build-MasterArticulationTable -Rows $rows)
+Write-TextFile -Path (Join-Path $outDir "13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md") -Content (Build-MasterComplexityTable -LeetCodeRows $leetcodeIndexRows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"

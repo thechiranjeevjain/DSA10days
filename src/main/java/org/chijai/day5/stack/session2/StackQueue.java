@@ -4,6 +4,8 @@ package org.chijai.day5.stack.session2;
  * ============================================================
  * STACK <-> QUEUE DESIGN — V3
  * ============================================================
+ * LeetCode 225 - Implement Stack Using Queues
+ * LeetCode 232 - Implement Queue Using Stacks
  *
  * PURPOSE
  * -------

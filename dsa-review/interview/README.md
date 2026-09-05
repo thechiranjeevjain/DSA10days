@@ -18,6 +18,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
 | Need reconstruction plus exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | One continuous pattern -> sub-pattern table with skeletons, correctness contracts, traps, and mutations. |
+| Need time/space complexity recall | `13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md` | One continuous source-linked table with exact bounds, symbols, qualifiers, and one-sentence proofs. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -32,7 +33,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 
 ## Current Coverage
 
-- Ranked entries: 207
+- Ranked entries: 206
 - Recursive LeetCode solved index: 213
 - Nested LeetCode curriculum TOC: `09_LEETCODE_CURRICULUM_TOC.md`
 - Pattern files: 22

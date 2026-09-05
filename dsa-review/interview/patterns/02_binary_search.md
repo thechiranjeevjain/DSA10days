@@ -31,7 +31,7 @@ flowchart TD
   Sub03 --> Sub03A02["ANCHOR<br/>rank 86: Split Array Largest Sum"]
   Sub03 --> Sub03A03["ANCHOR<br/>rank 90: Capacity To Ship Packages Within D Days"]
   Invariant --> Sub04["SUB-PATTERN<br/>HashMap + binary search<br/>1 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 101: Time Based Key Value Store"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 102: Time Based Key Value Store"]
 ```
 
 ## Problems
@@ -49,8 +49,8 @@ flowchart TD
 | 86 | Phase 3 - Important | Split Array Largest Sum | Binary search on answer | [Java](../../../src/main/java/org/chijai/day2/session2/AGGRCOW.java) | [LC](https://leetcode.com/problems/split-array-largest-sum/) | Binary search the smallest allowed subarray sum that can split into at most m pieces. | Search max(nums)..sum(nums), greedily count pieces when current sum would exceed mid. |
 | 90 | Phase 3 - Important | Capacity To Ship Packages Within D Days | Binary search on answer | [Java](../../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | [LC](https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/) | Binary search minimum capacity; capacity works if one pass ships within D days. | Search maxWeight..sumWeight, count days by accumulating load until capacity would overflow. |
 | 91 | Phase 3 - Important | Minimum Number Of Days To Make M Bouquets | Binary search on answer | [Java](../../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | [LC](https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/) | Binary search days; by a given day, consecutive bloomed flowers form bouquets greedily. | Reject if m*k > n; for each day mid, count adjacent bloomed streaks of length k. |
-| 101 | Phase 3 - Important | Time Based Key Value Store | HashMap + binary search | [Java](../../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | [LC](https://leetcode.com/problems/time-based-key-value-store/) | Map each key to timestamped values in order; binary search finds latest timestamp <= query. | Append on set; on get binary search the key's list for rightmost timestamp <= target. |
-| 129 | Phase 4 - Secondary | Sqrtx | Binary search boundary | [Java](../../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LC](https://leetcode.com/problems/sqrtx/) | Find the largest integer mid whose square is <= x. | Binary search 0..x, cast mid*mid to long, save mid when square <= x. |
+| 102 | Phase 3 - Important | Time Based Key Value Store | HashMap + binary search | [Java](../../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | - | Map each key to timestamped values in order; binary search finds latest timestamp <= query. | Append on set; on get binary search the key's list for rightmost timestamp <= target. |
+| 131 | Phase 4 - Secondary | Sqrtx | Binary search boundary | [Java](../../../src/main/java/org/chijai/day2/session1/SearchRange.java) | [LC](https://leetcode.com/problems/sqrtx/) | Find the largest integer mid whose square is <= x. | Binary search 0..x, cast mid*mid to long, save mid when square <= x. |
 
 ## Drill
 
