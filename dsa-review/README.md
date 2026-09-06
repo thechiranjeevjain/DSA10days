@@ -30,9 +30,10 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 11. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
 12. For one-pass reconstruction, exact say-before-coding contracts, traps, and mutations, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
 13. For one-pass time/space complexity recall with a proof sentence per solved LeetCode problem, use `interview/13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md`.
-13. For weak-topic focus, open `interview/patterns/README.md`.
-14. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-15. After a miss, run the review command and mark the item honestly.
+14. For facts you personally forget or implement incorrectly, append one line to `interview/ACTIVE_RECALL_FAILURE_LEDGER.md`, then convert recurring misses into cold-prompt cards.
+15. For weak-topic focus, open `interview/patterns/README.md`.
+16. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+17. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 

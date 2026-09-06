@@ -9,6 +9,7 @@ public class MiddleOfLinkedList {
      * ============================================================
      * PRIMARY PROBLEM — MIDDLE OF LINKED LIST
      * ============================================================
+     * LeetCode 876 - Middle of the Linked List
      *
      * Given the head of a singly linked list, return its middle node.
      *

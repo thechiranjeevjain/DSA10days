@@ -40,7 +40,7 @@ TOPIC
 | Binary Search / Answer Search | 13 | 2 | [02_binary_search.md](patterns/02_binary_search.md) |
 | Sliding Window | 7 | 3 | [03_sliding_window.md](patterns/03_sliding_window.md) |
 | Prefix Sum / Prefix-Suffix | 2 | 4 | [04_prefix_suffix.md](patterns/04_prefix_suffix.md) |
-| Linked List Pointers | 15 | 6 | [05_linked_list.md](patterns/05_linked_list.md) |
+| Linked List Pointers | 14 | 6 | [05_linked_list.md](patterns/05_linked_list.md) |
 | Two Pointers | 7 | 10 | [06_two_pointers.md](patterns/06_two_pointers.md) |
 | Heap / Priority Queue | 12 | 11 | [07_heap.md](patterns/07_heap.md) |
 | Tree BFS / Level Order | 2 | 15 | [08_tree_bfs.md](patterns/08_tree_bfs.md) |
@@ -57,7 +57,7 @@ TOPIC
 | Greedy | 4 | 72 | [22_greedy.md](patterns/22_greedy.md) |
 | Design Data Structures | 6 | 89 | [19_design_lld.md](patterns/19_design_lld.md) |
 | Math / Bit / String | 7 | 106 | [20_math_bit_string.md](patterns/20_math_bit_string.md) |
-| Basics / Implementation | 2 | 153 | [21_core_basics.md](patterns/21_core_basics.md) |
+| Basics / Implementation | 2 | 152 | [21_core_basics.md](patterns/21_core_basics.md) |
 
 When a Java file belongs to several problems, keep the file where it is and let the generated index list every linked problem under the right pattern branch.
 

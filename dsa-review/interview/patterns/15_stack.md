@@ -23,20 +23,20 @@ flowchart TD
   Invariant --> Sub02["SUB-PATTERN<br/>Monotonic stack<br/>3 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 37: Daily Temperatures"]
   Sub02 --> Sub02A02["ANCHOR<br/>rank 104: Next Greater Element II"]
-  Sub02 --> Sub02A03["ANCHOR<br/>rank 133: Next Greater Element I"]
+  Sub02 --> Sub02A03["ANCHOR<br/>rank 132: Next Greater Element I"]
   Invariant --> Sub03["SUB-PATTERN<br/>Monotonic stack pop-time boundaries<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 132: Largest Rectangle"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 131: Largest Rectangle"]
   Invariant --> Sub04["SUB-PATTERN<br/>Stack<br/>2 problem(s)"]
   Sub04 --> Sub04A01["ANCHOR<br/>rank 35: Valid Parentheses"]
   Sub04 --> Sub04A02["ANCHOR<br/>rank 105: Evaluate Reverse Polish Notation"]
   Invariant --> Sub05["SUB-PATTERN<br/>Stack / expression parsing<br/>1 problem(s)"]
   Sub05 --> Sub05A01["ANCHOR<br/>rank 107: Basic Calculator"]
   Invariant --> Sub06["SUB-PATTERN<br/>Stack design<br/>2 problem(s)"]
-  Sub06 --> Sub06A01["ANCHOR<br/>rank 134: Min Stack"]
-  Sub06 --> Sub06A02["ANCHOR<br/>rank 157: Design a Stack With Increment Operation"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 133: Min Stack"]
+  Sub06 --> Sub06A02["ANCHOR<br/>rank 156: Design a Stack With Increment Operation"]
   Invariant --> Sub07["SUB-PATTERN<br/>Stack/queue design<br/>2 problem(s)"]
-  Sub07 --> Sub07A01["ANCHOR<br/>rank 135: Implement Queue Using Stacks"]
-  Sub07 --> Sub07A02["ANCHOR<br/>rank 136: Implement Stack Using Queues"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 134: Implement Queue Using Stacks"]
+  Sub07 --> Sub07A02["ANCHOR<br/>rank 135: Implement Stack Using Queues"]
 ```
 
 ## Problems
@@ -49,12 +49,12 @@ flowchart TD
 | 104 | Phase 3 - Important | Next Greater Element II | Monotonic stack | [Java](../../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | [LC](https://leetcode.com/problems/next-greater-element-ii/) | Loop twice over the circular array while a decreasing stack waits for next greater values. | For i in 0..2n-1, resolve stack with nums[i % n], push i only during first pass. |
 | 105 | Phase 3 - Important | Evaluate Reverse Polish Notation | Stack | [Java](../../../src/main/java/org/chijai/day5/stack/session3/EvalRPN.java) | [LC](https://leetcode.com/problems/evaluate-reverse-polish-notation/) | Postfix expression evaluates when each operator consumes the latest two operands from a stack. | Push numbers; on operator pop b then a, compute a op b, push result. |
 | 107 | Phase 3 - Important | Basic Calculator | Stack / expression parsing | [Java](../../../src/main/java/org/chijai/day5/stack/session3/BasicCalculator.java) | [LC](https://leetcode.com/problems/basic-calculator/) | Use sign and stack to preserve the expression value before each parenthesis. | Track result, sign, number; on '(' push result/sign and reset; on ')' fold into previous context. |
-| 132 | Phase 4 - Secondary | Largest Rectangle | Monotonic stack pop-time boundaries | [Java](../../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java) | - | The increasing stack holds bar indices whose maximal right boundary is not known; a lower current bar closes every taller pending rectangle. | Scan through a final height-0 sentinel; while currentHeight < height[top], pop h, use current i as right boundary and new top as left boundary, width = right - left - 1. |
-| 133 | Phase 4 - Secondary | Next Greater Element I | Monotonic stack | [Java](../../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | [LC](https://leetcode.com/problems/next-greater-element-i/) | Precompute next greater for nums2 with a decreasing stack, then answer nums1 by map lookup. | Scan nums2, pop smaller values and map them to current, then lookup each nums1 value. |
-| 134 | Phase 4 - Secondary | Min Stack | Stack design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LC](https://leetcode.com/problems/min-stack/) | Store the current minimum with each push, or keep a second stack of minimums. | Push value and min(value,currentMin); pop both together; getMin reads min top. |
-| 135 | Phase 4 - Secondary | Implement Queue Using Stacks | Stack/queue design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LC](https://leetcode.com/problems/implement-queue-using-stacks/) | Use input stack for pushes and output stack for pops; transfer only when output is empty. | push -> in.push; pop/peek -> if out empty move all in to out, then read out. |
-| 136 | Phase 4 - Secondary | Implement Stack Using Queues | Stack/queue design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LC](https://leetcode.com/problems/implement-stack-using-queues/) | After each push, rotate the queue so the newest element is at the front. | Offer x, then rotate size-1 older elements behind it; pop removes queue front. |
-| 157 | Phase 5 - If Time | Design a Stack With Increment Operation | Stack design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LC](https://leetcode.com/problems/design-a-stack-with-increment-operation/) | Lazy increment stores pending additions at the boundary index instead of touching k items. | Keep stack plus inc array; on pop carry inc[i] to inc[i-1] and return value + inc[i]. |
+| 131 | Phase 4 - Secondary | Largest Rectangle | Monotonic stack pop-time boundaries | [Java](../../../src/main/java/org/chijai/day5/stack/session1/monotonic/LargestRectangle.java) | - | The increasing stack holds bar indices whose maximal right boundary is not known; a lower current bar closes every taller pending rectangle. | Scan through a final height-0 sentinel; while currentHeight < height[top], pop h, use current i as right boundary and new top as left boundary, width = right - left - 1. |
+| 132 | Phase 4 - Secondary | Next Greater Element I | Monotonic stack | [Java](../../../src/main/java/org/chijai/day5/stack/session1/monotonic/NextGreaterElement.java) | [LC](https://leetcode.com/problems/next-greater-element-i/) | Precompute next greater for nums2 with a decreasing stack, then answer nums1 by map lookup. | Scan nums2, pop smaller values and map them to current, then lookup each nums1 value. |
+| 133 | Phase 4 - Secondary | Min Stack | Stack design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LC](https://leetcode.com/problems/min-stack/) | Store the current minimum with each push, or keep a second stack of minimums. | Push value and min(value,currentMin); pop both together; getMin reads min top. |
+| 134 | Phase 4 - Secondary | Implement Queue Using Stacks | Stack/queue design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LC](https://leetcode.com/problems/implement-queue-using-stacks/) | Use input stack for pushes and output stack for pops; transfer only when output is empty. | push -> in.push; pop/peek -> if out empty move all in to out, then read out. |
+| 135 | Phase 4 - Secondary | Implement Stack Using Queues | Stack/queue design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java) | [LC](https://leetcode.com/problems/implement-stack-using-queues/) | After each push, rotate the queue so the newest element is at the front. | Offer x, then rotate size-1 older elements behind it; pop removes queue front. |
+| 156 | Phase 5 - If Time | Design a Stack With Increment Operation | Stack design | [Java](../../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | [LC](https://leetcode.com/problems/design-a-stack-with-increment-operation/) | Lazy increment stores pending additions at the boundary index instead of touching k items. | Keep stack plus inc array; on pop carry inc[i] to inc[i-1] and return value + inc[i]. |
 
 ## Drill
 

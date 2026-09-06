@@ -1,8 +1,6 @@
 package org.chijai.day2.session3;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,18 +92,21 @@ public class TimeBasedKeyValueStore {
          KEY -> SORTED HISTORY
 
          SET
-             GET / CREATE HISTORY
-             APPEND
+             GET HISTORY
+             ADD ENTRY
+             PUT HISTORY
 
          GET
-             FIRST timestamp > query
-             STEP BACK ONE
+             BINARY SEARCH FOR LARGEST timestamp <= query
 
-         Binary-search boundary at termination
+             VALID   -> SAVE ans -> GO RIGHT
+             INVALID -> GO LEFT
+
+         Canonical boundary picture
 
              [ valid valid valid | invalid invalid ]
-                                 ^
-                                left
+                           ^      ^
+                          ans    left
 
          valid
              timestamp <= query
@@ -113,15 +114,18 @@ public class TimeBasedKeyValueStore {
          invalid
              timestamp > query
 
-         Therefore
+         At termination
 
-             left     = first timestamp > query
-             left - 1 = largest timestamp <= query
+             ans = index of the newest valid timestamp
+
+         If no valid timestamp was ever seen
+
+             ans == -1 -> return ""
 
          Memory sentence
 
-             SEARCH FOR FIRST TOO LARGE.
-             ANSWER IS ONE BEFORE.
+             VALID -> SAVE -> RIGHT.
+             INVALID -> LEFT.
 
          Trap
 
@@ -149,10 +153,9 @@ public class TimeBasedKeyValueStore {
 
         public void set(String key, String value, int timestamp) {
 
-            List<Entry> history =
-                    store.computeIfAbsent(key, ignored -> new ArrayList<>());
-
+            List<Entry> history = store.getOrDefault(key, new ArrayList<>());
             history.add(new Entry(timestamp, value));
+            store.put(key, history);
         }
 
         public String get(String key, int timestamp) {
@@ -164,29 +167,69 @@ public class TimeBasedKeyValueStore {
             }
 
             int left = 0;
-            int right = history.size();
+            int right = history.size() - 1;
+            int ans = -1;
 
-            while (left < right) {
+            while (left <= right) {
 
                 int mid = left + (right - left) / 2;
 
                 Entry current = history.get(mid);
 
                 if (current.timestamp() <= timestamp) {
+                    ans = mid;
                     left = mid + 1;
                 } else {
-                    right = mid;
+                    right = mid - 1;
                 }
             }
 
-            if (left == 0) {
-                return "";
-            }
-
-            return history.get(left - 1).value();
+            return ans == -1
+                    ? ""
+                    : history.get(ans).value();
         }
     }
 
+
+    /*
+     RANK 2 — TreeMap fallback
+
+         floorKey(timestamp)
+             -> largest stored timestamp <= query
+
+         set() O(log H)
+         get() O(log H)
+
+         Prefer when timestamps may arrive out of order,
+         or when you want the cleanest predecessor API.
+     */
+    static class ImprovedTreeMapTimeMap {
+
+        private final Map<String, TreeMap<Integer, String>> store = new HashMap<>();
+
+        public void set(String key, String value, int timestamp) {
+
+            store.computeIfAbsent(key, missingKey -> new TreeMap<>())
+                    .put(timestamp, value);
+        }
+
+        public String get(String key, int timestamp) {
+
+            TreeMap<Integer, String> timeline = store.get(key);
+
+            if (timeline == null) {
+                return "";
+            }
+
+            Integer predecessor = timeline.floorKey(timestamp);
+
+            if (predecessor == null) {
+                return "";
+            }
+
+            return timeline.get(predecessor);
+        }
+    }
 
     /*
      =====================================================================================
@@ -225,25 +268,29 @@ public class TimeBasedKeyValueStore {
 
      4. A sorted random-access history suggests ArrayList + binary search.
 
-     5. Search for a boundary that is easy to prove:
+     5. During binary search, explicitly remember the best valid candidate.
 
-            first timestamp > query
+            timestamp[mid] <= query
+                -> mid is valid
+                -> save ans = mid
+                -> search right for something newer
 
-        Then the predecessor is automatically
-
-            left - 1
+            timestamp[mid] > query
+                -> mid is invalid
+                -> search left
 
      Final structure
 
          HashMap<String, List<Entry>>
 
          set()
-             get/create history
+             get history or default empty history
              append
+             put history back
 
          get()
-             binary-search first > query
-             return predecessor
+             binary-search largest timestamp <= query
+             return saved ans
 
      Implementation devices solve different problems
 
@@ -276,71 +323,88 @@ public class TimeBasedKeyValueStore {
              timestamp 5
              value "B"
 
-         We search for FIRST timestamp > 7.
+         Search interval is inclusive:
 
-         +------+-------+-----+----------------+----------------------+-------------+
-         | left | right | mid | timestamp[mid] | meaning              | move        |
-         +------+-------+-----+----------------+----------------------+-------------+
-         | 0    | 4     | 2   | 8              | too large            | right = 2   |
-         | 0    | 2     | 1   | 5              | valid; seek newer    | left = 2    |
-         +------+-------+-----+----------------+----------------------+-------------+
+             [left, right]
+
+         ans stores the newest valid index seen so far.
+
+         +------+-------+-----+-----+----------------+----------------------+------------------+
+         | left | right | mid | ans | timestamp[mid] | meaning              | move             |
+         +------+-------+-----+-----+----------------+----------------------+------------------+
+         | 0    | 3     | 1   | -1  | 5              | valid                | ans=1, left=2    |
+         | 2    | 3     | 2   | 1   | 8              | too large            | right=1          |
+         +------+-------+-----+-----+----------------+----------------------+------------------+
 
          stop
 
-             left == right == 2
+             left = 2
+             right = 1
+             ans = 1
 
-         boundary picture
+         Canonical picture
 
              [ 2   5 | 8   20 ]
-                     ^
-                    left
+                   ^   ^
+                  ans left
 
-         first > 7
-             index 2 -> timestamp 8
-
-         predecessor
-             index 1 -> timestamp 5
+             [ valid valid | invalid invalid ]
+                     ^       ^
+                    ans     left
 
          answer
+
+             history[ans]
+             history[1]
              "B"
 
      -------------------------------------------------------------------------------------
-     WHY left = mid + 1 WHEN current <= query?
+     WHY SAVE ans AND STILL MOVE RIGHT?
 
          current is VALID,
          but it may not be the NEWEST valid timestamp.
 
-         So we deliberately move past it and search right.
+         So
 
-         Eventually left lands one position AFTER the best valid answer.
+             ans = mid
 
-         Hence
+         remembers the current best answer, while
 
-             answer = left - 1
+             left = mid + 1
+
+         searches for a newer valid timestamp.
+
+         Memory rule
+
+             VALID -> SAVE -> RIGHT.
 
      -------------------------------------------------------------------------------------
-     EDGE CASES FALL OUT OF THE SAME BOUNDARY
+     WHY right = mid - 1 WHEN current > query?
+
+         With inclusive [left, right], mid itself is invalid.
+
+         Therefore mid cannot be the answer and can be discarded.
+
+             INVALID -> LEFT.
+
+     -------------------------------------------------------------------------------------
+     EDGE CASES
 
          query before everything
 
-             [ | 5 8 20 ]
-               ^
-              left = 0
-
-             no predecessor -> ""
+             ans stays -1
+             -> return ""
 
          query after everything
 
-             [ 5 8 20 | ]
-                       ^
-                      left = size
-
-             predecessor = size - 1 -> latest value
+             every visited valid candidate can update ans
+             -> ans finishes at the latest index
 
          exact match
 
-             still search first > query;
-             exact match becomes the predecessor of that boundary.
+             exact timestamp is valid
+             -> save it
+             -> continue right only in case a newer valid timestamp exists
      */
 
 
@@ -351,28 +415,40 @@ public class TimeBasedKeyValueStore {
 
      Correctness contract
 
-         The search returns the first index whose timestamp is > query.
+         ans always stores the latest valid index found so far:
 
-         Therefore
+             history[ans].timestamp <= query
 
-             every index before left has timestamp <= query
-             every index from left onward has timestamp > query
+         If timestamp[mid] <= query
 
-         So left - 1, when it exists, is exactly the largest timestamp <= query.
+             mid is valid,
+             so saving ans = mid is safe.
 
-     Why each move is safe
+             Only something farther right can be newer,
+             so search right.
 
-         timestamp[mid] <= query
-             mid is valid; only a later valid timestamp can beat it
-             -> search right
+         If timestamp[mid] > query
 
-         timestamp[mid] > query
-             mid and everything after it are too large
-             -> cut right
+             mid is invalid.
+
+             Because history is sorted,
+             everything to the right is also invalid,
+             so search left.
+
+         When the loop ends
+
+             ans == -1
+                 -> no timestamp <= query exists
+
+             otherwise
+                 -> ans is the largest index whose timestamp <= query
 
      Termination
 
-         [left, right) strictly shrinks every iteration.
+         Inclusive interval [left, right] strictly shrinks every iteration:
+
+             valid   -> left = mid + 1
+             invalid -> right = mid - 1
 
      Complexity
 
@@ -380,7 +456,7 @@ public class TimeBasedKeyValueStore {
          Let S = total number of set operations.
 
          set()
-             HashMap lookup + ArrayList append
+             HashMap get/put + ArrayList append
              O(1) average / amortized
 
          get()
@@ -394,58 +470,93 @@ public class TimeBasedKeyValueStore {
 
     /*
      =====================================================================================
-     7. 🧭 APPROACH / DATA-STRUCTURE TRADE-OFF MATRIX
+     7. 🏆 INTERVIEW APPROACH RANKING — MAX 3
      =====================================================================================
 
-     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
-     | Approach                             | Per-key history               | set()       | get()       | Custom BS?           | Best use                                     |
-     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
-     | Reverse scan baseline                | ArrayList<Entry>              | O(1) amort. | O(H)        | No                   | First correct baseline                       |
-     | TreeMap predecessor                  | TreeMap<timestamp,value>      | O(log H)    | O(log H)    | No                   | Arbitrary timestamp insertion                |
-     | ArrayList + manual upper bound       | ArrayList<Entry>              | O(1) amort. | O(log H)    | Yes                  | LEETCODE PRIMARY / monotonic writes          |
-     | ArrayList + Collections.binarySearch | ArrayList<Entry>              | O(1) amort. | O(log H)    | Library call          | Avoid handwritten loop; API decoding cost    |
-     | Encapsulated Timeline                | Timeline -> ArrayList<Entry>  | O(1) amort. | O(log H)    | Inside Timeline       | OOP / LLD responsibility separation          |
-     | Concurrent append-only Timeline      | locked ArrayList<Version>     | O(1) amort. | O(log H)    | Inside Timeline       | Concurrent monotonic in-memory production    |
-     | ConcurrentSkipListMap Timeline       | ordered concurrent map        | O(log H)    | O(log H)    | No                   | Concurrent out-of-order writes               |
-     +--------------------------------------+-------------------------------+-------------+-------------+----------------------+----------------------------------------------+
+     Rank only genuinely different algorithmic approaches.
 
-     Primary interview distinction
+     +------+-----------------------------------+-------------+-------------+-----------------------------------------------+
+     | Rank | Approach                          | set()       | get()       | Interview suitability                         |
+     +------+-----------------------------------+-------------+-------------+-----------------------------------------------+
+     | 1    | ArrayList + manual binary search | O(1) amort. | O(log H)    | PRIMARY — best use of stated constraints      |
+     | 2    | TreeMap + predecessor lookup      | O(log H)    | O(log H)    | STRONG FALLBACK — simpler, more general        |
+     | 3    | ArrayList + reverse scan          | O(1) amort. | O(H)        | BASELINE — derive first, then optimize          |
+     +------+-----------------------------------+-------------+-------------+-----------------------------------------------+
+
+     Why this ranking?
+
+         1. ArrayList + binary search
+
+             Timestamps already arrive increasing.
+
+             Therefore we receive ordering for free:
+
+                 append
+                     O(1) amortized
+
+                 predecessor search
+                     O(log H)
+
+             This is the interview-preferred solution.
+
+         2. TreeMap
+
+             floorKey() / floorEntry() directly answers
+
+                 largest timestamp <= query
+
+             It is clean and survives out-of-order timestamps,
+             but pays O(log H) on every insertion to maintain ordering
+             that the base problem already guarantees.
+
+         3. Reverse scan
+
+             Correct and easy to derive.
+
+             But get() can inspect the entire history:
+
+                 O(H)
+
+             Useful as the baseline, not the final answer.
+
+     Core distinction
 
          TreeMap solves the REQUIREMENT.
+
          ArrayList + binary search exploits the CONSTRAINT.
 
-     Why not the other tempting structures?
+     Not separate ranked approaches
 
-         HashMap<timestamp,value>
-             exact lookup is easy; predecessor relationship is absent.
+         Collections.binarySearch()
 
-         LinkedList<Entry>
-             append is easy; random access makes binary search a bad fit.
+             Same algorithmic family as Rank 1.
+             It only replaces the handwritten binary-search loop with a library call.
 
-         Deque<Entry>
-             good for latest-only access; arbitrary historical predecessor is O(H).
+         OOP Timeline / production concurrent versions
 
-         PriorityQueue<Entry>
-             gives one global min/max, not predecessor around arbitrary query X.
-
-         TreeMap<String,...> as outer map
-             orders keys even though we only need exact key lookup.
+             Same core lookup algorithm under a different software-design goal.
+             They belong in the LLD sections, not in the interview-algorithm ranking.
      */
 
 
     /*
      =====================================================================================
-     8. 🔄 RUNNABLE ALGORITHM ALTERNATIVES
+     8. 🔄 RUNNABLE INTERVIEW ALTERNATIVES
      =====================================================================================
+
+     Rank 1 is the PRIMARY PHOTOGRAPHIC MEMORY SOLUTION above.
+     Rank 2 TreeMap fallback is placed immediately after it for fast retrieval.
+
+     Rank 3 remains here as the derivation baseline.
      */
 
     /*
-     Brute baseline
+     RANK 3 — Reverse-scan baseline
 
          set() O(1)
          get() O(H)
 
-         Reverse scan is correct because newest timestamps are visited first.
+         Correct because newest timestamps are visited first.
      */
     static class BruteForceTimeMap {
 
@@ -457,7 +568,7 @@ public class TimeBasedKeyValueStore {
         private final Map<String, List<Entry>> store = new HashMap<>();
 
         public void set(String key, String value, int timestamp) {
-            store.computeIfAbsent(key, ignored -> new ArrayList<>())
+            store.computeIfAbsent(key, missingKey -> new ArrayList<>())
                     .add(new Entry(timestamp, value));
         }
 
@@ -479,109 +590,6 @@ public class TimeBasedKeyValueStore {
             }
 
             return "";
-        }
-    }
-
-
-    /*
-     TreeMap fallback / constraint-flip solution
-
-         floorKey(timestamp)
-             -> largest stored timestamp <= query
-
-         set() O(log H)
-         get() O(log H)
-
-         Prefer when timestamps may arrive out of order.
-     */
-    static class ImprovedTreeMapTimeMap {
-
-        private final Map<String, TreeMap<Integer, String>> store = new HashMap<>();
-
-        public void set(String key, String value, int timestamp) {
-
-            store.computeIfAbsent(key, ignored -> new TreeMap<>())
-                    .put(timestamp, value);
-        }
-
-        public String get(String key, int timestamp) {
-
-            TreeMap<Integer, String> timeline = store.get(key);
-
-            if (timeline == null) {
-                return "";
-            }
-
-            Integer predecessor = timeline.floorKey(timestamp);
-
-            if (predecessor == null) {
-                return "";
-            }
-
-            return timeline.get(predecessor);
-        }
-    }
-
-
-    /*
-     Library binary-search alternative
-
-         Same ArrayList representation and asymptotic complexity as primary.
-
-         Trade-off
-
-             less handwritten binary-search code
-             but must remember Java's negative insertion-point contract:
-
-                 result = -(insertionPoint) - 1
-
-         That API decoding is why this is not the photographic-memory primary.
-     */
-    static class LibraryBinarySearchTimeMap {
-
-        private record Entry(
-                int timestamp,
-                String value) {
-        }
-
-        private static final Comparator<Entry> BY_TIMESTAMP =
-                Comparator.comparingInt(Entry::timestamp);
-
-        private final Map<String, List<Entry>> store = new HashMap<>();
-
-        public void set(String key, String value, int timestamp) {
-
-            List<Entry> history =
-                    store.computeIfAbsent(key, ignored -> new ArrayList<>());
-
-            history.add(new Entry(timestamp, value));
-        }
-
-        public String get(String key, int timestamp) {
-
-            List<Entry> history = store.get(key);
-
-            if (history == null) {
-                return "";
-            }
-
-            int index = Collections.binarySearch(
-                    history,
-                    new Entry(timestamp, ""),
-                    BY_TIMESTAMP);
-
-            if (index >= 0) {
-                return history.get(index).value();
-            }
-
-            int insertionPoint = -index - 1;
-            int predecessor = insertionPoint - 1;
-
-            if (predecessor < 0) {
-                return "";
-            }
-
-            return history.get(predecessor).value();
         }
     }
 
@@ -620,7 +628,7 @@ public class TimeBasedKeyValueStore {
         public void set(String key, String value, int timestamp) {
 
             Timeline timeline =
-                    store.computeIfAbsent(key, ignored -> new Timeline());
+                    store.computeIfAbsent(key, missingKey -> new Timeline());
 
             timeline.append(timestamp, value);
         }
@@ -647,24 +655,24 @@ public class TimeBasedKeyValueStore {
             String valueAt(int timestamp) {
 
                 int left = 0;
-                int right = history.size();
+                int right = history.size() - 1;
+                int ans = -1;
 
-                while (left < right) {
+                while (left <= right) {
 
                     int mid = left + (right - left) / 2;
 
                     if (history.get(mid).timestamp() <= timestamp) {
+                        ans = mid;
                         left = mid + 1;
                     } else {
-                        right = mid;
+                        right = mid - 1;
                     }
                 }
 
-                if (left == 0) {
-                    return "";
-                }
-
-                return history.get(left - 1).value();
+                return ans == -1
+                        ? ""
+                        : history.get(ans).value();
             }
         }
 
@@ -729,7 +737,7 @@ public class TimeBasedKeyValueStore {
             ConcurrentTimeline timeline =
                     store.computeIfAbsent(
                             key,
-                            ignored -> new ConcurrentTimeline());
+                            missingKey -> new ConcurrentTimeline());
 
             timeline.append(timestamp, value);
         }
@@ -804,25 +812,24 @@ public class TimeBasedKeyValueStore {
                 try {
 
                     int left = 0;
-                    int right = history.size();
+                    int right = history.size() - 1;
+                    int ans = -1;
 
-                    while (left < right) {
+                    while (left <= right) {
 
                         int mid = left + (right - left) / 2;
 
                         if (history.get(mid).timestamp() <= timestamp) {
+                            ans = mid;
                             left = mid + 1;
                         } else {
-                            right = mid;
+                            right = mid - 1;
                         }
                     }
 
-                    if (left == 0) {
-                        return Optional.empty();
-                    }
-
-                    return Optional.of(
-                            history.get(left - 1).value());
+                    return ans == -1
+                            ? Optional.empty()
+                            : Optional.of(history.get(ans).value());
 
                 } finally {
                     lock.readLock().unlock();
@@ -890,7 +897,7 @@ public class TimeBasedKeyValueStore {
             ConcurrentSkipListMap<Long, String> timeline =
                     store.computeIfAbsent(
                             key,
-                            ignored -> new ConcurrentSkipListMap<>());
+                            missingKey -> new ConcurrentSkipListMap<>());
 
             timeline.put(timestamp, value);
         }
@@ -1017,25 +1024,29 @@ public class TimeBasedKeyValueStore {
          means mid is a candidate,
          not necessarily the newest candidate.
 
-         Therefore continue right.
+         Therefore
 
-     2. DO NOT MIX INTERVAL CONVENTIONS
+             ans = mid
+             left = mid + 1
 
-         This implementation uses
+     2. KEEP ONE BINARY-SEARCH CONVENTION
 
-             [left, right)
+         This file uses the inclusive interval
+
+             [left, right]
 
          so
 
-             right = history.size()
-             while (left < right)
-             right = mid
+             right = history.size() - 1
+             while (left <= right)
+             valid   -> left = mid + 1
+             invalid -> right = mid - 1
 
-         Do not randomly switch to right = mid - 1.
+         Do not mix this with the half-open [left, right) template.
 
      3. BEFORE FIRST TIMESTAMP
 
-         left == 0
+         ans stays -1
              -> no predecessor
              -> return ""
 
@@ -1069,9 +1080,9 @@ public class TimeBasedKeyValueStore {
          Because timestamps for each key arrive strictly increasing, appending keeps
          every history sorted in O(1) amortized time.
 
-         get() is a predecessor query: I binary-search for the first timestamp greater
-         than the query. The element immediately before that boundary is therefore the
-         largest timestamp less than or equal to the query.
+         get() is a predecessor query. I binary-search the sorted history while keeping
+         ans as the latest valid index seen so far. When timestamp[mid] <= query,
+         I save mid and continue right for something newer. Otherwise I search left.
 
          set() is O(1) average/amortized, get() is O(log H), and total space is O(S).
 
@@ -1088,23 +1099,21 @@ public class TimeBasedKeyValueStore {
              timestamps arrive increasing
 
          set()?
-             get/create history + append
+             GET -> ADD -> PUT
 
          get() asks for?
              largest timestamp <= query
 
-         Convert to boundary?
-             first timestamp > query
+         Binary-search rule?
+             VALID -> SAVE ans -> RIGHT
+             INVALID -> LEFT
 
-         Answer?
-             left - 1
-
-         No predecessor?
-             left == 0 -> ""
+         No valid timestamp?
+             ans == -1 -> ""
 
      One-line recall
 
-         PER-KEY SORTED HISTORY + UPPER BOUND + PREDECESSOR.
+         PER-KEY SORTED HISTORY + SAVE VALID + SEARCH RIGHT.
      */
 
 
@@ -1118,7 +1127,6 @@ public class TimeBasedKeyValueStore {
         testPrimary();
         testBruteForce();
         testTreeMap();
-        testLibraryBinarySearch();
         testOopVersion();
         testConcurrentAppendOnlyVersion();
         testConcurrentOrderedVersion();
@@ -1175,19 +1183,6 @@ public class TimeBasedKeyValueStore {
 
         assert "zero".equals(timeMap.get("x", 8));
         assert "one".equals(timeMap.get("x", 10));
-    }
-
-    private static void testLibraryBinarySearch() {
-
-        LibraryBinarySearchTimeMap timeMap = new LibraryBinarySearchTimeMap();
-
-        timeMap.set("k", "v1", 2);
-        timeMap.set("k", "v2", 5);
-        timeMap.set("k", "v3", 8);
-
-        assert "".equals(timeMap.get("k", 1));
-        assert "v2".equals(timeMap.get("k", 7));
-        assert "v3".equals(timeMap.get("k", 8));
     }
 
     private static void testOopVersion() {

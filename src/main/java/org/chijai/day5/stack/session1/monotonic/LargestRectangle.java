@@ -206,6 +206,234 @@ public class LargestRectangle {
 
     /*
      * =================================================================================
+     * 3.1️⃣ YOUR EXACT FAILURE — POPPED INDEX IS NOT THE LEFT BOUNDARY
+     * =================================================================================
+     *
+     * Your attempted model was:
+     *
+     *      int right = i;
+     *      int left = stack.pop();
+     *
+     *      area =
+     *          heights[left]
+     *          * (right - left);
+     *
+     *
+     * WHY THIS FELT NATURAL
+     * ---------------------
+     *
+     * You were thinking:
+     *
+     *      "I popped index x.
+     *       Current is at i.
+     *       So width = i - x."
+     *
+     * That measures:
+     *
+     *      distance from the CHOSEN BAR
+     *      to the RIGHT blocker.
+     *
+     * But the problem asks for:
+     *
+     *      the FULL TWO-SIDED span
+     *      where the popped bar's HEIGHT can survive.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * THREE DIFFERENT ROLES — DO NOT COLLAPSE THEM
+     * -------------------------------------------------------------------------
+     *
+     *      POP
+     *          = BAR whose rectangle is being finalized
+     *
+     *      CURRENT
+     *          = RIGHT smaller blocker
+     *
+     *      NEW STACK TOP AFTER POP
+     *          = LEFT smaller blocker
+     *
+     *
+     * RECALL:
+     *
+     *      POP      = BAR
+     *      NEW TOP  = LEFT
+     *      CURRENT  = RIGHT
+     *
+     *
+     * The popped index is the SUBJECT being measured.
+     *
+     * The new stack top and current index are the BOUNDARIES
+     * measuring its maximal span.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * WHY [2,1,2] EXPOSES THE BUG
+     * -------------------------------------------------------------------------
+     *
+     *      heights = [2,1,2]
+     *      index      0 1 2
+     *                   ↑
+     *                barIndex = 1
+     *
+     * At the final virtual current:
+     *
+     *      current index = 3
+     *
+     * When index 1 is popped:
+     *
+     *      barIndex = 1
+     *
+     * But the rectangle of height 1 starts at index 0.
+     *
+     * Therefore:
+     *
+     *      barIndex != rectangle left edge
+     *
+     *
+     * Full picture:
+     *
+     *      -1 | 0  1  2 | 3
+     *          2  1  2
+     *             ↑
+     *          popped bar
+     *
+     *      left smaller blocker  = -1
+     *      right smaller blocker = 3
+     *
+     *      valid rectangle       = indices 0 ... 2
+     *
+     *      width
+     *          = 3 - (-1) - 1
+     *          = 3
+     *
+     *      area
+     *          = 1 * 3
+     *          = 3
+     *
+     *
+     * Your old calculation:
+     *
+     *      right - barIndex
+     *          = 3 - 1
+     *          = 2
+     *
+     * misses the valid region LEFT of the popped bar.
+     *
+     *
+     * -------------------------------------------------------------------------
+     * WHY DO WE USE -1?
+     * -------------------------------------------------------------------------
+     *
+     * -1 is NOT a real array access.
+     *
+     * We never do:
+     *
+     *      heights[-1]
+     *
+     * It is only a VIRTUAL blocker index used for boundary arithmetic.
+     *
+     *
+     * The actual rectangle starts:
+     *
+     *      start = leftBlocker + 1
+     *
+     * If there is NO smaller blocker on the left,
+     * we want:
+     *
+     *      start = 0
+     *
+     * Therefore:
+     *
+     *      leftBlocker + 1 = 0
+     *
+     *      leftBlocker = -1
+     *
+     *
+     * Symmetrically:
+     *
+     *      end = rightBlocker - 1
+     *
+     * If there is NO smaller blocker on the right,
+     * we want:
+     *
+     *      end = n - 1
+     *
+     * Therefore:
+     *
+     *      rightBlocker = n
+     *
+     *
+     * So the clean boundary model is:
+     *
+     *      -1 | 0 1 2 ... n-1 | n
+     *       ↑                   ↑
+     *      fake                fake
+     *      left                right
+     *      blocker             blocker
+     *
+     *
+     * -------------------------------------------------------------------------
+     * WHY WIDTH = RIGHT - LEFT - 1
+     * -------------------------------------------------------------------------
+     *
+     * The blockers themselves are NOT part of the rectangle.
+     *
+     *      actual start = leftBlocker + 1
+     *
+     *      actual end   = rightBlocker - 1
+     *
+     * Number of valid indices:
+     *
+     *      end - start + 1
+     *
+     *      = (right - 1) - (left + 1) + 1
+     *
+     *      = right - left - 1
+     *
+     *
+     * -------------------------------------------------------------------------
+     * THE THINKING CORRECTION
+     * -------------------------------------------------------------------------
+     *
+     * Wrong question:
+     *
+     *      "How far is CURRENT from my popped bar?"
+     *
+     * Right question:
+     *
+     *      "How far can the HEIGHT of my popped bar
+     *       survive on BOTH the left and the right?"
+     *
+     *
+     * So whenever a stack pop happens, ask:
+     *
+     *      1. POP = WHO is being answered?
+     *
+     *      2. CURRENT = what boundary/event did I just discover?
+     *
+     *      3. SURVIVOR AFTER POP = what information does it now reveal?
+     *
+     *
+     * For Largest Rectangle:
+     *
+     *      POP      -> chosen bar
+     *
+     *      CURRENT  -> first smaller on RIGHT
+     *
+     *      NEW TOP  -> first smaller on LEFT
+     *
+     *
+     * One-line recall:
+     *
+     *      "Popped bar is the thing being measured;
+     *       new top and current measure its span."
+     *
+     * =================================================================================
+     */
+
+
+    /*
+     * =================================================================================
      * 4️⃣ HOW THE BRAIN SHOULD SEE IT
      * =================================================================================
      *

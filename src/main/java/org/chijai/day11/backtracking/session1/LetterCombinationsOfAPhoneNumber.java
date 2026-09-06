@@ -13,7 +13,7 @@ import java.util.List;
  * Difficulty:
  * Medium
  *
- * Tags:git add
+ * Tags:
  * Backtracking
  * DFS
  * Recursion
@@ -268,6 +268,538 @@ public class LetterCombinationsOfAPhoneNumber {
             }
         }
     }
+
+    /**
+     * ============================================================
+     * 🧠 FIRST-PRINCIPLES INVENTION PATH
+     * ============================================================
+     *
+     * Do not begin with:
+     *
+     * "Which backtracking template is this?"
+     *
+     * Freeze the problem halfway and derive:
+     *
+     * PARTIAL ANSWER
+     *     What has already been built?
+     *
+     * NEXT UNDECIDED DECISION
+     *     What exactly must be chosen next?
+     *
+     * LEGAL CHOICES
+     *     What may I choose from THIS state?
+     *
+     * STATE NEEDED FOR FUTURE
+     *     What information from the past can change
+     *     what I am allowed to do next?
+     *
+     * COMPLETE WHEN
+     *     When are there no decisions left?
+     *
+     * IMPOSSIBLE WHEN
+     *     Can any branch be proved unable to produce an answer?
+     *
+     * SMALLER SAME PROBLEM
+     *     After one choice, what identical problem remains?
+     *
+     * UNDO
+     *     What shared mutable state did I change?
+     *
+     * ------------------------------------------------------------
+     * Derivation For THIS Problem
+     * ------------------------------------------------------------
+     *
+     * PARTIAL ANSWER
+     *     current
+     *
+     * NEXT UNDECIDED DECISION
+     *     choose one letter for the next digit
+     *
+     * STATE NEEDED FOR FUTURE
+     *     index = next digit to decide
+     *
+     * LEGAL CHOICES
+     *     KEYPAD[digits.charAt(index) - '0']
+     *
+     * SMALLER SAME PROBLEM
+     *     after choosing one letter,
+     *     generate every completion from index + 1
+     *
+     * COMPLETE WHEN
+     *     index == digits.length()
+     *
+     * IMPOSSIBLE WHEN
+     *     never
+     *
+     *     Every mapped choice is valid and every leaf is required.
+     *
+     * UNDO
+     *     current is shared mutable state:
+     *
+     *     append -> recurse -> delete last
+     *
+     *     index needs no undo because index + 1 is passed
+     *     into the child; the parent's int value is unchanged.
+     *
+     * ------------------------------------------------------------
+     * Judgment: Why Is The Loop Inside dfs()?
+     * ------------------------------------------------------------
+     *
+     * dfs(index) means:
+     *
+     * "Generate ALL completions starting from this digit."
+     *
+     * Every such state has multiple letters to try.
+     *
+     * Therefore:
+     *
+     * the function that owns the state
+     * also owns the choices available from that state.
+     *
+     * An outer loop over the first digit could work,
+     * but would make digit 0 artificially special:
+     *
+     * caller handles digit 0
+     * dfs handles digits 1...n-1
+     *
+     * Same decision, two owners.
+     *
+     * Use an outer loop when it has a DIFFERENT responsibility,
+     * not merely the first copy of the recursive responsibility.
+     *
+     * ------------------------------------------------------------
+     * Judgment: Why index? Why Not Other Backtracking State?
+     * ------------------------------------------------------------
+     *
+     * Ask:
+     *
+     * "What from my past changes what I may choose next?"
+     *
+     * index
+     *     Needed semantically: which fixed digit is next.
+     *
+     * start
+     *     Not needed: we are not choosing from a suffix of
+     *     interchangeable candidates.
+     *
+     * used[]
+     *     Not needed: no candidate can be illegally reused.
+     *
+     * remaining
+     *     Not needed: no target or resource is being consumed.
+     *
+     * pruning
+     *     Not needed: no legal branch can be discarded.
+     *
+     * ------------------------------------------------------------
+     * Representation Judgment
+     * ------------------------------------------------------------
+     *
+     * index is technically derivable from current.length()
+     * because the invariant is:
+     *
+     * current.length() == index
+     *
+     * Keep index because it directly names the recursive meaning:
+     *
+     * "next undecided input position."
+     *
+     * General rule:
+     *
+     * Carry the INFORMATION future choices need.
+     * The exact variable or data structure representing that
+     * information is a design choice.
+     *
+     * Translate meaning into code only after this derivation.
+     *
+     * ============================================================
+     */
+
+    /**
+     * ============================================================
+     * 🌲 PRE-CODING TREE -> STATE -> CODE MAPPING
+     * ============================================================
+     *
+     * HARD DEFAULT FOR AN UNFAMILIAR BACKTRACKING PROBLEM
+     * ------------------------------------------------------------
+     *
+     * Before writing Java:
+     *
+     * 1. Draw a TINY decision tree for one tiny input.
+     * 2. Label:
+     *
+     *      node
+     *      parent
+     *      child
+     *      siblings
+     *      depth
+     *      leaf
+     *
+     * 3. Ask what information uniquely describes one node.
+     * 4. Map that information to recursive parameters / state.
+     * 5. Map each tree movement to one exact code operation.
+     *
+     * Do NOT draw the entire exponential tree.
+     *
+     * Two or three levels are usually enough.
+     *
+     * The purpose is not artwork.
+     *
+     * The purpose is to discover:
+     *
+     * STATE
+     * CHOICES
+     * TRANSITION
+     * COMPLETION
+     * UNDO
+     *
+     * ------------------------------------------------------------
+     * Tiny Tree For digits = "23"
+     * ------------------------------------------------------------
+     *
+     * depth 0
+     *
+     *                       ""
+     *
+     *                 /      |      \
+     *
+     *                a       b       c
+     *
+     * depth 1
+     *
+     *              / | \   / | \   / | \
+     *
+     *             d  e  f d  e  f d  e  f
+     *
+     * depth 2
+     *
+     *            ad ae af bd be bf cd ce cf
+     *
+     * ------------------------------------------------------------
+     * Tree Vocabulary
+     * ------------------------------------------------------------
+     *
+     * NODE
+     *     One invocation of backtrack(...).
+     *
+     * PARENT
+     *     Current recursive frame before making the next choice.
+     *
+     * CHILD
+     *     Recursive frame reached after making one choice.
+     *
+     * SIBLINGS
+     *     Different choices produced by DIFFERENT ITERATIONS
+     *     of the SAME loop in the SAME parent call.
+     *
+     * DEPTH
+     *     Number of decisions already committed.
+     *
+     * LEAF
+     *     A node where the semantic answer is complete.
+     *
+     * For THIS problem:
+     *
+     * depth == index == current.length()
+     *
+     * This equality is problem-specific.
+     *
+     * Do not assume every backtracking problem has this equality.
+     *
+     * ------------------------------------------------------------
+     * TREE CONCEPT -> VARIABLE -> CODE LINE
+     * ------------------------------------------------------------
+     *
+     * | Tree Meaning             | Representation Here            | Exact Code Shape                                      |
+     * |--------------------------|--------------------------------|-------------------------------------------------------|
+     * | Current node / state     | index + current                | backtrack(..., current, index)                        |
+     * | Depth                    | index                          | child receives index + 1                              |
+     * | Choices from node        | keypad letters                | String options = KEYPAD[digits.charAt(index)-'0'];    |
+     * | Sibling enumeration      | each legal letter             | for (char choice : options.toCharArray())             |
+     * | Parent -> child edge     | commit one letter              | current.append(choice);                               |
+     * | Move one depth deeper    | solve remaining digits        | backtrack(..., index + 1);                            |
+     * | Child -> parent return   | recursive call finishes       | execution resumes after backtrack(...)                |
+     * | Restore parent           | remove committed letter       | current.deleteCharAt(current.length() - 1);            |
+     * | Next sibling             | next loop iteration           | for-loop continues                                    |
+     * | Leaf / complete answer   | no digit remains              | if (index == digits.length())                         |
+     * | Snapshot leaf            | immutable finished string     | result.add(current.toString());                       |
+     *
+     * ------------------------------------------------------------
+     * Read The Core Loop As Tree Movement
+     * ------------------------------------------------------------
+     *
+     * for each choice
+     *     |
+     *     +-- each iteration = one SIBLING branch
+     *
+     * choose
+     *     |
+     *     +-- PARENT -> CHILD
+     *
+     * recurse
+     *     |
+     *     +-- one DEPTH deeper
+     *
+     * recursive call returns
+     *     |
+     *     +-- CHILD -> PARENT
+     *
+     * undo
+     *     |
+     *     +-- restore exact PARENT state
+     *
+     * next loop iteration
+     *     |
+     *     +-- explore next SIBLING
+     *
+     * ------------------------------------------------------------
+     * Why This Helps Invent Variables
+     * ------------------------------------------------------------
+     *
+     * Do not ask:
+     *
+     * "Should I use index, start, used[], remaining?"
+     *
+     * Draw the tree and ask:
+     *
+     * "What information distinguishes THIS node
+     * from its parent and siblings,
+     * and what information changes future legal choices?"
+     *
+     * That answer becomes recursive state.
+     *
+     * Examples:
+     *
+     * Fixed next position
+     *     -> index
+     *
+     * Only choose from a remaining suffix
+     *     -> start
+     *
+     * Whole input remains available,
+     * but previously consumed indices are illegal
+     *     -> used[]
+     *
+     * Numeric resource is being consumed
+     *     -> remaining
+     *
+     * Earlier placements constrain future legality
+     *     -> constraint state
+     *
+     * ------------------------------------------------------------
+     * Duplicate Values: Why "Same Depth" Means Siblings
+     * ------------------------------------------------------------
+     *
+     * "Skip duplicate choices at the SAME DEPTH"
+     *
+     * means:
+     *
+     * from the SAME parent call,
+     * do not launch two equivalent sibling branches.
+     *
+     * It does NOT mean:
+     *
+     * "this value can never appear again deeper in the tree."
+     *
+     * SAME DEPTH
+     *     = alternative choices competing under one parent.
+     *
+     * DEEPER DEPTH
+     *     = a later decision after an earlier choice was committed.
+     *
+     * This is why duplicate-value handling is a separate concern
+     * from index reuse.
+     *
+     * ------------------------------------------------------------
+     * 80/20 Pre-Coding Ritual
+     * ------------------------------------------------------------
+     *
+     * For a new backtracking problem:
+     *
+     * tiny example
+     *     ->
+     * draw 2-3 tree levels
+     *     ->
+     * label node / siblings / depth / leaf
+     *     ->
+     * identify state
+     *     ->
+     * identify legal choices
+     *     ->
+     * identify child transition
+     *     ->
+     * identify completion / pruning
+     *     ->
+     * identify mutable state to undo
+     *     ->
+     * only then write Java
+     *
+     * Once this becomes automatic,
+     * the physical drawing can collapse into a mental tree.
+     *
+     * ============================================================
+     */
+
+    /**
+     * ============================================================
+     * 🌳 BACKTRACKING FAMILY DECISION TREE
+     * ============================================================
+     *
+     * SUBSET / COMBINATION
+     *
+     *     |
+     *
+     *     | order does NOT matter
+     *
+     *     | move only forward
+     *
+     *     ↓
+     *
+     *   start
+     *
+     *     |
+     *
+     *     +-- i + 1 -> no index reuse
+     *
+     *     |
+     *
+     *     +-- i     -> index/value reuse allowed
+     *
+     *
+     * PERMUTATION
+     *
+     *     |
+     *
+     *     | order matters
+     *
+     *     | every position can choose any input index
+     *
+     *     ↓
+     *
+     * loop 0..n-1 every depth
+     *
+     *     |
+     *
+     *     ↓
+     *
+     * used[] prevents same INDEX twice
+     *
+     *
+     * DUPLICATE VALUES
+     *
+     *     |
+     *
+     *     | separate concern
+     *
+     *     ↓
+     *
+     * skip equivalent choices at SAME DEPTH
+     *
+     * ------------------------------------------------------------
+     * Critical Separation
+     * ------------------------------------------------------------
+     *
+     * start / i + 1 / i
+     *     controls WHICH INDICES may be chosen later.
+     *
+     * used[]
+     *     controls whether the SAME INDEX may be chosen again
+     *     in the current permutation.
+     *
+     * duplicate-value skipping
+     *     controls whether different indices carrying the SAME VALUE
+     *     create equivalent sibling branches.
+     *
+     * These solve different problems.
+     *
+     * ============================================================
+     */
+
+    /**
+     * ============================================================
+     * 🧭 HORIZONTAL BACKTRACKING MASTERY TABLE
+     * ============================================================
+     *
+     * One concept -> one canonical home.
+     *
+     * Read every row using the SAME questions:
+     *
+     * STATE
+     *     What must this call remember?
+     *
+     * CHOICE
+     *     What may I choose from this state?
+     *
+     * NEXT
+     *     What changes after choosing?
+     *
+     * COMPLETE
+     *     When is an answer finished?
+     *
+     * RULE
+     *     What is skipped / pruned / restored?
+     *
+     * Keep this as ONE table.
+     *
+     * | Problem / Archetype              | STATE -> CHOICE -> NEXT -> COMPLETE                                                                 | RULE / DISTINGUISHING JUDGMENT                                                       |
+     * |----------------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+     * | Phone Letter Combinations        | index -> letters for digits[index] -> index + 1 -> index == n                                    | No pruning. Fixed input position. Undo appended char. No start / used[] / remaining. |
+     * | Subsets                          | start -> choose nums[i], i >= start -> i + 1 -> EVERY state is an answer                         | Move only forward to avoid reorder duplicates. Undo last element.                    |
+     * | Subsets II                       | start + sorted input -> nums[i] from suffix -> i + 1 -> EVERY state is an answer                 | Skip same-level duplicate: i > start && nums[i] == nums[i-1]. Undo last.             |
+     * | Combinations n Choose k          | start -> choose i from start..n -> i + 1 -> current.size() == k                                  | Move forward; optionally prune when too few numbers remain. Undo last.               |
+     * | Combination Sum                  | start + remaining -> candidate[i] -> i + reduced remaining -> remaining == 0                     | Reuse allowed, so recurse with i. Prune if candidate > remaining. Undo last.          |
+     * | Combination Sum II               | start + remaining + sorted input -> candidate[i] -> i + 1 + reduced remaining -> remaining == 0 | No reuse. Skip same-level duplicates. Prune if candidate > remaining. Undo last.      |
+     * | Combination Sum III              | start + remaining + slots -> choose i from start..9 -> i + 1, reduce both -> both reach zero     | Sum AND count must finish together. Prune impossible remaining/count states.          |
+     * | Permutations                     | used[] -> any unused nums[i] -> mark used -> current.size() == n                                 | Whole pool remains visible. Skip used[i]. Undo last + used[i] = false.                |
+     * | Permutations II                  | used[] + sorted input -> any legal unused nums[i] -> mark used -> current.size() == n            | Skip used[i] and same-level duplicate values. Undo last + unmark.                     |
+     * | Generate Parentheses             | openUsed + closeUsed -> '(' or ')' -> increment chosen count -> length == 2n                     | '(' if open<n. ')' only if close<open. Undo appended char.                            |
+     * | Palindrome Partitioning          | start -> choose palindromic s[start..end] -> end + 1 -> start == n                              | Choice is a substring boundary. Reject non-palindrome pieces. Undo last substring.    |
+     * | Restore IP Addresses             | start + partsUsed -> choose valid next 1..3 digit part -> advance end + parts -> end + 4 parts   | Reject leading zero / >255 / impossible remaining length. Undo last part.             |
+     * | Letter Case Permutation          | index -> one case choice for current char -> index + 1 -> index == n                            | Digit has one branch; letter has lower/upper branches. Restore/overwrite char.        |
+     * | N-Queens                         | row + columns + diagonals -> legal column -> row + 1 + mark constraints -> row == n             | Reject attacked positions. Undo queen + column/diagonal marks.                        |
+     * | Word Search                      | row + col + wordIndex + visited -> legal neighbor -> neighbor + index + 1 -> word matched        | Reject OOB / wrong char / reused cell in same path. Unmark visited on return.          |
+     * | Sudoku Solver                    | board + row/col/box constraints -> legal digit for empty cell -> next empty cell -> none remain  | Reject row/col/box conflict. Reset cell + constraint marks.                            |
+     * | Partition to K Equal-Sum Subsets | next item + bucket sums -> choose legal bucket -> update bucket / next item -> all placed        | Reject bucket > target. Skip symmetric equivalent buckets. Undo bucket addition.       |
+     * | Matchsticks to Square            | index + 4 side sums -> choose legal side -> add stick / index + 1 -> all sticks placed           | Reject side > target. Skip equivalent side states. Undo side addition.                |
+     * | Expression Add Operators         | index + value + lastOperand -> choose next chunk/operator -> update evaluation -> end + target   | Leading-zero restriction. lastOperand is required for multiplication precedence.     |
+     *
+     * ------------------------------------------------------------
+     * ONE-EYE DIFFERENTIATION
+     * ------------------------------------------------------------
+     *
+     * Fixed next INPUT position?
+     *     -> index
+     *
+     * Choose only from a remaining SUFFIX?
+     *     -> start
+     *
+     * Choose from the WHOLE pool but cannot reuse consumed items?
+     *     -> used[]
+     *
+     * Is a numeric/resource requirement being consumed?
+     *     -> remaining / target state
+     *
+     * Does earlier history change future legality?
+     *     -> carry exactly the required constraint summary
+     *
+     * Duplicate VALUES?
+     *     -> decide whether duplicates must be blocked at the
+     *        SAME TREE LEVEL or by already-used occurrence.
+     *
+     * Every partial state is an answer?
+     *     -> save before exploring children.
+     *
+     * Only a completed leaf is an answer?
+     *     -> save at the semantic completion condition.
+     *
+     * Shared mutable state changed before recursion?
+     *     -> undo exactly that mutation.
+     *
+     * Primitive/value state passed to the child?
+     *     -> parent retains its own value; no undo.
+     *
+     * ============================================================
+     */
 
 /**
  * 🟢 MENTAL MODEL & INVARIANTS

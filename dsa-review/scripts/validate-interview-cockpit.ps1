@@ -514,6 +514,26 @@ if ($readmeText -notmatch '12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE\.md') {
 if ($readmeText -notmatch '13_MASTER_TIME_SPACE_COMPLEXITY_TABLE\.md') {
     Fail "main README does not link to the master complexity table"
 }
+if ($readmeText -notmatch 'ACTIVE_RECALL_FAILURE_LEDGER\.md') {
+    Fail "main README does not link to the active recall failure ledger"
+}
+$failureLedgerPath = Join-Path $interviewRoot 'ACTIVE_RECALL_FAILURE_LEDGER.md'
+if (-not (Test-Path -LiteralPath $failureLedgerPath)) {
+    Fail "active recall failure ledger is missing"
+}
+$failureLedgerText = Get-Content -LiteralPath $failureLedgerPath -Raw
+foreach ($requiredLedgerPhrase in @('## Quick Capture Inbox', '## Classification', '## Active Queue', '## Durable Failure Cards', '**Cold prompt**', '**Transfer question:**', '**Evidence log:**', '## New Card Template', '## Stable/Archived Index')) {
+    if ($failureLedgerText -notmatch [regex]::Escape($requiredLedgerPhrase)) {
+        Fail "active recall failure ledger is missing required structure: $requiredLedgerPhrase"
+    }
+}
+$failureCardCount = ([regex]::Matches($failureLedgerText, '(?m)^### GAP-\d{3} ')).Count
+if ($failureCardCount -lt 12) {
+    Fail "active recall failure ledger has only $failureCardCount durable cards; expected at least 12 seeded cards"
+}
+if ($failureLedgerText -match '[^\x00-\x7F]') {
+    Fail "active recall failure ledger contains non-ASCII characters"
+}
 if ($readmeText -notmatch '10_AFTER_7_DAY_EXTENSION_PLAN\.md') {
     Fail "main README does not link to the post-7-day extension plan"
 }

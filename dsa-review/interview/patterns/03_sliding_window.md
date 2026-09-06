@@ -19,7 +19,7 @@ flowchart TD
   Invariant["INVARIANT<br/>Brute force checks all substrings/subarrays; a window reuses counts while boundaries move once."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>DP / patience sorting<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 206: Longest Continuous Increasing Subsequence"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 205: Longest Continuous Increasing Subsequence"]
   Invariant --> Sub02["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 111: Count Number Of Nice Subarrays"]
   Invariant --> Sub03["SUB-PATTERN<br/>Queue / stream<br/>1 problem(s)"]
@@ -44,7 +44,7 @@ flowchart TD
 | 52 | Phase 2 - Strong Core | Find All Anagrams In A String | Sliding window frequency | [Java](../../../src/main/java/org/chijai/day3/session1/FindAllAnagramsInAString.java) | - | Slide a fixed-size frequency window and record starts where counts match p. | Maintain difference counts or match count across a window of length p. |
 | 81 | Phase 3 - Important | Moving Average From Data Stream | Queue / stream | [Java](../../../src/main/java/org/chijai/day7/session1/heap/MovingAverage.java) | [LC](https://leetcode.com/problems/moving-average-from-data-stream/) | Queue last size values and running sum; average is sum divided by queue size. | Offer val, add to sum, if queue too large poll and subtract, return sum/count. |
 | 111 | Phase 4 - Secondary | Count Number Of Nice Subarrays | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/count-number-of-nice-subarrays/) | Exactly k odds equals atMost(k) minus atMost(k-1), or prefix count of odd count. | Count subarrays with at most k odd numbers using a sliding left pointer, subtract atMost(k-1). |
-| 206 | Phase 5 - If Time | Longest Continuous Increasing Subsequence | DP / patience sorting | [Java](../../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LC](https://leetcode.com/problems/longest-continuous-increasing-subsequence/) | Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1]. | Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best. |
+| 205 | Phase 5 - If Time | Longest Continuous Increasing Subsequence | DP / patience sorting | [Java](../../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LC](https://leetcode.com/problems/longest-continuous-increasing-subsequence/) | Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1]. | Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best. |
 
 ## Drill
 

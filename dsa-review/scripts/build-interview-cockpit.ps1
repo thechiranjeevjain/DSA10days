@@ -1363,7 +1363,7 @@ function Get-PatternOverride {
         "partitionlabels" { return "Greedy last-occurrence boundary" }
         "sortarraybyparity" { return "Parity partition" }
         "movezeroes" { return "Stable two-pointer compaction" }
-        "middleoflinkedlist" { return "Fast/slow pointers" }
+        { $_ -in @("middleoflinkedlist", "middleofthelinkedlist") } { return "Fast/slow pointers" }
         "allnodesdistancekinbinarytree" { return "Tree converted to graph + BFS distance" }
         "amountoftimeforbinarytreetobeinfected" { return "Tree converted to graph + BFS spread" }
         "graphvalidtree" { return "Connectivity + cycle" }
@@ -2044,7 +2044,7 @@ function Get-PrecisionTrap {
         "distinctsubsequences" { return "dp[*][0] = 1" }
         "interleavingstring" { return "s3 index is i + j - 1" }
         "russiandollenvelopes" { return "equal width sorted by height desc" }
-        "middleoflinkedlist" { return "even length returns second middle; guard fast.next" }
+        { $_ -in @("middleoflinkedlist", "middleofthelinkedlist") } { return "even length returns second middle; guard fast.next" }
         "allnodesdistancekinbinarytree" { return "add parent edges; stop after exactly k BFS levels" }
         "amountoftimeforbinarytreetobeinfected" { return "mark on enqueue; do not count a nonexistent final minute" }
         "graphvalidtree" { return "require n - 1 edges and one connected component" }
@@ -2311,7 +2311,7 @@ function Get-ArticulationMutation {
 
         '^reverselinkedlist$' { return 'Forbid in-place mutation and ask for values in reverse order. -> Stack: LIFO output replaces pointer rewiring.' }
         '^linkedlistcycle$' { return 'Allow O(n) extra memory and ask only whether a node repeats. -> HashSet: Identity membership detects the first revisit without speed-distance reasoning.' }
-        '^middleoflinkedlist$' { return 'Ask repeated random index queries on the same immutable list. -> Array Indexing: One materialization amortizes traversal across many queries.' }
+        '^middleof(the)?linkedlist$' { return 'Ask repeated random index queries on the same immutable list. -> Array Indexing: One materialization amortizes traversal across many queries.' }
         '^mergetwosortedlists$' { return 'Increase the input from two sorted lists to k sorted lists. -> Min-Heap: The next node must be selected among k current heads.' }
         '^designbrowserhistory$' { return 'Retain every forward branch after visiting from the middle. -> Tree: History is no longer one chain; each page can own multiple future branches.' }
         '^copylistwithrandompointer$' { return 'Remove random pointers and require an in-place structural copy. -> Linked List Pointers: Identity mapping is unnecessary when only next edges remain.' }
@@ -3068,6 +3068,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | Need nested university-course TOC | `09_LEETCODE_CURRICULUM_TOC.md` | One decimal hierarchy: pattern family -> sub-pattern -> every LeetCode problem with LC and local Java links. |
 | Need reconstruction plus exact say-before-coding contracts | `12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md` | One continuous pattern -> sub-pattern table with skeletons, correctness contracts, traps, and mutations. |
 | Need time/space complexity recall | `13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md` | One continuous source-linked table with exact bounds, symbols, qualifiers, and one-sentence proofs. |
+| Need to capture a personal miss | `ACTIVE_RECALL_FAILURE_LEDGER.md` | Append one inbox line, promote recurring misses to cold-prompt cards, and record spaced-recall evidence. |
 | Need fast memory refresh | `02_ONE_LINE_RECALL_ALL_PROBLEMS.md` | One sentence per problem in rank order. |
 | Need speaking practice | `03_CRISP_INTERVIEW_ANSWERS.md` | Brute force -> bottleneck -> pattern -> invariant -> code -> dry run. |
 | Need pattern-only focus | `patterns/README.md` | One file per pattern/category, still ordered by the current heuristic. |
@@ -3527,7 +3528,7 @@ function Get-ProblemComplexity {
         '^sort-characters-by-frequency$' { return New-ComplexityResult 'O(n + sigma log sigma)' 'O(sigma)' 'Count n characters, then order only the sigma distinct characters.' }
         '^meeting-rooms-ii$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Sorting dominates; each meeting end is inserted into or removed from the active-room heap.' }
         '^find-median-from-data-stream$' { return New-ComplexityResult 'add O(log n), median O(1)' 'O(n)' 'Insertion changes one heap and constant rebalancing; median reads one or two roots.' }
-        '^task-scheduler$' { return New-ComplexityResult 'O(T log sigma)' 'O(sigma)' 'The heap/cooldown simulation schedules T slots while holding at most sigma task types.' }
+        '^task-scheduler$' { return New-ComplexityResult 'optimal O(T + sigma log sigma); heap O(T log sigma)' 'O(sigma)' 'The optimal version counts T tasks and sorts sigma frequencies; the alternative heap schedules each task through a sigma-sized queue.' }
         '^kth-largest-element-in-an-array$' { return New-ComplexityResult 'O(n log k)' 'O(k)' 'A size-k min-heap processes every number and retains only the k largest.' }
         '^kth-largest-element-in-a-stream$' { return New-ComplexityResult 'init O(n log k), add O(log k)' 'O(k)' 'Each value is inserted into a heap capped at k; the root is the kth largest.' }
         '^k-closest-points-to-origin$' { return New-ComplexityResult 'O(n log k)' 'O(k)' 'A size-k max-heap retains only the closest k of n points.' }
