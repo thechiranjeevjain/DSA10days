@@ -5,6 +5,8 @@ package org.chijai.day3.session1;
  * 📘 LONGEST SUBSTRING WITH AT MOST K DISTINCT CHARACTERS
  * ============================================================
  *
+ * Version: v2 — preserved original implementation style
+ *
  * SINGLE CONSOLIDATED JAVA CHAPTER FILE
  * ------------------------------------------------------------
  * • IntelliJ-ready
@@ -32,7 +34,7 @@ public class AtMostKDistinct {
      * Medium
      *
      * 🏷️ Tags:
-     * Sliding Window, Hash Map, Two Pointers, String
+     * Sliding Window, Frequency Counting, Two Pointers, String
      *
      * ------------------------------------------------------------
      * Description:
@@ -70,38 +72,32 @@ public class AtMostKDistinct {
      * ============================================================
      *
      * Pattern Name:
-     * Fixed-Constraint Sliding Window
+     * Variable-Size Sliding Window
      *
      * ------------------------------------------------------------
      * Core Idea:
-     * Maintain a window that always satisfies:
-     * “at most k distinct characters”.
+     * Maintain a window that satisfies:
      *
-     * Expand to explore.
-     * Shrink to restore validity.
+     *     distinctCount <= k
+     *
+     * Expand right to explore a larger window.
+     * Shrink left only when the constraint is violated.
      *
      * ------------------------------------------------------------
      * Why It Works:
-     * The constraint is monotonic:
-     * • Adding characters can only violate the constraint
-     * • Removing characters can only restore it
      *
-     * ------------------------------------------------------------
-     * When to Use:
-     * • Longest / shortest substring
-     * • At most / at least constraints
-     * • Contiguous sequences
+     * Adding a character can increase the number of distinct characters
+     * and make the window invalid.
+     *
+     * Removing characters from the left can only help restore validity.
      *
      * ------------------------------------------------------------
      * 🧭 Pattern Recognition Signals:
-     * • Substring (continuous)
-     * • Constraint on count / frequency
-     * • “At most”, “At least”, “Exactly”
      *
-     * ------------------------------------------------------------
-     * Difference from Similar Patterns:
-     * • Unlike fixed-size window → size is dynamic
-     * • Unlike prefix sum → locality matters
+     * • Longest substring
+     * • Contiguous range
+     * • "At most K"
+     * • Frequency / distinct-count constraint
      *
      * ============================================================
      */
@@ -112,215 +108,158 @@ public class AtMostKDistinct {
      * ============================================================
      *
      * 🟢 Mental Model:
-     * A flexible window that stretches right to gain candidates,
-     * and contracts left ONLY when invalid.
+     *
+     * A flexible window stretches right to explore.
+     *
+     * If too many distinct characters enter,
+     * move left until the window becomes valid again.
      *
      * ------------------------------------------------------------
      * 🟢 Invariant:
-     * At ALL times after the inner while-loop:
-     * freq.size() <= k
+     *
+     * After the shrinking while-loop finishes:
+     *
+     *     distinctCount <= k
      *
      * ------------------------------------------------------------
      * 🟢 Variable Roles:
      *
-     * left  → start of window
-     * right → end of window (exclusive)
-     * freq  → frequency map of current window
-     * maxLen → best valid window seen so far
+     * left
+     *     Start of the current window.
+     *
+     * right
+     *     End of the current window, exclusive.
+     *
+     * frequency[c]
+     *     Number of occurrences of character c inside the window.
+     *
+     * distinctCount
+     *     Number of characters whose frequency is greater than zero.
+     *
+     * maxWindowLength
+     *     Best valid window length seen so far.
      *
      * ------------------------------------------------------------
-     * 🟢 Termination Logic:
-     * right strictly increases → O(n)
-     * left never moves backward
+     * 🟢 Termination:
      *
-     * ------------------------------------------------------------
-     * ❌ Forbidden Actions:
-     * • Shrinking when already valid
-     * • Updating answer before restoring invariant
+     * right only moves forward.
+     * left only moves forward.
      *
-     * ------------------------------------------------------------
-     * Why Alternatives Are Inferior:
-     * • Brute force → O(n²)
-     * • Restarting window → loses optimal overlaps
+     * Therefore each character enters the window once
+     * and leaves the window at most once.
+     *
+     * Time: O(n)
+     * Space: O(1) for the fixed-size ASCII frequency array.
      *
      * ============================================================
      */
 
     /*
      * ============================================================
-     * 5️⃣ 🔴 WHY NAIVE SOLUTIONS FAIL (FORENSIC ANALYSIS)
+     * 5️⃣ 🔴 WHY NAIVE SOLUTIONS FAIL
      * ============================================================
      *
-     * ❌ Wrong Approach 1:
-     * Check all substrings
-     * → Violates time constraints
+     * ❌ Check every substring
      *
-     * ❌ Wrong Approach 2:
-     * Reset window when invalid
-     * → Misses overlapping optimal windows
+     * There are O(n²) substrings.
+     * Recounting distinct characters for each one is unnecessary work.
      *
-     * ❌ Interview Trap:
-     * Updating max length BEFORE shrinking
-     * → Counts invalid windows
+     * ------------------------------------------------------------
+     * ❌ Reset the entire window when it becomes invalid
      *
-     * Counterexample:
-     * s = "abac", k = 2
+     * This throws away useful overlapping characters.
+     *
+     * Sliding window keeps the useful suffix and removes only
+     * enough characters from the left to restore validity.
+     *
+     * ------------------------------------------------------------
+     * ❌ Record the answer before restoring validity
+     *
+     * If distinctCount > k, the current window is illegal.
+     * It must not be considered for the answer.
      *
      * ============================================================
      */
 
     /*
      * ============================================================
-     * 6️⃣ PRIMARY PROBLEM — SOLUTION CLASSES
+     * 6️⃣ ✅ PRIMARY SOLUTION
+     * ============================================================
+     *
+     * This is intentionally explicit rather than clever.
+     *
+     * The code directly mirrors the mental model:
+     *
+     *     character enters
+     *          ↓
+     *     update frequency
+     *          ↓
+     *     update distinctCount if needed
+     *          ↓
+     *     shrink while invalid
+     *          ↓
+     *     record valid window
+     *
      * ============================================================
      */
-
-    /* ------------------------------------------------------------
-     * 🔹 Brute Force Solution
-     * ------------------------------------------------------------
-     */
-    static class BruteForceSolution {
-        // Core idea: check all substrings
-        // Time: O(n^2)
-        // Space: O(k)
-        // Interview: ❌ Never preferred
-        public int solve(String s, int k) {
-            int maxLen = 0;
-            for (int start = 0; start < s.length(); start++) {
-                java.util.Set<Character> set = new java.util.HashSet<>();
-                for (int end = start; end < s.length(); end++) {
-                    set.add(s.charAt(end));
-                    if (set.size() > k) break;
-                    maxLen = Math.max(maxLen, end - start + 1);
-                }
-            }
-            return maxLen;
-        }
-    }
-
-    /* ------------------------------------------------------------
-     * 🔹 Improved Solution
-     * ------------------------------------------------------------
-     */
-    static class ImprovedSolution {
-        // Uses sliding window but recalculates counts inefficiently
-        // Time: O(n^2)
-        // Interview: ❌ Partial credit only
-        public int solve(String s, int k) {
-            int left = 0, maxLen = 0;
-            while (left < s.length()) {
-                java.util.Map<Character, Integer> freq = new java.util.HashMap<>();
-                for (int right = left; right < s.length(); right++) {
-                    freq.put(s.charAt(right), freq.getOrDefault(s.charAt(right), 0) + 1);
-                    if (freq.size() > k) break;
-                    maxLen = Math.max(maxLen, right - left + 1);
-                }
-                left++;
-            }
-            return maxLen;
-        }
-    }
-
-    /* ------------------------------------------------------------
-     * 🔹 Optimal Solution (Interview-Preferred)
-     * ------------------------------------------------------------
-     */
-    static class OptimalSolution {
-        // Time: O(n)
-        // Space: O(k)
-        public int kDistinctChar(String s, int k) {
-
-            if (k == 0 || s.isEmpty()) return 0;
-
-            java.util.Map<Character, Integer> freq = new java.util.HashMap<>();
-
-            int left = 0;
-            int right = 0;
-            int maxLen = 0;
-
-            while (right < s.length()) {
-
-                // 🔵 Expand window
-                char current = s.charAt(right);
-                freq.put(current, freq.getOrDefault(current, 0) + 1);
-                right++;
-
-                // 🔴 Shrink until invariant restored
-                while (freq.size() > k) {
-                    char leftChar = s.charAt(left);
-                    freq.put(leftChar, freq.get(leftChar) - 1);
-                    if (freq.get(leftChar) == 0) {
-                        freq.remove(leftChar);
-                    }
-                    left++;
-                }
-
-                // 🟢 Valid window → update answer
-                maxLen = Math.max(maxLen, right - left);
-            }
-
-            return maxLen;
-        }
-    }
-
     static class Optimal_AtMostKDistinct {
 
-    /*
-    ---------------------------------------------------------------------------
-    Mental Model
-    ---------------------------------------------------------------------------
-
-    Expand the window by adding one character.
-
-    If the window contains more than K distinct characters,
-    shrink it until the invariant is restored.
-
-    Every valid window is a candidate answer.
-
-            Expand
-               ↓
-       Distinct <= K ?
-          /        \
-        Yes        No
-         |          |
-    Update Answer  Shrink
-                    ↓
-             Restore Invariant
-
-    ---------------------------------------------------------------------------
-    Invariant
-    ---------------------------------------------------------------------------
-
-    frequency[c]
-        Number of occurrences of character c inside the current window.
-
-    distinctCount
-        Number of distinct characters currently inside the window.
-
-    Window is VALID iff
-
-        distinctCount <= k
-
-    ---------------------------------------------------------------------------
-    State Transitions
-    ---------------------------------------------------------------------------
-
-    Character enters:
-
-        frequency[c]++
-
-        If frequency becomes 1,
-        a new distinct character has entered the window.
-
-    Character leaves:
-
-        frequency[c]--
-
-        If frequency becomes 0,
-        one distinct character has completely left the window.
-    ---------------------------------------------------------------------------
-    */
-
+        /*
+         * --------------------------------------------------------------------
+         * Mental Model
+         * --------------------------------------------------------------------
+         *
+         * Expand the window by adding one character.
+         *
+         * If the window contains more than K distinct characters,
+         * shrink it until the invariant is restored.
+         *
+         * Every valid window is a candidate answer.
+         *
+         *             Expand
+         *                ↓
+         *        Distinct <= K ?
+         *           /        \
+         *         Yes        No
+         *          |          |
+         *     Update Answer  Shrink
+         *                     ↓
+         *              Restore Invariant
+         *
+         * --------------------------------------------------------------------
+         * Invariant
+         * --------------------------------------------------------------------
+         *
+         * frequency[c]
+         *     Number of occurrences of character c inside the current window.
+         *
+         * distinctCount
+         *     Number of distinct characters currently inside the window.
+         *
+         * Window is VALID iff:
+         *
+         *     distinctCount <= k
+         *
+         * --------------------------------------------------------------------
+         * State Transitions
+         * --------------------------------------------------------------------
+         *
+         * Character enters:
+         *
+         *     frequency[c]++
+         *
+         * If frequency becomes 1,
+         * a new distinct character entered the window.
+         *
+         * Character leaves:
+         *
+         *     frequency[c]--
+         *
+         * If frequency becomes 0,
+         * that distinct character completely left the window.
+         *
+         * --------------------------------------------------------------------
+         */
         static int lengthOfLongestSubstringAtMostKDistinct(String s, int k) {
 
             if (k == 0 || s.isEmpty())
@@ -336,7 +275,9 @@ public class AtMostKDistinct {
 
             while (right < s.length()) {
 
-                // 🔵 Expand window
+                /*
+                 * Expand window.
+                 */
                 char enteringChar = s.charAt(right);
 
                 frequency[enteringChar]++;
@@ -346,7 +287,10 @@ public class AtMostKDistinct {
 
                 right++;
 
-                // 🔴 Restore invariant
+                /*
+                 * Restore invariant if the new character made
+                 * the window contain more than k distinct characters.
+                 */
                 while (distinctCount > k) {
 
                     char leavingChar = s.charAt(left);
@@ -359,7 +303,11 @@ public class AtMostKDistinct {
                     left++;
                 }
 
-                // 🟢 Valid window
+                /*
+                 * The window is valid here because:
+                 *
+                 *     distinctCount <= k
+                 */
                 maxWindowLength = Math.max(maxWindowLength, right - left);
             }
 
@@ -369,123 +317,347 @@ public class AtMostKDistinct {
 
     /*
      * ============================================================
-     * 7️⃣ 🟣 INTERVIEW ARTICULATION
+     * 7️⃣ 🧪 DRY RUN
      * ============================================================
      *
-     * Why it works:
-     * The window only grows when valid, shrinks only when invalid.
+     * Input:
      *
+     *     s = "eceba"
+     *     k = 2
+     *
+     * ------------------------------------------------------------
+     * Start:
+     *
+     * left = 0
+     * right = 0
+     * distinctCount = 0
+     * maxWindowLength = 0
+     *
+     * ------------------------------------------------------------
+     * Add 'e'
+     *
+     * window = "e"
+     * frequency[e] = 1
+     * distinctCount = 1
+     *
+     * Valid.
+     * maxWindowLength = 1
+     *
+     * ------------------------------------------------------------
+     * Add 'c'
+     *
+     * window = "ec"
+     * distinctCount = 2
+     *
+     * Valid.
+     * maxWindowLength = 2
+     *
+     * ------------------------------------------------------------
+     * Add 'e'
+     *
+     * window = "ece"
+     * frequency[e] becomes 2
+     * distinctCount stays 2
+     *
+     * Valid.
+     * maxWindowLength = 3
+     *
+     * ------------------------------------------------------------
+     * Add 'b'
+     *
+     * window = "eceb"
+     * distinctCount = 3
+     *
+     * Invalid because 3 > 2.
+     *
+     * Shrink from left:
+     *
+     * remove 'e'
+     * frequency[e] becomes 1
+     * distinctCount stays 3
+     *
+     * remove 'c'
+     * frequency[c] becomes 0
+     * distinctCount becomes 2
+     *
+     * window = "eb"
+     *
+     * Valid again.
+     *
+     * ------------------------------------------------------------
+     * Add 'a'
+     *
+     * window temporarily becomes "eba"
+     * distinctCount = 3
+     *
+     * Shrink until valid again.
+     *
+     * Final answer remains:
+     *
+     *     3
+     *
+     * ============================================================
+     */
+
+    /*
+     * ============================================================
+     * 8️⃣ 🟣 INTERVIEW ARTICULATION
+     * ============================================================
+     *
+     * Say before coding:
+     *
+     * "I will use a variable-size sliding window.
+     * I keep the frequency of each character currently inside the window
+     * and separately track how many distinct characters are present.
+     *
+     * I expand right normally. If distinctCount becomes greater than k,
+     * I move left forward until distinctCount is back to at most k.
+     * After that, the window is valid, so I update the maximum length."
+     *
+     * ------------------------------------------------------------
      * Correctness invariant:
-     * freq.size() <= k
      *
-     * What breaks if changed:
-     * Updating answer before shrinking counts invalid windows.
+     *     distinctCount <= k
      *
-     * In-place feasibility:
-     * Yes (map size ≤ k)
+     * after the shrinking loop.
      *
-     * Streaming feasibility:
-     * Yes (single pass)
+     * ------------------------------------------------------------
+     * Why O(n):
      *
-     * When NOT to use:
-     * Non-contiguous or non-monotonic constraints
+     * right visits every character once.
+     * left also visits every character at most once.
      *
-     * Whiteboard explanation:
-     * “Expand → Violate → Shrink → Restore → Record”
+     * The nested while-loop does NOT make the algorithm O(n²)
+     * because left never moves backward.
      *
-     * ============================================================
-     */
-
-    /*
-     * ============================================================
-     * 8️⃣ 🔄 VARIATIONS & TWEAKS
-     * ============================================================
+     * ------------------------------------------------------------
+     * Whiteboard memory line:
      *
-     * 🟢 Invariant-preserving:
-     * • Longest substring with at most K vowels
-     *
-     * 🟡 Reasoning-only:
-     * • Return substring instead of length
-     *
-     * 🔴 Pattern-break:
-     * • Longest subsequence → not contiguous
+     *     EXPAND → VIOLATE → SHRINK → RESTORE → RECORD
      *
      * ============================================================
      */
 
     /*
      * ============================================================
-     * 9️⃣ ⚫ REINFORCEMENT PROBLEMS
+     * 9️⃣ 🔄 VARIATIONS & TWEAKS
      * ============================================================
      *
-     * (Example shown: others omitted for brevity)
+     * 🟢 Return the substring instead of its length
      *
-     * Longest Substring Without Repeating Characters
-     * (Same pattern, k = freq <= 1)
+     * Store the best starting index whenever maxWindowLength improves.
+     *
+     * ------------------------------------------------------------
+     * 🟢 Fruit Into Baskets
+     *
+     * Same structure with:
+     *
+     *     k = 2
+     *
+     * Each fruit type behaves like one distinct character.
+     *
+     * ------------------------------------------------------------
+     * 🟡 Exactly K distinct characters
+     *
+     * For COUNTING subarrays/substrings:
+     *
+     *     exactly(K) = atMost(K) - atMost(K - 1)
+     *
+     * This is a related transformation,
+     * not a direct replacement for this longest-window solution.
+     *
+     * ------------------------------------------------------------
+     * 🔴 Longest subsequence
+     *
+     * Sliding window no longer applies because subsequences
+     * do not require contiguity.
      *
      * ============================================================
      */
 
     /*
      * ============================================================
-     * 11️⃣ 🟢 LEARNING VERIFICATION
+     * 🔟 ⚫ RELATED / REINFORCEMENT PROBLEMS
      * ============================================================
      *
-     * • Recall invariant without code
-     * • Debug by forcing freq.size() > k
-     * • Detect via “longest substring + constraint”
+     * 1. Fruit Into Baskets
+     *
+     *    Same invariant family:
+     *
+     *        at most 2 distinct values
+     *
+     * ------------------------------------------------------------
+     * 2. Longest Substring Without Repeating Characters
+     *
+     *    Related variable-size sliding window,
+     *    but the validity condition changes to:
+     *
+     *        every character frequency <= 1
+     *
+     * ------------------------------------------------------------
+     * 3. Longest Repeating Character Replacement
+     *
+     *    Same expand/shrink skeleton,
+     *    different validity equation.
+     *
+     * ------------------------------------------------------------
+     * 4. Subarrays with K Different Integers
+     *
+     *    Same "at most K distinct" counting primitive,
+     *    then:
+     *
+     *        exactly(K) = atMost(K) - atMost(K - 1)
      *
      * ============================================================
      */
 
     /*
      * ============================================================
-     * 12️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS
+     * 1️⃣1️⃣ 🟢 LEARNING VERIFICATION
+     * ============================================================
+     *
+     * Can I explain why distinctCount changes only when:
+     *
+     *     0 → 1
+     *
+     * or:
+     *
+     *     1 → 0
+     *
+     * ?
+     *
+     * Can I explain why we use a while-loop instead of one if-statement
+     * when the window becomes invalid?
+     *
+     * Can I explain why right - left is the current window length
+     * when right is exclusive?
+     *
+     * Can I derive O(n) even though there is a while-loop
+     * inside another while-loop?
+     *
+     * ============================================================
+     */
+
+    /*
+     * ============================================================
+     * 1️⃣2️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS
      * ============================================================
      */
     public static void main(String[] args) {
-        OptimalSolution solution = new OptimalSolution();
 
-        // Happy path
-        assert solution.kDistinctChar("aababbcaacc", 2) == 6 : "Failed Example 1";
+        /*
+         * Official-style examples.
+         */
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("eceba", 2) == 3
+                : "Failed eceba, k = 2";
 
-        // Boundary
-        assert solution.kDistinctChar("", 2) == 0 : "Failed empty string";
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("aa", 1) == 2
+                : "Failed aa, k = 1";
 
-        // Interview trap
-        assert solution.kDistinctChar("abccab", 4) == 6 : "Failed full coverage";
+        /*
+         * Existing chapter example.
+         */
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("aababbcaacc", 2) == 6
+                : "Failed aababbcaacc, k = 2";
+
+        /*
+         * Boundary cases.
+         */
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("", 2) == 0
+                : "Failed empty string";
+
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("abc", 0) == 0
+                : "Failed k = 0";
+
+        assert Optimal_AtMostKDistinct
+                .lengthOfLongestSubstringAtMostKDistinct("abccab", 4) == 6
+                : "Failed full coverage";
 
         System.out.println("All tests passed ✔");
     }
 
     /*
      * ============================================================
-     * 13️⃣ 🧠 CHAPTER COMPLETION CHECKLIST (WITH ANSWERS)
+     * 1️⃣3️⃣ 🧠 CHAPTER COMPLETION CHECKLIST
      * ============================================================
      *
-     * • Invariant clarity
-     * → freq.size() <= k
+     * • Search target
      *
-     * • Search target clarity
-     * → Longest valid contiguous window
+     *   Longest valid contiguous substring.
      *
-     * • Discard logic
-     * → Shrink when distinct chars exceed k
+     * • Invariant
      *
-     * • Termination guarantee
-     * → right increases monotonically
+     *   distinctCount <= k after shrinking.
      *
-     * • Failure awareness
-     * → Naive resets lose overlap
+     * • Expand rule
      *
-     * • Edge-case confidence
-     * → Handles empty, k=0, full coverage
+     *   Add s[right] to frequency and move right.
      *
-     * • Variant readiness
-     * → Replace constraint logic
+     * • Distinct-entry rule
      *
-     * • Pattern boundary
-     * → Non-contiguous problems
+     *   frequency changes from 0 to 1.
+     *
+     * • Shrink rule
+     *
+     *   While distinctCount > k, remove s[left].
+     *
+     * • Distinct-exit rule
+     *
+     *   frequency changes from 1 to 0.
+     *
+     * • Record rule
+     *
+     *   Update the answer only after validity is restored.
+     *
+     * • Time
+     *
+     *   O(n).
+     *
+     * • Space
+     *
+     *   O(1) for the fixed-size frequency array.
+     *
+     * ============================================================
+     */
+
+    /*
+     * ============================================================
+     * 🧠 RECALL CARD
+     * ============================================================
+     *
+     * Problem signal:
+     *
+     *     Longest + contiguous + at most K distinct
+     *
+     * Pattern:
+     *
+     *     Variable-size sliding window
+     *
+     * State:
+     *
+     *     frequency[]
+     *     distinctCount
+     *     left
+     *     right
+     *
+     * Invariant:
+     *
+     *     distinctCount <= k
+     *
+     * Transition:
+     *
+     *     EXPAND
+     *       ↓
+     *     if invalid
+     *       ↓
+     *     SHRINK until valid
+     *       ↓
+     *     RECORD
      *
      * ============================================================
      */
@@ -493,15 +665,16 @@ public class AtMostKDistinct {
     /*
      * 🧘 FINAL CLOSURE STATEMENT
      *
-     * For this problem, the invariant is:
-     * “The window always contains at most k distinct characters.”
+     * I do not need to memorize this code line by line.
      *
-     * The answer represents the maximum length of such a window.
-     * The search terminates because pointers move forward only.
-     * I can re-derive this solution under pressure.
+     * I need to remember:
      *
-     * This chapter is complete.
+     *     Each character enters once.
+     *     Each character leaves at most once.
+     *     Track when a distinct character enters or completely leaves.
+     *     Shrink only while distinctCount > k.
+     *     Record only after the invariant is restored.
      *
-     * 📌 If I can explain it, I don’t need to reread it.
+     * From that, the code can be reconstructed.
      */
 }

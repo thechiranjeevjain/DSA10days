@@ -1,45 +1,67 @@
 package org.chijai.day12.randomized.shuffle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
  * LeetCode 384 - Shuffle an Array
  *
  * PATTERN
- *   Randomized Algorithms -> Fisher-Yates Shuffle
+ *   Fisher-Yates Shuffle
+ *
+ * REPO
+ *   org/chijai/randomized/shuffle/ShuffleAnArray.java
  */
 public class ShuffleAnArray {
 
     /*
-     * FIRST-PRINCIPLES INVENTION PATH
+     * ================================================================
+     * PROBLEM
+     * ================================================================
      *
-     * A uniform shuffle means every permutation must have probability 1/n!.
-     * Fix the last position by choosing uniformly among all n remaining items.
-     * Then fix the second-last from n-1 remaining items, and continue.
+     * Given nums[], support:
      *
-     * Number of equally likely choice paths:
-     *   n * (n-1) * ... * 1 = n!
+     *   reset()   -> return the original ordering
+     *   shuffle() -> return a uniformly random permutation
      *
-     * Exactly one path creates each permutation.
+     * Every possible permutation must be equally likely.
+     *
+     * Example
+     *   nums = [1,2,3]
+     *
+     *   Possible shuffles include:
+     *   [1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]
+     *
+     * Each should have probability 1/6.
      */
 
-    // =====================================================================
-    // OPTIMAL SOLUTION — Fisher-Yates
-    // shuffle O(n), reset O(n), space O(n) for owned array copies
-    // =====================================================================
+    /*
+     * ================================================================
+     * MINIMUM INTUITION
+     * ================================================================
+     *
+     * Fill the array from the end.
+     *
+     * For position i:
+     *   choose uniformly from indices 0..i
+     *   swap that choice into position i
+     *
+     * Then position i is fixed and never touched again.
+     */
+
+    // ================================================================
+    // PRIMARY SOLUTION — FISHER-YATES
+    // reset O(n) | shuffle O(n) | Space O(n) for returned copy
+    // ================================================================
     static class Solution {
 
         private final int[] original;
-        private final Random random;
+        private final Random random = new Random();
 
         public Solution(int[] nums) {
-            this(nums, new Random());
-        }
-
-        Solution(int[] nums, Random random) {
-            this.original = nums.clone();
-            this.random = random;
+            original = nums.clone();
         }
 
         public int[] reset() {
@@ -56,56 +78,104 @@ public class ShuffleAnArray {
 
             return shuffled;
         }
+    }
 
-        private static void swap(int[] nums, int i, int j) {
-            int temp = nums[i];
-            nums[i] = nums[j];
-            nums[j] = temp;
+    /*
+     * ================================================================
+     * APPROACH PROGRESSION
+     * ================================================================
+     *
+     * 1. RANDOMLY REMOVE FROM A LIST
+     *
+     *   Put all values in a list.
+     *   Repeatedly choose one random remaining value and remove it.
+     *
+     *   Correct and intuitive, but ArrayList removal shifts elements.
+     *   Time O(n^2), space O(n).
+     *
+     * 2. FISHER-YATES
+     *
+     *   The unfilled part of the array itself is the remaining pool.
+     *   Pick one random element from that pool and swap it into place.
+     *
+     *   Time O(n), extra working space O(1) beyond the returned copy.
+     *   This is the primary solution.
+     */
+
+    static class RemoveFromListSolution {
+
+        private final int[] original;
+        private final Random random = new Random();
+
+        RemoveFromListSolution(int[] nums) {
+            original = nums.clone();
+        }
+
+        int[] shuffle() {
+            List<Integer> remaining = new ArrayList<>();
+
+            for (int value : original) {
+                remaining.add(value);
+            }
+
+            int[] result = new int[original.length];
+
+            for (int i = 0; i < result.length; i++) {
+                int index = random.nextInt(remaining.size());
+                result[i] = remaining.remove(index);
+            }
+
+            return result;
         }
     }
 
-    // =====================================================================
-    // APPROACHES
-    // =====================================================================
+    /*
+     * CORRECTNESS
+     *
+     * At position i there are i+1 remaining candidates and each is equally
+     * likely to be chosen. Repeating this gives every permutation probability:
+     *
+     *   1/n * 1/(n-1) * ... * 1/1 = 1/n!
+     */
 
     /*
-     * 1. REPEATEDLY REMOVE A RANDOM ELEMENT FROM A LIST
-     *    Correct if implemented carefully, but ArrayList removals make it O(n^2).
+     * TRAP
      *
-     * 2. SWAP EACH POSITION WITH A RANDOM INDEX FROM THE WHOLE ARRAY
-     *    Tempting but biased. It creates n^n random paths, and n! generally does
-     *    not divide n^n evenly, so permutations cannot all receive equal mass.
+     * Do not repeatedly swap every position with a random index from 0..n-1.
+     * That does not generate all permutations with equal probability.
+     */
+
+    /*
+     * RELATED — WORKING FILE
      *
-     * 3. FISHER-YATES
-     *    At position i, choose uniformly only from [0..i]. O(n), unbiased.
+     * ../remapping/RandomFlipMatrix.java
+     *   Fisher-Yates without materializing the entire virtual array.
      */
 
     /*
      * RECALL
      *
-     * FOR i = n-1 DOWN TO 1
-     *     j = random [0..i]
-     *     swap(i, j)
+     * for i from n-1 down to 1:
+     *   j = random 0..i
+     *   swap(i,j)
      */
 
-    /*
-     * RELATED
-     *   remapping/RandomFlipMatrix.java
-     *
-     * RandomFlipMatrix is Fisher-Yates over a huge virtual array,
-     * represented lazily with a HashMap instead of materializing the array.
-     */
+    private static void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
 
     public static void main(String[] args) {
-        int[] nums = {1, 2, 3, 4};
-        Solution solution = new Solution(nums, new Random(3));
+        Solution solution = new Solution(new int[]{1, 2, 3});
 
-        int[] shuffled = solution.shuffle();
-        int[] sorted = shuffled.clone();
-        Arrays.sort(sorted);
+        assert Arrays.equals(solution.reset(), new int[]{1, 2, 3});
 
-        assert Arrays.equals(sorted, nums);
-        assert Arrays.equals(solution.reset(), nums);
+        for (int i = 0; i < 100; i++) {
+            int[] shuffled = solution.shuffle();
+            Arrays.sort(shuffled);
+            assert Arrays.equals(shuffled, new int[]{1, 2, 3});
+        }
 
         System.out.println("ShuffleAnArray: all checks passed");
     }

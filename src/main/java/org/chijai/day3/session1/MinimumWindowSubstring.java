@@ -112,6 +112,37 @@ package org.chijai.day3.session1;
  *
  *    Window length is predetermined.
  *
+ *    IMPORTANT CONTRAST INSIDE FIXED-SIZE WINDOWS:
+ *
+ *    567 / 438
+ *      -> Frequency / matching accounting
+ *
+ *    239 Sliding Window Maximum
+ *      -> Window aggregate with a special data structure
+ *      -> Monotonic decreasing deque
+ *
+ *    239 is NOT a frequency-accounting problem.
+ *
+ *    Need:
+ *      maximum of every fixed-size window
+ *
+ *    Deque invariant:
+ *      contains only useful maximum candidates,
+ *      in decreasing value order.
+ *
+ *    When a new larger value enters:
+ *      remove smaller/equal values from the back.
+ *
+ *    When an index leaves the window:
+ *      remove it from the front.
+ *
+ *    Maximum:
+ *      always at deque front.
+ *
+ *    MEMORY:
+ *      FIXED WINDOW + REPEATED MAX/MIN
+ *          -> think MONOTONIC DEQUE.
+ *
  * -------------------------------------------------------------------------------------
  *
  * B) VARIABLE-SIZE -> MAXIMUM VALID WINDOW
@@ -529,6 +560,20 @@ public class MinimumWindowSubstring {
      -------------------------
      Similar frequency accounting,
      but FIXED SIZE — do not classify as minimum-valid window.
+
+
+     239 Sliding Window Maximum
+     --------------------------
+     Fixed-size window, but NOT frequency accounting.
+
+     Trigger:
+       maximum/minimum of every fixed-size window
+
+     Tool:
+       monotonic deque
+
+     Memory:
+       FIXED WINDOW + REPEATED MAX/MIN -> MONOTONIC DEQUE.
      */
 
     public static void main(String[] args) {

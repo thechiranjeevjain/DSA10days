@@ -124,6 +124,18 @@ public class TopKFrequentElements {
      *
      *   bounded score => bucket
      */
+
+    private static Map<Integer, Integer> count(int[] nums) {
+
+        Map<Integer, Integer> freq = new HashMap<>();
+
+        for (int value : nums) {
+            freq.merge(value, 1, Integer::sum);
+        }
+
+        return freq;
+    }
+
     static class LC347 {
 
         /**
@@ -216,9 +228,7 @@ public class TopKFrequentElements {
                 List<Integer> numbers =
                         buckets.get(f);
 
-                for (int i = 0; i < numbers.size(); i++) {
-
-                    int num = numbers.get(i);
+                for (int num  : numbers) {
 
                     result[resultIndex++] = num;
 
@@ -769,17 +779,6 @@ public class TopKFrequentElements {
     // ========================================================================
     // SHARED HELPERS
     // ========================================================================
-
-    private static Map<Integer, Integer> count(int[] nums) {
-
-        Map<Integer, Integer> freq = new HashMap<>();
-
-        for (int value : nums) {
-            freq.merge(value, 1, Integer::sum);
-        }
-
-        return freq;
-    }
 
     private static void swap(int[] nums, int i, int j) {
 

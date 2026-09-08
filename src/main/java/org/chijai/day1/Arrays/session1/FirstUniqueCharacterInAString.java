@@ -9,7 +9,7 @@ import java.util.Map;
  * Primary Pattern:
  *     Frequency Counting + Two-Pass Ordered Scan
  */
-public class FirstUniqueCharacterInAStringV2 {
+public class FirstUniqueCharacterInAString {
 
     /**
      * ==============================================================

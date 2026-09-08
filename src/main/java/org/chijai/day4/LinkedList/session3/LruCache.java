@@ -82,7 +82,191 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 3️⃣ 🔵 CORE PATTERN OVERVIEW (INVARIANT-FIRST)
+     * 3️⃣ PRIMARY SOLUTIONS — KEEP THESE UP TOP
+     * =============================================================
+     */
+
+    /* =============================================================
+     * 🟢 OPTIMAL SOLUTION (INTERVIEW-PREFERRED)
+     * =============================================================
+     *
+     * 🟢 Core Idea:
+     * HashMap + Doubly Linked List with SENTINEL NODES
+     *
+     * 🟢 Fully Enforces Invariant:
+     * "List order == recency order at all times"
+     *
+     * 🟢 Why Sentinels Matter:
+     * - No null checks
+     * - No head/tail edge cases
+     * - Invariant preserved mechanically
+     *
+     * 🟢 Time Complexity:
+     * - get: O(1)
+     * - put: O(1)
+     *
+     * 🟢 Space Complexity:
+     * - O(capacity)
+     *
+     * 🟢 Interview Preference:
+     * ✅ Gold standard
+     */
+    static class LRUCache {
+
+        /* ---------------------------------------------------------
+         * 🟢 Node definition
+         * ---------------------------------------------------------
+         */
+        private static class Node {
+            int key;
+            int value;
+            Node prev;
+            Node next;
+
+            Node(int key, int value) {
+                this.key = key;
+                this.value = value;
+            }
+        }
+
+        private final int capacity;
+
+        // 🔵 O(1) index to exact node
+        private final Map<Integer, Node> index = new HashMap<>();
+
+        // 🟢 Sentinel nodes (never store real data)
+        private final Node head; // Most recent is head.next
+        private final Node tail; // Least recent is tail.prev
+
+        LRUCache(int capacity) {
+            this.capacity = capacity;
+
+            // Initialize sentinels
+            //we can't Initialize to null because
+            // we need to maintain the invariant that
+            // head.next is most recent and tail.prev is least recent
+            head = new Node(-1, -1);
+            tail = new Node(-1, -1);
+
+            //we also need to link the sentinels together
+            //else the invariant will be broken because
+            // head.next will be null and tail.prev will be null
+            //broken at what point?
+            // when we try to add a new node,
+            // we will try to access head.next and tail.prev
+            head.next = tail;
+            tail.prev = head;
+        }
+
+        int get(int key) {
+            Node node = index.get(key);
+            if (node == null) {
+                return -1;
+            }
+
+            // 🟢 Access = refresh recency
+            removeNode(node);
+            addAfterHead(node);
+            return node.value;
+        }
+
+        void put(int key, int value) {
+            Node existingNode = index.get(key);
+
+            if (existingNode != null) {
+                // Update value and refresh recency
+                existingNode.value = value;
+                removeNode(existingNode);
+                addAfterHead(existingNode);
+                return; // Early return exit break
+            }
+
+            // Insert new node as most recent
+            Node newNode = new Node(key, value);
+            index.put(key, newNode);
+            addAfterHead(newNode);
+
+            // Enforce capacity invariant
+            if (index.size() > capacity) {
+                Node lruNode = tail.prev;
+                removeNode(lruNode);
+                index.remove(lruNode.key);
+            }
+        }
+
+        /* ---------------------------------------------------------
+         * 🟢 Doubly Linked List Operations
+         * (Invariant-preserving primitives)
+         * ---------------------------------------------------------
+         */
+
+        // Remove node from its current position
+        private void removeNode(Node node) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+
+        // Insert node right after head (most recent)
+        private void addAfterHead(Node node) {
+            node.prev = head;
+            node.next = head.next;
+
+            //this order sequence very important, otherwise will break the invariant
+            //can't update head.next first, because head.next is the old most recent node,
+            // we need to update its prev pointer first
+            head.next.prev = node;
+            head.next = node;
+        }
+    }
+
+    /*
+     * LinkedHashMap LRU — 2 controls:
+     *
+     * accessOrder = false → insertion order   [DEFAULT]
+     * accessOrder = true  → access/LRU order
+     *
+     * removeEldestEntry() → returns false     [DEFAULT: no auto-eviction]
+     * override → return size() > capacity     [evict eldest]
+     *
+     * LRU = accessOrder true + size-based eldest eviction
+     *  * Why not ArrayDeque?
+     * ends add/remove      → O(1)
+     * find/remove middle  → O(n)  ❌
+     *
+     * LinkedHashMap:
+     * key lookup          → O(1)
+     * move accessed entry → O(1)
+     * evict eldest/LRU    → O(1)  ✅
+     */
+
+    static class LRUCacheJava extends LinkedHashMap<Integer, Integer> {
+
+        private final int capacity;
+
+        public LRUCacheJava(int capacity) {
+            // true = maintain ACCESS order, not insertion order
+            super(capacity, 0.75f, true);
+            this.capacity = capacity;
+        }
+
+        public int get(int key) {
+            return super.getOrDefault(key, -1);
+        }
+
+        public void put(int key, int value) {
+            super.put(key, value);
+        }
+
+        @Override
+        protected boolean removeEldestEntry(
+                Map.Entry<Integer, Integer> eldest) {
+
+            return size() > capacity;
+        }
+    }
+
+    /* =============================================================
+     * 4️⃣ 🔵 CORE PATTERN OVERVIEW (INVARIANT-FIRST)
      * =============================================================
      *
      * 🔵 Pattern Name:
@@ -118,7 +302,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 4️⃣ 🟢 MENTAL MODEL & INVARIANTS (SOURCE OF TRUTH)
+     * 5️⃣ 🟢 MENTAL MODEL & INVARIANTS (SOURCE OF TRUTH)
      * =============================================================
      *
      * 🟢 Mental Model (Think, Not Code):
@@ -169,7 +353,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 5️⃣ 🔴 WHY NAIVE / WRONG SOLUTIONS FAIL (FORENSIC)
+     * 6️⃣ 🔴 WHY NAIVE / WRONG SOLUTIONS FAIL (FORENSIC)
      * =============================================================
      *
      * ❌ Wrong Approach #1: HashMap + Timestamp
@@ -231,10 +415,8 @@ public class LruCache {
      * it is either incorrect or non-O(1).
      */
 
-
     /* =============================================================
-     * 6️⃣ PRIMARY PROBLEM — SOLUTION CLASSES
-     * (DERIVED STRICTLY FROM THE INVARIANT)
+     * 7️⃣ PRIMARY PROBLEM — OTHER SOLUTION CLASSES
      * =============================================================
      */
 
@@ -418,186 +600,7 @@ public class LruCache {
     }
 
     /* =============================================================
-     * 🟢 OPTIMAL SOLUTION (INTERVIEW-PREFERRED)
-     * =============================================================
-     *
-     * 🟢 Core Idea:
-     * HashMap + Doubly Linked List with SENTINEL NODES
-     *
-     * 🟢 Fully Enforces Invariant:
-     * "List order == recency order at all times"
-     *
-     * 🟢 Why Sentinels Matter:
-     * - No null checks
-     * - No head/tail edge cases
-     * - Invariant preserved mechanically
-     *
-     * 🟢 Time Complexity:
-     * - get: O(1)
-     * - put: O(1)
-     *
-     * 🟢 Space Complexity:
-     * - O(capacity)
-     *
-     * 🟢 Interview Preference:
-     * ✅ Gold standard
-     */
-    static class LRUCache {
-
-        /* ---------------------------------------------------------
-         * 🟢 Node definition
-         * ---------------------------------------------------------
-         */
-        private static class Node {
-            int key;
-            int value;
-            Node prev;
-            Node next;
-
-            Node(int key, int value) {
-                this.key = key;
-                this.value = value;
-            }
-        }
-
-        private final int capacity;
-
-        // 🔵 O(1) index to exact node
-        private final Map<Integer, Node> index = new HashMap<>();
-
-        // 🟢 Sentinel nodes (never store real data)
-        private final Node head; // Most recent is head.next
-        private final Node tail; // Least recent is tail.prev
-
-        LRUCache(int capacity) {
-            this.capacity = capacity;
-
-            // Initialize sentinels
-            //we can't Initialize to null because
-            // we need to maintain the invariant that
-            // head.next is most recent and tail.prev is least recent
-            head = new Node(-1, -1);
-            tail = new Node(-1, -1);
-
-            //we also need to link the sentinels together
-            //else the invariant will be broken because
-            // head.next will be null and tail.prev will be null
-            //broken at what point?
-            // when we try to add a new node,
-            // we will try to access head.next and tail.prev
-            head.next = tail;
-            tail.prev = head;
-        }
-
-        int get(int key) {
-            Node node = index.get(key);
-            if (node == null) {
-                return -1;
-            }
-
-            // 🟢 Access = refresh recency
-            removeNode(node);
-            addAfterHead(node);
-            return node.value;
-        }
-
-        void put(int key, int value) {
-            Node existingNode = index.get(key);
-
-            if (existingNode != null) {
-                // Update value and refresh recency
-                existingNode.value = value;
-                removeNode(existingNode);
-                addAfterHead(existingNode);
-                return; // Early return exit break
-            }
-
-            // Insert new node as most recent
-            Node newNode = new Node(key, value);
-            index.put(key, newNode);
-            addAfterHead(newNode);
-
-            // Enforce capacity invariant
-            if (index.size() > capacity) {
-                Node lruNode = tail.prev;
-                removeNode(lruNode);
-                index.remove(lruNode.key);
-            }
-        }
-
-        /* ---------------------------------------------------------
-         * 🟢 Doubly Linked List Operations
-         * (Invariant-preserving primitives)
-         * ---------------------------------------------------------
-         */
-
-        // Remove node from its current position
-        private void removeNode(Node node) {
-            node.prev.next = node.next;
-            node.next.prev = node.prev;
-        }
-
-        // Insert node right after head (most recent)
-        private void addAfterHead(Node node) {
-            node.prev = head;
-            node.next = head.next;
-
-            //this order sequence very important, otherwise will break the invariant
-            //can't update head.next first, because head.next is the old most recent node,
-            // we need to update its prev pointer first
-            head.next.prev = node;
-            head.next = node;
-        }
-    }
-
-    /*
-     * LinkedHashMap LRU — 2 controls:
-     *
-     * accessOrder = false → insertion order   [DEFAULT]
-     * accessOrder = true  → access/LRU order
-     *
-     * removeEldestEntry() → returns false     [DEFAULT: no auto-eviction]
-     * override → return size() > capacity     [evict eldest]
-     *
-     * LRU = accessOrder true + size-based eldest eviction
-     *  * Why not ArrayDeque?
-     * ends add/remove      → O(1)
-     * find/remove middle  → O(n)  ❌
-     *
-     * LinkedHashMap:
-     * key lookup          → O(1)
-     * move accessed entry → O(1)
-     * evict eldest/LRU    → O(1)  ✅
-     */
-
-    static class LRUCacheJava extends LinkedHashMap<Integer, Integer> {
-
-        private final int capacity;
-
-        public LRUCacheJava(int capacity) {
-            // true = maintain ACCESS order, not insertion order
-            super(capacity, 0.75f, true);
-            this.capacity = capacity;
-        }
-
-        public int get(int key) {
-            return super.getOrDefault(key, -1);
-        }
-
-        public void put(int key, int value) {
-            super.put(key, value);
-        }
-
-        @Override
-        protected boolean removeEldestEntry(
-                Map.Entry<Integer, Integer> eldest) {
-
-            return size() > capacity;
-        }
-    }
-
-    /* =============================================================
-     * 7️⃣ 🟣 INTERVIEW ARTICULATION (INVARIANT-LED · NO CODE)
+     * 8️⃣ 🟣 INTERVIEW ARTICULATION (INVARIANT-LED · NO CODE)
      * =============================================================
      *
      * 🟣 State the Invariant:
@@ -629,7 +632,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 8️⃣ 🔄 VARIATIONS & TWEAKS (INVARIANT-BASED)
+     * 9️⃣ 🔄 VARIATIONS & TWEAKS (INVARIANT-BASED)
      * =============================================================
      *
      * 🟢 Invariant-Preserving Changes:
@@ -651,13 +654,13 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 9️⃣ ⚫ REINFORCEMENT PROBLEMS — FULL SUB-CHAPTERS
+     * 10️⃣ ⚫ REINFORCEMENT PROBLEMS — FULL SUB-CHAPTERS
      * (SAME OR INTENTIONALLY BROKEN INVARIANT)
      * =============================================================
      */
 
     /* =============================================================
-     * 9️⃣ ⚫ REINFORCEMENT PROBLEM — LFU CACHE (FULL CHAPTER)
+     * 10️⃣ ⚫ REINFORCEMENT PROBLEM — LFU CACHE (FULL CHAPTER)
      * =============================================================
      *
      * 📘 Official Problem (LeetCode: LFU Cache)
@@ -692,7 +695,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 10️⃣ 🧩 FORMAL INVARIANT COMPARISON — LRU vs LFU
+     * 11️⃣ 🧩 FORMAL INVARIANT COMPARISON — LRU vs LFU
      * =============================================================
      *
      * LRU Invariant:
@@ -710,7 +713,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 11️⃣ 🧠 REUSABLE CACHE INVARIANT FRAMEWORK
+     * 12️⃣ 🧠 REUSABLE CACHE INVARIANT FRAMEWORK
      * =============================================================
      *
      * Cache design reduces to:
@@ -732,7 +735,6 @@ public class LruCache {
      * recomputation-based structures (heap, stack)
      * are invalid by invariant violation.
      */
-
 
     /* =============================================================
      * Reinforcement Problem 1: First Unique Number
@@ -814,9 +816,8 @@ public class LruCache {
         }
     }
 
-
     /* =============================================================
-     * 10️⃣ 🧩 RELATED PROBLEMS — MINI INVARIANT CHAPTERS
+     * 13️⃣ 🧩 RELATED PROBLEMS — MINI INVARIANT CHAPTERS
      * =============================================================
      */
 
@@ -899,9 +900,8 @@ public class LruCache {
         }
     }
 
-
     /* =============================================================
-     * 11️⃣ 🟢 LEARNING VERIFICATION (INVARIANT-FIRST)
+     * 14️⃣ 🟢 LEARNING VERIFICATION (INVARIANT-FIRST)
      * =============================================================
      *
      * 🟢 Invariant to Recall (Without Code):
@@ -923,7 +923,7 @@ public class LruCache {
      */
 
     /* =============================================================
-     * 12️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS
+     * 15️⃣ 🧪 main() METHOD + SELF-VERIFYING TESTS
      * =============================================================
      */
 
@@ -1009,7 +1009,7 @@ public class LruCache {
     }
 
     /* =============================================================
-     * 13️⃣ 🧠 CHAPTER COMPLETION CHECKLIST (WITH ANSWERS)
+     * 16️⃣ 🧠 CHAPTER COMPLETION CHECKLIST (WITH ANSWERS)
      * =============================================================
      *
      * Invariant → List order equals recency order
@@ -1040,5 +1040,3 @@ public class LruCache {
      * This chapter is complete.
      */
 }
-
-

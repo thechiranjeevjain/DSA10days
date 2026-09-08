@@ -4,142 +4,13 @@ import java.util.Arrays;
 
 /**
  * LeetCode 443 — String Compression
- *
- * Pattern:
- *     Two Pointers -> Read / Write -> In-place Transformation
- *
- * Sub-pattern:
- *     Consecutive Group Scan / Run-Length Encoding
- *
- * Recall:
- *     READ GROUP -> WRITE CHAR -> WRITE COUNT IF > 1.
+ * https://leetcode.com/problems/string-compression/
  */
-public class StringCompressionV6 {
-
-    // PRIMARY INTERVIEW SOLUTION
-    // Two Pointers -> Read / Write -> In-place group compression
-    // Recall: READ GROUP -> WRITE CHAR -> WRITE COUNT IF > 1.
-
-    public int compress(char[] chars) {
-
-        int read = 0;
-        int write = 0;
-
-        while (read < chars.length) {
-
-            char groupChar = chars[read];
-            int groupStart = read;
-
-            while (read < chars.length
-                    && chars[read] == groupChar) {
-                read++;
-            }
-
-            int groupLength = read - groupStart;
-
-            chars[write++] = groupChar;
-
-            if (groupLength > 1) {
-                write = writeCount(
-                        chars,
-                        write,
-                        groupLength
-                );
-            }
-        }
-
-        return write;
-    }
-
-    private int writeCount(
-            char[] chars,
-            int write,
-            int count
-    ) {
-
-        int divisor = 1;
-
-        while (count / divisor >= 10) {
-            divisor *= 10;
-        }
-
-        while (divisor > 0) {
-
-            chars[write++] =
-                    (char) ('0' + count / divisor);
-
-            count %= divisor;
-            divisor /= 10;
-        }
-
-        return write;
-    }
-
-
+public class StringCompression {
 
     /**
      * =================================================================================
-     * 1. FIRST-PRINCIPLES INVENTION PATH
-     * =================================================================================
-     *
-     * Actual obstacle:
-     *
-     *     read original data
-     *     +
-     *     write compressed data
-     *     +
-     *     use the SAME array
-     *
-     * So separate the jobs:
-     *
-     *     read
-     *         first unprocessed input position
-     *
-     *     write
-     *         next compressed-output position
-     *
-     * The compression rule is per consecutive equal-character GROUP.
-     *
-     * Therefore:
-     *
-     *     groupStart = read
-     *     groupChar  = chars[read]
-     *
-     *     advance read until the group ends
-     *
-     *     groupLength = read - groupStart
-     *
-     * Then write:
-     *
-     *     groupChar
-     *
-     *     if groupLength > 1:
-     *         decimal digits of groupLength
-     *
-     * Why is in-place writing safe?
-     *
-     *     encoded group length <= original group length
-     *
-     * Therefore:
-     *
-     *     write <= read
-     *
-     * and unread input is never overwritten.
-     *
-     * Final structure:
-     *
-     *     READ WHOLE GROUP
-     *         ->
-     *     WRITE CHAR
-     *         ->
-     *     WRITE COUNT IF > 1
-     */
-
-
-
-    /**
-     * =================================================================================
-     * 2. DETAILED PROBLEM STATEMENT
+     * 1. DETAILED PROBLEM STATEMENT
      * =================================================================================
      *
      * Given a char array chars, compress each MAXIMAL CONSECUTIVE group in-place.
@@ -254,46 +125,129 @@ public class StringCompressionV6 {
 
     /**
      * =================================================================================
-     * 3. ONE CANONICAL DRY RUN
+     * 2. FIRST-PRINCIPLES INVENTION PATH
      * =================================================================================
      *
-     * Input:
+     * What is the problem really asking?
      *
-     *     [a, a, b, b, c, c, c]
+     *     Read one consecutive group.
+     *     Count how many characters it contains.
+     *     Write its compressed form back into the same array.
      *
-     *     read = 0
-     *     write = 0
+     * Because we read and write in the same array:
      *
-     * "aa"
-     *     read:  0 -> 2
-     *     write: a2
+     *     read
+     *         reads original input
      *
-     *     [a, 2, ...]
-     *          ^
-     *          write = 2
+     *     write
+     *         writes compressed output
      *
-     * "bb"
-     *     read:  2 -> 4
-     *     write: b2
+     * For each group:
      *
-     *     [a, 2, b, 2, ...]
-     *                ^
-     *                write = 4
+     *     1. remember the character
+     *     2. move read until the group ends
+     *     3. groupLength = read - groupStart
+     *     4. write the character
+     *     5. if groupLength > 1:
      *
-     * "ccc"
-     *     read:  4 -> 7
-     *     write: c3
+     *            12 -> "12" -> '1', '2'
      *
-     * Final valid prefix:
+     *            write those digit characters
      *
-     *     [a, 2, b, 2, c, 3]
+     * Mental model:
      *
-     * return 6
+     *     READ GROUP
+     *         ->
+     *     COUNT IT
+     *         ->
+     *     WRITE CHAR
+     *         ->
+     *     WRITE COUNT IF > 1
+     *
+     * No manual digit mathematics is needed in the primary solution.
      */
 
     /**
      * =================================================================================
-     * 4. CORRECTNESS + COMPLEXITY + TRAPS
+     * 3. PRIMARY INTERVIEW SOLUTION
+     * =================================================================================
+     *
+     * Pattern:
+     *
+     *     Two Pointers -> Read / Write -> In-place Transformation
+     *
+     * Sub-pattern:
+     *
+     *     Consecutive Group Scan / Run-Length Encoding
+     *
+     * Invariant:
+     *
+     *     chars[0 .. write - 1]
+     *         is already the final compressed output for processed groups
+     *
+     *     read
+     *         points to the first unprocessed character
+     *
+     *     write <= read
+     *
+     * Recall:
+     *
+     *     READ GROUP -> WRITE CHAR -> WRITE COUNT IF > 1.
+     */
+
+    public int compress(char[] chars) {
+
+        int read = 0;
+        int write = 0;
+
+        while (read < chars.length) {
+
+            char groupChar = chars[read];
+            int groupStart = read;
+
+            while (read < chars.length
+                    && chars[read] == groupChar) {
+                read++;
+            }
+
+            int groupLength =
+                    read - groupStart;
+
+            chars[write++] =
+                    groupChar;
+
+            if (groupLength > 1) {
+
+                String count =
+                        String.valueOf(groupLength);
+
+                for (char digit : count.toCharArray()) {
+                    chars[write++] = digit;
+                }
+            }
+        }
+
+        return write;
+    }
+
+
+    /**
+     * Optional stricter-space follow-up
+     * ---------------------------------
+     *
+     * The primary version above intentionally favors easy interview reconstruction.
+     *
+     * If an interviewer explicitly forbids even the tiny temporary String created by
+     * String.valueOf(groupLength), digits can be written with manual arithmetic.
+     *
+     * Do not memorize that version by default.
+     * It solves a stricter implementation constraint, not the core problem.
+     */
+
+
+    /**
+     * =================================================================================
+     * 5. CORRECTNESS + COMPLEXITY + TRAPS
      * =================================================================================
      *
      * Why correct
@@ -315,7 +269,9 @@ public class StringCompressionV6 {
      * Complexity
      * ----------
      *     Time      O(n)
-     *     Extra     O(1)
+     *
+     *     Primary implementation uses only a tiny temporary String for the
+     *     current group's count; it does not build a second output buffer.
      *
      * Traps
      * -----
@@ -331,7 +287,8 @@ public class StringCompressionV6 {
      *
      *   not one char holding integer 12
      *
-     * • separate StringBuilder misses the in-place-space requirement
+     * • do not build a second compressed output buffer; only the current
+     *   group's count is temporarily converted to a String
      *
      * • final group needs no special cleanup because array-end is a normal group boundary
      *
@@ -340,16 +297,16 @@ public class StringCompressionV6 {
 
     /**
      * =================================================================================
-     * 5. INTERVIEW ARTICULATION + BLANK-BRAIN RECONSTRUCTION
+     * 6. INTERVIEW ARTICULATION + BLANK-BRAIN RECONSTRUCTION
      * =================================================================================
      *
      * Say before coding
      * -----------------
      *
      * "I'll use separate read and write pointers. read consumes one maximal run of equal
-     * characters; write stores that run's compressed form in the same array. A run never
-     * expands when encoded, so write cannot overtake unread input. I write count digits
-     * directly, giving O(n) time and O(1) extra space."
+     * characters, and write stores that run's compressed form in the same array. For a
+     * repeated group, I'll convert its count to a String and write those digit characters.
+     * The core idea is one-pass grouped scanning with in-place read/write pointers."
      *
      * Blank-brain reconstruction
      * --------------------------
@@ -370,7 +327,7 @@ public class StringCompressionV6 {
      *     only if > 1
      *
      * Multi-digit count?
-     *     emit decimal digits
+     *     String.valueOf(count), then write each digit
      *
      * Safety?
      *     encoded group length <= original group length
@@ -386,7 +343,7 @@ public class StringCompressionV6 {
 
     /**
      * =================================================================================
-     * 6. RELATED / SIMILAR PROBLEMS
+     * 7. RELATED / SIMILAR PROBLEMS
      * =================================================================================
      *
      * Highest transfer value — SAME read/write family
@@ -476,7 +433,7 @@ public class StringCompressionV6 {
 
     /**
      * =================================================================================
-     * 7. RELATED PROBLEMS — COMPACT TRANSFER SOLUTIONS
+     * 8. RELATED PROBLEMS — COMPACT TRANSFER SOLUTIONS
      * =================================================================================
      *
      * Purpose of this section
@@ -908,7 +865,7 @@ public class StringCompressionV6 {
 
     /**
      * =================================================================================
-     * 8. SELF-VERIFYING TESTS
+     * 9. SELF-VERIFYING TESTS
      * =================================================================================
      */
     public static void main(String[] args) {
@@ -921,7 +878,7 @@ public class StringCompressionV6 {
 
     private static void testPrimary() {
 
-        StringCompressionV6 solution = new StringCompressionV6();
+        StringCompression solution = new StringCompression();
 
         verify(
                 solution,
@@ -1036,7 +993,7 @@ public class StringCompressionV6 {
     }
 
     private static void verify(
-            StringCompressionV6 solution,
+            StringCompression solution,
             char[] chars,
             String expected
     ) {

@@ -7,11 +7,14 @@ import java.util.Random;
 /**
  * LeetCode 382 - Linked List Random Node
  *
- * PATTERN
- *   Randomized Algorithms -> Reservoir Sampling
+ * PRIMARY PATTERN
+ *   Materialize once -> Uniform random index
  *
- * USE WHEN
- *   Population size is unknown/streamed or you do not want to store all items.
+ * FOLLOW-UP PATTERN
+ *   Reservoir Sampling -> O(1) extra space / unknown length
+ *
+ * REPO
+ *   org/chijai/randomized/reservoirsampling/LinkedListRandomNode.java
  */
 public class LinkedListRandomNode {
 
@@ -25,62 +28,50 @@ public class LinkedListRandomNode {
     }
 
     /*
-     * FIRST-PRINCIPLES INVENTION PATH
+     * ================================================================
+     * PROBLEM
+     * ================================================================
      *
-     * While scanning item k, make the current item replace the reservoir
-     * with probability 1/k.
+     * Given a singly linked list, getRandom() must return one node value.
+     * Every node must have equal probability.
      *
-     * Any earlier item survives step k with probability (k-1)/k.
-     * Chaining these survival probabilities leaves every one of n items
-     * with final probability exactly 1/n.
+     * Example
+     *   list = 10 -> 20 -> 30
+     *
+     *   P(10) = 1/3
+     *   P(20) = 1/3
+     *   P(30) = 1/3
+     *
+     * Follow-up:
+     *   What if the list is extremely large and its length is unknown?
+     *   Can you use O(1) extra space?
      */
 
-    // =====================================================================
-    // OPTIMAL SOLUTION — Reservoir Sampling, k = 1
-    // Constructor O(1), getRandom O(n), extra space O(1)
-    // =====================================================================
+    /*
+     * ================================================================
+     * MINIMUM INTUITION
+     * ================================================================
+     *
+     * Base problem: the list is available at construction time.
+     * Copy its values once into an ArrayList, then choose a uniform index.
+     *
+     * Do not pay the complexity of reservoir sampling until the follow-up
+     * actually requires O(1) extra space or unknown stream length.
+     */
+
+    // ================================================================
+    // PRIMARY SOLUTION — EASIEST FOR THE BASE CONSTRAINTS
+    // Build O(n) | getRandom O(1) | Space O(n)
+    // ================================================================
     static class Solution {
-
-        private final ListNode head;
-        private final Random random;
-
-        public Solution(ListNode head) {
-            this(head, new Random());
-        }
-
-        Solution(ListNode head, Random random) {
-            this.head = head;
-            this.random = random;
-        }
-
-        public int getRandom() {
-            int chosen = head.val;
-            int seen = 1;
-
-            for (ListNode node = head.next; node != null; node = node.next) {
-                seen++;
-
-                if (random.nextInt(seen) == 0) {
-                    chosen = node.val;
-                }
-            }
-
-            return chosen;
-        }
-    }
-
-    // =====================================================================
-    // ALTERNATIVE — Materialize values
-    // Constructor O(n), getRandom O(1), space O(n)
-    // =====================================================================
-    static class StoredValuesSolution {
 
         private final List<Integer> values = new ArrayList<>();
         private final Random random = new Random();
 
-        StoredValuesSolution(ListNode head) {
-            for (ListNode node = head; node != null; node = node.next) {
-                values.add(node.val);
+        public Solution(ListNode head) {
+            while (head != null) {
+                values.add(head.val);
+                head = head.next;
             }
         }
 
@@ -90,40 +81,148 @@ public class LinkedListRandomNode {
     }
 
     /*
-     * PROOF SNAPSHOT
+     * ================================================================
+     * APPROACH PROGRESSION
+     * ================================================================
      *
-     * For item i to remain after n items:
+     * 1. COPY VALUES ONCE
      *
-     *   P(chosen at i) * P(survive i+1 ... n)
-     *   = (1/i) * (i/(i+1)) * ... * ((n-1)/n)
-     *   = 1/n
+     *   ArrayList gives O(1) random indexing.
+     *   Build O(n), query O(1), space O(n).
+     *   Best default when memory is allowed.
+     *
+     * 2. STORE ONLY LENGTH
+     *
+     *   Count n once.
+     *   Pick random position 0..n-1.
+     *   Walk the list to that position.
+     *
+     *   Build O(n), query O(n), extra space O(1).
+     *   Simpler than reservoir, but repeated queries repeatedly traverse.
+     *
+     * 3. RESERVOIR SAMPLING — FOLLOW-UP
+     *
+     *   Traverse once per query and keep one candidate.
+     *   When visiting the k-th node, replace the candidate with probability
+     *   1/k.
+     *
+     *   Query O(n), extra space O(1), no length required in advance.
+     */
+
+    static class LengthOnlySolution {
+
+        private final ListNode head;
+        private final int length;
+        private final Random random = new Random();
+
+        LengthOnlySolution(ListNode head) {
+            this.head = head;
+
+            int count = 0;
+            ListNode node = head;
+
+            while (node != null) {
+                count++;
+                node = node.next;
+            }
+
+            this.length = count;
+        }
+
+        int getRandom() {
+            int steps = random.nextInt(length);
+            ListNode node = head;
+
+            while (steps-- > 0) {
+                node = node.next;
+            }
+
+            return node.val;
+        }
+    }
+
+    static class ReservoirSolution {
+
+        private final ListNode head;
+        private final Random random = new Random();
+
+        ReservoirSolution(ListNode head) {
+            this.head = head;
+        }
+
+        int getRandom() {
+            int answer = 0;
+            int seen = 0;
+
+            for (ListNode node = head; node != null; node = node.next) {
+                seen++;
+
+                if (random.nextInt(seen) == 0) {
+                    answer = node.val;
+                }
+            }
+
+            return answer;
+        }
+    }
+
+    /*
+     * WHY RESERVOIR WORKS
+     *
+     * At node k:
+     *   choose it with probability 1/k.
+     *
+     * A previous candidate survives that step with probability (k-1)/k.
+     * Repeating this leaves every final node with probability 1/n.
+     */
+
+    /*
+     * RELATED — WORKING FILE
+     *
+     * RandomPickIndex.java
+     *   Same O(1)-space follow-up idea, but only matching indices compete.
      */
 
     /*
      * RECALL
      *
-     * SEEN = k
-     * REPLACE WITH PROBABILITY 1/k
-     */
-
-    /*
-     * RELATED
-     *   reservoirsampling/RandomPickIndex.java
-     *   weightedsampling/RandomPickWithWeight.java  // different: known weights
+     * Base problem: copy -> random index.
+     * Follow-up: unknown/huge stream -> reservoir, replace with probability 1/k.
      */
 
     public static void main(String[] args) {
-        ListNode head = new ListNode(10);
-        head.next = new ListNode(20);
-        head.next.next = new ListNode(30);
+        ListNode head = list(10, 20, 30);
+        Solution solution = new Solution(head);
 
-        Solution solution = new Solution(head, new Random(5));
+        int[] count = new int[3];
 
-        for (int i = 0; i < 1_000; i++) {
+        for (int i = 0; i < 60_000; i++) {
             int value = solution.getRandom();
-            assert value == 10 || value == 20 || value == 30;
+            if (value == 10) count[0]++;
+            if (value == 20) count[1]++;
+            if (value == 30) count[2]++;
         }
 
+        assert approximately(count[0] / 60_000.0, 1.0 / 3, 0.03);
+        assert approximately(count[1] / 60_000.0, 1.0 / 3, 0.03);
+        assert approximately(count[2] / 60_000.0, 1.0 / 3, 0.03);
+
         System.out.println("LinkedListRandomNode: all checks passed");
+    }
+
+    private static ListNode list(int... values) {
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        for (int value : values) {
+            tail.next = new ListNode(value);
+            tail = tail.next;
+        }
+
+        return dummy.next;
+    }
+
+    private static boolean approximately(double actual, double expected, double tolerance) {
+        return Math.abs(actual - expected) <= tolerance;
     }
 }

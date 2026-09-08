@@ -5,6 +5,8 @@ id,slug,title
 19,remove-nth-node-from-end-of-list,Remove Nth Node From End of List
 23,merge-k-sorted-lists,Merge K Sorted Lists
 25,reverse-nodes-in-k-group,Reverse Nodes in k-Group
+26,remove-duplicates-from-sorted-array,Remove Duplicates from Sorted Array
+27,remove-element,Remove Element
 37,sudoku-solver,Sudoku Solver
 42,trapping-rain-water,Trapping Rain Water
 51,n-queens,N-Queens
@@ -17,8 +19,10 @@ id,slug,title
 75,sort-colors,Sort Colors
 76,minimum-window-substring,Minimum Window Substring
 79,word-search,Word Search
+80,remove-duplicates-from-sorted-array-ii,Remove Duplicates from Sorted Array II
 84,largest-rectangle-in-histogram,Largest Rectangle in Histogram
 85,maximal-rectangle,Maximal Rectangle
+91,decode-ways,Decode Ways
 97,interleaving-string,Interleaving String
 102,binary-tree-level-order-traversal,Binary Tree Level Order Traversal
 115,distinct-subsequences,Distinct Subsequences
@@ -28,17 +32,21 @@ id,slug,title
 133,clone-graph,Clone Graph
 134,gas-station,Gas Station
 139,word-break,Word Break
+140,word-break-ii,Word Break II
 141,linked-list-cycle,Linked List Cycle
 142,linked-list-cycle-ii,Linked List Cycle II
 150,evaluate-reverse-polish-notation,Evaluate Reverse Polish Notation
 155,min-stack,Min Stack
 160,intersection-of-two-linked-lists,Intersection of Two Linked Lists
 163,missing-ranges,Missing Ranges
+166,fraction-to-recurring-decimal,Fraction to Recurring Decimal
 167,two-sum-ii-input-array-is-sorted,Two Sum II - Input Array Is Sorted
 169,majority-element,Majority Element
+187,repeated-dna-sequences,Repeated DNA Sequences
 188,best-time-to-buy-and-sell-stock-iv,Best Time to Buy and Sell Stock IV
 198,house-robber,House Robber
 200,number-of-islands,Number of Islands
+202,happy-number,Happy Number
 204,count-primes,Count Primes
 207,course-schedule,Course Schedule
 208,implement-trie-prefix-tree,Implement Trie (Prefix Tree)
@@ -58,24 +66,35 @@ id,slug,title
 274,h-index,H-Index
 279,perfect-squares,Perfect Squares
 283,move-zeroes,Move Zeroes
+287,find-the-duplicate-number,Find the Duplicate Number
 300,longest-increasing-subsequence,Longest Increasing Subsequence
 309,best-time-to-buy-and-sell-stock-with-cooldown,Best Time to Buy and Sell Stock with Cooldown
 322,coin-change,Coin Change
 346,moving-average-from-data-stream,Moving Average from Data Stream
 347,top-k-frequent-elements,Top K Frequent Elements
 354,russian-doll-envelopes,Russian Doll Envelopes
+359,logger-rate-limiter,Logger Rate Limiter
 362,design-hit-counter,Design Hit Counter
+382,linked-list-random-node,Linked List Random Node
+384,shuffle-an-array,Shuffle an Array
+387,first-unique-character-in-a-string,First Unique Character in a String
+398,random-pick-index,Random Pick Index
 402,remove-k-digits,Remove K Digits
 410,split-array-largest-sum,Split Array Largest Sum
 421,maximum-xor-of-two-numbers-in-an-array,Maximum XOR of Two Numbers in an Array
 424,longest-repeating-character-replacement,Longest Repeating Character Replacement
 435,non-overlapping-intervals,Non-overlapping Intervals
+443,string-compression,String Compression
 444,sequence-reconstruction,Sequence Reconstruction
 451,sort-characters-by-frequency,Sort Characters By Frequency
 452,minimum-number-of-arrows-to-burst-balloons,Minimum Number of Arrows to Burst Balloons
+485,max-consecutive-ones,Max Consecutive Ones
+497,random-point-in-non-overlapping-rectangles,Random Point in Non-overlapping Rectangles
 496,next-greater-element-i,Next Greater Element I
 503,next-greater-element-ii,Next Greater Element II
 516,longest-palindromic-subsequence,Longest Palindromic Subsequence
+519,random-flip-matrix,Random Flip Matrix
+528,random-pick-with-weight,Random Pick with Weight
 543,diameter-of-binary-tree,Diameter of Binary Tree
 547,number-of-provinces,Number of Provinces
 583,delete-operation-for-two-strings,Delete Operation for Two Strings
@@ -88,6 +107,7 @@ id,slug,title
 684,redundant-connection,Redundant Connection
 692,top-k-frequent-words,Top K Frequent Words
 703,kth-largest-element-in-a-stream,Kth Largest Element in a Stream
+710,random-pick-with-blacklist,Random Pick with Blacklist
 712,minimum-ascii-delete-sum-for-two-strings,Minimum ASCII Delete Sum for Two Strings
 714,best-time-to-buy-and-sell-stock-with-transaction-fee,Best Time to Buy and Sell Stock with Transaction Fee
 720,longest-word-in-dictionary,Longest Word in Dictionary
@@ -108,6 +128,7 @@ id,slug,title
 907,sum-of-subarray-minimums,Sum of Subarray Minimums
 940,distinct-subsequences-ii,Distinct Subsequences II
 973,k-closest-points-to-origin,K Closest Points to Origin
+1086,high-five,High Five
 1094,car-pooling,Car Pooling
 1136,parallel-courses,Parallel Courses
 1143,longest-common-subsequence,Longest Common Subsequence
@@ -117,15 +138,19 @@ id,slug,title
 1381,design-a-stack-with-increment-operation,Design a Stack With Increment Operation
 1425,constrained-subsequence-sum,Constrained Subsequence Sum
 1438,longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit,Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit
+1446,consecutive-characters,Consecutive Characters
 1462,course-schedule-iv,Course Schedule IV
 1499,max-value-of-equation,Max Value of Equation
+1531,string-compression-ii,String Compression II
 1603,design-parking-system,Design Parking System
 1656,design-an-ordered-stream,Design an Ordered Stream
 1696,jump-game-vi,Jump Game VI
 1707,maximum-xor-with-an-element-from-array,Maximum XOR With an Element From Array
 1801,number-of-orders-in-the-backlog,Number of Orders in the Backlog
 1803,count-pairs-with-xor-in-a-range,Count Pairs With XOR in a Range
+1869,longer-contiguous-segments-of-ones-than-zeros,Longer Contiguous Segments of Ones than Zeros
 1938,maximum-genetic-difference-query,Maximum Genetic Difference Query
 2034,stock-price-fluctuation,Stock Price Fluctuation
 2385,amount-of-time-for-binary-tree-to-be-infected,Amount of Time for Binary Tree to Be Infected
 2398,maximum-number-of-robots-within-budget,Maximum Number of Robots Within Budget
+2707,extra-characters-in-a-string,Extra Characters in a String

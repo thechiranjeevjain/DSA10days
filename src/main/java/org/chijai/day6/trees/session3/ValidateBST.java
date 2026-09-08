@@ -90,361 +90,6 @@ import java.util.Deque;
  * ------------------------------------------------------------
  *
  * https://leetcode.com/problems/validate-binary-search-tree/
- *
- * ============================================================
- * 🔵 CORE PATTERN OVERVIEW
- * ============================================================
- *
- * Pattern
- * -------
- * Recursive Range Validation
- *
- * Alternative Pattern
- * -------------------
- * Inorder Traversal Produces Strictly Increasing Sequence
- *
- * Archetype
- * ---------
- * Constraint propagation from ancestors.
- *
- * Core Invariant
- * --------------
- * Every recursive call owns one legal value interval.
- *
- * Every node inside that subtree MUST remain inside this
- * interval.
- *
- * Left recursion narrows only the upper bound.
- *
- * Right recursion narrows only the lower bound.
- *
- * Why It Works
- * ------------
- * Every ancestor contributes one ordering constraint.
- *
- * Passing those constraints downward guarantees every node
- * satisfies every ancestor simultaneously.
- *
- * Recognition Signals
- * -------------------
- * Use this pattern when:
- *
- * • subtree validity depends on ancestors
- *
- * • local parent comparison is insufficient
- *
- * • recursive constraints become tighter
- *
- * • descendants inherit restrictions
- *
- * When NOT To Use
- * ---------------
- * Do not use range propagation when:
- *
- * • property depends only on parent
- *
- * • constraints are purely local
- *
- * • tree order does not propagate downward
- *
- * Comparison
- * ----------
- *
- * Parent Check
- *     compares only one edge
- *     incorrect
- *
- * Recursive Bounds
- *     compares against all ancestors
- *     correct
- *
- * Inorder Traversal
- *     verifies global sorted order
- *     equally correct
- *
- * ============================================================
- * 🟢 MENTAL MODEL & INVARIANTS
- * ============================================================
- *
- * Mental Model
- * ------------
- *
- * Imagine every recursive call owns one legal numeric window.
- *
- *                (-∞, +∞)
- *                     |
- *                    10
- *                 /      \
- *          (-∞,10)      (10,+∞)
- *
- * Every child receives a smaller legal window.
- *
- * A node is allowed ONLY inside its inherited window.
- *
- * The tree is valid iff every node stays inside every inherited
- * window.
- *
- * ------------------------------------------------------------
- * Primary Invariant
- * ------------------------------------------------------------
- *
- * For every recursive call:
- *
- * subtree(root, lower, upper)
- *
- * every node inside that subtree MUST satisfy
- *
- * lower < node < upper
- *
- * ------------------------------------------------------------
- * Variable Meaning
- * ------------------------------------------------------------
- *
- * root
- *     current subtree root
- *
- * minNode
- *     strict lower ancestor bound
- *
- * maxNode
- *     strict upper ancestor bound
- *
- * ------------------------------------------------------------
- * Allowed Transition
- * ------------------------------------------------------------
- *
- * Visit left:
- *
- * upper becomes current node
- *
- * lower unchanged
- *
- * Visit right:
- *
- * lower becomes current node
- *
- * upper unchanged
- *
- * ------------------------------------------------------------
- * Forbidden Transition
- * ------------------------------------------------------------
- *
- * Never forget ancestor limits.
- *
- * Example:
- *
- *          20
- *         /
- *       10
- *         \
- *          25
- *
- * Local comparison says
- *
- * 25 > 10
- *
- * therefore looks valid.
- *
- * Global constraint says
- *
- * 25 must also be <20
- *
- * therefore invalid.
- *
- * Losing ancestor constraints breaks correctness.
- *
- * ------------------------------------------------------------
- * Termination
- * ------------------------------------------------------------
- *
- * Null subtree is trivially valid.
- *
- * Every recursive call strictly descends one level.
- *
- * Eventually recursion reaches null.
- *
- * ------------------------------------------------------------
- * Correctness Intuition
- * ------------------------------------------------------------
- *
- * Since every recursive call verifies one node inside the exact
- * legal interval inherited from every ancestor, and every child
- * receives the only interval it may legally occupy, every node is
- * checked against every necessary ancestor exactly once.
- *
- * ------------------------------------------------------------
- * Why Naive Parent Checking Fails
- * ------------------------------------------------------------
- *
- * Example
- *
- *          8
- *         /
- *        4
- *         \
- *          9
- *
- * Parent checks:
- *
- * 9 > 4
- * valid
- *
- * Actual BST:
- *
- * 9 belongs to left subtree of 8.
- *
- * Therefore
- *
- * 9 < 8
- *
- * must hold.
- *
- * It does not.
- *
- * Hence invalid.
- *
- * ============================================================
- * 🔴 WHY WRONG SOLUTIONS FAIL
- * ============================================================
- *
- * Mistake 1
- * ---------
- * Compare only parent.
- *
- * Why it appears correct
- *
- * Every edge satisfies BST ordering.
- *
- * Violated Invariant
- *
- * Descendants forgot ancestor constraints.
- *
- * Counterexample
- *
- *          10
- *         /
- *        5
- *         \
- *          12
- *
- * Parent comparisons succeed.
- *
- * Global BST fails.
- *
- * ------------------------------------------------------------
- * Mistake 2
- * ---------
- * Use <= on left recursion.
- *
- * BST requires strict ordering.
- *
- * Duplicate values invalidate BST.
- *
- * ------------------------------------------------------------
- * Mistake 3
- * ---------
- * Use integer bounds:
- *
- * Integer.MIN_VALUE
- * Integer.MAX_VALUE
- *
- * This breaks when node values equal those limits.
- *
- * Better:
- *
- * propagate nullable ancestor references
- *
- * or
- *
- * propagate long bounds.
- *
- * ------------------------------------------------------------
- * Mistake 4
- * ---------
- * Update both bounds during recursion.
- *
- * Only ONE bound changes.
- *
- * Left:
- * upper changes.
- *
- * Right:
- * lower changes.
- *
- * Changing both shrinks the legal interval incorrectly.
- *
- * ------------------------------------------------------------
- * Interview Trap
- * --------------
- *
- * Interviewer gives:
- *
- *          50
- *         /
- *       30
- *         \
- *         60
- *
- * Many candidates answer true.
- *
- * Correct answer:
- * false.
- *
- * ============================================================
- * ⚙ IMPLEMENTATION BLUEPRINT
- * ============================================================
- *
- * Mechanical Typing Order
- * -----------------------
- *
- * 1.
- * public boolean isValidBST(root)
- *
- * 2.
- * return helper(root,null,null)
- *
- * 3.
- * helper(root,min,max)
- *
- * 4.
- * null -> true
- *
- * 5.
- * check lower bound
- *
- * 6.
- * check upper bound
- *
- * 7.
- * recurse left
- *      max=current
- *
- * 8.
- * recurse right
- *      min=current
- *
- * 9.
- * logical AND
- *
- * ============================================================
- * ULTRA-COMPACT PSEUDOCODE
- * ============================================================
- *
- * validate(node,min,max)
- *
- * if null return true
- *
- * outside interval -> false
- *
- * left(valid,min,node)
- *
- * right(valid,node,max)
- *
- * return both
- *
- * ============================================================
- * 6. SOLUTION CLASSES
- * ============================================================
  */
 
 /**
@@ -470,7 +115,576 @@ public class ValidateBST {
 
     /**
      * =========================================================
-     * Brute Force
+     * ⭐ PRIMARY SOLUTION 1 — RECURSIVE RANGE PROPAGATION
+     * =========================================================
+     *
+     * Recommended default interview solution.
+     *
+     * Uses long bounds so the legal interval is explicit.
+     *
+     * Some interviewers prefer numeric bounds because the legal
+     * interval becomes visually explicit.
+     *
+     * Interval:
+     *
+     * (lower, upper)
+     *
+     * remains strict.
+     */
+    static class PrimaryRecursiveBounds {
+
+        public boolean isValidBST(TreeNode root) {
+            return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
+        }
+
+        private boolean validate(
+                TreeNode node,
+                long lower,
+                long upper
+        ) {
+
+            // Invariant:
+            // empty subtree never violates ordering.
+            if (node == null) {
+                return true;
+            }
+
+            if (node.val <= lower || node.val >= upper) {
+                return false;
+            }
+
+            return validate(node.left, lower, node.val)
+                    && validate(node.right, node.val, upper);
+        }
+    }
+
+    /**
+     * =========================================================
+     * ⭐ PRIMARY SOLUTION 2 — ITERATIVE INORDER
+     * =========================================================
+     *
+     * Idea
+     * ----
+     * Perform an inorder traversal.
+     *
+     * A valid BST always produces a strictly increasing inorder
+     * sequence.
+     *
+     * Instead of storing the full traversal, remember only the
+     * previously visited node.
+     *
+     * Invariant
+     * ---------
+     * Before visiting the current node, every previously visited
+     * node has already appeared in sorted inorder order.
+     *
+     * Therefore:
+     *
+     * previous.val < current.val
+     *
+     * must always hold.
+     *
+     * Correctness
+     * -----------
+     * Inorder visits:
+     *
+     * left
+     * current
+     * right
+     *
+     * Since BST ordering guarantees every left value is smaller
+     * and every right value is larger, the traversal must be
+     * strictly increasing.
+     *
+     * The first inversion immediately proves the tree is not a
+     * BST.
+     *
+     * Complexity
+     * ----------
+     * Time:
+     * O(n)
+     *
+     * Space:
+     * O(h)
+     *
+     * Interview Usefulness
+     * --------------------
+     * Excellent iterative solution.
+     *
+     * Demonstrates:
+     *
+     * • stack simulation
+     * • inorder traversal
+     * • invariant reasoning
+     * • no recursion depth concerns
+     */
+    static class PrimaryIterativeInorder {
+
+        public boolean isValidBST(TreeNode root) {
+
+            // Empty tree satisfies the BST invariant.
+            if (root == null) {
+                return true;
+            }
+
+            Deque<TreeNode> stack = new ArrayDeque<>();
+
+            TreeNode previous = null;
+
+            while (root != null || !stack.isEmpty()) {
+
+                // Invariant:
+                // descend left until the smallest remaining node.
+                while (root != null) {
+                    stack.push(root);
+                    root = root.left;
+                }
+
+                root = stack.pop();
+
+                // Invariant:
+                // inorder sequence must remain strictly increasing.
+                if (previous != null && root.val <= previous.val) {
+                    return false;
+                }
+
+                previous = root;
+
+                // Transition:
+                // after current, the next candidate lives on the
+                // right side.
+                root = root.right;
+            }
+
+            return true;
+        }
+    }
+
+    /**
+     * ============================================================
+     * 🔵 CORE PATTERN OVERVIEW
+     * ============================================================
+     *
+     * Pattern
+     * -------
+     * Recursive Range Validation
+     *
+     * Alternative Pattern
+     * -------------------
+     * Inorder Traversal Produces Strictly Increasing Sequence
+     *
+     * Archetype
+     * ---------
+     * Constraint propagation from ancestors.
+     *
+     * Core Invariant
+     * --------------
+     * Every recursive call owns one legal value interval.
+     *
+     * Every node inside that subtree MUST remain inside this
+     * interval.
+     *
+     * Left recursion narrows only the upper bound.
+     *
+     * Right recursion narrows only the lower bound.
+     *
+     * Why It Works
+     * ------------
+     * Every ancestor contributes one ordering constraint.
+     *
+     * Passing those constraints downward guarantees every node
+     * satisfies every ancestor simultaneously.
+     *
+     * Recognition Signals
+     * -------------------
+     * Use this pattern when:
+     *
+     * • subtree validity depends on ancestors
+     *
+     * • local parent comparison is insufficient
+     *
+     * • recursive constraints become tighter
+     *
+     * • descendants inherit restrictions
+     *
+     * When NOT To Use
+     * ---------------
+     * Do not use range propagation when:
+     *
+     * • property depends only on parent
+     *
+     * • constraints are purely local
+     *
+     * • tree order does not propagate downward
+     *
+     * Comparison
+     * ----------
+     *
+     * Parent Check
+     *     compares only one edge
+     *     incorrect
+     *
+     * Recursive Bounds
+     *     compares against all ancestors
+     *     correct
+     *
+     * Inorder Traversal
+     *     verifies global sorted order
+     *     equally correct
+     *
+     * ============================================================
+     * 🟢 MENTAL MODEL & INVARIANTS
+     * ============================================================
+     *
+     * Mental Model
+     * ------------
+     *
+     * Imagine every recursive call owns one legal numeric window.
+     *
+     *                (-∞, +∞)
+     *                     |
+     *                    10
+     *                 /      \
+     *          (-∞,10)      (10,+∞)
+     *
+     * Every child receives a smaller legal window.
+     *
+     * A node is allowed ONLY inside its inherited window.
+     *
+     * The tree is valid iff every node stays inside every inherited
+     * window.
+     *
+     * ------------------------------------------------------------
+     * Primary Invariant
+     * ------------------------------------------------------------
+     *
+     * For every recursive call:
+     *
+     * subtree(root, lower, upper)
+     *
+     * every node inside that subtree MUST satisfy
+     *
+     * lower < node < upper
+     *
+     * ------------------------------------------------------------
+     * Variable Meaning
+     * ------------------------------------------------------------
+     *
+     * root
+     *     current subtree root
+     *
+     * lower
+     *     strict lower ancestor bound
+     *
+     * upper
+     *     strict upper ancestor bound
+     *
+     * ------------------------------------------------------------
+     * Allowed Transition
+     * ------------------------------------------------------------
+     *
+     * Visit left:
+     *
+     * upper becomes current node
+     *
+     * lower unchanged
+     *
+     * Visit right:
+     *
+     * lower becomes current node
+     *
+     * upper unchanged
+     *
+     * ------------------------------------------------------------
+     * Forbidden Transition
+     * ------------------------------------------------------------
+     *
+     * Never forget ancestor limits.
+     *
+     * Example:
+     *
+     *          20
+     *         /
+     *       10
+     *         \
+     *          25
+     *
+     * Local comparison says
+     *
+     * 25 > 10
+     *
+     * therefore looks valid.
+     *
+     * Global constraint says
+     *
+     * 25 must also be <20
+     *
+     * therefore invalid.
+     *
+     * Losing ancestor constraints breaks correctness.
+     *
+     * ------------------------------------------------------------
+     * Termination
+     * ------------------------------------------------------------
+     *
+     * Null subtree is trivially valid.
+     *
+     * Every recursive call strictly descends one level.
+     *
+     * Eventually recursion reaches null.
+     *
+     * ------------------------------------------------------------
+     * Correctness Intuition
+     * ------------------------------------------------------------
+     *
+     * Since every recursive call verifies one node inside the exact
+     * legal interval inherited from every ancestor, and every child
+     * receives the only interval it may legally occupy, every node is
+     * checked against every necessary ancestor exactly once.
+     *
+     * ------------------------------------------------------------
+     * Why Naive Parent Checking Fails
+     * ------------------------------------------------------------
+     *
+     * Example
+     *
+     *          8
+     *         /
+     *        4
+     *         \
+     *          9
+     *
+     * Parent checks:
+     *
+     * 9 > 4
+     * valid
+     *
+     * Actual BST:
+     *
+     * 9 belongs to left subtree of 8.
+     *
+     * Therefore
+     *
+     * 9 < 8
+     *
+     * must hold.
+     *
+     * It does not.
+     *
+     * Hence invalid.
+     *
+     * ============================================================
+     * 🔴 WHY WRONG SOLUTIONS FAIL
+     * ============================================================
+     *
+     * Mistake 1
+     * ---------
+     * Compare only parent.
+     *
+     * Why it appears correct
+     *
+     * Every edge satisfies BST ordering.
+     *
+     * Violated Invariant
+     *
+     * Descendants forgot ancestor constraints.
+     *
+     * Counterexample
+     *
+     *          10
+     *         /
+     *        5
+     *         \
+     *          12
+     *
+     * Parent comparisons succeed.
+     *
+     * Global BST fails.
+     *
+     * ------------------------------------------------------------
+     * Mistake 2
+     * ---------
+     * Use <= on left recursion.
+     *
+     * BST requires strict ordering.
+     *
+     * Duplicate values invalidate BST.
+     *
+     * ------------------------------------------------------------
+     * Mistake 3
+     * ---------
+     * Use integer bounds:
+     *
+     * Integer.MIN_VALUE
+     * Integer.MAX_VALUE
+     *
+     * This breaks when node values equal those limits.
+     *
+     * Better:
+     *
+     * propagate nullable ancestor references
+     *
+     * or
+     *
+     * propagate long bounds.
+     *
+     * ------------------------------------------------------------
+     * Mistake 4
+     * ---------
+     * Update both bounds during recursion.
+     *
+     * Only ONE bound changes.
+     *
+     * Left:
+     * upper changes.
+     *
+     * Right:
+     * lower changes.
+     *
+     * Changing both shrinks the legal interval incorrectly.
+     *
+     * ------------------------------------------------------------
+     * Interview Trap
+     * --------------
+     *
+     * Interviewer gives:
+     *
+     *          50
+     *         /
+     *       30
+     *         \
+     *         60
+     *
+     * Many candidates answer true.
+     *
+     * Correct answer:
+     * false.
+     *
+     * ============================================================
+     * ⚙ IMPLEMENTATION BLUEPRINT
+     * ============================================================
+     *
+     * Mechanical Typing Order
+     * -----------------------
+     *
+     * 1.
+     * public boolean isValidBST(root)
+     *
+     * 2.
+     * return validate(root, Long.MIN_VALUE, Long.MAX_VALUE)
+     *
+     * 3.
+     * validate(node, lower, upper)
+     *
+     * 4.
+     * null -> true
+     *
+     * 5.
+     * check lower bound
+     *
+     * 6.
+     * check upper bound
+     *
+     * 7.
+     * recurse left
+     *      validate(left, lower, current)
+     *
+     * 8.
+     * recurse right
+     *      validate(right, current, upper)
+     *
+     * 9.
+     * logical AND
+     *
+     * ============================================================
+     * ULTRA-COMPACT PSEUDOCODE
+     * ============================================================
+     *
+     * validate(node,lower,upper)
+     *
+     * if null return true
+     *
+     * outside interval -> false
+     *
+     * validate(left,lower,node)
+     *
+     * validate(right,node,upper)
+     *
+     * return both
+     */
+
+    /**
+     * =========================================================
+     * Alternative Optimal — Ancestor Node References
+     * =========================================================
+     *
+     * Idea
+     * ----
+     * Carry ancestor bounds downward.
+     *
+     * Every recursive call owns exactly one legal interval.
+     *
+     * Invariant
+     * ---------
+     * Current node must satisfy
+     *
+     * lower < node < upper
+     *
+     * Improvement
+     * -----------
+     * Every node visited once.
+     *
+     * Complexity
+     * ----------
+     * Time:
+     * O(n)
+     *
+     * Space:
+     * O(h)
+     *
+     * Interview Usefulness
+     * --------------------
+     * Equally correct O(n) recursive alternative.
+     */
+    static class AlternativeAncestorBounds {
+
+        public boolean isValidBST(TreeNode root) {
+            return isValidBST(root, null, null);
+        }
+
+        private boolean isValidBST(
+                TreeNode root,
+                TreeNode minNode,
+                TreeNode maxNode
+        ) {
+
+            // Invariant: empty subtree is always valid.
+            if (root == null) {
+                return true;
+            }
+
+            // Invariant: current node must stay above lower bound.
+            if (minNode != null && root.val <= minNode.val) {
+                return false;
+            }
+
+            // Invariant: current node must stay below upper bound.
+            if (maxNode != null && root.val >= maxNode.val) {
+                return false;
+            }
+
+            // Invariant: left subtree inherits only upper bound.
+            return isValidBST(root.left, minNode, root)
+
+                    // Invariant: right subtree inherits only lower bound.
+                    && isValidBST(root.right, root, maxNode);
+        }
+    }
+
+
+    /**
+     * =========================================================
+     * Brute Force — Educational Derivation
      * =========================================================
      *
      * Idea
@@ -553,218 +767,6 @@ public class ValidateBST {
         }
     }
 
-    /**
-     * =========================================================
-     * Improved
-     * =========================================================
-     *
-     * Idea
-     * ----
-     * Carry ancestor bounds downward.
-     *
-     * Every recursive call owns exactly one legal interval.
-     *
-     * Invariant
-     * ---------
-     * Current node must satisfy
-     *
-     * lower < node < upper
-     *
-     * Improvement
-     * -----------
-     * Every node visited once.
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(n)
-     *
-     * Space:
-     * O(h)
-     *
-     * Interview Usefulness
-     * --------------------
-     * Canonical recursive solution.
-     */
-    static class Improved {
-
-        public boolean isValidBST(TreeNode root) {
-            return isValidBST(root, null, null);
-        }
-
-        private boolean isValidBST(
-                TreeNode root,
-                TreeNode minNode,
-                TreeNode maxNode
-        ) {
-
-            // Invariant: empty subtree is always valid.
-            if (root == null) {
-                return true;
-            }
-
-            // Invariant: current node must stay above lower bound.
-            if (minNode != null && root.val <= minNode.val) {
-                return false;
-            }
-
-            // Invariant: current node must stay below upper bound.
-            if (maxNode != null && root.val >= maxNode.val) {
-                return false;
-            }
-
-            // Invariant: left subtree inherits only upper bound.
-            return isValidBST(root.left, minNode, root)
-
-                    // Invariant: right subtree inherits only lower bound.
-                    && isValidBST(root.right, root, maxNode);
-        }
-    }
-
-    /**
-     * =========================================================
-     * Optimal (Interview Preferred)
-     * =========================================================
-     *
-     * Idea
-     * ----
-     * Perform an inorder traversal.
-     *
-     * A valid BST always produces a strictly increasing inorder
-     * sequence.
-     *
-     * Instead of storing the full traversal, remember only the
-     * previously visited node.
-     *
-     * Invariant
-     * ---------
-     * Before visiting the current node, every previously visited
-     * node has already appeared in sorted inorder order.
-     *
-     * Therefore:
-     *
-     * previous.val < current.val
-     *
-     * must always hold.
-     *
-     * Correctness
-     * -----------
-     * Inorder visits:
-     *
-     * left
-     * current
-     * right
-     *
-     * Since BST ordering guarantees every left value is smaller
-     * and every right value is larger, the traversal must be
-     * strictly increasing.
-     *
-     * The first inversion immediately proves the tree is not a
-     * BST.
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(n)
-     *
-     * Space:
-     * O(h)
-     *
-     * Interview Usefulness
-     * --------------------
-     * Excellent iterative solution.
-     *
-     * Demonstrates:
-     *
-     * • stack simulation
-     * • inorder traversal
-     * • invariant reasoning
-     * • no recursion depth concerns
-     */
-    static class Optimal {
-
-        public boolean isValidBST(TreeNode root) {
-
-            // Empty tree satisfies the BST invariant.
-            if (root == null) {
-                return true;
-            }
-
-            Deque<TreeNode> stack = new ArrayDeque<>();
-
-            TreeNode previous = null;
-
-            while (root != null || !stack.isEmpty()) {
-
-                // Invariant:
-                // descend left until the smallest remaining node.
-                while (root != null) {
-                    stack.push(root);
-                    root = root.left;
-                }
-
-                root = stack.pop();
-
-                // Invariant:
-                // inorder sequence must remain strictly increasing.
-                if (previous != null && root.val <= previous.val) {
-                    return false;
-                }
-
-                previous = root;
-
-                // Transition:
-                // after current, the next candidate lives on the
-                // right side.
-                root = root.right;
-            }
-
-            return true;
-        }
-    }
-
-    /**
-     * =========================================================
-     * Alternative Optimal
-     * =========================================================
-     *
-     * Uses long bounds instead of ancestor node references.
-     *
-     * Some interviewers prefer numeric bounds because the legal
-     * interval becomes visually explicit.
-     *
-     * Interval:
-     *
-     * (lower, upper)
-     *
-     * remains strict.
-     */
-    static class OptimalLongBounds {
-
-        public boolean isValidBST(TreeNode root) {
-            return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
-        }
-
-        private boolean validate(
-                TreeNode node,
-                long lower,
-                long upper
-        ) {
-
-            // Invariant:
-            // empty subtree never violates ordering.
-            if (node == null) {
-                return true;
-            }
-
-            if (node.val <= lower || node.val >= upper) {
-                return false;
-            }
-
-            return validate(node.left, lower, node.val)
-                    && validate(node.right, node.val, upper);
-        }
-    }
 
 /**
  * =========================================================
@@ -1203,7 +1205,7 @@ public class ValidateBST {
  *
  * Public wrapper.
  *
- * return helper(root, null, null)
+ * return validate(root, Long.MIN_VALUE, Long.MAX_VALUE)
  *
  * ---------------------------------------------------------
  * Step 2
@@ -1235,7 +1237,7 @@ public class ValidateBST {
  *
  * Left recursion.
  *
- * helper(left, lower, current)
+ * validate(left, lower, current)
  *
  * ---------------------------------------------------------
  * Step 6
@@ -1243,7 +1245,7 @@ public class ValidateBST {
  *
  * Right recursion.
  *
- * helper(right, current, upper)
+ * validate(right, current, upper)
  *
  * ---------------------------------------------------------
  * Step 7
@@ -1258,10 +1260,10 @@ public class ValidateBST {
  * ---------------------------------------------------------
  * Approach             Time     Space
  * ---------------------------------------------------------
- * Brute Force          O(n²)    O(h)
- * Recursive Bounds     O(n)     O(h)
+ * Recursive Bounds     O(n)     O(h)   ← Primary #1
+ * Iterative Inorder    O(n)     O(h)   ← Primary #2
  * Ancestor Nodes       O(n)     O(h)
- * Iterative Inorder    O(n)     O(h)
+ * Brute Force          O(n²)    O(h)
  * Morris Inorder       O(n)     O(1)
  * ---------------------------------------------------------
  *
@@ -1283,12 +1285,14 @@ public class ValidateBST {
 
 public static void main(String[] args) {
 
-    ValidateBST validator =
-            new ValidateBST();
+    PrimaryRecursiveBounds recursiveBounds =
+            new PrimaryRecursiveBounds();
 
-    Improved recursive = new Improved();
-    Optimal iterative = new Optimal();
-    OptimalLongBounds longBounds = new OptimalLongBounds();
+    PrimaryIterativeInorder iterativeInorder =
+            new PrimaryIterativeInorder();
+
+    AlternativeAncestorBounds ancestorBounds =
+            new AlternativeAncestorBounds();
 
     /*
      * ----------------------------------------------------
@@ -1303,9 +1307,9 @@ public static void main(String[] args) {
                     new TreeNode(3)
             );
 
-    assert recursive.isValidBST(t1);
-    assert iterative.isValidBST(t1);
-    assert longBounds.isValidBST(t1);
+    assert recursiveBounds.isValidBST(t1);
+    assert iterativeInorder.isValidBST(t1);
+    assert ancestorBounds.isValidBST(t1);
 
     /*
      * ----------------------------------------------------
@@ -1324,9 +1328,9 @@ public static void main(String[] args) {
                     )
             );
 
-    assert !recursive.isValidBST(t2);
-    assert !iterative.isValidBST(t2);
-    assert !longBounds.isValidBST(t2);
+    assert !recursiveBounds.isValidBST(t2);
+    assert !iterativeInorder.isValidBST(t2);
+    assert !ancestorBounds.isValidBST(t2);
 
     /*
      * ----------------------------------------------------
@@ -1346,9 +1350,9 @@ public static void main(String[] args) {
                     null
             );
 
-    assert !recursive.isValidBST(t3);
-    assert !iterative.isValidBST(t3);
-    assert !longBounds.isValidBST(t3);
+    assert !recursiveBounds.isValidBST(t3);
+    assert !iterativeInorder.isValidBST(t3);
+    assert !ancestorBounds.isValidBST(t3);
 
     /*
      * ----------------------------------------------------
@@ -1363,9 +1367,9 @@ public static void main(String[] args) {
                     new TreeNode(3)
             );
 
-    assert !recursive.isValidBST(t4);
-    assert !iterative.isValidBST(t4);
-    assert !longBounds.isValidBST(t4);
+    assert !recursiveBounds.isValidBST(t4);
+    assert !iterativeInorder.isValidBST(t4);
+    assert !ancestorBounds.isValidBST(t4);
 
     /*
      * ----------------------------------------------------
@@ -1375,9 +1379,9 @@ public static void main(String[] args) {
      */
     TreeNode t5 = new TreeNode(42);
 
-    assert recursive.isValidBST(t5);
-    assert iterative.isValidBST(t5);
-    assert longBounds.isValidBST(t5);
+    assert recursiveBounds.isValidBST(t5);
+    assert iterativeInorder.isValidBST(t5);
+    assert ancestorBounds.isValidBST(t5);
 
     /*
      * ----------------------------------------------------
@@ -1392,9 +1396,9 @@ public static void main(String[] args) {
                     new TreeNode(Integer.MAX_VALUE)
             );
 
-    assert recursive.isValidBST(t6);
-    assert iterative.isValidBST(t6);
-    assert longBounds.isValidBST(t6);
+    assert recursiveBounds.isValidBST(t6);
+    assert iterativeInorder.isValidBST(t6);
+    assert ancestorBounds.isValidBST(t6);
 
     /*
      * ----------------------------------------------------
@@ -1417,9 +1421,9 @@ public static void main(String[] args) {
                     )
             );
 
-    assert recursive.isValidBST(t7);
-    assert iterative.isValidBST(t7);
-    assert longBounds.isValidBST(t7);
+    assert recursiveBounds.isValidBST(t7);
+    assert iterativeInorder.isValidBST(t7);
+    assert ancestorBounds.isValidBST(t7);
 
     /*
      * ----------------------------------------------------
@@ -1442,9 +1446,9 @@ public static void main(String[] args) {
                     new TreeNode(70)
             );
 
-    assert !recursive.isValidBST(t8);
-    assert !iterative.isValidBST(t8);
-    assert !longBounds.isValidBST(t8);
+    assert !recursiveBounds.isValidBST(t8);
+    assert !iterativeInorder.isValidBST(t8);
+    assert !ancestorBounds.isValidBST(t8);
 
     /*
      * ----------------------------------------------------
@@ -1475,9 +1479,9 @@ public static void main(String[] args) {
                     )
             );
 
-    assert recursive.isValidBST(t9);
-    assert iterative.isValidBST(t9);
-    assert longBounds.isValidBST(t9);
+    assert recursiveBounds.isValidBST(t9);
+    assert iterativeInorder.isValidBST(t9);
+    assert ancestorBounds.isValidBST(t9);
 
     /*
      * ----------------------------------------------------
@@ -1496,9 +1500,9 @@ public static void main(String[] args) {
                     )
             );
 
-    assert !recursive.isValidBST(t10);
-    assert !iterative.isValidBST(t10);
-    assert !longBounds.isValidBST(t10);
+    assert !recursiveBounds.isValidBST(t10);
+    assert !iterativeInorder.isValidBST(t10);
+    assert !ancestorBounds.isValidBST(t10);
 
     System.out.println("All Validate Binary Search Tree tests passed.");
 }

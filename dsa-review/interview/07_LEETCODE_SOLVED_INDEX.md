@@ -8,35 +8,35 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | Metric | Count |
 |---|---:|
-| Unique LeetCode problems found recursively | 213 |
+| Unique LeetCode problems found recursively | 239 |
 | Also present in interview-ranked cockpit | 189 |
-| Extra source-discovered problems | 24 |
-| Problems appearing in multiple Java files | 55 |
+| Extra source-discovered problems | 50 |
+| Problems appearing in multiple Java files | 58 |
 
 ## Table Of Contents
 
-- [HashMap / Frequency / Set (5)](#hashmap-frequency-set)
+- [HashMap / Frequency / Set (6)](#hashmap-frequency-set)
 - [Binary Search / Answer Search (12)](#binary-search-answer-search)
 - [Sliding Window (13)](#sliding-window)
 - [Prefix Sum / Prefix-Suffix (2)](#prefix-sum-prefixsuffix)
-- [Linked List Pointers (13)](#linked-list-pointers)
-- [Heap / Priority Queue (14)](#heap-priority-queue)
-- [Two Pointers (5)](#two-pointers)
+- [Linked List Pointers (15)](#linked-list-pointers)
+- [Heap / Priority Queue (15)](#heap-priority-queue)
+- [Two Pointers (6)](#two-pointers)
 - [Tree BFS / Level Order (2)](#tree-bfs-level-order)
 - [Tree DFS / Recursion (31)](#tree-dfs-recursion)
 - [Graph DFS / Components (11)](#graph-dfs-components)
 - [Topological Sort (9)](#topological-sort)
 - [Graph BFS / Shortest Path (6)](#graph-bfs-shortest-path)
-- [Dynamic Programming (23)](#dynamic-programming)
+- [Dynamic Programming (27)](#dynamic-programming)
 - [Backtracking / Combinatorial DFS (8)](#backtracking-combinatorial-dfs)
-- [Stack / Monotonic Stack (14)](#stack-monotonic-stack)
+- [Stack / Monotonic Stack (15)](#stack-monotonic-stack)
 - [Trie (13)](#trie)
 - [Intervals / Sorting Greedy (8)](#intervals-sorting-greedy)
 - [Union Find / DSU (2)](#union-find-dsu)
 - [Greedy (4)](#greedy)
-- [Design Data Structures (7)](#design-data-structures)
+- [Design Data Structures (8)](#design-data-structures)
 - [Math / Bit / String (7)](#math-bit-string)
-- [Basics / Implementation (4)](#basics-implementation)
+- [Basics / Implementation (19)](#basics-implementation)
 
 ## HashMap / Frequency / Set
 
@@ -69,6 +69,12 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 100 | 108 | Longest Palindrome | [LC](https://leetcode.com/problems/longest-palindrome/) | [LongestPalindrome.java](../../src/main/java/org/chijai/day3/session3/LongestPalindrome.java) |
+
+### HashMap / Frequency / Set
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 190 | - | Random Flip Matrix | [LC](https://leetcode.com/problems/random-flip-matrix/) | [RandomFlipMatrix.java](../../src/main/java/org/chijai/day12/randomized/remapping/RandomFlipMatrix.java) |
 
 
 ## Binary Search / Answer Search
@@ -120,13 +126,13 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 43 | 47 | Longest Substring With At Most K Distinct Characters | [LC](https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/) | [AtMostKDistinct.java](../../src/main/java/org/chijai/day3/session1/AtMostKDistinct.java), [LongestSubString.java](../../src/main/java/org/chijai/day3/session1/LongestSubString.java) |
-| 190 | - | Constrained Subsequence Sum | [LC](https://leetcode.com/problems/constrained-subsequence-sum/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
-| 191 | - | Jump Game VI | [LC](https://leetcode.com/problems/jump-game-vi/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
-| 192 | - | Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit | [LC](https://leetcode.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
-| 193 | - | Longest Repeating Character Replacement | [LC](https://leetcode.com/problems/longest-repeating-character-replacement/) | [LongestRepeatingCharacterReplacement.java](../../src/main/java/org/chijai/day3/session1/LongestRepeatingCharacterReplacement.java) |
-| 194 | - | Max Value of Equation | [LC](https://leetcode.com/problems/max-value-of-equation/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
-| 195 | - | Maximum Number of Robots Within Budget | [LC](https://leetcode.com/problems/maximum-number-of-robots-within-budget/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
-| 196 | - | Shortest Subarray with Sum at Least K | [LC](https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 192 | - | Constrained Subsequence Sum | [LC](https://leetcode.com/problems/constrained-subsequence-sum/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 193 | - | Jump Game VI | [LC](https://leetcode.com/problems/jump-game-vi/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 194 | - | Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit | [LC](https://leetcode.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 195 | - | Longest Repeating Character Replacement | [LC](https://leetcode.com/problems/longest-repeating-character-replacement/) | [LongestRepeatingCharacterReplacement.java](../../src/main/java/org/chijai/day3/session1/LongestRepeatingCharacterReplacement.java) |
+| 196 | - | Max Value of Equation | [LC](https://leetcode.com/problems/max-value-of-equation/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 197 | - | Maximum Number of Robots Within Budget | [LC](https://leetcode.com/problems/maximum-number-of-robots-within-budget/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
+| 198 | - | Shortest Subarray with Sum at Least K | [LC](https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/) | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java), [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) |
 
 ### Queue / stream
 
@@ -195,7 +201,6 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 49 | 54 | Intersection of Two Linked Lists | [LC](https://leetcode.com/problems/intersection-of-two-linked-lists/) | [Intersection.java](../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) |
-| 197 | - | Linked List Cycle II | [LC](https://leetcode.com/problems/linked-list-cycle-ii/) | [Intersection.java](../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) |
 
 ### Linked-list reversal groups
 
@@ -206,6 +211,14 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | 55 | 61 | Rotate List | [LC](https://leetcode.com/problems/rotate-list/) | [ReverseLinkedListNodesK.java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) |
 | 56 | 62 | Swap Nodes In Pairs | [LC](https://leetcode.com/problems/swap-nodes-in-pairs/) | [ReverseLinkedListNodesK.java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) |
 | 164 | 175 | Reverse Linked List II | [LC](https://leetcode.com/problems/reverse-linked-list-ii/) | [ReverseLinkedListNodesK.java](../../src/main/java/org/chijai/day4/LinkedList/session2/ReverseLinkedListNodesK.java) |
+
+### Linked List Pointers
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 199 | - | First Unique Character in a String | [LC](https://leetcode.com/problems/first-unique-character-in-a-string/) | [FirstUniqueCharacterInAStringV2.java](../../src/main/java/org/chijai/day1/Arrays/session1/FirstUniqueCharacterInAStringV2.java) |
+| 200 | - | Linked List Cycle II | [LC](https://leetcode.com/problems/linked-list-cycle-ii/) | [FractionToRecurringDecimalV5.java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimalV5.java), [Intersection.java](../../src/main/java/org/chijai/day4/LinkedList/session1/Intersection.java) |
+| 201 | - | Linked List Random Node | [LC](https://leetcode.com/problems/linked-list-random-node/) | [LinkedListRandomNode.java](../../src/main/java/org/chijai/day12/randomized/reservoirsampling/LinkedListRandomNode.java) |
 
 
 ## Heap / Priority Queue
@@ -220,7 +233,7 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 33 | 36 | Top K Frequent Elements | [LC](https://leetcode.com/problems/top-k-frequent-elements/) | [HeapSort.java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java), [TopKFrequentTransactions.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentTransactions.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/trading/TopKFrequentElements.java) |
+| 33 | 36 | Top K Frequent Elements | [LC](https://leetcode.com/problems/top-k-frequent-elements/) | [HeapSort.java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java), [HighFiveV3.java](../../src/main/java/org/chijai/day7/session1/heap/HighFiveV3.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java), [TopKFrequentTransactions.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentTransactions.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/trading/TopKFrequentElements.java) |
 | 130 | 139 | Sort Characters By Frequency | [LC](https://leetcode.com/problems/sort-characters-by-frequency/) | [HeapSort.java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
 
 ### Intervals / heap
@@ -246,19 +259,19 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 93 | 100 | Kth Largest Element In An Array | [LC](https://leetcode.com/problems/kth-largest-element-in-an-array/) | [HeapSort.java](../../src/main/java/org/chijai/day7/session1/heap/HeapSort.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
-| 94 | 101 | Kth Largest Element In A Stream | [LC](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
+| 94 | 101 | Kth Largest Element In A Stream | [LC](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [HighFiveV3.java](../../src/main/java/org/chijai/day7/session1/heap/HighFiveV3.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
 
 ### Heap / quickselect
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 127 | 136 | K Closest Points To Origin | [LC](https://leetcode.com/problems/k-closest-points-to-origin/) | [KClosestPointsToOrigin.java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
+| 127 | 136 | K Closest Points To Origin | [LC](https://leetcode.com/problems/k-closest-points-to-origin/) | [HighFiveV3.java](../../src/main/java/org/chijai/day7/session1/heap/HighFiveV3.java), [KClosestPointsToOrigin.java](../../src/main/java/org/chijai/day7/session1/heap/KClosestPointsToOrigin.java), [KthLargestInStream.java](../../src/main/java/org/chijai/day7/session1/heap/KthLargestInStream.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
 
 ### Bounded heap with tie ordering
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 128 | 137 | Top K Frequent Words | [LC](https://leetcode.com/problems/top-k-frequent-words/) | [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
+| 128 | 137 | Top K Frequent Words | [LC](https://leetcode.com/problems/top-k-frequent-words/) | [HighFiveV3.java](../../src/main/java/org/chijai/day7/session1/heap/HighFiveV3.java), [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) |
 
 ### Bounded frequency buckets
 
@@ -270,19 +283,25 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 201 | - | Ipo | [LC](https://leetcode.com/problems/ipo/) | [IPO.java](../../src/main/java/org/chijai/day7/session1/heap/IPO.java) |
+| 206 | - | Ipo | [LC](https://leetcode.com/problems/ipo/) | [IPO.java](../../src/main/java/org/chijai/day7/session1/heap/IPO.java) |
+
+### Heap / Priority Queue
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 207 | - | High Five | [LC](https://leetcode.com/problems/high-five/) | [HighFiveV3.java](../../src/main/java/org/chijai/day7/session1/heap/HighFiveV3.java) |
 
 ### Two heaps + outgoing-value removal
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 202 | - | Sliding Window Median | [LC](https://leetcode.com/problems/sliding-window-median/) | [SlidingWindowMedian.java](../../src/main/java/org/chijai/day7/session1/heap/SlidingWindowMedian.java) |
+| 208 | - | Sliding Window Median | [LC](https://leetcode.com/problems/sliding-window-median/) | [SlidingWindowMedian.java](../../src/main/java/org/chijai/day7/session1/heap/SlidingWindowMedian.java) |
 
 ### Two-sided price priority queues
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 203 | - | Number of Orders in the Backlog | [LC](https://leetcode.com/problems/number-of-orders-in-the-backlog/) | [NumberOfOrdersInTheBacklog.java](../../src/main/java/org/chijai/trading/NumberOfOrdersInTheBacklog.java) |
+| 209 | - | Number of Orders in the Backlog | [LC](https://leetcode.com/problems/number-of-orders-in-the-backlog/) | [NumberOfOrdersInTheBacklog.java](../../src/main/java/org/chijai/trading/NumberOfOrdersInTheBacklog.java) |
 
 
 ## Two Pointers
@@ -316,6 +335,12 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 102 | 110 | Longest Palindromic Substring | [LC](https://leetcode.com/problems/longest-palindromic-substring/) | [LongestPalindromicSubstring.java](../../src/main/java/org/chijai/day3/session3/LongestPalindromicSubstring.java) |
+
+### Stable two-pointer compaction
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 191 | - | Move Zeroes | [LC](https://leetcode.com/problems/move-zeroes/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
 
 
 ## Tree BFS / Level Order
@@ -570,7 +595,7 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
 | 30 | 33 | Coin Change | [LC](https://leetcode.com/problems/coin-change/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
-| 177 | 193 | Word Break | [LC](https://leetcode.com/problems/word-break/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
+| 177 | 193 | Word Break | [LC](https://leetcode.com/problems/word-break/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java), [WordBreak.java](../../src/main/java/org/chijai/day9/dp/session2/WordBreak.java) |
 | 183 | 199 | Climbing Stairs | [LC](https://leetcode.com/problems/climbing-stairs/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
 | 184 | 200 | Min Cost Climbing Stairs | [LC](https://leetcode.com/problems/min-cost-climbing-stairs/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
 | 185 | 201 | Perfect Squares | [LC](https://leetcode.com/problems/perfect-squares/) | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) |
@@ -627,6 +652,15 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 |---:|---:|---|---|---|
 | 176 | 192 | Distinct Subsequences II | [LC](https://leetcode.com/problems/distinct-subsequences-ii/) | [CountUniqueChars.java](../../src/main/java/org/chijai/day10/session2/CountUniqueChars.java), [CountUniqueChars.java](../../src/main/java/org/chijai/day3/session2/prefix/suffix/CountUniqueChars.java) |
 
+### Dynamic Programming
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 213 | - | Decode Ways | [LC](https://leetcode.com/problems/decode-ways/) | [WordBreak.java](../../src/main/java/org/chijai/day9/dp/session2/WordBreak.java) |
+| 214 | - | Extra Characters in a String | [LC](https://leetcode.com/problems/extra-characters-in-a-string/) | [WordBreak.java](../../src/main/java/org/chijai/day9/dp/session2/WordBreak.java) |
+| 215 | - | Random Pick with Blacklist | [LC](https://leetcode.com/problems/random-pick-with-blacklist/) | [RandomPickWithBlacklist.java](../../src/main/java/org/chijai/day12/randomized/remapping/RandomPickWithBlacklist.java) |
+| 216 | - | Word Break II | [LC](https://leetcode.com/problems/word-break-ii/) | [WordBreak.java](../../src/main/java/org/chijai/day9/dp/session2/WordBreak.java) |
+
 
 ## Backtracking / Combinatorial DFS
 
@@ -670,13 +704,13 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 205 | - | Sudoku Solver | [LC](https://leetcode.com/problems/sudoku-solver/) | [SudokuSolver.java](../../src/main/java/org/chijai/day11/backtracking/session1/SudokuSolver.java) |
+| 211 | - | Sudoku Solver | [LC](https://leetcode.com/problems/sudoku-solver/) | [SudokuSolver.java](../../src/main/java/org/chijai/day11/backtracking/session1/SudokuSolver.java) |
 
 ### Constraint-pruned row backtracking
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 206 | - | N-Queens | [LC](https://leetcode.com/problems/n-queens/) | [NQueens.java](../../src/main/java/org/chijai/day11/backtracking/session1/NQueens.java) |
+| 212 | - | N-Queens | [LC](https://leetcode.com/problems/n-queens/) | [NQueens.java](../../src/main/java/org/chijai/day11/backtracking/session1/NQueens.java) |
 
 
 ## Stack / Monotonic Stack
@@ -726,9 +760,10 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 198 | - | Online Stock Span | [LC](https://leetcode.com/problems/online-stock-span/) | [OnlineStockSpan.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/OnlineStockSpan.java) |
-| 199 | - | Remove K Digits | [LC](https://leetcode.com/problems/remove-k-digits/) | [RemoveKDigits.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/RemoveKDigits.java) |
-| 200 | - | Sum of Subarray Minimums | [LC](https://leetcode.com/problems/sum-of-subarray-minimums/) | [SumOfSubarrayMinimums.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SumOfSubarrayMinimums.java) |
+| 202 | - | Online Stock Span | [LC](https://leetcode.com/problems/online-stock-span/) | [OnlineStockSpan.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/OnlineStockSpan.java) |
+| 203 | - | Random Point in Non-overlapping Rectangles | [LC](https://leetcode.com/problems/random-point-in-non-overlapping-rectangles/) | [RandomPointInNonOverlappingRectangles.java](../../src/main/java/org/chijai/day12/randomized/weightedsampling/RandomPointInNonOverlappingRectangles.java) |
+| 204 | - | Remove K Digits | [LC](https://leetcode.com/problems/remove-k-digits/) | [RemoveKDigits.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/RemoveKDigits.java) |
+| 205 | - | Sum of Subarray Minimums | [LC](https://leetcode.com/problems/sum-of-subarray-minimums/) | [SumOfSubarrayMinimums.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SumOfSubarrayMinimums.java) |
 
 
 ## Trie
@@ -840,7 +875,7 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 204 | - | Car Pooling | [LC](https://leetcode.com/problems/car-pooling/) | [BoundaryDelta.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/BoundaryDelta.java) |
+| 210 | - | Car Pooling | [LC](https://leetcode.com/problems/car-pooling/) | [BoundaryDelta.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/BoundaryDelta.java) |
 
 
 ## Union Find / DSU
@@ -893,31 +928,37 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 209 | - | Design an Ordered Stream | [LC](https://leetcode.com/problems/design-an-ordered-stream/) | [DesignOrderedStream.java](../../src/main/java/org/chijai/design/lld/DesignOrderedStream.java) |
+| 234 | - | Design an Ordered Stream | [LC](https://leetcode.com/problems/design-an-ordered-stream/) | [DesignOrderedStream.java](../../src/main/java/org/chijai/design/lld/DesignOrderedStream.java) |
+
+### Design Data Structures
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 235 | - | Logger Rate Limiter | [LC](https://leetcode.com/problems/logger-rate-limiter/) | [LoggerRateLimiterV4.java](../../src/main/java/org/chijai/design/lld/LoggerRateLimiterV4.java) |
 
 ### Fixed capacity counters
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 210 | - | Design Parking System | [LC](https://leetcode.com/problems/design-parking-system/) | [DesignParkingSystem.java](../../src/main/java/org/chijai/design/lld/DesignParkingSystem.java) |
+| 236 | - | Design Parking System | [LC](https://leetcode.com/problems/design-parking-system/) | [DesignParkingSystem.java](../../src/main/java/org/chijai/design/lld/DesignParkingSystem.java) |
 
 ### Fixed-time-window queue
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 211 | - | Design Hit Counter | [LC](https://leetcode.com/problems/design-hit-counter/) | [DesignHitCounter.java](../../src/main/java/org/chijai/design/lld/DesignHitCounter.java) |
+| 237 | - | Design Hit Counter | [LC](https://leetcode.com/problems/design-hit-counter/) | [DesignHitCounter.java](../../src/main/java/org/chijai/design/lld/DesignHitCounter.java) |
 
 ### Ordered price multiset + latest timestamp
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 212 | - | Stock Price Fluctuation | [LC](https://leetcode.com/problems/stock-price-fluctuation/) | [StockPriceFluctuation.java](../../src/main/java/org/chijai/trading/StockPriceFluctuation.java) |
+| 238 | - | Stock Price Fluctuation | [LC](https://leetcode.com/problems/stock-price-fluctuation/) | [StockPriceFluctuation.java](../../src/main/java/org/chijai/trading/StockPriceFluctuation.java) |
 
 ### Player scores + ordered score counts
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 213 | - | Design A Leaderboard | [LC](https://leetcode.com/problems/design-a-leaderboard/) | [DesignALeaderboard.java](../../src/main/java/org/chijai/design/lld/DesignALeaderboard.java) |
+| 239 | - | Design A Leaderboard | [LC](https://leetcode.com/problems/design-a-leaderboard/) | [DesignALeaderboard.java](../../src/main/java/org/chijai/design/lld/DesignALeaderboard.java) |
 
 
 ## Math / Bit / String
@@ -969,14 +1010,34 @@ Use [Zero To Hero Ranked Table](01_ZERO_TO_HERO_RANKED_TABLE.md) for interview c
 |---:|---:|---|---|---|
 | 144 | 153 | String To Integer Atoi | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | [StringToIntegerAtoi.java](../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) |
 
+### Basics / Implementation
+
+| # | Interview Rank | Problem | LeetCode | Local solution file(s) |
+|---:|---:|---|---|---|
+| 217 | - | Consecutive Characters | [LC](https://leetcode.com/problems/consecutive-characters/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 218 | - | Find the Duplicate Number | [LC](https://leetcode.com/problems/find-the-duplicate-number/) | [FractionToRecurringDecimalV5.java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimalV5.java) |
+| 219 | - | Fraction to Recurring Decimal | [LC](https://leetcode.com/problems/fraction-to-recurring-decimal/) | [FractionToRecurringDecimalV5.java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimalV5.java) |
+| 220 | - | Happy Number | [LC](https://leetcode.com/problems/happy-number/) | [FractionToRecurringDecimalV5.java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimalV5.java) |
+| 221 | - | Longer Contiguous Segments of Ones than Zeros | [LC](https://leetcode.com/problems/longer-contiguous-segments-of-ones-than-zeros/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 222 | - | Max Consecutive Ones | [LC](https://leetcode.com/problems/max-consecutive-ones/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 223 | - | Random Pick Index | [LC](https://leetcode.com/problems/random-pick-index/) | [RandomPickIndex.java](../../src/main/java/org/chijai/day12/randomized/reservoirsampling/RandomPickIndex.java) |
+| 224 | - | Random Pick with Weight | [LC](https://leetcode.com/problems/random-pick-with-weight/) | [RandomPickWithWeight.java](../../src/main/java/org/chijai/day12/randomized/weightedsampling/RandomPickWithWeight.java) |
+| 225 | - | Remove Duplicates from Sorted Array | [LC](https://leetcode.com/problems/remove-duplicates-from-sorted-array/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 226 | - | Remove Duplicates from Sorted Array II | [LC](https://leetcode.com/problems/remove-duplicates-from-sorted-array-ii/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 227 | - | Remove Element | [LC](https://leetcode.com/problems/remove-element/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 228 | - | Repeated DNA Sequences | [LC](https://leetcode.com/problems/repeated-dna-sequences/) | [FractionToRecurringDecimalV5.java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimalV5.java) |
+| 229 | - | Shuffle an Array | [LC](https://leetcode.com/problems/shuffle-an-array/) | [ShuffleAnArray.java](../../src/main/java/org/chijai/day12/randomized/shuffle/ShuffleAnArray.java) |
+| 230 | - | String Compression | [LC](https://leetcode.com/problems/string-compression/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+| 231 | - | String Compression II | [LC](https://leetcode.com/problems/string-compression-ii/) | [StringCompressionV6.java](../../src/main/java/org/chijai/day3/session3/StringCompressionV6.java) |
+
 ### Sentinel boundary scan
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 207 | - | Missing Ranges | [LC](https://leetcode.com/problems/missing-ranges/) | [MissingRanges.java](../../src/main/java/org/chijai/trading/MissingRanges.java) |
+| 232 | - | Missing Ranges | [LC](https://leetcode.com/problems/missing-ranges/) | [MissingRanges.java](../../src/main/java/org/chijai/trading/MissingRanges.java) |
 
 ### XOR / arithmetic invariant
 
 | # | Interview Rank | Problem | LeetCode | Local solution file(s) |
 |---:|---:|---|---|---|
-| 208 | - | Missing Number | [LC](https://leetcode.com/problems/missing-number/) | [MissingNumber.java](../../src/main/java/org/chijai/day10/session2/MissingNumber.java) |
+| 233 | - | Missing Number | [LC](https://leetcode.com/problems/missing-number/) | [MissingNumber.java](../../src/main/java/org/chijai/day10/session2/MissingNumber.java) |

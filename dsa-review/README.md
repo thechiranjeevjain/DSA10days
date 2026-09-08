@@ -18,22 +18,23 @@ The goal is active recall, not rereading. Use the generated cockpit to decide wh
 ## Recommended Use
 
 1. Open `interview/README.md`.
-2. If time is short, follow `interview/04_TWO_DAY_AND_SEVEN_DAY_PLANS.md`.
-3. For global order, use `interview/01_ZERO_TO_HERO_RANKED_TABLE.md`.
-4. For visual retrieval, use `interview/00_DSA_MIND_MAP.md`.
-5. For the complete recursive LeetCode source index, use `interview/07_LEETCODE_SOLVED_INDEX.md`.
-6. For pattern discrimination and mutation practice, use `horizontal/README.md`.
-7. For structure decisions, use `interview/08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md`.
-8. If you are following the legacy 90-problem hourly plan, use `interview/11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md`.
-9. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
-10. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
-11. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
-12. For one-pass reconstruction, exact say-before-coding contracts, traps, and mutations, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
-13. For one-pass time/space complexity recall with a proof sentence per solved LeetCode problem, use `interview/13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md`.
-14. For facts you personally forget or implement incorrectly, append one line to `interview/ACTIVE_RECALL_FAILURE_LEDGER.md`, then convert recurring misses into cold-prompt cards.
-15. For weak-topic focus, open `interview/patterns/README.md`.
-16. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
-17. After a miss, run the review command and mark the item honestly.
+2. One hour before an interview, scan `interview/14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE.md` from rank 1 until time is called.
+3. If preparation time is short, follow `interview/04_TWO_DAY_AND_SEVEN_DAY_PLANS.md`.
+4. For global order, use `interview/01_ZERO_TO_HERO_RANKED_TABLE.md`.
+5. For visual retrieval, use `interview/00_DSA_MIND_MAP.md`.
+6. For the complete recursive LeetCode source index, use `interview/07_LEETCODE_SOLVED_INDEX.md`.
+7. For pattern discrimination and mutation practice, use `horizontal/README.md`.
+8. For structure decisions, use `interview/08_PROJECT_STRUCTURE_AND_PATTERN_TREE.md`.
+9. If you are following the legacy 90-problem hourly plan, use `interview/11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md`.
+10. After the first week, continue with `interview/10_AFTER_7_DAY_EXTENSION_PLAN.md`.
+11. For fast recall, use `interview/02_ONE_LINE_RECALL_ALL_PROBLEMS.md`.
+12. For speaking practice, use `interview/03_CRISP_INTERVIEW_ANSWERS.md`.
+13. For one-pass reconstruction, exact say-before-coding contracts, traps, and mutations, use `interview/12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md`.
+14. For one-pass time/space complexity recall with a proof sentence per solved LeetCode problem, use `interview/13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md`.
+15. For facts you personally forget or implement incorrectly, append one line to `interview/ACTIVE_RECALL_FAILURE_LEDGER.md`, then convert recurring misses into cold-prompt cards.
+16. For weak-topic focus, open `interview/patterns/README.md`.
+17. If the ranking feels questionable, read `interview/05_RANKING_METHODOLOGY_AND_AUDIT.md`.
+18. After a miss, run the review command and mark the item honestly.
 
 ## Command Index
 

@@ -28,6 +28,7 @@ $requiredFiles = @(
     "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md",
     "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md",
     "13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md",
+    "14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE.md",
     "DSA_7-Day_Interview_Performance_Sprint.md",
     "DSA_170_Brain_Map_FINAL.md"
 )
@@ -296,6 +297,97 @@ $missingComplexitySlugs = @($recursiveLeetCodeSlugs | Where-Object { $_ -notin $
 $extraComplexitySlugs = @($complexitySlugs | Where-Object { $_ -notin $recursiveLeetCodeSlugs })
 if ($duplicateComplexitySlugs.Count -gt 0 -or $missingComplexitySlugs.Count -gt 0 -or $extraComplexitySlugs.Count -gt 0) {
     Fail "complexity slug mismatch. Duplicate: $($duplicateComplexitySlugs -join ', '); Missing: $($missingComplexitySlugs -join ', '); Extra: $($extraComplexitySlugs -join ', ')"
+}
+
+$oneHourPath = Join-Path $interviewRoot "14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE.md"
+$oneHourText = Get-Content -LiteralPath $oneHourPath -Raw
+$oneHourLines = @(Get-Content -LiteralPath $oneHourPath)
+$oneHourHeaders = @($oneHourLines | Where-Object { $_ -eq '| Rank | Anchor problem + classification + evidence | LeetCode | Local Java | Interview script |' })
+$oneHourRows = @($oneHourLines | Where-Object { $_ -match '^\| \d+ \|' })
+$oneHourCheckpoints = @($oneHourLines | Where-Object { $_ -match '^\| \*\*Checkpoint \d+\*\* \|' })
+
+if ($oneHourHeaders.Count -ne 1) {
+    Fail "one-hour artifact must contain exactly one continuous five-column table; found $($oneHourHeaders.Count) headers"
+}
+if ($oneHourRows.Count -lt 75 -or $oneHourRows.Count -gt 100) {
+    Fail "one-hour artifact must contain 75-100 generated anchors; found $($oneHourRows.Count)"
+}
+if ($oneHourText -match 'VERIFY FROM SOURCE') {
+    Fail "one-hour artifact contains an unverified complexity contract"
+}
+if ($oneHourText -notmatch 'Current generated cut: \*\*(?<count>\d+) anchors\*\*, \*\*(?<words>\d+) visible row words\*\*') {
+    Fail "one-hour artifact is missing its generated count/word-budget declaration"
+}
+$declaredOneHourCount = [int] $Matches['count']
+$oneHourVisibleWords = [int] $Matches['words']
+if ($declaredOneHourCount -ne $oneHourRows.Count) {
+    Fail "one-hour declared anchor count $declaredOneHourCount does not match $($oneHourRows.Count) rows"
+}
+if ($oneHourVisibleWords -gt 6200) {
+    Fail "one-hour artifact exceeds the 6200 visible-word budget: $oneHourVisibleWords"
+}
+
+$mandatoryOneHourSlugs = @(
+    'two-sum', 'binary-search', 'longest-substring-without-repeating-characters', 'reverse-linked-list',
+    'diameter-of-binary-tree', 'number-of-islands', 'course-schedule', 'valid-parentheses',
+    'house-robber', 'subsets', 'two-sum-ii-input-array-is-sorted', 'product-of-array-except-self',
+    'binary-tree-level-order-traversal', 'word-ladder', 'top-k-frequent-elements', 'accounts-merge',
+    'merge-intervals', 'best-time-to-buy-and-sell-stock', 'implement-trie-prefix-tree', 'add-binary'
+)
+$oneHourSlugs = New-Object System.Collections.Generic.List[string]
+$oneHourRanks = New-Object System.Collections.Generic.List[int]
+foreach ($line in $oneHourRows) {
+    $cells = @([regex]::Split($line, '(?<!\\)\|') | ForEach-Object { $_.Trim() })
+    if ($cells.Count -ne 7) {
+        Fail "one-hour row must have exactly five columns: $line"
+    }
+    if ($cells[1] -notmatch '^\d+$') {
+        Fail "one-hour row has an invalid rank: $line"
+    }
+    $oneHourRanks.Add([int] $cells[1])
+    if ($cells[2] -notmatch '^\*\*.+\*\*<br>`.+ > .+`<br>Evidence: `.+Local#\d+`$') {
+        Fail "one-hour classification/evidence cell is malformed: $line"
+    }
+    if ($cells[3] -notmatch '^\[LC\]\(https://leetcode\.com/problems/(?<slug>[a-z0-9-]+)/\)$') {
+        Fail "one-hour row has no canonical LeetCode link: $line"
+    }
+    $oneHourSlugs.Add($Matches['slug'])
+    if ($cells[4] -notmatch '^\[Java\]\((?<java>\.\./\.\./src/main/java/org/chijai/.+\.java)\)$') {
+        Fail "one-hour row has no single local Java link: $line"
+    }
+    $javaFullPath = [System.IO.Path]::GetFullPath((Join-Path $interviewRoot $Matches['java']))
+    if (-not (Test-Path -LiteralPath $javaFullPath)) {
+        Fail "one-hour row points to missing Java source: $($Matches['java'])"
+    }
+    foreach ($token in @('**DECIDE:**', '**Invariant:**', '**CODE-GUARD:**', '**Guard:**', '**Test:**', '**Defend:**')) {
+        if ($cells[5] -notmatch [regex]::Escape($token)) {
+            Fail "one-hour script is missing $token at rank $($cells[1])"
+        }
+    }
+}
+
+for ($index = 0; $index -lt $oneHourRanks.Count; $index++) {
+    if ($oneHourRanks[$index] -ne ($index + 1)) {
+        Fail "one-hour ranks must be contiguous; found $($oneHourRanks[$index]) at position $($index + 1)"
+    }
+}
+$duplicateOneHourSlugs = @($oneHourSlugs | Group-Object | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Name })
+if ($duplicateOneHourSlugs.Count -gt 0) {
+    Fail "one-hour artifact has duplicate LeetCode anchors: $($duplicateOneHourSlugs -join ', ')"
+}
+for ($index = 0; $index -lt $mandatoryOneHourSlugs.Count; $index++) {
+    if ($oneHourSlugs[$index] -ne $mandatoryOneHourSlugs[$index]) {
+        Fail "one-hour fixed curriculum mismatch at rank $($index + 1): expected $($mandatoryOneHourSlugs[$index]), found $($oneHourSlugs[$index])"
+    }
+}
+$expectedCheckpointCount = [math]::Floor(($oneHourRows.Count - 1) / 10)
+if ($oneHourCheckpoints.Count -ne $expectedCheckpointCount) {
+    Fail "one-hour artifact expected $expectedCheckpointCount checkpoint rows, found $($oneHourCheckpoints.Count)"
+}
+$interviewReadmeText = Get-Content -LiteralPath (Join-Path $interviewRoot 'README.md') -Raw
+$reviewReadmeText = Get-Content -LiteralPath (Join-Path $reviewRoot 'README.md') -Raw
+if ($interviewReadmeText -notmatch '14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE\.md' -or $reviewReadmeText -notmatch '14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE\.md') {
+    Fail "one-hour artifact is not linked from both review entrypoints"
 }
 
 if (-not $topRankMatch.Success) {
@@ -995,6 +1087,8 @@ if ($controlByteFiles.Count -gt 0) {
     leetcodeLinks = $leetcodeLinkCount
     recursiveLeetCodeIndex = $leetcodeIndexRows.Count
     complexityRows = $complexityProblemLines.Count
+    oneHourRows = $oneHourRows.Count
+    oneHourVisibleWords = $oneHourVisibleWords
     localOnlyEntries = $localOnlyCount
     patternFiles = $patternFiles.Count
     patternRows = $patternProblemRows

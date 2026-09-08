@@ -88,6 +88,557 @@ public class Islands {
      *
      * =====================================================================================
      */
+    /*
+     * =====================================================================================
+     * PRIMARY PROBLEM — SOLUTION CLASSES
+     * =====================================================================================
+     */
+
+
+
+    /*
+     * =====================================================================================
+     * Solution #1 — Optimal (Interview Preferred) — PRIMARY
+     * =====================================================================================
+     */
+
+    static class OptimalDFSInPlace {
+
+        /*
+         * ⏱ Time Complexity:
+         * O(rows * cols)
+         *
+         * Derivation:
+         *
+         * Let:
+         * rows = number of rows
+         * cols = number of columns
+         *
+         * The outer scan examines every cell once:
+         *
+         * rows * cols cells
+         *
+         * When DFS starts from a land cell, that cell is immediately changed
+         * from '1' to '0'. Therefore, no land cell can be fully processed
+         * by DFS more than once.
+         *
+         * Each processed land cell checks exactly 4 directions.
+         * 4 is constant work.
+         *
+         * Therefore:
+         *
+         * O(rows * cols) + O(4 * rows * cols)
+         * = O(rows * cols)
+         *
+         * =================================================================================
+         *
+         * 📦 Space Complexity:
+         * O(rows * cols) worst case
+         *
+         * Derivation:
+         *
+         * There is no separate visited matrix because the grid itself stores
+         * visited state by changing '1' -> '0'.
+         *
+         * However, recursive DFS uses the call stack.
+         *
+         * In the worst case, one island can contain every cell and the DFS
+         * recursion can become as deep as rows * cols, for example a long
+         * snake-shaped connected island.
+         *
+         * Therefore:
+         *
+         * auxiliary data structure space = O(1)
+         * recursion stack             = O(rows * cols) worst case
+         * overall auxiliary space     = O(rows * cols) worst case
+         *
+         * Important:
+         * Saying O(1) space would ignore the recursive call stack.
+         * =================================================================================
+         */
+
+        private static final int[][] DIRECTIONS = {
+                {-1, 0}, // UP
+                {1, 0},  // DOWN
+                {0, -1}, // LEFT
+                {0, 1}   // RIGHT
+        };
+
+        public int numIslands(char[][] grid) {
+
+            if (grid == null || grid.length == 0) {
+                return 0;
+            }
+
+            int totalRows = grid.length;
+            int totalCols = grid[0].length;
+
+            int islandCount = 0;
+
+            for (int i = 0; i < totalRows; i++) {
+
+                for (int j = 0; j < totalCols; j++) {
+
+                    /*
+                     * 🟢 New island root discovered.
+                     *
+                     * Every DFS traversal consumes
+                     * exactly one connected component.
+                     */
+                    if (grid[i][j] == '1') {
+
+                        islandCount++;
+
+                        floodFill(grid, i, j);
+                    }
+                }
+            }
+
+            return islandCount;
+        }
+
+        private void floodFill(char[][] grid,
+                               int row,
+                               int col) {
+
+            int totalRows = grid.length;
+            int totalCols = grid[0].length;
+
+            /*
+             * 🔴 Boundary termination.
+             */
+            if (row < 0
+                    || row >= totalRows
+                    || col < 0
+                    || col >= totalCols) {
+
+                return;
+            }
+
+            /*
+             * 🔴 Only unprocessed land expandable.
+             */
+            if (grid[row][col] != '1') {
+                return;
+            }
+
+            /*
+             * 🟢 Consume this land permanently.
+             *
+             * This prevents duplicate counting.
+             */
+            grid[row][col] = '0';
+
+            for (int[] direction : DIRECTIONS) {
+
+                int neighborRow =
+                        row + direction[0];
+
+                int neighborCol =
+                        col + direction[1];
+
+                floodFill(
+                        grid,
+                        neighborRow,
+                        neighborCol
+                );
+            }
+        }
+    }
+
+
+    /*
+     * =====================================================================================
+     * Solution #2 — Improved
+     * =====================================================================================
+     */
+
+    static class ImprovedBFS {
+
+        /*
+         * ⏱ Time Complexity:
+         * O(rows * cols)
+         *
+         * Derivation:
+         *
+         * The outer loops inspect all rows * cols cells once.
+         *
+         * A land cell is added to the BFS queue only when it is still unvisited.
+         * It is marked visited BEFORE insertion, so the same cell cannot be
+         * inserted into the queue multiple times.
+         *
+         * Every cell is therefore processed at most once, and each processed
+         * cell checks exactly 4 neighbors.
+         *
+         * Therefore:
+         *
+         * O(rows * cols) + O(4 * rows * cols)
+         * = O(rows * cols)
+         *
+         * =================================================================================
+         *
+         * 📦 Space Complexity:
+         * O(rows * cols)
+         *
+         * Derivation:
+         *
+         * visited[][] contains one boolean entry for every grid cell:
+         *
+         * O(rows * cols)
+         *
+         * In the worst case, the BFS queue can also contain O(rows * cols)
+         * cells over the traversal frontier.
+         *
+         * Therefore:
+         *
+         * visited matrix = O(rows * cols)
+         * BFS queue      = O(rows * cols) worst case
+         * overall        = O(rows * cols)
+         * =================================================================================
+         */
+
+        /*
+         * 🔵 Production Improvement:
+         *
+         * Semantic coordinate object instead of raw int[].
+         *
+         * Benefits:
+         *
+         * - readability
+         * - self-documenting traversal state
+         * - easier debugging
+         * - removes magic indices
+         */
+
+        private static class Cell {
+
+            final int row;
+            final int col;
+
+            Cell(int row, int col) {
+
+                this.row = row;
+                this.col = col;
+            }
+        }
+
+        private static final int[][] DIRECTIONS = {
+                {-1, 0}, // UP
+                {1, 0},  // DOWN
+                {0, -1}, // LEFT
+                {0, 1}   // RIGHT
+        };
+
+        public int numIslands(char[][] grid) {
+
+            if (grid == null || grid.length == 0) {
+                return 0;
+            }
+
+            int totalRows = grid.length;
+            int totalCols = grid[0].length;
+
+            boolean[][] visited = new boolean[totalRows][totalCols];
+
+            int islandCount = 0;
+
+            for (int currentRow = 0;
+                 currentRow < totalRows;
+                 currentRow++) {
+
+                for (int currentCol = 0;
+                     currentCol < totalCols;
+                     currentCol++) {
+
+                    /*
+                     * 🟢 Only fresh unvisited land
+                     * can start a new island traversal.
+                     */
+                    if (grid[currentRow][currentCol] == '1'
+                            && !visited[currentRow][currentCol]) {
+
+                        islandCount++;
+
+                        bfs(
+                                grid,
+                                visited,
+                                currentRow,
+                                currentCol
+                        );
+                    }
+                }
+            }
+
+            return islandCount;
+        }
+
+        private void bfs(char[][] grid,
+                         boolean[][] visited,
+                         int sourceRow,
+                         int sourceCol) {
+
+            int totalRows = grid.length;
+            int totalCols = grid[0].length;
+
+            Queue<Cell> queue = new LinkedList<>();
+
+            /*
+             * 🟢 Mark immediately upon insertion.
+             *
+             * Prevents duplicate queue insertion.
+             */
+            visited[sourceRow][sourceCol] = true;
+
+            queue.offer(new Cell(sourceRow, sourceCol));
+
+            while (!queue.isEmpty()) {
+
+                Cell currentCell = queue.poll();
+
+                int currentRow = currentCell.row;
+                int currentCol = currentCell.col;
+
+                for (int[] direction : DIRECTIONS) {
+
+                    int neighborRow =
+                            currentRow + direction[0];
+
+                    int neighborCol =
+                            currentCol + direction[1];
+
+                    /*
+                     * 🔴 Boundary validation.
+                     */
+                    if (neighborRow < 0
+                            || neighborRow >= totalRows
+                            || neighborCol < 0
+                            || neighborCol >= totalCols) {
+
+                        continue;
+                    }
+
+                    /*
+                     * 🔴 Water cannot belong to island.
+                     */
+                    if (grid[neighborRow][neighborCol] == '0') {
+                        continue;
+                    }
+
+                    /*
+                     * 🔴 Already assigned to an island.
+                     */
+                    if (visited[neighborRow][neighborCol]) {
+                        continue;
+                    }
+
+                    /*
+                     * 🟢 Ownership assignment happens NOW.
+                     */
+                    visited[neighborRow][neighborCol] = true;
+
+                    queue.offer(
+                            new Cell(
+                                    neighborRow,
+                                    neighborCol
+                            )
+                    );
+                }
+            }
+        }
+    }
+
+    /*
+     * =====================================================================================
+     * Solution #3 — Brute Force
+     * =====================================================================================
+     */
+
+    static class BruteForceDFSWithSeparateVisited {
+
+        /*
+         * 🔵 Core Idea:
+         *
+         * Scan every cell.
+         *
+         * Whenever an unvisited land cell appears:
+         * - increment island count
+         * - DFS entire connected component
+         *
+         * =================================================================================
+         *
+         * 🟢 Invariant Enforced:
+         *
+         * Every land cell becomes permanently assigned
+         * to exactly one DFS traversal.
+         *
+         * =================================================================================
+         *
+         * 🟡 What Limitation It Fixes:
+         *
+         * Prevents duplicate counting.
+         *
+         * =================================================================================
+         *
+         * ⏱ Time Complexity:
+         * O(rows * cols)
+         *
+         * Derivation:
+         *
+         * The outer scan examines rows * cols cells.
+         *
+         * DFS only expands a land cell when visited[row][col] is false,
+         * and immediately marks it visited before exploring neighbors.
+         * Therefore each land cell is fully processed at most once.
+         *
+         * Each processed land cell checks 4 directions, which is constant work.
+         *
+         * Therefore:
+         *
+         * O(rows * cols) + O(4 * rows * cols)
+         * = O(rows * cols)
+         *
+         * =================================================================================
+         *
+         * 📦 Space Complexity:
+         * O(rows * cols)
+         *
+         * Derivation:
+         *
+         * visited[][] stores one boolean for every cell:
+         * O(rows * cols)
+         *
+         * Recursive DFS can also require O(rows * cols) call-stack depth
+         * in the worst case if one connected island forms a long traversal path.
+         *
+         * Therefore:
+         *
+         * visited matrix  = O(rows * cols)
+         * recursion stack = O(rows * cols) worst case
+         * overall         = O(rows * cols)
+         *
+         * =================================================================================
+         *
+         * 🟣 Interview Preference:
+         *
+         * Good starter solution.
+         * Very readable.
+         * Excellent for invariant explanation.
+         *
+         * =================================================================================
+         */
+
+        private static final int[][] DIRECTIONS = {
+                {-1, 0}, // UP
+                {1, 0},  // DOWN
+                {0, -1}, // LEFT
+                {0, 1}   // RIGHT
+        };
+
+        public int numIslands(char[][] grid) {
+
+            if (grid == null || grid.length == 0) {
+                return 0;
+            }
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            boolean[][] visited = new boolean[rows][cols];
+
+            int islandCount = 0;
+
+            for (int row = 0; row < rows; row++) {
+
+                for (int col = 0; col < cols; col++) {
+
+                    /*
+                     * 🟢 Only unvisited land can become
+                     * a new connected component root.
+                     */
+                    if (grid[row][col] == '1' && !visited[row][col]) {
+
+                        islandCount++;
+
+                        dfs(grid, visited, row, col);
+                    }
+                }
+            }
+
+            return islandCount;
+        }
+
+        private void dfs(char[][] grid,
+                         boolean[][] visited,
+                         int row,
+                         int col) {
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            /*
+             * 🔴 Boundary guard.
+             */
+            if (row < 0 || row >= rows || col < 0 || col >= cols) {
+                return;
+            }
+
+            /*
+             * 🔴 Water cells are non-traversable.
+             */
+            if (grid[row][col] == '0') {
+                return;
+            }
+
+            /*
+             * 🔴 Already assigned to an island.
+             */
+            if (visited[row][col]) {
+                return;
+            }
+
+            /*
+             * 🟢 Mark BEFORE exploring neighbors.
+             *
+             * Critical invariant protection.
+             */
+            visited[row][col] = true;
+
+            for (int[] direction : DIRECTIONS) {
+
+                int nextRow = row + direction[0];
+                int nextCol = col + direction[1];
+
+                dfs(grid, visited, nextRow, nextCol);
+            }
+        }
+    }
+
+    /*
+     * 🔴 BFS GUARANTEES SHORTEST PATH.
+     * DFS DOES NOT.
+     *
+     * This single fact decides many graph/grid problems.
+     *
+     * -------------------------------------------------------------------------------------
+     *
+     * 🟣 Interview Rule:
+     *
+     * If order/distance/minimum steps matter -> BFS
+     *
+     * If completeness/component discovery matters -> DFS often enough
+     *
+     * -------------------------------------------------------------------------------------
+     *
+     * Number Of Islands:
+     *
+     * We only care about consuming the full connected component.
+     *
+     * Traversal order does NOT matter.
+     *
+     * Therefore:
+     * both DFS and BFS work correctly.
+     */
+
 
     /*
      * =====================================================================================
@@ -556,440 +1107,6 @@ public class Islands {
      *
      * =====================================================================================
      */
-
-    /*
-     * =====================================================================================
-     * PRIMARY PROBLEM — SOLUTION CLASSES
-     * =====================================================================================
-     */
-
-
-
-    /*
-     * =====================================================================================
-     * Solution #1 — Brute Force
-     * =====================================================================================
-     */
-
-    static class BruteForceDFSWithSeparateVisited {
-
-        /*
-         * 🔵 Core Idea:
-         *
-         * Scan every cell.
-         *
-         * Whenever an unvisited land cell appears:
-         * - increment island count
-         * - DFS entire connected component
-         *
-         * =================================================================================
-         *
-         * 🟢 Invariant Enforced:
-         *
-         * Every land cell becomes permanently assigned
-         * to exactly one DFS traversal.
-         *
-         * =================================================================================
-         *
-         * 🟡 What Limitation It Fixes:
-         *
-         * Prevents duplicate counting.
-         *
-         * =================================================================================
-         *
-         * ⏱ Time Complexity:
-         * O(rows * cols)
-         *
-         * Each cell processed at most once.
-         *
-         * =================================================================================
-         *
-         * 📦 Space Complexity:
-         * O(rows * cols)
-         *
-         * Due to:
-         * - visited matrix
-         * - recursion stack
-         *
-         * =================================================================================
-         *
-         * 🟣 Interview Preference:
-         *
-         * Good starter solution.
-         * Very readable.
-         * Excellent for invariant explanation.
-         *
-         * =================================================================================
-         */
-
-        private static final int[][] DIRECTIONS = {
-                {-1, 0}, // UP
-                {1, 0},  // DOWN
-                {0, -1}, // LEFT
-                {0, 1}   // RIGHT
-        };
-
-        public int numIslands(char[][] grid) {
-
-            if (grid == null || grid.length == 0) {
-                return 0;
-            }
-
-            int rows = grid.length;
-            int cols = grid[0].length;
-
-            boolean[][] visited = new boolean[rows][cols];
-
-            int islandCount = 0;
-
-            for (int row = 0; row < rows; row++) {
-
-                for (int col = 0; col < cols; col++) {
-
-                    /*
-                     * 🟢 Only unvisited land can become
-                     * a new connected component root.
-                     */
-                    if (grid[row][col] == '1' && !visited[row][col]) {
-
-                        islandCount++;
-
-                        dfs(grid, visited, row, col);
-                    }
-                }
-            }
-
-            return islandCount;
-        }
-
-        private void dfs(char[][] grid,
-                         boolean[][] visited,
-                         int row,
-                         int col) {
-
-            int rows = grid.length;
-            int cols = grid[0].length;
-
-            /*
-             * 🔴 Boundary guard.
-             */
-            if (row < 0 || row >= rows || col < 0 || col >= cols) {
-                return;
-            }
-
-            /*
-             * 🔴 Water cells are non-traversable.
-             */
-            if (grid[row][col] == '0') {
-                return;
-            }
-
-            /*
-             * 🔴 Already assigned to an island.
-             */
-            if (visited[row][col]) {
-                return;
-            }
-
-            /*
-             * 🟢 Mark BEFORE exploring neighbors.
-             *
-             * Critical invariant protection.
-             */
-            visited[row][col] = true;
-
-            for (int[] direction : DIRECTIONS) {
-
-                int nextRow = row + direction[0];
-                int nextCol = col + direction[1];
-
-                dfs(grid, visited, nextRow, nextCol);
-            }
-        }
-    }
-
-    /*
-     * =====================================================================================
-     * Solution #2 — Improved
-     * =====================================================================================
-     */
-
-    static class ImprovedBFS {
-
-        /*
-         * 🔵 Production Improvement:
-         *
-         * Semantic coordinate object instead of raw int[].
-         *
-         * Benefits:
-         *
-         * - readability
-         * - self-documenting traversal state
-         * - easier debugging
-         * - removes magic indices
-         */
-
-        private static class Cell {
-
-            final int row;
-            final int col;
-
-            Cell(int row, int col) {
-
-                this.row = row;
-                this.col = col;
-            }
-        }
-
-        private static final int[][] DIRECTIONS = {
-                {-1, 0}, // UP
-                {1, 0},  // DOWN
-                {0, -1}, // LEFT
-                {0, 1}   // RIGHT
-        };
-
-        public int numIslands(char[][] grid) {
-
-            if (grid == null || grid.length == 0) {
-                return 0;
-            }
-
-            int totalRows = grid.length;
-            int totalCols = grid[0].length;
-
-            boolean[][] visited = new boolean[totalRows][totalCols];
-
-            int islandCount = 0;
-
-            for (int currentRow = 0;
-                 currentRow < totalRows;
-                 currentRow++) {
-
-                for (int currentCol = 0;
-                     currentCol < totalCols;
-                     currentCol++) {
-
-                    /*
-                     * 🟢 Only fresh unvisited land
-                     * can start a new island traversal.
-                     */
-                    if (grid[currentRow][currentCol] == '1'
-                            && !visited[currentRow][currentCol]) {
-
-                        islandCount++;
-
-                        bfs(
-                                grid,
-                                visited,
-                                currentRow,
-                                currentCol
-                        );
-                    }
-                }
-            }
-
-            return islandCount;
-        }
-
-        private void bfs(char[][] grid,
-                         boolean[][] visited,
-                         int sourceRow,
-                         int sourceCol) {
-
-            int totalRows = grid.length;
-            int totalCols = grid[0].length;
-
-            Queue<Cell> queue = new LinkedList<>();
-
-            /*
-             * 🟢 Mark immediately upon insertion.
-             *
-             * Prevents duplicate queue insertion.
-             */
-            visited[sourceRow][sourceCol] = true;
-
-            queue.offer(new Cell(sourceRow, sourceCol));
-
-            while (!queue.isEmpty()) {
-
-                Cell currentCell = queue.poll();
-
-                int currentRow = currentCell.row;
-                int currentCol = currentCell.col;
-
-                for (int[] direction : DIRECTIONS) {
-
-                    int neighborRow =
-                            currentRow + direction[0];
-
-                    int neighborCol =
-                            currentCol + direction[1];
-
-                    /*
-                     * 🔴 Boundary validation.
-                     */
-                    if (neighborRow < 0
-                            || neighborRow >= totalRows
-                            || neighborCol < 0
-                            || neighborCol >= totalCols) {
-
-                        continue;
-                    }
-
-                    /*
-                     * 🔴 Water cannot belong to island.
-                     */
-                    if (grid[neighborRow][neighborCol] == '0') {
-                        continue;
-                    }
-
-                    /*
-                     * 🔴 Already assigned to an island.
-                     */
-                    if (visited[neighborRow][neighborCol]) {
-                        continue;
-                    }
-
-                    /*
-                     * 🟢 Ownership assignment happens NOW.
-                     */
-                    visited[neighborRow][neighborCol] = true;
-
-                    queue.offer(
-                            new Cell(
-                                    neighborRow,
-                                    neighborCol
-                            )
-                    );
-                }
-            }
-        }
-    }
-
-    /*
-     * =====================================================================================
-     * Solution #3 — Optimal (Interview Preferred)
-     * =====================================================================================
-     */
-
-    static class OptimalDFSInPlace {
-
-        private static final int[][] DIRECTIONS = {
-                {-1, 0}, // UP
-                {1, 0},  // DOWN
-                {0, -1}, // LEFT
-                {0, 1}   // RIGHT
-        };
-
-        public int numIslands(char[][] grid) {
-
-            if (grid == null || grid.length == 0) {
-                return 0;
-            }
-
-            int totalRows = grid.length;
-            int totalCols = grid[0].length;
-
-            int islandCount = 0;
-
-            for (int i = 0; i < totalRows; i++) {
-
-                for (int j = 0; j < totalCols; j++) {
-
-                    /*
-                     * 🟢 New island root discovered.
-                     *
-                     * Every DFS traversal consumes
-                     * exactly one connected component.
-                     */
-                    if (grid[i][j] == '1') {
-
-                        islandCount++;
-
-                        floodFill(grid, i, j);
-                    }
-                }
-            }
-
-            return islandCount;
-        }
-
-        private void floodFill(char[][] grid,
-                               int row,
-                               int col) {
-
-            int totalRows = grid.length;
-            int totalCols = grid[0].length;
-
-            /*
-             * 🔴 Boundary termination.
-             */
-            if (row < 0
-                    || row >= totalRows
-                    || col < 0
-                    || col >= totalCols) {
-
-                return;
-            }
-
-            /*
-             * 🔴 Only unprocessed land expandable.
-             */
-            if (grid[row][col] != '1') {
-                return;
-            }
-
-            /*
-             * 🟢 Consume this land permanently.
-             *
-             * This prevents duplicate counting.
-             */
-            grid[row][col] = '0';
-
-            for (int[] direction : DIRECTIONS) {
-
-                int neighborRow =
-                        row + direction[0];
-
-                int neighborCol =
-                        col + direction[1];
-
-                floodFill(
-                        grid,
-                        neighborRow,
-                        neighborCol
-                );
-            }
-        }
-    }
-
-
-    /*
-     * 🔴 BFS GUARANTEES SHORTEST PATH.
-     * DFS DOES NOT.
-     *
-     * This single fact decides many graph/grid problems.
-     *
-     * -------------------------------------------------------------------------------------
-     *
-     * 🟣 Interview Rule:
-     *
-     * If order/distance/minimum steps matter -> BFS
-     *
-     * If completeness/component discovery matters -> DFS often enough
-     *
-     * -------------------------------------------------------------------------------------
-     *
-     * Number Of Islands:
-     *
-     * We only care about consuming the full connected component.
-     *
-     * Traversal order does NOT matter.
-     *
-     * Therefore:
-     * both DFS and BFS work correctly.
-     */
-
 
     /*
 

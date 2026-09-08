@@ -2,453 +2,669 @@ package org.chijai.day9.dp.session1;
 
 public class GasStation {
 
-    // ===============================================================
-    // 📘 PRIMARY PROBLEM — FULL OFFICIAL LEETCODE STATEMENT
-    // ===============================================================
     /*
-     * LeetCode 134. Gas Station
+     * ===============================================================
+     * 📘 PRIMARY PROBLEM — LeetCode 134. Gas Station
+     * ===============================================================
      *
      * 🔗 https://leetcode.com/problems/gas-station/
      * 🧩 Difficulty: Medium
      * 🏷️ Tags: Greedy, Array
      *
-     * There are n gas stations along a circular route, where the amount
-     * of gas at the ith station is gas[i].
+     * There are n gas stations along a circular route.
      *
-     * You have a car with an unlimited gas tank and it costs cost[i] of
-     * gas to travel from the ith station to its next (i + 1)th station.
-     * You begin the journey with an empty tank at one of the gas stations.
+     * gas[i]  = gas available at station i
+     * cost[i] = gas needed to travel from station i to i + 1
      *
-     * Given two integer arrays gas and cost, return the starting gas
-     * station's index if you can travel around the circuit once in the
-     * clockwise direction, otherwise return -1.
+     * You start with an empty tank at one station.
      *
-     * If there exists a solution, it is guaranteed to be unique.
+     * Return the starting station index from which you can complete
+     * one clockwise circuit.
+     *
+     * If no such station exists, return -1.
+     *
+     * If a solution exists, it is guaranteed to be unique.
      *
      * Constraints:
      * n == gas.length == cost.length
      * 1 <= n <= 10^5
      * 0 <= gas[i], cost[i] <= 10^4
+     *
+     * Example 1:
+     *
+     * gas  = [1, 2, 3, 4, 5]
+     * cost = [3, 4, 5, 1, 2]
+     *
+     * Output: 3
+     *
+     * Starting at station 3:
+     *
+     * station 3: tank = 0 + 4 - 1 = 3
+     * station 4: tank = 3 + 5 - 2 = 6
+     * station 0: tank = 6 + 1 - 3 = 4
+     * station 1: tank = 4 + 2 - 4 = 2
+     * station 2: tank = 2 + 3 - 5 = 0
+     *
+     * Full circuit completed.
+     *
+     * Example 2:
+     *
+     * gas  = [2, 3, 4]
+     * cost = [3, 4, 3]
+     *
+     * Output: -1
      */
 
-    // ===============================================================
-    // 🔵 CORE PATTERN OVERVIEW
-    // ===============================================================
     /*
-     * Pattern: Greedy Prefix Elimination
+     * ===============================================================
+     * 🧠 FIRST-PRINCIPLES INVENTION PATH
+     * ===============================================================
      *
-     * Core Idea:
-     * This is NOT a traversal problem.
-     * This is an elimination problem.
+     * Start with the obvious idea:
      *
-     * We are not asking:
-     * "Can I complete the circuit from here?"
+     *     Try every station.
+     *     Simulate a complete circuit.
      *
-     * We are asking:
-     * "Which starting positions are impossible forever?"
+     * That is O(n²).
      *
-     * Once a start fails, a whole prefix becomes invalid.
+     * To reach O(n), ask:
+     *
+     *     "When one starting point fails, what work can I permanently
+     *      avoid repeating?"
+     *
+     * Suppose we started at L and our tank first becomes negative
+     * after processing station R:
+     *
+     *     L ---------------------- R
+     *
+     * Then L cannot be the answer.
+     *
+     * More importantly, no station between L and R can be the answer.
+     *
+     * Why?
+     *
+     * While travelling from L to every station before R, the running
+     * tank never became negative.
+     *
+     * Therefore, starting later inside that range only removes some
+     * non-negative fuel contribution that L had already accumulated.
+     *
+     * So if L still cannot cross R, a later start inside [L, R]
+     * cannot cross R either.
+     *
+     * Therefore:
+     *
+     *     next candidate = R + 1
+     *
+     * This is the greedy elimination.
      */
 
-    // ===============================================================
-    // 🟢 MENTAL MODEL & INVARIANTS
-    // ===============================================================
     /*
-     * Mental Model:
-     * Think in net balance, not movement.
+     * ===============================================================
+     * ✅ PRIMARY SOLUTION — EASIEST O(n) GREEDY
+     * ===============================================================
      *
-     * Let net[i] = gas[i] - cost[i]
+     * Keep the two logical questions separate:
      *
-     * Invariants:
+     * 1. Is completing the whole circle possible at all?
+     * 2. If yes, where should we start?
      *
-     * 1️⃣ Global feasibility:
-     *     sum(net[i]) >= 0 must hold, or no solution exists.
+     * Two passes are still O(n):
      *
-     * 2️⃣ Prefix failure invariant:
-     *     If starting at index L fails at index R,
-     *     then all indices in [L, R] are invalid starts.
+     *     O(n) + O(n) = O(n)
      *
-     * 3️⃣ Performance invariant:
-     *     Once a prefix is invalidated, it must never be revisited.
+     * This version is slightly less compact than the one-pass version,
+     * but easier to reconstruct from first principles.
      */
 
-    // ===============================================================
-    // 🔴 WHY NAIVE / SIMULATION FAILS
-    // ===============================================================
-    /*
-     * Simulation tries every start.
-     *
-     * Even if logically correct, it:
-     * - Re-simulates already failed prefixes
-     * - Recounts the same net differences
-     *
-     * Worst-case time: O(n²)
-     *
-     * Interview trap:
-     * Passes almost all tests, TLEs on last.
-     */
+    static class Primary {
 
-    // ===============================================================
-    // 6️⃣ SOLUTION TIERS
-    // ===============================================================
-
-    // ---------------------------------------------------------------
-    // 🔹 Brute Force
-    // ---------------------------------------------------------------
-    static class BruteForce {
         static int canCompleteCircuit(int[] gas, int[] cost) {
+
+            int n = gas.length;
+
+            // -------------------------------------------------------
+            // STEP 1: Global feasibility.
+            //
+            // If all stations together do not provide enough gas to
+            // pay the total travel cost, no starting point can work.
+            // -------------------------------------------------------
+
+            int totalGas = 0;
+            int totalCost = 0;
+
+            for (int i = 0; i < n; i++) {
+                totalGas += gas[i];
+                totalCost += cost[i];
+            }
+
+            if (totalGas < totalCost) {
+                return -1;
+            }
+
+            // -------------------------------------------------------
+            // STEP 2: Find the only surviving starting candidate.
+            // -------------------------------------------------------
+
+            int start = 0;
+            int tank = 0;
+
+            for (int i = 0; i < n; i++) {
+
+                tank += gas[i];
+                tank -= cost[i];
+
+                /*
+                 * Starting from 'start', we cannot get past station i.
+                 *
+                 * Therefore:
+                 *
+                 *     start, start + 1, ... , i
+                 *
+                 * are all impossible starting points.
+                 *
+                 * The next possible candidate is i + 1.
+                 */
+                if (tank < 0) {
+                    start = i + 1;
+                    tank = 0;
+                }
+            }
+
+            /*
+             * Why can we directly return start?
+             *
+             * STEP 1 already proved:
+             *
+             *     totalGas >= totalCost
+             *
+             * Therefore, enough gas exists globally to complete
+             * one full circle from some starting station.
+             *
+             * STEP 2 eliminated every starting station that
+             * cannot work:
+             *
+             * whenever tank became negative at station i,
+             * every candidate from the current start through i
+             * was proven impossible.
+             *
+             * So after the scan finishes, 'start' is the only
+             * surviving candidate.
+             *
+             * Since STEP 1 proved that a solution must exist,
+             * this surviving candidate must be the valid answer.
+             *
+             * We do NOT need another full-circle simulation.
+             */
+            return start;
+        }
+
+        // Time: O(n) + O(n) = O(n)
+        // Space: O(1)
+    }
+
+    /*
+     * ===============================================================
+     * 🔵 CORE PATTERN — GREEDY PREFIX ELIMINATION
+     * ===============================================================
+     *
+     * Trigger:
+     *
+     *     Failure of one candidate proves that a whole continuous
+     *     range of candidates can never work.
+     *
+     * Rule:
+     *
+     *     Never retry a candidate that has already been disproved.
+     *
+     * Here:
+     *
+     *     tank < 0 at i
+     *
+     * means:
+     *
+     *     every start from current start through i is invalid.
+     */
+
+    /*
+     * ===============================================================
+     * 🟢 TWO INVARIANTS
+     * ===============================================================
+     *
+     * 1️⃣ Global feasibility
+     *
+     *     totalGas >= totalCost
+     *
+     * must be true for any solution to exist.
+     *
+     *
+     * 2️⃣ Candidate feasibility
+     *
+     *     tank
+     *
+     * represents the fuel remaining when travelling from the current
+     * candidate 'start' through the current station.
+     *
+     * If tank becomes negative at i:
+     *
+     *     start = i + 1
+     *     tank = 0
+     *
+     * because all starts in the failed range are eliminated.
+     */
+
+    /*
+     * ===============================================================
+     * 🔍 WHY CAN WE SKIP EVERY START BETWEEN start AND i?
+     * ===============================================================
+     *
+     * Suppose:
+     *
+     *     start = L
+     *
+     * and the first failure happens at R.
+     *
+     * Before R, the running balance from L never became negative.
+     *
+     * Example:
+     *
+     *     net = [+2, -1, -4]
+     *
+     * Starting at 0:
+     *
+     *     after 0 ->  2
+     *     after 1 ->  1
+     *     after 2 -> -3   FAIL
+     *
+     * Could station 1 work instead?
+     *
+     *     -1 + -4 = -5   FAIL
+     *
+     * Starting later removes the positive fuel accumulated before it.
+     *
+     * Therefore every station in the failed prefix can be discarded.
+     */
+
+    /*
+     * ===============================================================
+     * 🔴 BRUTE FORCE — DIRECT SIMULATION
+     * ===============================================================
+     *
+     * Useful as the first-principles baseline, but too slow for
+     * n <= 100000.
+     */
+
+    static class BruteForce {
+
+        static int canCompleteCircuit(int[] gas, int[] cost) {
+
             int n = gas.length;
 
             for (int start = 0; start < n; start++) {
+
                 int tank = 0;
                 boolean failed = false;
 
                 for (int step = 0; step < n; step++) {
-                    int idx = (start + step) % n;
-                    tank += gas[idx] - cost[idx];
+
+                    int current =
+                            (start + step) % n;
+
+                    tank += gas[current];
+                    tank -= cost[current];
+
                     if (tank < 0) {
                         failed = true;
                         break;
                     }
                 }
-                if (!failed) return start;
+
+                if (!failed) {
+                    return start;
+                }
             }
+
             return -1;
         }
-        // Time: O(n²), Space: O(1)
+
+        // Time: O(n²)
+        // Space: O(1)
     }
 
-    // ---------------------------------------------------------------
-    // 🔹 Improved (Prefix Skip)
-    // ---------------------------------------------------------------
-    static class Improved {
+    /*
+     * ===============================================================
+     * 🟡 ALTERNATIVE O(n) — EXPLICIT PREFIX SKIP
+     * ===============================================================
+     *
+     * Same elimination idea, but expressed as repeated simulations.
+     *
+     * Correct and O(n), but the Primary solution is simpler because
+     * it needs only ordinary forward loops.
+     */
+
+    static class PrefixSkip {
+
         static int canCompleteCircuit(int[] gas, int[] cost) {
+
             int n = gas.length;
             int start = 0;
 
             while (start < n) {
+
                 int tank = 0;
                 int steps = 0;
 
                 while (steps < n) {
-                    int idx = (start + steps) % n;
-                    tank += gas[idx] - cost[idx];
-                    if (tank < 0) break;
+
+                    int current =
+                            (start + steps) % n;
+
+                    tank += gas[current];
+                    tank -= cost[current];
+
+                    if (tank < 0) {
+                        break;
+                    }
+
                     steps++;
                 }
 
-                if (steps == n) return start;
-                start += steps + 1; // skip invalid prefix
+                if (steps == n) {
+                    return start;
+                }
+
+                // All starts through the failed station are invalid.
+                start += steps + 1;
             }
+
             return -1;
         }
-        // Time: O(n), Space: O(1)
+
+        // Time: O(n)
+        // Space: O(1)
     }
 
+    /*
+     * ===============================================================
+     * 🎤 INTERVIEW ARTICULATION
+     * ===============================================================
+     *
+     * "First I check whether total gas is at least total cost.
+     *  Otherwise no solution exists.
+     *
+     *  Then I scan from left to right while maintaining the fuel
+     *  balance from my current candidate start.
+     *
+     *  If that balance becomes negative at station i, none of the
+     *  stations from my current start through i can work, so I move
+     *  the candidate to i + 1 and reset the tank.
+     *
+     *  Since each station is processed a constant number of times,
+     *  the algorithm is O(n) with O(1) extra space."
+     */
+
+    /*
+     * ===============================================================
+     * 🧭 PATTERN BOUNDARY
+     * ===============================================================
+     *
+     * This greedy works because:
+     *
+     * - travel direction is fixed
+     * - every edge must eventually be traversed
+     * - failure invalidates one continuous prefix of candidates
+     *
+     * Do NOT blindly apply this when:
+     *
+     * - backward movement is allowed
+     * - choices can revisit earlier states
+     * - failure does not eliminate a whole candidate range
+     */
+
+    /*
+     * ===============================================================
+     * 🔗 RELATED PROBLEMS
+     * ===============================================================
+     *
+     * These are related by greedy elimination / irreversible progress,
+     * but they are NOT the exact same invariant.
+     */
+
     // ---------------------------------------------------------------
-    // 🔹 Optimal (Interview Preferred)
+    // LeetCode 55. Jump Game
+    //
+    // Invariant:
+    // maxReach = farthest index reachable so far.
     // ---------------------------------------------------------------
-    static class Optimal {
-        static int canCompleteCircuit(int[] gas, int[] cost) {
-
-            int totalNet = 0;
-            int runningTank = 0;
-            int startIndex = 0;
-
-            for (int i = 0; i < gas.length; i++) {
-                int net = gas[i] - cost[i];
-                totalNet += net;
-                runningTank += net;
-
-                if (runningTank < 0) {
-                    startIndex = i + 1;
-                    runningTank = 0;
-                }
-            }
-            return totalNet >= 0 ? startIndex : -1;
-        }
-        // Time: O(n), Space: O(1)
-    }
-
-    /**
-     * ============================================================================
-     * Gas Station (Greedy)
-     * ============================================================================
-     *
-     * Mental Model
-     * ------------
-     * We maintain ONE candidate starting station.
-     *
-     * As we move forward, we simulate the journey from that candidate.
-     *
-     * If the tank ever becomes negative, the current candidate cannot complete
-     * the journey, and neither can any station between the candidate and the
-     * current station.
-     *
-     * Therefore, we discard that entire range and choose the next station as
-     * the new candidate.
-     *
-     * ---------------------------------------------------------------------------
-     * Key Observation
-     * ---------------------------------------------------------------------------
-     *
-     * net = gas[i] - cost[i]
-     *
-     * Positive net  -> Gain fuel
-     * Negative net  -> Lose fuel
-     *
-     * Instead of separately adding gas and subtracting cost, we only track the
-     * net change in the fuel tank.
-     *
-     * ---------------------------------------------------------------------------
-     * State
-     * ---------------------------------------------------------------------------
-     *
-     * totalNet
-     *      Total net fuel across the entire circle.
-     *
-     * runningTank
-     *      Fuel remaining while simulating from the current candidate.
-     *
-     * startIndex
-     *      Current candidate starting station.
-     *
-     * ---------------------------------------------------------------------------
-     * Invariant
-     * ---------------------------------------------------------------------------
-     *
-     * Before every iteration:
-     *
-     * 1. startIndex is the only remaining candidate.
-     *
-     * 2. runningTank is the fuel remaining if we started from startIndex.
-     *
-     * 3. runningTank is never negative.
-     *
-     * ---------------------------------------------------------------------------
-     * Greedy Insight
-     * ---------------------------------------------------------------------------
-     *
-     * If runningTank becomes negative at station i:
-     *
-     *      startIndex -------------> i
-     *          ❌  ❌  ❌  ❌  ❌
-     *
-     * Every station in this interval is impossible.
-     *
-     * Therefore:
-     *
-     *      startIndex = i + 1
-     *      runningTank = 0
-     *
-     * ---------------------------------------------------------------------------
-     * Why totalNet?
-     * ---------------------------------------------------------------------------
-     *
-     * runningTank answers:
-     *
-     *      "Can my current candidate survive?"
-     *
-     * totalNet answers:
-     *
-     *      "Does any solution exist?"
-     *
-     * If totalNet < 0
-     *
-     *      Total Gas < Total Cost
-     *
-     *      ⇒ Impossible to complete the circuit.
-     *
-     * Otherwise, the greedy proof guarantees that the final startIndex is the
-     * unique valid starting station.
-     *
-     * ---------------------------------------------------------------------------
-     * Complexity
-     * ---------------------------------------------------------------------------
-     *
-     * Time  : O(n)
-     * Space : O(1)
-     *
-     * ============================================================================
-     */
-
-    // ===============================================================
-    // 🟣 INTERVIEW ARTICULATION
-    // ===============================================================
-    /*
-     * If total gas is insufficient, return -1.
-     * Otherwise, traverse once.
-     * Whenever cumulative gas becomes negative,
-     * discard all previous start candidates.
-     */
-
-
-    // ===============================================================
-    // 🧠 CHAPTER COMPLETION CHECKLIST (ANSWERED)
-    // ===============================================================
-    /*
-     * Invariant clarity → cumulative net gas must never go negative
-     * Search target → first index after last failed prefix
-     * Discard logic → failure at i invalidates all ≤ i
-     * Termination → single forward scan
-     * Failure awareness → simulation re-visits dead prefixes
-     * Edge cases → global sum check handles impossibility
-     * Pattern boundary → breaks if backward travel allowed
-     */
-
-    // ===============================================================
-    // 🧘 FINAL CLOSURE
-    // ===============================================================
-    /*
-     * The invariant is prefix feasibility.
-     * The answer is the first viable start after elimination.
-     * I can re-derive this under pressure.
-     * This chapter is complete.
-     */
-
-    // ===============================================================
-    // 🔵 PATTERN DOCTRINE
-    // ===============================================================
-    /*
-     * Pattern: Greedy Prefix Elimination
-     *
-     * Trigger:
-     * Failure at position i invalidates a continuous range of candidates.
-     *
-     * Rule:
-     * Never re-evaluate an invalidated prefix.
-     */
-
-    // ===============================================================
-    // 🔄 VARIATIONS & TWEAKS
-    // ===============================================================
-    /*
-     * 🟢 Invariant-preserving:
-     * - Forward-only traversal
-     * - Prefix sum tracking
-     *
-     * 🟡 Reasoning-only:
-     * - Different variable names
-     * - Different failure semantics
-     *
-     * 🔴 Pattern breaks when:
-     * - Backtracking is allowed
-     * - Partial traversal is acceptable
-     */
-
-    // ===============================================================
-    // ⚫ REINFORCEMENT PROBLEM 1 — Jump Game
-    // ===============================================================
-    /*
-     * LeetCode 55. Jump Game
-     *
-     * Same pattern:
-     * If index i is unreachable, all indices > i are unreachable.
-     */
 
     static class JumpGame {
+
         static boolean canJump(int[] nums) {
+
             int maxReach = 0;
+
             for (int i = 0; i < nums.length; i++) {
-                if (i > maxReach) return false;
-                maxReach = Math.max(maxReach, i + nums[i]);
+
+                if (i > maxReach) {
+                    return false;
+                }
+
+                maxReach =
+                        Math.max(maxReach, i + nums[i]);
             }
+
             return true;
         }
     }
 
-    // ===============================================================
-    // ⚫ REINFORCEMENT PROBLEM 2 — Jump Game II
-    // ===============================================================
+    // ---------------------------------------------------------------
+    // LeetCode 45. Jump Game II
+    //
+    // Greedy level/range expansion.
+    // ---------------------------------------------------------------
+
     static class JumpGameII {
+
         static int jump(int[] nums) {
-            int jumps = 0, end = 0, farthest = 0;
+
+            int jumps = 0;
+            int currentRangeEnd = 0;
+            int farthest = 0;
 
             for (int i = 0; i < nums.length - 1; i++) {
-                farthest = Math.max(farthest, i + nums[i]);
-                if (i == end) {
+
+                farthest =
+                        Math.max(farthest, i + nums[i]);
+
+                if (i == currentRangeEnd) {
                     jumps++;
-                    end = farthest;
+                    currentRangeEnd = farthest;
                 }
             }
+
             return jumps;
         }
     }
 
-    // ===============================================================
-    // ⚫ REINFORCEMENT PROBLEM 3 — Can Place Flowers
-    // ===============================================================
+    // ---------------------------------------------------------------
+    // LeetCode 605. Can Place Flowers
+    //
+    // Local greedy choice:
+    // plant whenever the current position is safely available.
+    // ---------------------------------------------------------------
+
     static class CanPlaceFlowers {
-        static boolean canPlaceFlowers(int[] bed, int n) {
-            for (int i = 0; i < bed.length && n > 0; i++) {
-                if (bed[i] == 0 &&
-                        (i == 0 || bed[i - 1] == 0) &&
-                        (i == bed.length - 1 || bed[i + 1] == 0)) {
-                    bed[i] = 1;
+
+        static boolean canPlaceFlowers(int[] flowerbed, int n) {
+
+            for (int i = 0;
+                 i < flowerbed.length && n > 0;
+                 i++) {
+
+                boolean currentEmpty =
+                        flowerbed[i] == 0;
+
+                boolean leftEmpty =
+                        i == 0
+                                || flowerbed[i - 1] == 0;
+
+                boolean rightEmpty =
+                        i == flowerbed.length - 1
+                                || flowerbed[i + 1] == 0;
+
+                if (currentEmpty
+                        && leftEmpty
+                        && rightEmpty) {
+
+                    flowerbed[i] = 1;
                     n--;
                 }
             }
+
             return n == 0;
         }
     }
 
-    // ===============================================================
-    // 🧩 RELATED PROBLEMS (PATTERN BOUNDARIES)
-    // ===============================================================
     /*
-     * ❌ Circular Array Loop
-     * Prefix elimination fails due to direction changes.
+     * ===============================================================
+     * 🧠 LEARNING TRANSFER CHECKLIST
+     * ===============================================================
      *
-     * ❌ Split Array Largest Sum
-     * Requires binary search + greedy check.
+     * When you see a greedy-looking problem, ask:
+     *
+     * 1. If one candidate fails, does that prove several candidates
+     *    are impossible?
+     *
+     * 2. Can those candidates be permanently discarded?
+     *
+     * 3. Is there a separate global condition that tells me whether
+     *    any solution can exist?
+     *
+     * If yes, greedy elimination may be available.
      */
 
-    // ===============================================================
-    // 🧠 LEARNING TRANSFER CHECKLIST
-    // ===============================================================
     /*
-     * Ask:
-     * 1. Does failure kill a range?
-     * 2. Is re-visiting wasteful?
-     * 3. Can I prove impossibility globally?
-     *
-     * If yes → Greedy Prefix Elimination.
+     * ===============================================================
+     * 🧪 SANITY TESTS
+     * ===============================================================
      */
 
-    // ===============================================================
-    // 🧪 SANITY TESTS
-    // ===============================================================
     public static void main(String[] args) {
 
+        assertEq(
+                3,
+                Primary.canCompleteCircuit(
+                        new int[]{1, 2, 3, 4, 5},
+                        new int[]{3, 4, 5, 1, 2}),
+                "Example 1");
 
-        assertEq(3, Optimal.canCompleteCircuit(
+        assertEq(
+                -1,
+                Primary.canCompleteCircuit(
+                        new int[]{2, 3, 4},
+                        new int[]{3, 4, 3}),
+                "Example 2");
+
+        assertEq(
+                -1,
+                Primary.canCompleteCircuit(
+                        new int[]{
+                                2, 6, 3, 6, 8, 1, 4,
+                                6, 7, 1, 4, 3, 1
+                        },
+                        new int[]{
+                                4, 8, 4, 11, 5, 2, 8,
+                                16, 3, 4, 6, 7, 6
+                        }),
+                "Impossible larger case");
+
+        assertEq(
+                0,
+                Primary.canCompleteCircuit(
+                        new int[]{5},
+                        new int[]{4}),
+                "Single station");
+
+        assertEq(
+                0,
+                Primary.canCompleteCircuit(
+                        new int[]{1},
+                        new int[]{1}),
+                "Exact fuel");
+
+        /*
+         * Cross-check Primary against brute force on representative
+         * examples.
+         */
+        crossCheck(
                 new int[]{1, 2, 3, 4, 5},
-                new int[]{3, 4, 5, 1, 2}), "Example 1");
+                new int[]{3, 4, 5, 1, 2});
 
-        assertEq(-1, Optimal.canCompleteCircuit(
+        crossCheck(
                 new int[]{2, 3, 4},
-                new int[]{3, 4, 3}), "Example 2");
+                new int[]{3, 4, 3});
 
-        assertEq(-1, Optimal.canCompleteCircuit(
-                new int[]{2, 6, 3, 6, 8, 1, 4, 6, 7, 1, 4, 3, 1},
-                new int[]{4, 8, 4, 11, 5, 2, 8, 16, 3, 4, 6, 7, 6}), "TLE Trap");
+        crossCheck(
+                new int[]{5, 1, 2, 3, 4},
+                new int[]{4, 4, 1, 5, 1});
 
-        System.out.println("✅ Core Chapter tests passed");
+        System.out.println("✅ Gas Station tests passed");
 
-        if (!JumpGame.canJump(new int[]{2, 3, 1, 1, 4}))
-            throw new AssertionError("Jump Game failed");
+        if (!JumpGame.canJump(
+                new int[]{2, 3, 1, 1, 4})) {
+            throw new AssertionError(
+                    "Jump Game failed");
+        }
 
-        if (JumpGameII.jump(new int[]{2, 3, 1, 1, 4}) != 2)
-            throw new AssertionError("Jump Game II failed");
+        if (JumpGameII.jump(
+                new int[]{2, 3, 1, 1, 4}) != 2) {
+            throw new AssertionError(
+                    "Jump Game II failed");
+        }
 
-        if (!CanPlaceFlowers.canPlaceFlowers(new int[]{1, 0, 0, 0, 1}, 1))
-            throw new AssertionError("Can Place Flowers failed");
+        if (!CanPlaceFlowers.canPlaceFlowers(
+                new int[]{1, 0, 0, 0, 1},
+                1)) {
+            throw new AssertionError(
+                    "Can Place Flowers failed");
+        }
 
-
-        System.out.println("✅ Pattern Companion tests passed");
+        System.out.println(
+                "✅ Related problem tests passed");
     }
 
-    private static void assertEq(int e, int a, String name) {
-        if (e != a) throw new AssertionError(name + " failed");
+    private static void crossCheck(
+            int[] gas,
+            int[] cost) {
+
+        int expected =
+                BruteForce.canCompleteCircuit(
+                        gas.clone(),
+                        cost.clone());
+
+        int actual =
+                Primary.canCompleteCircuit(
+                        gas.clone(),
+                        cost.clone());
+
+        if (expected != actual) {
+            throw new AssertionError(
+                    "Primary and brute force disagree");
+        }
+    }
+
+    private static void assertEq(
+            int expected,
+            int actual,
+            String name) {
+
+        if (expected != actual) {
+            throw new AssertionError(
+                    name
+                            + " failed. Expected: "
+                            + expected
+                            + ", Actual: "
+                            + actual);
+        }
     }
 }

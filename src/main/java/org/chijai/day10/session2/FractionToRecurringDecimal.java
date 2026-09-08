@@ -18,7 +18,7 @@ import java.util.Map;
  *   A process generates output step by step.
  *   If the same state returns, the future output repeats.
  */
-public class FractionToRecurringDecimalV5 {
+public class FractionToRecurringDecimal {
 
     /*
      * ==============================================================
@@ -69,30 +69,89 @@ public class FractionToRecurringDecimalV5 {
 
     /*
      * ==============================================================
+     * Prerequisite - Decimal Long Division From Zero
+     * ==============================================================
+     *
+     * Example: 1 / 4
+     *
+     * 4 does not fit into 1 as a whole number, so answer starts "0.".
+     * Remainder = 1.
+     *
+     * To get the next decimal digit, move one decimal place right.
+     * One whole = ten tenths, so:
+     *
+     *     remainder * 10
+     *     1 * 10 = 10
+     *
+     * Then split 10 into quotient + leftover:
+     *
+     *     10 / 4 = 2       -> next digit
+     *     10 % 4 = 2       -> new remainder
+     *
+     * Answer is now "0.2".
+     *
+     * Repeat with remainder 2:
+     *
+     *     2 * 10 = 20
+     *     20 / 4 = 5       -> next digit
+     *     20 % 4 = 0       -> nothing left
+     *
+     * Final answer = "0.25".
+     *
+     * Reusable decimal step:
+     *
+     *     remainder *= 10;
+     *     digit = remainder / divisor;
+     *     remainder %= divisor;
+     *
+     * Read it as:
+     *
+     *     leftover
+     *        -> move one decimal place right
+     *        -> take next digit
+     *        -> keep new leftover
+     */
+
+    /*
+     * ==============================================================
      * First-Principles Invention Path
      * ==============================================================
      *
-     * 1. Decimal digits are exactly school long division.
+     * 1. Decimal digits come from the long-division step above.
      *
-     *      digit     = (remainder * 10) / divisor
-     *      remainder = (remainder * 10) % divisor
+     * 2. For a fixed divisor, what completely determines the NEXT step?
+     *    The remainder.
      *
-     * 2. Ask: what information completely determines the next step?
-     *    For a fixed divisor: the remainder.
+     *       same remainder
+     *            -> same next digit
+     *            -> same next remainder
+     *            -> same future
      *
-     * 3. Possible remainders are finite:
-     *      0 ... divisor - 1
+     * 3. A remainder is NOT necessarily one digit.
+     *    It is only guaranteed to be smaller than the divisor:
      *
-     *    Therefore the process must eventually either:
-     *      - reach 0      -> terminates
-     *      - repeat state -> cycles
+     *       0 <= remainder < divisor
      *
-     * 4. If remainder r repeats, the exact future produced from r repeats.
+     *    Example: with divisor 333, remainder may be 40 or 67.
      *
-     * 5. We need not only "have I seen r?" but "where did r first begin
-     *    producing output?" so that '(' can be inserted there.
+     * 4. Only finitely many remainders are possible.
+     *    Therefore the process must eventually:
      *
-     *      Map<remainder, firstOutputIndex>
+     *       remainder == 0   -> decimal terminates
+     *
+     *    OR
+     *
+     *       remainder repeats -> decimal repeats forever
+     *
+     * 5. A Set could tell us that a remainder repeated.
+     *    But we also need WHERE its output began so we can insert '('.
+     *
+     *       remainder -> first output index
+     *
+     *       Map<Long, Integer> firstPosition
+     *
+     *    Long    = remainder state; arithmetic is kept in long safely.
+     *    Integer = StringBuilder index returned by answer.length().
      *
      * Final structure:
      *   sign -> whole part -> remainder loop -> repeated remainder detection.
@@ -125,7 +184,9 @@ public class FractionToRecurringDecimalV5 {
 
             StringBuilder answer = new StringBuilder();
 
-            if ((numerator < 0) ^ (denominator < 0)) {
+            // Different signs => exactly one value is negative => negative result.
+            // Boolean != is the same truth condition as XOR, but reads more directly.
+            if ((numerator < 0) != (denominator < 0)) {
                 answer.append('-');
             }
 
@@ -143,21 +204,31 @@ public class FractionToRecurringDecimalV5 {
 
             answer.append('.');
 
+            // remainder -> output index where digits produced from it begin
             Map<Long, Integer> firstPosition = new HashMap<>();
 
             while (remainder != 0) {
-                Integer cycleStart = firstPosition.get(remainder);
 
-                if (cycleStart != null) {
-                    answer.insert(cycleStart.intValue(), '(');
+                if (firstPosition.containsKey(remainder)) {
+                    int cycleStart = firstPosition.get(remainder);
+
+                    // Everything from cycleStart to the current end repeats.
+                    answer.insert(cycleStart, '(');
                     answer.append(')');
                     break;
                 }
 
+                // Store BEFORE generating the next digit.
+                // If this remainder returns, '(' belongs at this exact index.
                 firstPosition.put(remainder, answer.length());
 
+                // Ordinary decimal long division: bring down a zero.
                 remainder *= 10;
+
+                // Integer division gives the next decimal digit.
                 answer.append(remainder / divisor);
+
+                // % keeps whatever is still left for the next iteration.
                 remainder %= divisor;
             }
 
@@ -170,16 +241,130 @@ public class FractionToRecurringDecimalV5 {
      * Dry Run - 4 / 333
      * ==============================================================
      *
+     * Whole part:
+     *
+     *     4 / 333 = 0
+     *     4 % 333 = 4
+     *
      * answer = "0."
+     * firstPosition = {}
      *
-     * remainder | stored index | emitted digit | next remainder
-     * ----------+--------------+---------------+---------------
-     * 4         | 2            | 0             | 40
-     * 40        | 3            | 1             | 67
-     * 67        | 4            | 2             | 4
+     * --------------------------------------------------------------
+     * Iteration 1 - remainder = 4
+     * --------------------------------------------------------------
      *
-     * remainder 4 repeats; its first index was 2.
-     * Insert '(' at 2 and append ')' -> "0.(012)".
+     * 4 has not been seen.
+     *
+     * answer.length() = 2
+     * store: 4 -> 2
+     *
+     * Meaning:
+     *   digits produced from remainder 4 begin at answer index 2.
+     *
+     *     remainder *= 10   -> 4 * 10 = 40
+     *     40 / 333          -> digit 0
+     *     40 % 333          -> new remainder 40
+     *
+     * answer = "0.0"
+     * map    = {4 -> 2}
+     *
+     * --------------------------------------------------------------
+     * Iteration 2 - remainder = 40
+     * --------------------------------------------------------------
+     *
+     * 40 has not been seen.
+     *
+     * answer.length() = 3
+     * store: 40 -> 3
+     *
+     *     40 * 10 = 400
+     *     400 / 333 = 1
+     *     400 % 333 = 67
+     *
+     * because:
+     *     400 = 333 * 1 + 67
+     *
+     * answer = "0.01"
+     * map    = {4 -> 2, 40 -> 3}
+     *
+     * --------------------------------------------------------------
+     * Iteration 3 - remainder = 67
+     * --------------------------------------------------------------
+     *
+     * 67 has not been seen.
+     *
+     * answer.length() = 4
+     * store: 67 -> 4
+     *
+     *     67 * 10 = 670
+     *     670 / 333 = 2
+     *     670 % 333 = 4
+     *
+     * because:
+     *     670 = 333 * 2 + 4
+     *
+     * answer = "0.012"
+     * map    = {4 -> 2, 40 -> 3, 67 -> 4}
+     *
+     * --------------------------------------------------------------
+     * Iteration 4 - remainder = 4 AGAIN
+     * --------------------------------------------------------------
+     *
+     * Map already contains:
+     *
+     *     4 -> 2
+     *
+     * Current answer with indices:
+     *
+     *     chars:  0 . 0 1 2
+     *     index:  0 1 2 3 4
+     *               ^
+     *               cycleStart = 2
+     *
+     * Insert '(' at index 2:
+     *
+     *     "0.(012"
+     *
+     * Append ')' at the current end:
+     *
+     *     "0.(012)"
+     *
+     * Why can we break?
+     *
+     * We returned to the exact same remainder 4.
+     * For a fixed divisor, the same remainder produces the same future:
+     *
+     *     4 -> digit 0 -> 40
+     *    40 -> digit 1 -> 67
+     *    67 -> digit 2 -> 4
+     *
+     * So the future is now guaranteed to be:
+     *
+     *     012 012 012 ...
+     *
+     * There is no new information left to generate.
+     *
+     * Final:
+     *
+     *     4 / 333 = 0.(012)
+     *
+     * Compact table:
+     *
+     * current r | store    | r*10 | digit | next r | answer
+     * ----------+----------+------+-------+--------+--------
+     * 4         | 4  -> 2  | 40   | 0     | 40     | 0.0
+     * 40        | 40 -> 3  | 400  | 1     | 67     | 0.01
+     * 67        | 67 -> 4  | 670  | 2     | 4      | 0.012
+     * 4 again   | seen     |  -   | -     | -      | 0.(012)
+     *
+     * Key line:
+     *
+     *     firstPosition.put(remainder, answer.length());
+     *
+     * means:
+     *
+     *     "If this remainder ever returns, the repeating output starts
+     *      at the current answer index."
      */
 
     /*
@@ -202,7 +387,7 @@ public class FractionToRecurringDecimalV5 {
      *
      * FRACTION = LONG DIVISION + REMAINDER CYCLE
      *
-     * sign: XOR
+     * sign: signs differ => negative
      * cast to long BEFORE abs
      * append quotient
      * remainder = dividend % divisor
@@ -254,6 +439,11 @@ public class FractionToRecurringDecimalV5 {
      *
      * Negative values:
      *   decide sign once, then perform division on positive long values.
+     *
+     * Why long for remainder / Map key:
+     *   remainder is < divisor, not < 10. It may have many digits.
+     *   The arithmetic uses long because abs(Integer.MIN_VALUE) and
+     *   remainder * 10 can exceed int range.
      */
 
     /*

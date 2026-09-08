@@ -3062,6 +3062,7 @@ Source of truth remains `src/main/java/org/chijai`. These files link back to the
 | 1 day | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 40 plus weak recall. |
 | 2 days | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover top 60 with implementation drills. |
 | 1 week | `04_TWO_DAY_AND_SEVEN_DAY_PLANS.md` | Cover the full Priority A/B path. |
+| 1 hour before an interview | `14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE.md` | Start at rank 1; scan pattern evidence, decision logic, code guard, dry run, and complexity. |
 | Need one master list | `01_ZERO_TO_HERO_RANKED_TABLE.md` | Ranked all-problem table with Java and LeetCode links. |
 | Need horizontal pattern discrimination | `../horizontal/README.md` | Winner pattern, near-misses, minimal mutations, and CROSSDRILL. |
 | Need complete LeetCode book index | `07_LEETCODE_SOLVED_INDEX.md` | Recursive source scan of LeetCode URLs and explicit LC problem numbers in Java files. |
@@ -3665,6 +3666,236 @@ function Build-MasterComplexityTable {
         }
     }
 
+    return ($lines -join "`r`n").TrimEnd()
+}
+
+function New-OneHourSlugSet {
+    param([string] $Csv)
+
+    $set = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($slug in ($Csv -split ',')) {
+        $value = $slug.Trim().ToLowerInvariant()
+        if ($value) { [void] $set.Add($value) }
+    }
+    return $set
+}
+
+# Audited snapshots, 2026-09-08. These are evidence signals, never claimed as
+# interview probabilities. G169 and TIH come from Tech Interview Handbook;
+# TUF79 comes from Take U Forward; CJ comes from the supplied 243-page PDF.
+$script:OneHourG169Slugs = New-OneHourSlugSet @'
+01-matrix,3sum,3sum-closest,accounts-merge,add-binary,add-two-numbers,alien-dictionary,all-nodes-distance-k-in-binary-tree,asteroid-collision,backspace-string-compare,balanced-binary-tree,basic-calculator,basic-calculator-ii,best-time-to-buy-and-sell-stock,binary-search,binary-tree-level-order-traversal,binary-tree-maximum-path-sum,binary-tree-right-side-view,binary-tree-zigzag-level-order-traversal,bus-routes,cheapest-flights-within-k-stops,climbing-stairs,clone-graph,coin-change,combination-sum,combination-sum-iv,construct-binary-tree-from-preorder-and-inorder-traversal,container-with-most-water,contains-duplicate,contiguous-array,convert-sorted-array-to-binary-search-tree,counting-bits,course-schedule,course-schedule-ii,daily-temperatures,decode-string,decode-ways,design-add-and-search-words-data-structure,design-hit-counter,design-in-memory-file-system,diameter-of-binary-tree,employee-free-time,encode-and-decode-strings,evaluate-reverse-polish-notation,find-all-anagrams-in-a-string,find-k-closest-elements,find-median-from-data-stream,find-minimum-in-rotated-sorted-array,find-the-duplicate-number,first-bad-version,first-missing-positive,flood-fill,gas-station,generate-parentheses,graph-valid-tree,group-anagrams,house-robber,implement-queue-using-stacks,implement-trie-prefix-tree,inorder-successor-in-bst,insert-delete-getrandom-o1,insert-interval,invert-binary-tree,jump-game,k-closest-points-to-origin,kth-largest-element-in-an-array,kth-smallest-element-in-a-bst,largest-number,largest-rectangle-in-histogram,letter-combinations-of-a-phone-number,linked-list-cycle,longest-common-prefix,longest-consecutive-sequence,longest-increasing-path-in-a-matrix,longest-increasing-subsequence,longest-palindrome,longest-palindromic-substring,longest-repeating-character-replacement,longest-substring-without-repeating-characters,longest-valid-parentheses,lowest-common-ancestor-of-a-binary-search-tree,lowest-common-ancestor-of-a-binary-tree,lru-cache,majority-element,maximal-square,maximum-depth-of-binary-tree,maximum-frequency-stack,maximum-product-subarray,maximum-profit-in-job-scheduling,maximum-subarray,maximum-width-of-binary-tree,median-of-two-sorted-arrays,meeting-rooms,meeting-rooms-ii,merge-intervals,merge-k-sorted-lists,merge-two-sorted-lists,middle-of-the-linked-list,min-stack,minimum-height-trees,minimum-knight-moves,minimum-window-substring,missing-number,move-zeroes,n-queens,next-permutation,non-overlapping-intervals,number-of-1-bits,number-of-connected-components-in-an-undirected-graph,number-of-islands,odd-even-linked-list,pacific-atlantic-water-flow,palindrome-linked-list,palindrome-number,palindrome-pairs,partition-equal-subset-sum,path-sum-ii,path-sum-iii,permutations,powx-n,product-of-array-except-self,random-pick-with-weight,ransom-note,remove-nth-node-from-end-of-list,reorder-list,reverse-bits,reverse-integer,reverse-linked-list,reverse-nodes-in-k-group,roman-to-integer,rotate-array,rotate-image,rotate-list,rotting-oranges,same-tree,search-a-2d-matrix,search-in-rotated-sorted-array,serialize-and-deserialize-binary-tree,set-matrix-zeroes,shortest-path-to-get-food,single-number,sliding-window-maximum,smallest-range-covering-elements-from-k-lists,sort-colors,sort-list,spiral-matrix,squares-of-a-sorted-array,string-to-integer-atoi,subarray-sum-equals-k,subsets,subtree-of-another-tree,sudoku-solver,swap-nodes-in-pairs,symmetric-tree,task-scheduler,time-based-key-value-store,top-k-frequent-words,trapping-rain-water,two-sum,unique-paths,valid-anagram,valid-palindrome,valid-parentheses,valid-sudoku,validate-binary-search-tree,word-break,word-ladder,word-search,word-search-ii
+'@
+
+$script:OneHourTihSlugs = New-OneHourSlugSet @'
+3sum,alien-dictionary,best-time-to-buy-and-sell-stock,binary-tree-level-order-traversal,binary-tree-maximum-path-sum,climbing-stairs,clone-graph,coin-change,combination-sum-iv,construct-binary-tree-from-preorder-and-inorder-traversal,container-with-most-water,contains-duplicate,course-schedule,decode-ways,design-add-and-search-words-data-structure,encode-and-decode-strings,find-median-from-data-stream,find-minimum-in-rotated-sorted-array,graph-valid-tree,group-anagrams,house-robber,house-robber-ii,implement-trie-prefix-tree,insert-interval,invert-binary-tree,jump-game,kth-smallest-element-in-a-bst,linked-list-cycle,longest-consecutive-sequence,longest-increasing-subsequence,longest-repeating-character-replacement,longest-substring-without-repeating-characters,lowest-common-ancestor-of-a-binary-search-tree,maximum-depth-of-binary-tree,maximum-product-subarray,maximum-subarray,meeting-rooms,meeting-rooms-ii,merge-intervals,merge-k-sorted-lists,minimum-window-substring,non-overlapping-intervals,number-of-connected-components-in-an-undirected-graph,number-of-islands,pacific-atlantic-water-flow,palindromic-substrings,product-of-array-except-self,remove-nth-node-from-end-of-list,reverse-linked-list,same-tree,search-in-rotated-sorted-array,serialize-and-deserialize-binary-tree,subtree-of-another-tree,top-k-frequent-elements,two-sum,unique-paths,valid-anagram,valid-parentheses,validate-binary-search-tree,word-break,word-search-ii
+'@
+
+$script:OneHourTufSlugs = New-OneHourSlugSet @'
+3sum,accounts-merge,alien-dictionary,assign-cookies,asteroid-collision,best-time-to-buy-and-sell-stock-iv,binary-tree-inorder-traversal,binary-tree-maximum-path-sum,burst-balloons,cheapest-flights-within-k-stops,combination-sum,construct-binary-tree-from-preorder-and-inorder-traversal,course-schedule-ii,critical-connections-in-a-network,delete-node-in-a-bst,diameter-of-binary-tree,edit-distance,find-minimum-in-rotated-sorted-array,find-peak-element,house-robber,implement-strstr,intersection-of-two-linked-lists,koko-eating-bananas,largest-rectangle-in-histogram,linked-list-cycle,longest-palindromic-subsequence,lowest-common-ancestor-of-a-binary-search-tree,lowest-common-ancestor-of-a-binary-tree,majority-element-ii,maximum-product-subarray,maximum-subarray,maximum-sum-bst-in-binary-tree,maximum-xor-with-an-element-from-array,median-of-two-sorted-arrays,middle-of-the-linked-list,minimize-max-distance-to-gas-station,minimum-add-to-make-parentheses-valid,minimum-path-sum,n-queens,next-greater-element-i,next-permutation,number-of-islands,odd-even-linked-list,remove-nth-node-from-end-of-list,repeated-string-match,rotting-oranges,search-in-rotated-sorted-array-ii,sliding-window-maximum,sort-list,sudoku-solver,task-scheduler,trapping-rain-water,two-sum-iv-input-is-a-bst,word-ladder,word-search
+'@
+
+$script:OneHourCjSlugs = New-OneHourSlugSet @'
+01-matrix,3sum,accounts-merge,add-binary,balanced-binary-tree,basic-calculator,best-time-to-buy-and-sell-stock,best-time-to-buy-and-sell-stock-ii,best-time-to-buy-and-sell-stock-iii,best-time-to-buy-and-sell-stock-iv,best-time-to-buy-and-sell-stock-with-cooldown,binary-tree-level-order-traversal,binary-tree-right-side-view,climbing-stairs,clone-graph,coin-change,coin-change-ii,combination-sum,combination-sum-ii,combination-sum-iii,construct-binary-tree-from-preorder-and-inorder-traversal,container-with-most-water,contains-duplicate,course-schedule,diameter-of-binary-tree,evaluate-reverse-polish-notation,find-all-anagrams-in-a-string,find-median-from-data-stream,first-bad-version,flood-fill,implement-queue-using-stacks,implement-stack-using-queues,implement-trie-prefix-tree,insert-interval,invert-binary-tree,k-closest-points-to-origin,kth-smallest-element-in-a-bst,largest-rectangle-in-histogram,letter-combinations-of-a-phone-number,linked-list-cycle,linked-list-cycle-ii,longest-palindrome,longest-palindromic-substring,longest-substring-without-repeating-characters,lowest-common-ancestor-of-a-binary-search-tree,lowest-common-ancestor-of-a-binary-tree,lru-cache,majority-element,maximum-depth-of-binary-tree,maximum-profit-in-job-scheduling,maximum-subarray,merge-intervals,merge-k-sorted-lists,merge-two-sorted-lists,middle-of-the-linked-list,min-stack,minimum-depth-of-binary-tree,minimum-height-trees,minimum-window-substring,number-of-islands,partition-equal-subset-sum,permutations,permutations-ii,product-of-array-except-self,ransom-note,rearrange-string-k-distance-apart,reverse-linked-list,rotting-oranges,search-in-rotated-sorted-array,serialize-and-deserialize-binary-tree,sort-colors,spiral-matrix,string-to-integer-atoi,subsets,subsets-ii,task-scheduler,time-based-key-value-store,trapping-rain-water,two-sum,unique-paths-ii,valid-anagram,valid-palindrome,valid-parentheses,validate-binary-search-tree,word-ladder,word-search,word-search-ii
+'@
+
+function Get-OneHourEvidence {
+    param([object] $Row)
+
+    $tags = New-Object System.Collections.Generic.List[string]
+    if ($script:OneHourG169Slugs.Contains($Row.Slug)) { $tags.Add('G169') }
+    if ($script:OneHourTihSlugs.Contains($Row.Slug)) { $tags.Add('TIH') }
+    if ($script:OneHourTufSlugs.Contains($Row.Slug)) { $tags.Add('TUF79') }
+    if ($script:OneHourCjSlugs.Contains($Row.Slug)) { $tags.Add('CJ') }
+    $tags.Add("Local#$($Row.Rank)")
+    return ($tags -join ' + ')
+}
+
+function Get-OneHourExternalVoteCount {
+    param([string] $Slug)
+
+    $count = 0
+    foreach ($set in @($script:OneHourG169Slugs, $script:OneHourTihSlugs, $script:OneHourTufSlugs, $script:OneHourCjSlugs)) {
+        if ($set.Contains($Slug)) { $count++ }
+    }
+    return $count
+}
+
+function Get-OneHourDryRun {
+    param([string] $Slug, [string] $Category)
+
+    switch -Regex ($Slug) {
+        '^(two-sum|two-sum-ii-input-array-is-sorted)$' { return 'duplicates; pair at both boundaries; no pair if contract permits' }
+        '^(binary-search|search-in-rotated-sorted-array|find-first-and-last-position-of-element-in-sorted-array)$' { return 'one element; target at each boundary; absent target' }
+        '^(longest-substring-without-repeating-characters|minimum-window-substring|find-all-anagrams-in-a-string)$' { return 'empty; all same; answer starts or ends at a boundary' }
+        '^(reverse-linked-list|merge-two-sorted-lists|linked-list-cycle|remove-nth-node-from-end-of-list)$' { return 'empty; one node; two nodes; head/tail changes' }
+        '^(number-of-islands|rotting-oranges|01-matrix)$' { return '1x1; disconnected regions; all blocked or all active' }
+        '^(course-schedule|course-schedule-ii|alien-dictionary)$' { return 'isolated node; chain; converging edges; cycle' }
+        '^(house-robber|climbing-stairs|coin-change)$' { return 'smallest bases; choice beats skip; unreachable state' }
+        '^(subsets|permutations|combination-sum|word-search)$' { return 'empty choice; duplicate values; prune then undo' }
+        '^(valid-parentheses|min-stack|largest-rectangle-in-histogram|daily-temperatures)$' { return 'empty; immediate pop; never popped; flush at end' }
+        '^(diameter-of-binary-tree|binary-tree-level-order-traversal|validate-binary-search-tree|lowest-common-ancestor-of-a-binary-tree)$' { return 'empty; one node; skewed tree; answer crosses root' }
+        '^(top-k-frequent-elements|merge-k-sorted-lists|find-median-from-data-stream)$' { return 'k=1; ties; fewer distinct values than inputs' }
+        '^(accounts-merge|graph-valid-tree)$' { return 'singleton; duplicate edge; separate components; cycle' }
+        '^(merge-intervals|insert-interval|non-overlapping-intervals)$' { return 'touching; nested; disjoint; full overlap' }
+        '^(best-time-to-buy-and-sell-stock|jump-game|gas-station)$' { return 'monotone bad case; best at boundary; locally tempting failure' }
+        '^(implement-trie-prefix-tree|design-add-and-search-words-data-structure)$' { return 'empty prefix; word is prefix; shared prefix; missing branch' }
+        default {
+            switch ($Category) {
+                'Tree BFS' { return 'empty; one node; skewed; widest level' }
+                'Tree DFS' { return 'empty; one node; skewed; answer crosses root' }
+                'Graph BFS' { return 'single source; unreachable target; competing shortest paths' }
+                'Graph DFS' { return 'isolated node; multiple components; cycle' }
+                'Dynamic Programming' { return 'smallest bases; impossible state; final choice changes optimum' }
+                'Binary Search' { return 'one candidate; first feasible at each boundary; none feasible' }
+                default { return 'empty/minimum input; duplicates; boundary answer; no-answer case' }
+            }
+        }
+    }
+}
+
+function Get-OneHourVisibleWordCount {
+    param([object] $Candidate)
+
+    $text = @(
+        $Candidate.Row.Title,
+        (Get-DisplayCategory $Candidate.Row.Category),
+        $Candidate.Row.Pattern,
+        $Candidate.Evidence,
+        $Candidate.Row.InterviewHook,
+        $Candidate.Row.Recall,
+        $Candidate.Row.CodeIdea,
+        $Candidate.Trap,
+        $Candidate.DryRun,
+        $Candidate.Complexity.Time,
+        $Candidate.Complexity.Space,
+        $Candidate.Complexity.Reason
+    ) -join ' '
+    return @([regex]::Matches($text, '[A-Za-z0-9_+*()/#.-]+')).Count
+}
+
+function New-OneHourCandidate {
+    param([object] $Row)
+
+    $candidate = [pscustomobject]@{
+        Row = $Row
+        ExternalVotes = Get-OneHourExternalVoteCount -Slug $Row.Slug
+        Evidence = Get-OneHourEvidence -Row $Row
+        Trap = Get-PrecisionTrap -Category $Row.Category -Title $Row.Title
+        DryRun = Get-OneHourDryRun -Slug $Row.Slug -Category $Row.Category
+        Complexity = Get-ProblemComplexity -Slug $Row.Slug
+        VisibleWords = 0
+    }
+    $candidate.VisibleWords = Get-OneHourVisibleWordCount -Candidate $candidate
+    return $candidate
+}
+
+function Select-OneHourCandidates {
+    param([object[]] $Rows)
+
+    $mandatory = @(
+        'two-sum', 'binary-search', 'longest-substring-without-repeating-characters', 'reverse-linked-list',
+        'diameter-of-binary-tree', 'number-of-islands', 'course-schedule', 'valid-parentheses',
+        'house-robber', 'subsets', 'two-sum-ii-input-array-is-sorted', 'product-of-array-except-self',
+        'binary-tree-level-order-traversal', 'word-ladder', 'top-k-frequent-elements', 'accounts-merge',
+        'merge-intervals', 'best-time-to-buy-and-sell-stock', 'implement-trie-prefix-tree', 'add-binary'
+    )
+    $wordBudget = 6200
+    $minimumProblems = 75
+    $maximumProblems = 100
+    $eligible = @($Rows | Where-Object {
+        $_.Slug -and $_.LeetCodeLink -and
+        (Get-ProblemComplexity -Slug $_.Slug).Time -ne 'VERIFY FROM SOURCE'
+    } | ForEach-Object { New-OneHourCandidate -Row $_ })
+    $bySlug = @{}
+    foreach ($candidate in $eligible) { $bySlug[$candidate.Row.Slug] = $candidate }
+
+    $selected = New-Object System.Collections.Generic.List[object]
+    $selectedSlugs = New-Object System.Collections.Generic.HashSet[string]
+    $categoryCounts = @{}
+    $fileCounts = @{}
+    $totalWords = 0
+
+    foreach ($slug in $mandatory) {
+        if (-not $bySlug.ContainsKey($slug)) { throw "One-hour mandatory anchor is unavailable: $slug" }
+        $candidate = $bySlug[$slug]
+        $selected.Add($candidate)
+        [void] $selectedSlugs.Add($slug)
+        $categoryCounts[$candidate.Row.Category] = 1 + [int] $categoryCounts[$candidate.Row.Category]
+        $fileCounts[$candidate.Row.File] = 1 + [int] $fileCounts[$candidate.Row.File]
+        $totalWords += $candidate.VisibleWords
+    }
+
+    while ($selected.Count -lt $maximumProblems) {
+        $scored = foreach ($candidate in $eligible) {
+            if ($selectedSlugs.Contains($candidate.Row.Slug)) { continue }
+            $categoryCount = [int] $categoryCounts[$candidate.Row.Category]
+            $fileCount = [int] $fileCounts[$candidate.Row.File]
+            $score = 10000 - (20 * [int] $candidate.Row.Rank) + (160 * $candidate.ExternalVotes)
+            if ($categoryCount -eq 0) { $score += 700 }
+            $score -= 130 * $categoryCount
+            $score -= 70 * $fileCount
+            if ($candidate.Row.Priority -eq 'A') { $score += 100 }
+            if ($candidate.Row.Category -eq 'Design/LLD') { $score -= 500 }
+            if ($candidate.Row.Category -eq 'Core Basics') { $score -= 150 }
+            [pscustomobject]@{ Candidate = $candidate; Score = $score }
+        }
+        $next = @($scored | Sort-Object @{ Expression = { $_.Score }; Descending = $true }, @{ Expression = { $_.Candidate.Row.Rank }; Ascending = $true } | Select-Object -First 1)
+        if ($next.Count -eq 0) { break }
+        $candidate = $next[0].Candidate
+        if ($selected.Count -ge $minimumProblems -and ($totalWords + $candidate.VisibleWords) -gt $wordBudget) { break }
+        $selected.Add($candidate)
+        [void] $selectedSlugs.Add($candidate.Row.Slug)
+        $categoryCounts[$candidate.Row.Category] = 1 + [int] $categoryCounts[$candidate.Row.Category]
+        $fileCounts[$candidate.Row.File] = 1 + [int] $fileCounts[$candidate.Row.File]
+        $totalWords += $candidate.VisibleWords
+    }
+
+    return $selected.ToArray()
+}
+
+function Build-OneHourMasterTable {
+    param([object[]] $Rows)
+
+    $selected = @(Select-OneHourCandidates -Rows $Rows)
+    $visibleWords = ($selected | Measure-Object -Property VisibleWords -Sum).Sum
+    $minutesAt130 = [math]::Ceiling($visibleWords / 130.0)
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('# One Hour Before Interview - Anytime Master Table')
+    $lines.Add('')
+    $lines.Add('Start at rank 1 and stop only when time is called. Every prefix is optimized for broad no-red-flag coverage; this is a rapid reconstruction pass, not fresh study and not a prediction of exact interview questions.')
+    $lines.Add('')
+    $lines.Add("Current generated cut: **$($selected.Count) anchors**, **$visibleWords visible row words**, about **$minutesAt130 minutes at 130 words/minute**. Problem count is an output of the one-hour budget, not a target.")
+    $lines.Add('')
+    $lines.Add('Evidence: `G169` = Grind all 169; `TIH` = Tech Interview Handbook best-practice set; `TUF79` = Striver last-moment sheet; `CJ` = supplied Grind75 PDF; `Local#n` = current repository ROI rank. Agreement supports coverage value, not interview probability.')
+    $lines.Add('')
+    $lines.Add('| Rank | Anchor problem + classification + evidence | LeetCode | Local Java | Interview script |')
+    $lines.Add('|---:|---|---|---|---|')
+
+    for ($index = 0; $index -lt $selected.Count; $index++) {
+        if ($index -gt 0 -and $index % 10 -eq 0) {
+            $completed = $index
+            $lines.Add("| **Checkpoint $completed** | **If stopped now: retain these $completed; continue only if recall remains active.** | | | |")
+        }
+        $candidate = $selected[$index]
+        $row = $candidate.Row
+        $rank = $index + 1
+        $classification = '**{0}**<br>`{1} > {2}`<br>Evidence: `{3}`' -f (Escape-Md $row.Title), (Escape-Md (Get-DisplayCategory $row.Category)), (Escape-Md $row.Pattern), (Escape-Md $candidate.Evidence)
+        $leetcode = New-Link 'LC' $row.LeetCodeLink
+        $java = New-Link 'Java' $row.JavaLink
+        $decide = '**DECIDE:** {0} **Invariant:** {1}' -f (Escape-Md $row.InterviewHook), (Escape-Md $row.Recall)
+        $guard = '**CODE-GUARD:** {0} **Guard:** {1} **Test:** {2} **Defend:** {3} time; {4} space. {5}' -f (Escape-Md $row.CodeIdea), (Escape-Md $candidate.Trap), (Escape-Md $candidate.DryRun), $candidate.Complexity.Time, $candidate.Complexity.Space, (Escape-Md $candidate.Complexity.Reason)
+        $lines.Add("| $rank | $classification | $leetcode | $java | $decide<br>$guard |")
+    }
+
+    $lines.Add('')
+    $lines.Add('## Ranking Contract')
+    $lines.Add('')
+    $lines.Add('Ranks 1-20 are fixed breadth anchors: core lookup, ordered search, window, list, tree, grid, dependency graph, stack, DP, backtracking, two pointers, prefix/suffix, BFS, heap, union-find, intervals/greedy, trie, and bit/string arithmetic. Later rows are chosen greedily by local rank + external agreement + uncovered-family gain - repeated-category/file cost.')
+    $lines.Add('')
+    $lines.Add('Regenerate after source metadata changes. Validate before relying on the table: `dsa-review/scripts/validate-interview-cockpit.cmd`.')
+    $lines.Add('')
+    $lines.Add('Sources: [Grind 75 methodology](https://www.techinterviewhandbook.org/grind75/faq), [Grind all 169](https://www.techinterviewhandbook.org/grind75/?grouping=none&mode=all&order=all_rounded), [TIH best-practice questions](https://www.techinterviewhandbook.org/best-practice-questions/), [Striver 79](https://takeuforward.org/dsa/strivers-79-last-moment-dsa-sheet-ace-interviews).')
     return ($lines -join "`r`n").TrimEnd()
 }
 
@@ -5402,6 +5633,7 @@ Write-TextFile -Path (Join-Path $outDir "10_AFTER_7_DAY_EXTENSION_PLAN.md") -Con
 Write-TextFile -Path (Join-Path $outDir "11_ACTIVE_90_PLAN_CUTOFF_AND_EXTENSION.md") -Content (Build-ActiveNinetyPlanCutoff -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "12_MASTER_DSA_INTERVIEW_ARTICULATION_TABLE.md") -Content (Build-MasterArticulationTable -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "13_MASTER_TIME_SPACE_COMPLEXITY_TABLE.md") -Content (Build-MasterComplexityTable -LeetCodeRows $leetcodeIndexRows)
+Write-TextFile -Path (Join-Path $outDir "14_ONE_HOUR_BEFORE_INTERVIEW_MASTER_TABLE.md") -Content (Build-OneHourMasterTable -Rows $rows)
 Write-TextFile -Path (Join-Path $outDir "DSA_7-Day_Interview_Performance_Sprint.md") -Content (Build-WeeklySprint -Rows $rows)
 
 $patternDir = Join-Path $outDir "patterns"
