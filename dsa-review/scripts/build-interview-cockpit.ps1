@@ -199,6 +199,36 @@ function Get-ProblemOverride {
             hook = "Checking every substring repeats frequency validation; need/have counts update incrementally."
             code = "Build need map, update have on right, while have == needCount update best and remove left."
         }
+        "maximumnumberofrobotswithinbudget" = @{
+            recall = "Window is valid when maxCharge + windowLength * runningCostSum <= budget."
+            hook = "Recomputing each window maximum is too slow; pair a running sum with a decreasing charge-time deque."
+            code = "Expand right, maintain decreasing charge indices and running sum, then shrink until the budget inequality holds."
+        }
+        "constrainedsubsequencesum" = @{
+            recall = "dp[i] is nums[i] plus the positive maximum dp among the previous k indices."
+            hook = "Scanning the previous k DP states at every index costs O(nk); a decreasing deque exposes their maximum."
+            code = "Expire indices before i-k, set dp[i]=nums[i]+max(0,dp[front]), then remove dominated DP values and append i."
+        }
+        "jumpgamevi" = @{
+            recall = "dp[i] is nums[i] plus the maximum score among reachable previous k indices."
+            hook = "The transition needs a sliding maximum of the previous k DP values, so a monotonic deque removes the inner scan."
+            code = "Expire front indices outside i-k, compute dp[i] from deque front, pop smaller/equal DP values, then append i."
+        }
+        "longestcontinuoussubarraywithabsolutedifflessthanorequaltolimit" = @{
+            recall = "A window is valid exactly when its maximum minus minimum is at most limit."
+            hook = "Balanced trees work, but max/min deques maintain both extrema in amortized O(1) per boundary move."
+            code = "Maintain decreasing max and increasing min deques; shrink while front difference exceeds limit, then update length."
+        }
+        "maxvalueofequation" = @{
+            recall = "For xj > xi, maximize (yi-xi) + (yj+xj) among points with xj-xi <= k."
+            hook = "Ordered x turns eligibility into an expiring window; a decreasing deque retains the best yi-xi candidate."
+            code = "Expire points with xj-xi > k, score from deque front, pop dominated yi-xi values, then append the current point."
+        }
+        "shortestsubarraywithsumatleastk" = @{
+            recall = "For prefix sums P, seek the shortest i-j with P[i]-P[j] >= k; increasing deque prefixes are undominated starts."
+            hook = "Negative values break a normal sum window; monotonic prefix sums recover safe front/back eliminations."
+            code = "For each prefix, pop front while it meets k and update length; pop back while its prefix is >= current; append index."
+        }
         "permutationinstring" = @{
             recall = "A fixed-size window is a permutation when its frequency counts match the target."
             hook = "Sorting every window is too slow; maintain counts as window slides."
@@ -804,6 +834,16 @@ function Get-ProblemOverride {
             hook = "Trying every start repeats failed prefixes; greedy skips the whole impossible range."
             code = "Track totalNet, tank, and start; when tank < 0 set start = i + 1 and reset tank."
         }
+        "jumpgameii" = @{
+            recall = "currentEnd closes one BFS-like reachable layer; farthest is the next layer boundary."
+            hook = "DP is unnecessary because every index inside the current reachable layer contributes only to the farthest next reach."
+            code = "Scan to n-2, update farthest, and when i reaches currentEnd increment jumps and set currentEnd=farthest."
+        }
+        "canplaceflowers" = @{
+            recall = "Plant at an empty position only when both existing neighbors are empty; that earliest placement never hurts later capacity."
+            hook = "Backtracking is unnecessary because planting at the first legal slot dominates postponing it."
+            code = "Scan beds; when current and both bounded neighbors are zero, plant, decrement n, and return early at zero."
+        }
         "jumpgame" = @{
             recall = "Track the farthest reachable index; failure happens only when i passes reach."
             hook = "DP reachability is unnecessary; farthest reach dominates all earlier reachable choices."
@@ -1274,6 +1314,7 @@ function Get-Category {
     if ($titleText -match "n-queens|sudoku solver") { return "Backtracking" }
     if ($titleText -match "^car pooling$") { return "Intervals/Greedy" }
     if ($titleText -match "^gas station$|^jump game$|^best time to buy and sell stock$|^best time to buy and sell stock ii$") { return "Greedy" }
+    if ($titleText -match "^jump game ii$|^can place flowers$") { return "Greedy" }
     if ($titleText -match "^distinct subsequences ii$|best time to buy and sell stock (iii|iv|with cooldown|with transaction fee)") { return "Dynamic Programming" }
     if ($titleText -match "^longest continuous increasing subsequence$") { return "Sliding Window" }
     if ($titleText -match "^maximum length of pair chain$") { return "Intervals/Greedy" }
@@ -1288,9 +1329,23 @@ function Get-Category {
     if ($titleText -match "parallel courses|alien dictionary|eventual safe states|sequence reconstruction|sort items by groups") { return "Topological Sort" }
     if ($titleText -match "^redundant connection$") { return "Union Find" }
     if ($titleText -match "possible bipartition|graph valid tree") { return "Graph DFS" }
-    if ($titleText -match "sliding window maximum|online stock span") { return "Stack" }
+    if ($titleText -match "^sliding window maximum$") { return "Sliding Window" }
+    if ($titleText -match "online stock span") { return "Stack" }
     if ($titleText -match "^meeting rooms$") { return "Intervals/Greedy" }
     if ($titleText -match "maximum profit in job scheduling") { return "Dynamic Programming" }
+    if ($titleText -match "decode ways|word break ii|extra characters in a string|string compression ii") { return "Dynamic Programming" }
+    if ($titleText -match "palindrome partitioning ii|concatenated words") { return "Dynamic Programming" }
+    if ($titleText -match "restore ip addresses|^palindrome partitioning$") { return "Backtracking" }
+    if ($titleText -match "first unique character|repeated dna sequences") { return "HashMap/HashSet" }
+    if ($titleText -match "high five") { return "Heap" }
+    if ($titleText -match "logger rate limiter") { return "Design/LLD" }
+    if ($titleText -match "find the duplicate number") { return "Two Pointers" }
+    if ($titleText -match "fraction to recurring decimal|happy number") { return "Math/Bit/String" }
+    if ($titleText -match "random pick with weight|random point in non-overlapping rectangles") { return "Binary Search" }
+    if ($titleText -match "random flip matrix|random pick with blacklist") { return "HashMap/HashSet" }
+    if ($titleText -match "linked list random node|random pick index|shuffle an array") { return "Core Basics" }
+    if ($titleText -match "string compression|remove duplicates from sorted array|remove element") { return "Two Pointers" }
+    if ($titleText -match "consecutive characters|max consecutive ones|longer contiguous segments") { return "Sliding Window" }
     if ($titleText -match "network delay time") { return "Graph BFS" }
     if ($titleText -match "^longest palindrome$") { return "HashMap/HashSet" }
     if ($titleText -match "sort colors|sort array by parity|move zeroes") { return "Two Pointers" }
@@ -1407,6 +1462,38 @@ function Get-PatternOverride {
         "designparkingsystem" { return "Fixed capacity counters" }
         "missingnumber" { return "XOR / arithmetic invariant" }
         "missingranges" { return "Sentinel boundary scan" }
+        "slidingwindowmaximum" { return "Fixed window + monotonic deque" }
+        "firstuniquecharacterinastring" { return "Frequency count + original-order scan" }
+        "highfive" { return "Per-key bounded min-heaps" }
+        "loggerratelimiter" { return "Per-key cooldown timestamp" }
+        "findtheduplicatenumber" { return "Floyd cycle on value-to-index links" }
+        "fractiontorecurringdecimal" { return "Remainder-to-output-index cycle detection" }
+        "happynumber" { return "Floyd cycle over digit-square transform" }
+        "repeateddnasequences" { return "Fixed-length rolling window + set" }
+        "randompickwithweight" { return "Prefix weights + first-prefix binary search" }
+        "randompointinnonoverlappingrectangles" { return "Prefix areas + first-prefix binary search" }
+        "randomflipmatrix" { return "Sparse Fisher-Yates remapping" }
+        "randompickwithblacklist" { return "Blacklist remap into allowed prefix" }
+        "linkedlistrandomnode" { return "Reservoir sampling" }
+        "randompickindex" { return "Target-index map / reservoir sampling" }
+        "shuffleanarray" { return "Fisher-Yates shuffle" }
+        "stringcompression" { return "Read/write run compaction" }
+        "stringcompressionii" { return "Delete-budget compression DP" }
+        "removeduplicatesfromsortedarray" { return "Stable read/write compaction" }
+        "removeduplicatesfromsortedarrayii" { return "At-most-two read/write compaction" }
+        "removeelement" { return "Filtered read/write compaction" }
+        "consecutivecharacters" { return "Single-pass run length" }
+        "maxconsecutiveones" { return "Single-pass run length" }
+        "longercontiguoussegmentsofonesthanzeros" { return "Dual run-length scan" }
+        "decodeways" { return "Prefix decoding DP" }
+        "wordbreakii" { return "Memoized sentence reconstruction" }
+        "extracharactersinastring" { return "Minimum-extra prefix DP" }
+        "jumpgameii" { return "Greedy farthest boundary by levels" }
+        "canplaceflowers" { return "Greedy local placement" }
+        "restoreipaddresses" { return "Four-segment constrained backtracking" }
+        "palindromepartitioning" { return "Palindrome-cut backtracking" }
+        "palindromepartitioningii" { return "Minimum palindrome-cut DP" }
+        "concatenatedwords" { return "Word-break DP over shorter words" }
         default { return $Pattern }
     }
 }
@@ -1997,6 +2084,12 @@ function Get-PrecisionTrap {
         "binarysearch" { return "left <= right; move by mid +/- 1" }
         "longestsubstringwithoutrepeatingcharacters" { return "left = max(left, lastSeen + 1)" }
         "minimumwindowsubstring" { return "save answer before left removal breaks validity" }
+        "maximumnumberofrobotswithinbudget" { return "remove outgoing running cost; expire its charge index only when it reaches deque front" }
+        "constrainedsubsequencesum" { return "expire index < i-k before reading front; allow restart with max(0, best)" }
+        "jumpgamevi" { return "expire index < i-k before reading front; unlike constrained sum, never clamp best to zero" }
+        "longestcontinuoussubarraywithabsolutedifflessthanorequaltolimit" { return "expire each deque front by index while shrinking; duplicates must remain distinguishable" }
+        "maxvalueofequation" { return "score before inserting current point; expire candidates with xj-xi > k" }
+        "shortestsubarraywithsumatleastk" { return "negative values forbid a normal window; pop qualifying fronts before dominated backs" }
         "reverselinkedlist" { return "save next before current.next rewrite" }
         "linkedlistcycle" { return "guard fast and fast.next" }
         "mergeksortedlists" { return "push polled.next, not every node upfront" }
@@ -2040,6 +2133,8 @@ function Get-PrecisionTrap {
         "minimumnumberofdaystomakembouquets" { return "two resets: gap and flowers == k" }
         "gasstation" { return "reset start after tank < 0" }
         "jumpgame" { return "fail when i > farthest" }
+        "jumpgameii" { return "scan only through n-2; increment jumps exactly when i reaches currentEnd" }
+        "canplaceflowers" { return "treat missing neighbors as empty; mutate planted slot so the next index cannot reuse it" }
         "editdistance" { return "base rows/cols are prefix lengths" }
         "distinctsubsequences" { return "dp[*][0] = 1" }
         "interleavingstring" { return "s3 index is i + j - 1" }
@@ -3628,6 +3723,38 @@ function Get-ProblemComplexity {
         '^string-to-integer-atoi$' { return New-ComplexityResult 'O(n)' 'O(1)' 'The parser consumes a prefix of the input once while retaining sign and numeric accumulator.' }
         '^missing-number$' { return New-ComplexityResult 'O(n)' 'O(1)' 'XOR or arithmetic accumulation consumes each value once.' }
         '^missing-ranges$' { return New-ComplexityResult 'O(n)' 'O(1) auxiliary' 'Sentinel boundaries scan the sorted values once; returned ranges are output space.' }
+        '^first-unique-character-in-a-string$' { return New-ComplexityResult 'O(n)' 'O(sigma)' 'One pass counts characters and one pass finds the first index whose count is one.' }
+        '^high-five$' { return New-ComplexityResult 'O(n log 5 + s log s)' 'O(5s)' 'Each of n scores enters a size-five heap and the s student IDs are sorted for output.' }
+        '^logger-rate-limiter$' { return New-ComplexityResult 'O(1) expected per call' 'O(m)' 'One hash lookup/update handles a call; m distinct retained messages occupy the map.' }
+        '^move-zeroes$' { return New-ComplexityResult 'O(n)' 'O(1)' 'A read pointer inspects each value once while a write pointer compacts nonzero values.' }
+        '^decode-ways$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Each prefix uses only its previous one- and two-character decoding states.' }
+        '^extra-characters-in-a-string$' { return New-ComplexityResult 'O(n^2)' 'O(n)' 'Each prefix endpoint can test every earlier dictionary cut while one DP value is stored per prefix.' }
+        '^word-break-ii$' { return New-ComplexityResult 'O(n^2 + output characters)' 'O(n + output characters)' 'Memoization solves each suffix boundary once, while materializing every returned sentence is unavoidable.' }
+        '^find-the-duplicate-number$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Floyd pointers traverse the implicit value-to-index functional graph a constant number of times.' }
+        '^fraction-to-recurring-decimal$' { return New-ComplexityResult 'O(d) expected' 'O(d)' 'Each distinct remainder is stored once until termination or the first repeated remainder after d digits.' }
+        '^happy-number$' { return New-ComplexityResult 'O(log n) per transform sequence' 'O(1)' 'Digit-square transforms shrink large values quickly and Floyd cycle detection retains two integers.' }
+        '^repeated-dna-sequences$' { return New-ComplexityResult 'O(n)' 'O(n)' 'Each length-ten window is encoded once and stored in seen/repeated sets.' }
+        '^random-flip-matrix$' { return New-ComplexityResult 'flip O(1) expected, reset O(f)' 'O(f)' 'Sparse Fisher-Yates remaps only the f positions flipped since the last reset.' }
+        '^random-pick-with-blacklist$' { return New-ComplexityResult 'build O(b) expected, pick O(1) expected' 'O(b)' 'Construction remaps b blocked prefix values; each pick performs one random draw and hash lookup.' }
+        '^linked-list-random-node$' { return New-ComplexityResult 'build O(n), getRandom O(1)' 'O(n)' 'The selected implementation snapshots all n node values once and samples an array index per query.' }
+        '^random-pick-index$' { return New-ComplexityResult 'build O(n), pick O(1) expected' 'O(n)' 'Construction groups all n indices by value; a query samples one stored target index.' }
+        '^shuffle-an-array$' { return New-ComplexityResult 'reset O(n), shuffle O(n)' 'O(n)' 'Reset copies n values and Fisher-Yates visits each array position once per shuffle.' }
+        '^random-pick-with-weight$' { return New-ComplexityResult 'build O(n), pick O(log n)' 'O(n)' 'Construction stores n prefix weights and each pick binary-searches the first prefix covering its draw.' }
+        '^random-point-in-non-overlapping-rectangles$' { return New-ComplexityResult 'build O(r), pick O(log r)' 'O(r)' 'Construction stores r prefix areas and each point draw binary-searches its owning rectangle.' }
+        '^string-compression$' { return New-ComplexityResult 'O(n)' 'O(1)' 'Read and write pointers consume each run once and emit its character and decimal count in place.' }
+        '^string-compression-ii$' { return New-ComplexityResult 'O(n^2 * k)' 'O(n * k)' 'Each index/deletion-budget state can extend a run across O(n) later characters.' }
+        '^remove-duplicates-from-sorted-array$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One read pass writes each new sorted value exactly once.' }
+        '^remove-duplicates-from-sorted-array-ii$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One read pass writes a value only when it differs from the value two output positions back.' }
+        '^remove-element$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One read pass copies every retained value to the next write position.' }
+        '^consecutive-characters$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan carries only the current equal-character run and the best run length.' }
+        '^max-consecutive-ones$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan increments the current one-run or resets it at zero.' }
+        '^longer-contiguous-segments-of-ones-than-zeros$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan tracks current and maximum runs for both binary characters.' }
+        '^jump-game-ii$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan expands the current reachable layer and commits a jump only at that layer boundary.' }
+        '^can-place-flowers$' { return New-ComplexityResult 'O(n)' 'O(1)' 'One scan plants only when both adjacent positions are empty, permanently resolving that local choice.' }
+        '^restore-ip-addresses$' { return New-ComplexityResult 'O(1) bounded search' 'O(1) auxiliary' 'Exactly four segments of at most three digits bound the search independently of longer invalid input.' }
+        '^palindrome-partitioning$' { return New-ComplexityResult 'O(n * 2^n)' 'O(n^2)' 'There are O(2^n) cut choices and copying a complete partition can cost O(n); palindrome state can use O(n^2).' }
+        '^palindrome-partitioning-ii$' { return New-ComplexityResult 'O(n^2)' 'O(n^2)' 'Every substring boundary is tested once using a palindrome table and one minimum-cut state per prefix.' }
+        '^concatenated-words$' { return New-ComplexityResult 'O(total characters * L)' 'O(total characters)' 'Each word runs bounded word-break transitions against previously inserted shorter words; L is maximum word length.' }
         '^number-of-orders-in-the-backlog$' { return New-ComplexityResult 'O(n log n)' 'O(n)' 'Each order is inserted/removed through one of two price heaps that can hold n orders.' }
     }
 
@@ -3800,7 +3927,7 @@ function Select-OneHourCandidates {
         'binary-tree-level-order-traversal', 'word-ladder', 'top-k-frequent-elements', 'accounts-merge',
         'merge-intervals', 'best-time-to-buy-and-sell-stock', 'implement-trie-prefix-tree', 'add-binary'
     )
-    $wordBudget = 6200
+    $wordBudget = 6500
     $minimumProblems = 75
     $maximumProblems = 100
     $eligible = @($Rows | Where-Object {

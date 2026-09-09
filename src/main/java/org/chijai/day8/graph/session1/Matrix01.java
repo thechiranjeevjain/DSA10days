@@ -225,14 +225,15 @@ public class Matrix01 {
             int rows = matrix.length;
             int cols = matrix[0].length;
 
+            int[][] answer = new int[rows][cols];
+
             Queue<int[]> queue = new ArrayDeque<>();
 
             /*
              *
-             * Every zero is already a finalized source
-             * with distance 0.
+             * Every zero already has distance 0.
              *
-             * -1 means the distance is not finalized yet.
+             * Every one starts as unvisited.
              *
              */
             for (int row = 0; row < rows; row++) {
@@ -241,11 +242,13 @@ public class Matrix01 {
 
                     if (matrix[row][col] == 0) {
 
+                        answer[row][col] = 0;
+
                         queue.offer(new int[]{row, col});
 
                     } else {
 
-                        matrix[row][col] = -1;
+                        answer[row][col] = -1;
                     }
                 }
             }
@@ -259,8 +262,11 @@ public class Matrix01 {
 
                 for (int[] direction : DIRECTIONS) {
 
-                    int nextRow = currentRow + direction[0];
-                    int nextCol = currentCol + direction[1];
+                    int nextRow =
+                            currentRow + direction[0];
+
+                    int nextCol =
+                            currentCol + direction[1];
 
                     /*
                      *
@@ -276,35 +282,27 @@ public class Matrix01 {
 
                     /*
                      *
-                     * Only -1 cells are still unvisited.
-                     *
-                     * Any non-negative value is already
-                     * the final shortest distance.
+                     * -1 means this cell has not received
+                     * its shortest distance yet.
                      *
                      */
-                    if (matrix[nextRow][nextCol] != -1) {
+                    if (answer[nextRow][nextCol] != -1) {
                         continue;
                     }
 
-                    /*
-                     *
-                     * First BFS arrival is the shortest.
-                     *
-                     * The neighbor is exactly one move farther
-                     * than the current finalized cell.
-                     *
-                     */
-                    matrix[nextRow][nextCol] =
-                            matrix[currentRow][currentCol] + 1;
+                    answer[nextRow][nextCol] =
+                            answer[currentRow][currentCol] + 1;
 
-                    queue.offer(new int[]{nextRow, nextCol});
+                    queue.offer(new int[]{
+                            nextRow,
+                            nextCol
+                    });
                 }
             }
 
-            return matrix;
+            return answer;
         }
     }
-
     /*==============================================================
      *
      * 3. 🧪 PRIMARY DRY RUN

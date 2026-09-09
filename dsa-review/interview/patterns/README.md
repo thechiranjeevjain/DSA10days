@@ -8,7 +8,7 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 |---:|---|---:|---:|---:|---:|---:|---:|---|
 | 1 | HashMap / Frequency / Set | 5 | 1 | 2 | 2 | 1 | 0 | [01_hashmap_hashset.md](01_hashmap_hashset.md) |
 | 2 | Binary Search / Answer Search | 13 | 2 | 4 | 0 | 8 | 1 | [02_binary_search.md](02_binary_search.md) |
-| 3 | Sliding Window | 7 | 3 | 2 | 2 | 1 | 2 | [03_sliding_window.md](03_sliding_window.md) |
+| 3 | Sliding Window | 14 | 3 | 2 | 2 | 2 | 8 | [03_sliding_window.md](03_sliding_window.md) |
 | 4 | Prefix Sum / Prefix-Suffix | 2 | 4 | 1 | 1 | 0 | 0 | [04_prefix_suffix.md](04_prefix_suffix.md) |
 | 5 | Linked List Pointers | 14 | 6 | 5 | 6 | 2 | 1 | [05_linked_list.md](05_linked_list.md) |
 | 6 | Two Pointers | 7 | 10 | 4 | 1 | 2 | 0 | [06_two_pointers.md](06_two_pointers.md) |
@@ -20,13 +20,13 @@ Recommended flow: read the pattern signal, speak the top rows without code, then
 | 12 | Graph BFS / Shortest Path | 6 | 21 | 2 | 2 | 1 | 1 | [12_graph_bfs.md](12_graph_bfs.md) |
 | 13 | Dynamic Programming | 26 | 32 | 0 | 5 | 2 | 19 | [13_dynamic_programming.md](13_dynamic_programming.md) |
 | 14 | Backtracking / Combinatorial DFS | 6 | 34 | 0 | 3 | 0 | 3 | [14_backtracking.md](14_backtracking.md) |
-| 15 | Stack / Monotonic Stack | 12 | 35 | 0 | 2 | 4 | 6 | [15_stack.md](15_stack.md) |
+| 15 | Stack / Monotonic Stack | 11 | 35 | 0 | 2 | 3 | 6 | [15_stack.md](15_stack.md) |
 | 16 | Trie | 14 | 39 | 0 | 1 | 2 | 11 | [16_trie.md](16_trie.md) |
 | 17 | Intervals / Sorting Greedy | 7 | 42 | 0 | 1 | 1 | 5 | [17_intervals_greedy.md](17_intervals_greedy.md) |
 | 18 | Union Find / DSU | 2 | 70 | 0 | 1 | 0 | 1 | [18_union_find.md](18_union_find.md) |
-| 19 | Greedy | 4 | 72 | 0 | 0 | 4 | 0 | [22_greedy.md](22_greedy.md) |
+| 19 | Greedy | 6 | 72 | 0 | 0 | 4 | 2 | [22_greedy.md](22_greedy.md) |
 | 20 | Design Data Structures | 6 | 89 | 0 | 0 | 1 | 5 | [19_design_lld.md](19_design_lld.md) |
 | 21 | Math / Bit / String | 7 | 106 | 0 | 0 | 1 | 6 | [20_math_bit_string.md](20_math_bit_string.md) |
-| 22 | Basics / Implementation | 2 | 152 | 0 | 0 | 0 | 2 | [21_core_basics.md](21_core_basics.md) |
+| 22 | Basics / Implementation | 2 | 159 | 0 | 0 | 0 | 2 | [21_core_basics.md](21_core_basics.md) |
 
-Total ranked entries: 205
+Total ranked entries: 213

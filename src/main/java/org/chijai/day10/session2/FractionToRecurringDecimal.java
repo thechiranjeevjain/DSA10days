@@ -238,6 +238,267 @@ public class FractionToRecurringDecimal {
 
     /*
      * ==============================================================
+     * IMPORTANT: Remainder Is NOT the Next Decimal Digit
+     * ==============================================================
+     *
+     * A remainder is not output.
+     *
+     * A remainder means:
+     *
+     *     "This amount is still left to divide."
+     *
+     * It is unfinished work.
+     *
+     * --------------------------------------------------------------
+     * Example 1: 4 / 333
+     * --------------------------------------------------------------
+     *
+     * Whole division:
+     *
+     *     4 / 333 = 0
+     *     remainder = 4
+     *
+     * So we know only:
+     *
+     *     4 / 333 = 0.something
+     *
+     * We must NOT append the remainder:
+     *
+     *     0.4          WRONG
+     *
+     * because the actual decimal is:
+     *
+     *     0.012012...
+     *
+     * To discover the NEXT decimal digit, move the leftover
+     * one decimal place smaller by multiplying it by 10:
+     *
+     *     remainder = 4
+     *
+     *     4 * 10 = 40
+     *
+     *     40 / 333 = 0       <- NEXT DECIMAL DIGIT
+     *     40 % 333 = 40      <- NEW REMAINDER
+     *
+     * Therefore:
+     *
+     *     answer    = 0.0
+     *     remainder = 40
+     *
+     * --------------------------------------------------------------
+     * Example 2: Why the remainder itself cannot be a digit
+     * --------------------------------------------------------------
+     *
+     * Consider:
+     *
+     *     23 / 12
+     *
+     * Whole division:
+     *
+     *     23 = 12 * 1 + 11
+     *
+     * Therefore:
+     *
+     *     whole part = 1
+     *     remainder  = 11
+     *
+     * So:
+     *
+     *     23 / 12 = 1.something
+     *
+     * If we incorrectly appended the remainder:
+     *
+     *     1.11...           WRONG
+     *
+     * But the actual answer begins:
+     *
+     *     1.91666...
+     *
+     * The remainder 11 is clearly not the next digit.
+     *
+     * Instead:
+     *
+     *     11 * 10 = 110
+     *
+     *     110 / 12 = 9      <- NEXT DECIMAL DIGIT
+     *     110 % 12 = 2      <- NEW REMAINDER
+     *
+     * So:
+     *
+     *     answer    = 1.9
+     *     remainder = 2
+     *
+     * --------------------------------------------------------------
+     * Mental Model
+     * --------------------------------------------------------------
+     *
+     *     remainder
+     *         =
+     *     LEFTOVER / UNFINISHED WORK
+     *
+     *     remainder * 10
+     *         =
+     *     move that leftover one decimal place smaller
+     *
+     *     (remainder * 10) / divisor
+     *         =
+     *     NEXT DECIMAL DIGIT
+     *
+     *     (remainder * 10) % divisor
+     *         =
+     *     NEW LEFTOVER
+     *
+     * Therefore the long-division step is naturally:
+     *
+     *     remainder *= 10;
+     *     digit = remainder / divisor;
+     *     remainder %= divisor;
+     *
+     * Key sentence:
+     *
+     *     Remainder tells us what is left.
+     *     Division after multiplying by 10 tells us the next digit.
+     * ==============================================================
+     */
+
+    /*
+     * ==============================================================
+     * WHY DO WE USE long WHEN THE INPUTS ARE int?
+     * ==============================================================
+     *
+     * Start from the ACTUAL LeetCode constraints:
+     *
+     *     -2^31 <= numerator, denominator <= 2^31 - 1
+     *     denominator != 0
+     *
+     * In Java, that means the inputs may be:
+     *
+     *     Integer.MIN_VALUE = -2,147,483,648
+     *     Integer.MAX_VALUE =  2,147,483,647
+     *
+     * So the full int range is allowed.
+     *
+     * That creates TWO overflow risks in our algorithm.
+     *
+     * --------------------------------------------------------------
+     * RISK 1: Integer.MIN_VALUE cannot be made positive as an int
+     * --------------------------------------------------------------
+     *
+     * We want to simplify sign handling by converting numerator and
+     * denominator to positive magnitudes.
+     *
+     * Normally:
+     *
+     *     Math.abs(-5) = 5
+     *
+     * But LeetCode is allowed to give us:
+     *
+     *     numerator = Integer.MIN_VALUE
+     *               = -2,147,483,648
+     *
+     * Its positive magnitude would be:
+     *
+     *     2,147,483,648
+     *
+     * But Java int can only go up to:
+     *
+     *     2,147,483,647
+     *
+     * Therefore this is unsafe:
+     *
+     *     int dividend = Math.abs(numerator);
+     *
+     * because Math.abs(Integer.MIN_VALUE) cannot fit in int.
+     *
+     * We must promote to long FIRST:
+     *
+     *     long dividend = Math.abs((long) numerator);
+     *     long divisor  = Math.abs((long) denominator);
+     *
+     * IMPORTANT ORDER:
+     *
+     *     Math.abs((long) numerator)      CORRECT
+     *
+     *     (long) Math.abs(numerator)      WRONG
+     *
+     * In the second version, Math.abs() already overflowed while
+     * operating as int. Casting afterward is too late.
+     *
+     * --------------------------------------------------------------
+     * RISK 2: decimal long division requires remainder * 10
+     * --------------------------------------------------------------
+     *
+     * The remainder satisfies:
+     *
+     *     0 <= remainder < divisor
+     *
+     * Since divisor itself may be close to 2^31, the remainder may
+     * also be close to 2 billion.
+     *
+     * Example:
+     *
+     *     remainder = 2,000,000,000
+     *
+     * To generate the next decimal digit we must do:
+     *
+     *     remainder *= 10
+     *
+     * which becomes:
+     *
+     *     20,000,000,000
+     *
+     * That does NOT fit in int.
+     *
+     * So even if the current remainder fits in int,
+     * the INTERMEDIATE value used by long division may not.
+     *
+     * --------------------------------------------------------------
+     * WHY KEEP ALL FRACTION ARITHMETIC AS long?
+     * --------------------------------------------------------------
+     *
+     * Because the problem allows the full int range AND our algorithm
+     * performs operations that can temporarily exceed int range.
+     *
+     * Therefore keep:
+     *
+     *     long dividend;
+     *     long divisor;
+     *     long remainder;
+     *
+     * This avoids repeated casts and accidental overflow.
+     *
+     * Since remainder is long, the map key is also Long:
+     *
+     *     Map<Long, Integer> firstPosition;
+     *
+     * The map value remains Integer because it stores:
+     *
+     *     answer.length()
+     *
+     * and StringBuilder indexes are int.
+     *
+     * --------------------------------------------------------------
+     * INTERVIEW RECALL
+     * --------------------------------------------------------------
+     *
+     * What in the question should make me think about long?
+     *
+     *     Full int-range constraints
+     *           +
+     *     need Math.abs(...)
+     *           +
+     *     need remainder * 10
+     *           =
+     *     use long for arithmetic
+     *
+     * long is NOT part of the cycle-detection idea.
+     * It is required to safely handle the problem's allowed inputs
+     * and intermediate arithmetic.
+     * ==============================================================
+     */
+
+    /*
+     * ==============================================================
      * Dry Run - 4 / 333
      * ==============================================================
      *

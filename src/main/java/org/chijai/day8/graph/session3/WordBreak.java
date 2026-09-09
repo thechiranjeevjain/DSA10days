@@ -146,8 +146,12 @@ public class WordBreak {
             int maxWordLength = maxWordLength(wordDict);
 
             Queue<Integer> queue = new ArrayDeque<>();
+            // index are cut positions letters words are edges
+            // n+1 means we have visited the end of the string
             boolean[] visited = new boolean[s.length() + 1];
 
+
+            // standard bfs is we mark visited when we enqueue, not when we dequeue
             queue.offer(0);
             visited[0] = true;
 
@@ -161,9 +165,11 @@ public class WordBreak {
                 );
 
                 for (int end = start + 1;
-                     end <= furthestEnd;
+                     c;
                      end++) {
 
+                    // end is exclusive, so s[start,end) is the candidate word
+                    // that's why end <= furthestEnd
                     if (!dictionary.contains(s.substring(start, end))) {
                         continue;
                     }

@@ -19,19 +19,23 @@ flowchart TD
   Invariant["INVARIANT<br/>Brute force checks all substrings/subarrays; a window reuses counts while boundaries move once."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>DP / patience sorting<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 205: Longest Continuous Increasing Subsequence"]
-  Invariant --> Sub02["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 111: Count Number Of Nice Subarrays"]
-  Invariant --> Sub03["SUB-PATTERN<br/>Queue / stream<br/>1 problem(s)"]
-  Sub03 --> Sub03A01["ANCHOR<br/>rank 81: Moving Average From Data Stream"]
-  Invariant --> Sub04["SUB-PATTERN<br/>Sliding window<br/>1 problem(s)"]
-  Sub04 --> Sub04A01["ANCHOR<br/>rank 47: Longest Substring With At Most K Distinct Characters"]
-  Invariant --> Sub05["SUB-PATTERN<br/>Sliding window / need-have<br/>1 problem(s)"]
-  Sub05 --> Sub05A01["ANCHOR<br/>rank 5: Minimum Window Substring"]
-  Invariant --> Sub06["SUB-PATTERN<br/>Sliding window / set<br/>1 problem(s)"]
-  Sub06 --> Sub06A01["ANCHOR<br/>rank 3: Longest Substring Without Repeating Characters"]
-  Invariant --> Sub07["SUB-PATTERN<br/>Sliding window frequency<br/>1 problem(s)"]
-  Sub07 --> Sub07A01["ANCHOR<br/>rank 52: Find All Anagrams In A String"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 213: Longest Continuous Increasing Subsequence"]
+  Invariant --> Sub02["SUB-PATTERN<br/>Fixed window + monotonic deque<br/>7 problem(s)"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 94: Sliding Window Maximum"]
+  Sub02 --> Sub02A02["ANCHOR<br/>rank 112: Maximum Number of Robots Within Budget"]
+  Sub02 --> Sub02A03["ANCHOR<br/>rank 113: Constrained Subsequence Sum"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Prefix/window counting<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 111: Count Number Of Nice Subarrays"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Queue / stream<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 81: Moving Average From Data Stream"]
+  Invariant --> Sub05["SUB-PATTERN<br/>Sliding window<br/>1 problem(s)"]
+  Sub05 --> Sub05A01["ANCHOR<br/>rank 47: Longest Substring With At Most K Distinct Characters"]
+  Invariant --> Sub06["SUB-PATTERN<br/>Sliding window / need-have<br/>1 problem(s)"]
+  Sub06 --> Sub06A01["ANCHOR<br/>rank 5: Minimum Window Substring"]
+  Invariant --> Sub07["SUB-PATTERN<br/>Sliding window / set<br/>1 problem(s)"]
+  Sub07 --> Sub07A01["ANCHOR<br/>rank 3: Longest Substring Without Repeating Characters"]
+  Invariant --> Sub08["SUB-PATTERN<br/>Sliding window frequency<br/>1 problem(s)"]
+  Sub08 --> Sub08A01["ANCHOR<br/>rank 52: Find All Anagrams In A String"]
 ```
 
 ## Problems
@@ -43,8 +47,15 @@ flowchart TD
 | 47 | Phase 2 - Strong Core | Longest Substring With At Most K Distinct Characters | Sliding window | [Java](../../../src/main/java/org/chijai/day3/session1/AtMostKDistinct.java) | [LC](https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/) | Keep a frequency map with at most k distinct chars; shrink until valid. | Expand right count, while distinct > k decrement/remove left, update max length. |
 | 52 | Phase 2 - Strong Core | Find All Anagrams In A String | Sliding window frequency | [Java](../../../src/main/java/org/chijai/day3/session1/FindAllAnagramsInAString.java) | - | Slide a fixed-size frequency window and record starts where counts match p. | Maintain difference counts or match count across a window of length p. |
 | 81 | Phase 3 - Important | Moving Average From Data Stream | Queue / stream | [Java](../../../src/main/java/org/chijai/day7/session1/heap/MovingAverage.java) | [LC](https://leetcode.com/problems/moving-average-from-data-stream/) | Queue last size values and running sum; average is sum divided by queue size. | Offer val, add to sum, if queue too large poll and subtract, return sum/count. |
+| 94 | Phase 3 - Important | Sliding Window Maximum | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/sliding-window-maximum/) | A decreasing deque stores candidate indices; front is always the current window maximum. | Drop out-of-window front, pop smaller/equal from back, push index, read front after first window. |
 | 111 | Phase 4 - Secondary | Count Number Of Nice Subarrays | Prefix/window counting | [Java](../../../src/main/java/org/chijai/day3/session2/prefix/suffix/NiceSubArrays.java) | [LC](https://leetcode.com/problems/count-number-of-nice-subarrays/) | Exactly k odds equals atMost(k) minus atMost(k-1), or prefix count of odd count. | Count subarrays with at most k odd numbers using a sliding left pointer, subtract atMost(k-1). |
-| 205 | Phase 5 - If Time | Longest Continuous Increasing Subsequence | DP / patience sorting | [Java](../../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LC](https://leetcode.com/problems/longest-continuous-increasing-subsequence/) | Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1]. | Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best. |
+| 112 | Phase 4 - Secondary | Maximum Number of Robots Within Budget | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/maximum-number-of-robots-within-budget/) | Window is valid when maxCharge + windowLength * runningCostSum <= budget. | Expand right, maintain decreasing charge indices and running sum, then shrink until the budget inequality holds. |
+| 113 | Phase 4 - Secondary | Constrained Subsequence Sum | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/constrained-subsequence-sum/) | dp[i] is nums[i] plus the positive maximum dp among the previous k indices. | Expire indices before i-k, set dp[i]=nums[i]+max(0,dp[front]), then remove dominated DP values and append i. |
+| 114 | Phase 4 - Secondary | Jump Game VI | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/jump-game-vi/) | dp[i] is nums[i] plus the maximum score among reachable previous k indices. | Expire front indices outside i-k, compute dp[i] from deque front, pop smaller/equal DP values, then append i. |
+| 115 | Phase 4 - Secondary | Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/) | A window is valid exactly when its maximum minus minimum is at most limit. | Maintain decreasing max and increasing min deques; shrink while front difference exceeds limit, then update length. |
+| 116 | Phase 4 - Secondary | Max Value of Equation | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/max-value-of-equation/) | For xj > xi, maximize (yi-xi) + (yj+xj) among points with xj-xi <= k. | Expire points with xj-xi > k, score from deque front, pop dominated yi-xi values, then append the current point. |
+| 117 | Phase 4 - Secondary | Shortest Subarray with Sum at Least K | Fixed window + monotonic deque | [Java](../../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [LC](https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/) | For prefix sums P, seek the shortest i-j with P[i]-P[j] >= k; increasing deque prefixes are undominated starts. | For each prefix, pop front while it meets k and update length; pop back while its prefix is >= current; append index. |
+| 213 | Phase 5 - If Time | Longest Continuous Increasing Subsequence | DP / patience sorting | [Java](../../../src/main/java/org/chijai/day9/dp/session2/LIS.java) | [LC](https://leetcode.com/problems/longest-continuous-increasing-subsequence/) | Continuous means subarray, so reset the current streak whenever nums[i] <= nums[i-1]. | Scan once, current = nums[i] > nums[i-1] ? current + 1 : 1, update best. |
 
 ## Drill
 

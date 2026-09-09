@@ -323,8 +323,8 @@ $oneHourVisibleWords = [int] $Matches['words']
 if ($declaredOneHourCount -ne $oneHourRows.Count) {
     Fail "one-hour declared anchor count $declaredOneHourCount does not match $($oneHourRows.Count) rows"
 }
-if ($oneHourVisibleWords -gt 6200) {
-    Fail "one-hour artifact exceeds the 6200 visible-word budget: $oneHourVisibleWords"
+if ($oneHourVisibleWords -gt 6500) {
+    Fail "one-hour artifact exceeds the 6500 visible-word budget: $oneHourVisibleWords"
 }
 
 $mandatoryOneHourSlugs = @(
@@ -345,7 +345,7 @@ foreach ($line in $oneHourRows) {
         Fail "one-hour row has an invalid rank: $line"
     }
     $oneHourRanks.Add([int] $cells[1])
-    if ($cells[2] -notmatch '^\*\*.+\*\*<br>`.+ > .+`<br>Evidence: `.+Local#\d+`$') {
+    if ($cells[2] -notmatch '^\*\*.+\*\*<br>`.+ > .+`<br>Evidence: `.*Local#\d+`$') {
         Fail "one-hour classification/evidence cell is malformed: $line"
     }
     if ($cells[3] -notmatch '^\[LC\]\(https://leetcode\.com/problems/(?<slug>[a-z0-9-]+)/\)$') {

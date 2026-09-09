@@ -9,6 +9,7 @@ id,slug,title
 27,remove-element,Remove Element
 37,sudoku-solver,Sudoku Solver
 42,trapping-rain-water,Trapping Rain Water
+45,jump-game-ii,Jump Game II
 51,n-queens,N-Queens
 55,jump-game,Jump Game
 56,merge-intervals,Merge Intervals
@@ -23,12 +24,15 @@ id,slug,title
 84,largest-rectangle-in-histogram,Largest Rectangle in Histogram
 85,maximal-rectangle,Maximal Rectangle
 91,decode-ways,Decode Ways
+93,restore-ip-addresses,Restore IP Addresses
 97,interleaving-string,Interleaving String
 102,binary-tree-level-order-traversal,Binary Tree Level Order Traversal
 115,distinct-subsequences,Distinct Subsequences
 121,best-time-to-buy-and-sell-stock,Best Time to Buy and Sell Stock
 122,best-time-to-buy-and-sell-stock-ii,Best Time to Buy and Sell Stock II
 123,best-time-to-buy-and-sell-stock-iii,Best Time to Buy and Sell Stock III
+131,palindrome-partitioning,Palindrome Partitioning
+132,palindrome-partitioning-ii,Palindrome Partitioning II
 133,clone-graph,Clone Graph
 134,gas-station,Gas Station
 139,word-break,Word Break
@@ -88,6 +92,7 @@ id,slug,title
 444,sequence-reconstruction,Sequence Reconstruction
 451,sort-characters-by-frequency,Sort Characters By Frequency
 452,minimum-number-of-arrows-to-burst-balloons,Minimum Number of Arrows to Burst Balloons
+472,concatenated-words,Concatenated Words
 485,max-consecutive-ones,Max Consecutive Ones
 497,random-point-in-non-overlapping-rectangles,Random Point in Non-overlapping Rectangles
 496,next-greater-element-i,Next Greater Element I
@@ -98,6 +103,7 @@ id,slug,title
 543,diameter-of-binary-tree,Diameter of Binary Tree
 547,number-of-provinces,Number of Provinces
 583,delete-operation-for-two-strings,Delete Operation for Two Strings
+605,can-place-flowers,Can Place Flowers
 621,task-scheduler,Task Scheduler
 646,maximum-length-of-pair-chain,Maximum Length of Pair Chain
 648,replace-words,Replace Words

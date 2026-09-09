@@ -24,6 +24,10 @@ flowchart TD
   Invariant --> Sub02["SUB-PATTERN<br/>Greedy / DP states<br/>2 problem(s)"]
   Sub02 --> Sub02A01["ANCHOR<br/>rank 72: Best Time to Buy and Sell Stock"]
   Sub02 --> Sub02A02["ANCHOR<br/>rank 80: Best Time to Buy and Sell Stock II"]
+  Invariant --> Sub03["SUB-PATTERN<br/>Greedy farthest boundary by levels<br/>1 problem(s)"]
+  Sub03 --> Sub03A01["ANCHOR<br/>rank 189: Jump Game II"]
+  Invariant --> Sub04["SUB-PATTERN<br/>Greedy local placement<br/>1 problem(s)"]
+  Sub04 --> Sub04A01["ANCHOR<br/>rank 158: Can Place Flowers"]
 ```
 
 ## Problems
@@ -34,6 +38,8 @@ flowchart TD
 | 76 | Phase 3 - Important | Gas Station | Greedy | [Java](../../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LC](https://leetcode.com/problems/gas-station/) | If tank goes negative at i, every start since the candidate is impossible. | Track totalNet, tank, and start; when tank < 0 set start = i + 1 and reset tank. |
 | 78 | Phase 3 - Important | Jump Game | Greedy | [Java](../../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LC](https://leetcode.com/problems/jump-game/) | Track the farthest reachable index; failure happens only when i passes reach. | Scan i, fail if i > reach, otherwise reach = max(reach, i + nums[i]). |
 | 80 | Phase 3 - Important | Best Time to Buy and Sell Stock II | Greedy / DP states | [Java](../../../src/main/java/org/chijai/day1/Arrays/session3/StockSeries1.java) | [LC](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/) | Unlimited transactions means every positive day-to-day increase can be harvested. | For i from 1, add prices[i] - prices[i-1] whenever the difference is positive. |
+| 158 | Phase 5 - If Time | Can Place Flowers | Greedy local placement | [Java](../../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LC](https://leetcode.com/problems/can-place-flowers/) | Plant at an empty position only when both existing neighbors are empty; that earliest placement never hurts later capacity. | Scan beds; when current and both bounded neighbors are zero, plant, decrement n, and return early at zero. |
+| 189 | Phase 5 - If Time | Jump Game II | Greedy farthest boundary by levels | [Java](../../../src/main/java/org/chijai/day9/dp/session1/GasStation.java) | [LC](https://leetcode.com/problems/jump-game-ii/) | currentEnd closes one BFS-like reachable layer; farthest is the next layer boundary. | Scan to n-2, update farthest, and when i reaches currentEnd increment jumps and set currentEnd=farthest. |
 
 ## Drill
 

@@ -214,6 +214,8 @@ public class TopKFrequentElements {
                 buckets.add(new ArrayList<>());
             }
 
+            // make buckets from freq map , not from nums array
+            // why coz nums have duplicates entries
             for (int value : freq.keySet()) {
                 buckets.get(freq.get(value)).add(value);
             }

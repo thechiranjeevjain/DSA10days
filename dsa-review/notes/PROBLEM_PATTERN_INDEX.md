@@ -26,7 +26,7 @@ These are the highest ROI patterns for avoiding interview red flags.
 | `day2/session2/KokoBananas.java` | Binary search on answer | A |  |  |  | |
 | `day3/session1/AtMostKDistinct.java` | Sliding window | A |  |  |  | |
 | `day3/session1/LongestSubString.java` | Sliding window / set | A |  |  |  | |
-| `day3/session1/LongestSubstringVariations.java` | Sliding window variants | A |  |  |  | |
+| `day3/session1/SlidingWindowMaximum.java` | Fixed window + monotonic deque | A |  |  |  | |
 | `day3/session1/MinimumWindowSubstring.java` | Sliding window / need-have | A |  |  |  | |
 | `day3/session2/prefix/suffix/NiceSubArrays.java` | Prefix/window counting | A |  |  |  | |
 | `day3/session2/prefix/suffix/ProductOfArrayExceptSelf.java` | Prefix/suffix | A |  |  |  | |

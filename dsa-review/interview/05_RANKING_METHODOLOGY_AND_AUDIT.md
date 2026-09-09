@@ -18,14 +18,14 @@ Use phase bands more than exact rank numbers:
 
 | Check | Current result | Meaning |
 |---|---:|---|
-| Ranked rows generated | 205 | Rows came from [Problem Pattern Index](../notes/PROBLEM_PATTERN_INDEX.md) and Java LeetCode links. |
+| Ranked rows generated | 213 | Rows came from [Problem Pattern Index](../notes/PROBLEM_PATTERN_INDEX.md) and Java LeetCode links. |
 | Java source missing | 0 | Should stay 0. |
-| LeetCode-linked rows | 189 | Rows that open LeetCode directly. |
+| LeetCode-linked rows | 197 | Rows that open LeetCode directly. |
 | Local-only rows | 16 | Repo-only or design rows without direct LeetCode source link. |
 | Pattern files generated | 22 | One focused view per generated category. |
-| Pattern rows covered | 205 | Should match ranked rows so no problem disappears from pattern files. |
+| Pattern rows covered | 213 | Should match ranked rows so no problem disappears from pattern files. |
 | Weekly sprint rows | 150 | Timed sprint covers the first 150 ranks once each in a cognitive training order. |
-| Review dashboard rows | 205 | Dashboard ledger covers every ranked row and merges local review state. |
+| Review dashboard rows | 213 | Dashboard ledger covers every ranked row and merges local review state. |
 
 These are objective repository checks. They do not prove the ranking is globally correct.
 

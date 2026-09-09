@@ -19,17 +19,17 @@ flowchart TD
   Invariant["INVARIANT<br/>Use brute force to expose repeated work, then choose the invariant and data structure."]
   Topic --> Recognition --> Invariant
   Invariant --> Sub01["SUB-PATTERN<br/>Matrix boundary traversal<br/>1 problem(s)"]
-  Sub01 --> Sub01A01["ANCHOR<br/>rank 152: Spiral Matrix"]
+  Sub01 --> Sub01A01["ANCHOR<br/>rank 159: Spiral Matrix"]
   Invariant --> Sub02["SUB-PATTERN<br/>Parsing / edge cases<br/>1 problem(s)"]
-  Sub02 --> Sub02A01["ANCHOR<br/>rank 153: String To Integer Atoi"]
+  Sub02 --> Sub02A01["ANCHOR<br/>rank 160: String To Integer Atoi"]
 ```
 
 ## Problems
 
 | Global Rank | Phase | Problem | Pattern | Java | LeetCode | One-line recall | Crisp code idea |
 |---:|---|---|---|---|---|---|---|
-| 152 | Phase 5 - If Time | Spiral Matrix | Matrix boundary traversal | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/) | Shrink top, bottom, left, and right boundaries after traversing each side. | Traverse top row, right col, bottom row if valid, left col if valid; move boundaries inward. |
-| 153 | Phase 5 - If Time | String To Integer Atoi | Parsing / edge cases | [Java](../../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | Parse sign and digits once, clamping before overflow. | Skip spaces, read optional sign, accumulate digit while checking against INT_MAX limits. |
+| 159 | Phase 5 - If Time | Spiral Matrix | Matrix boundary traversal | [Java](../../../src/main/java/org/chijai/day1/Arrays/session1/SpiralMatrix.java) | [LC](https://leetcode.com/problems/spiral-matrix/) | Shrink top, bottom, left, and right boundaries after traversing each side. | Traverse top row, right col, bottom row if valid, left col if valid; move boundaries inward. |
+| 160 | Phase 5 - If Time | String To Integer Atoi | Parsing / edge cases | [Java](../../../src/main/java/org/chijai/day3/session3/StringToIntegerAtoi.java) | [LC](https://leetcode.com/problems/string-to-integer-atoi/) | Parse sign and digits once, clamping before overflow. | Skip spaces, read optional sign, accumulate digit while checking against INT_MAX limits. |
 
 ## Drill
 
