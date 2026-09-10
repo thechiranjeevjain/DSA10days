@@ -111,7 +111,8 @@ public class TopKFrequentElements {
         // Maximum frequency is nums.length.
         // -------------------------------------------------------------
         @SuppressWarnings("unchecked")
-        List<Integer>[] buckets = new List[nums.length + 1];
+        List<Integer>[] buckets =
+                (List<Integer>[]) new List<?>[nums.length + 1];
 
         for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 

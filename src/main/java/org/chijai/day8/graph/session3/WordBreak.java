@@ -165,7 +165,7 @@ public class WordBreak {
                 );
 
                 for (int end = start + 1;
-                     c;
+                     end<= furthestEnd;
                      end++) {
 
                     // end is exclusive, so s[start,end) is the candidate word
