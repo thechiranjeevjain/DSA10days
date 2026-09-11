@@ -12,30 +12,13 @@
 
 Use these only when the corresponding section below feels weak; do not read them linearly.
 
-| Source | Local file | Unique purpose |
-|---|---|---|
-| Point72 master | [Point72 master revision](./Point72_Master_Revision_HackerRank_SQL_DSA_LLD_HLD.md) | Controls this round: Java live coding first; SQL/LLD/project are bounded hedges |
-| Goldman Sachs master | [Goldman Sachs master revision](./GoldmanSachs_Master_Revision_DSA_LLD_HLD.md) | Timed reconstruction and communication discipline |
-| Wells Fargo master | [Wells Fargo master revision](./WellsFargo_Master_Revision_DSA_LLD_HLD.md) | Trading-oriented DSA/LLD/HLD reference |
-| LLD project portfolio | [LLDProjects README](../../../../LLDProjects/README.md) · [ROI learning order](../../../../LLDProjects/docs/LLD_LEARNING_ORDER_ROI_RANKING.md) · [40–60 minute scope](../../../../LLDProjects/docs/40_60_MINUTE_CODE_SCOPE.md) | Use only the project mapped to the active LLD question; do not browse the portfolio linearly |
-| RiskLimitEngine | [RiskLimitEngine.java](../../src/main/java/org/chijai/PTR/RiskLimitEngine.java) | Canonical risk-engine architecture for hand coding |
-| MatchingEngine | [MatchingEngine.java](../../src/main/java/org/chijai/PTR/MatchingEngine.java) | Canonical matching-engine code for eye/verbal review |
-
-## 1.1 Local code solution index
-
-Use the first link in each row as the default reconstruction target. Open a supporting variant only when rehearsing that explicit follow-up; do not try to memorize every implementation at once.
-
-| Coding area | Default local solution | Supporting local code |
-|---|---|---|
-| Risk limit engine — 30–40 minute baseline | [RiskLimitEngine.java](../../src/main/java/org/chijai/PTR/RiskLimitEngine.java) | [CoderPad playbook](../../src/main/java/org/chijai/PTR/06_CODERPAD_30_40_MIN_PLAYBOOK.md) · [minimum to memorize](../../src/main/java/org/chijai/PTR/07_MINIMUM_TO_MEMORIZE.md) |
-| Risk engine — message bus / async follow-up | [RiskLimitEngineAsync.java](../../src/main/java/org/chijai/PTR/RiskLimitEngineAsync.java) | [L2_RiskLimitEngineOnBus.java](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L2_RiskLimitEngineOnBus.java) |
-| Risk engine — keyed parallelism follow-up | [RiskLimitEnginePartitioned.java](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitioned.java) | [L3_RiskLimitEnginePartitioned.java](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L3_RiskLimitEnginePartitioned.java) |
-| Risk engine — partitioned async follow-up | [RiskLimitEnginePartitionedAsync.java](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitionedAsync.java) | [L4_RiskLimitEnginePartitionedOwner.java](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L4_RiskLimitEnginePartitionedOwner.java) |
-| Matching engine / price-time priority | [MatchingEngine.java](../../src/main/java/org/chijai/PTR/MatchingEngine.java) | [MatchingEngineInterview.java](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/interview-version/MatchingEngineInterview.java) · [OrderBook.java](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/src/main/java/org/chijai/exchange/matching/OrderBook.java) |
-| Treasury margin monitor | [TreasuryMarginMonitor30Min.java](../../src/main/java/org/chijai/trading/TreasuryMarginMonitor30Min.java) | [CashAllocationMarginBreach.java](../../src/main/java/org/chijai/trading/CashAllocationMarginBreach.java) · [RunningTotalsPositionTracking.java](../../src/main/java/org/chijai/trading/RunningTotalsPositionTracking.java) · [PeakExposureSlidingWindow.java](../../src/main/java/org/chijai/trading/PeakExposureSlidingWindow.java) |
-| Java Streams | [EmployeeMaxSalary.java](../../src/main/java/org/chijai/java/EmployeeMaxSalary.java) | [GroupEmployeesByDepartment.java](../../src/main/java/org/chijai/java/GroupEmployeesByDepartment.java) · [HighestPaidEmployeePerDepartment.java](../../src/main/java/org/chijai/java/HighestPaidEmployeePerDepartment.java) · [FlattenNestedCollections.java](../../src/main/java/org/chijai/java/FlattenNestedCollections.java) |
-| Sequence integrity / idempotency | [SequenceGapDetector.java](../../src/main/java/org/chijai/java/SequenceGapDetector.java) | [ExecutionDeduplication.java](../../src/main/java/org/chijai/java/ExecutionDeduplication.java) |
-| LLD project navigation | [Trading-project relationship guide](../../../../LLDProjects/docs/TRADING_PROJECT_RELATIONSHIP_GUIDE.md) | [Canonical trading code model](../../../../LLDProjects/docs/CANONICAL_TRADING_CODE_MODEL.md) · [LLD portfolio README](../../../../LLDProjects/README.md) |
+| Source | Unique purpose |
+|---|---|
+| `Point72_Master_Revision_HackerRank_SQL_DSA_LLD_HLD.md` | Controls this round: Java live coding first; SQL/LLD/project are bounded hedges |
+| `GoldmanSachs_Master_Revision_DSA_LLD_HLD.md` | Timed reconstruction and communication discipline |
+| `WellsFargo_Master_Revision_DSA_LLD_HLD (2).md` | Trading-oriented DSA/LLD/HLD reference |
+| `RiskLimitEngine(2).java` | Canonical risk-engine architecture for hand coding |
+| `MatchingEngine(2).java` | Canonical matching-engine code for eye/verbal review |
 
 Do not spend active morning time on C#/.NET syntax, React, deep HLD, infrastructure internals, benchmark numbers, new hard DSA, or large handbook rereads.
 
@@ -88,270 +71,270 @@ If a test fails:
 
 ---
 
-# 4. RiskLimitEngine — canonical memorization section
+# 4. RiskLimitEngine — final extensible version
 
-## 4.1 Reconstruction order
+> **Deep-dive archive:** the detailed risk-engine discussion is preserved separately in `RISK_ENGINE_DEEP_DIVE_LEARNING.md`. The section below is the interview retrieval path; no learning has been intentionally discarded.
+
+
+## 4.1 What to know for one interview
+
+Memorize only this:
 
 ```text
-Order / Account
-        ↓
-ExposureResults
-        ↓
-RiskCheck
-        ↓
-AbstractRiskCheck
-        ↓
-MaxQtyCheck
-        ↓
-RiskCheckGroup
-        ↓
-RiskEngine.validate()
-        ↓
-TotalTradedPerTimeCheck
-        ↓
-KillSwitchCheck
-        ↓
-onCancel() only if time
+1. HIGH LEVEL
+customer order path + PTR control/config path
+
+2. LOW LEVEL
+RiskEngine → RiskCheckGroup → RiskChecks → RiskDecision
+
+3. CLASS LEVEL
+stable interfaces + replaceable implementations + injected dependencies
+
+4. ONE PRODUCTION STORY
+DEFAULT PTLG startup/readiness → missing exposure increment → later cancel → negative exposure
+
+5. FIVE FOLLOW-UPS
+concurrency
+scope
+time
+money representation
+new-rule extension
 ```
 
-Why this order: by `RiskEngine.validate()` you already have a complete engine with one rule. The remaining checks are extensions of the same contract.
+Everything else in this section is drill-down material, not a second syllabus.
 
 ---
 
-## 4.2 One mental model
-
-```text
-MODEL
-Account / Order / ExposureResults
-
-CONTRACT
-RiskCheck: begin → check → rollback
-
-SHARED CHECK STATE
-AbstractRiskCheck: limit / consumption / snapshot
-
-RULES
-MaxQtyCheck
-TotalTradedPerTimeCheck
-KillSwitchCheck
-
-TRANSACTION
-RiskCheckGroup
-
-CONCURRENCY BOUNDARY
-ConcurrentHashMap lookup
-+
-synchronized(group)
-```
-
----
-
-## 4.3 Mermaid — full end-to-end trading context
+## 4.2 Mermaid — high-level PTR / exchange system
 
 ```mermaid
 flowchart LR
+    USER["End User / Risk Operator"]
+    API["PTR REST Config API"]
+
+    subgraph PTR["RX PTR"]
+        W["RX_WSGWY"]
+        RDM["RDM"]
+        S["RX_SRV"]
+        P["RXP / PTR Risk Plugin"]
+    end
+
+    DB["RDM DB"]
     C["Customer / Participant"]
-    G["Gateway / Order Entry"]
-    R["RiskLimitEngine"]
-    M["MatchingEngine"]
-    B["OrderBook"]
-    T["Trade / Execution"]
-    E["Execution Report"]
-    X["Reject"]
-    TM["TreasuryMarginMonitor"]
+    ME["Matching Engine"]
+    OB["OrderBook / Trade"]
 
-    C --> G
-    G --> R
-    R -->|PASS| M
-    R -->|BREACH| X
-    X --> C
+    USER --> API
+    API --> W
+    DB --> RDM
 
-    M --> B
-    B --> T
-    T --> E
-    E --> C
+    W --> S
+    RDM --> S
+    S --> P
 
-    T --> TM
+    C --> ME
+    ME -->|Order / Cancel / Trade| P
+    P -->|Synchronous RiskDecision| ME
+
+    ME -->|PASS| OB
 ```
 
+Interview narration:
+
 ```text
+CONTROL / CONFIG
+End User
+→ PTR REST Config API
+→ RX_WSGWY / RX_SRV
+← RDM / RDM DB
+→ initialize or update in-memory risk state
+
+HOT DATA PATH
 Customer
-→ Gateway
-→ RiskLimitEngine
-→ PASS → MatchingEngine → OrderBook → Trade → Execution Report → Customer
-→ BREACH → Reject → Customer
-
-Trade / downstream financial events
-→ TreasuryMarginMonitor
+→ Matching Engine
+↔ RXP / PTR Risk Plugin
+→ PASS   → OrderBook / Trade
+→ BREACH → reject
 ```
 
-Our code fits here:
+The important architectural distinction is:
+
+> **Configuration/persistence can be richer; the order decision path stays synchronous and in memory.**
+
+Use the RX arrows as a **simplified interview map**. Do not claim every arrow is the exact transport hop in every PTR deployment.
+
+Deployment is a separate concern:
 
 ```text
-RiskLimitEngine(2).java       → RiskLimitEngine
-MatchingEngine(2).java        → MatchingEngine + OrderBook + Trade
-TreasuryMarginMonitor30Min    → TreasuryMarginMonitor
+ON-PREM → Linux TDE nodes / SSH
+AWS     → Docker → EKS → 2 Deployments → Pods
 ```
-
-Treasury is downstream/adjacent, **not** part of the exchange matching hot path.
 
 ---
 
-### Deployment view — on-prem vs AWS EKS
+## 4.3 Mermaid — low-level RiskEngine flow
 
 ```mermaid
 flowchart LR
-    CODE["Java code"]
-    BUILD["Build artifact"]
+    O["Order"]
+    E["RiskEngine"]
+    G["RiskCheckGroup"]
+    R["RiskChecks"]
+    D["RiskDecision"]
+    C["Caller"]
+    P["Publisher"]
 
-    ONPREM["On-Prem"]
-    TDE["Local Linux TDE nodes"]
-    SSH["SSH"]
-    PROC["Java process"]
-
-    CLOUD["AWS Cloud"]
-    IMAGE["Docker image"]
-    EKS["Amazon EKS"]
-    D1["Deployment 1"]
-    D2["Deployment 2"]
-    P1["Pod(s)"]
-    P2["Pod(s)"]
-
-    CODE --> BUILD
-
-    BUILD --> ONPREM
-    ONPREM --> TDE
-    SSH --> TDE
-    TDE --> PROC
-
-    BUILD --> IMAGE
-    IMAGE --> CLOUD
-    CLOUD --> EKS
-    EKS --> D1
-    EKS --> D2
-    D1 --> P1
-    D2 --> P2
+    O --> E
+    E -->|Clock + group lookup| G
+    G -->|synchronized| R
+    R -->|all PASS| D
+    R -->|BREACH → rollback| D
+    D --> C
+    D --> P
 ```
+
+Inside `RiskChecks`:
 
 ```text
-ON-PREM = local Linux TDE nodes, accessed over SSH
-AWS     = Docker image → EKS → 2 Kubernetes Deployments → Pods
+Predicate<Order>
+→ does this rule apply?
+
+if yes
+→ evaluate rule
+→ update provisional state if stateful
+
+first BREACH
+→ stop
+→ rollback group snapshot
+
+all PASS
+→ keep state
 ```
 
-Do not describe EKS as part of the on-prem environment.
+Concurrency rule:
 
-Interview answer:
+> **The group lock protects the business invariant, so individual `consumption` fields do not need separate atomics.**
 
-> “We have two separate deployment models. On-prem, Java components run on local Linux TDE nodes that we access over SSH. Separately in AWS, containerized workloads run on EKS; the cloud side has two Kubernetes Deployments managing Pods from versioned Docker images. I keep that deployment topology separate from the runtime trading flow.”
+State lifetime:
 
+```text
+ConcurrentHashMap
+→ same RiskCheckGroup object
+→ same RiskCheck objects
+→ accepted consumption survives validate() calls
+→ process restart requires state reconstruction
+```
 
 ---
 
-## 4.4 Mermaid — RiskLimitEngine hierarchy
+## 4.4 Mermaid — class-level extensible design
 
 ```mermaid
 classDiagram
 
-    class Account {
-        +int id
-        +String name
-        +Account(int id, String name)
-        +toString() String
+    class RiskEngine {
+        -Map groups
+        -Clock clock
+        -RiskDecisionPublisher publisher
+        +validate(Order) RiskDecision
     }
 
-    class Order {
-        +Account account
-        +String ticker
-        +Side side
-        +long price
-        +long quantity
-        +Order(Account account, String ticker, Side side, long price, long quantity)
-    }
-
-    class ExposureResults {
-        +boolean accepted
-        +String reason
-        +reject(String rejectionReason) void
+    class RiskCheckGroup {
+        -List~RiskCheck~ checks
+        +addCheck(RiskCheck)
+        +evaluate(Order, long) RiskDecision
+        +onCancel(Order)
     }
 
     class RiskCheck {
         <<interface>>
-        +check(Order order, long nowMs, ExposureResults results) Result
-        +begin() void
-        +rollback() void
+        +check(Order, long) RiskDecision
+        +begin()
+        +rollback()
+        +onCancel(Order)
     }
 
-    class AbstractRiskCheck {
+    class AbstractStatefulRiskCheck~T~ {
         +String name
-        +long limit
-        +long consumption
-        -long lastConsumption
-        +AbstractRiskCheck(String name, long limit)
-        +begin() void
-        +rollback() void
-        +toString() String
+        +T consumption
+        -T lastConsumption
     }
 
-    class MaxQtyCheck {
-        +String ticker
-        +MaxQtyCheck(String ticker, long limit)
-        +check(Order order, long nowMs, ExposureResults results) Result
-        +onCancel(Order order) void
+    class MaxQtyCheck
+    class ExposureCheck
+    class TotalTradedPerTimeCheck
+    class PriceDeviationCheck
+    class KillSwitchCheck
+
+    class RiskDecision
+    class RiskDecisionPublisher {
+        <<interface>>
     }
-
-    class TotalTradedPerTimeCheck {
-        -long windowStartMs
-        -long lastWindowMs
-        +TotalTradedPerTimeCheck(long limit)
-        +begin() void
-        +rollback() void
-        +check(Order order, long nowMs, ExposureResults results) Result
+    class ReferencePriceProvider {
+        <<interface>>
     }
+    class Clock
+    class Predicate~Order~
+    class BooleanSupplier
 
-    class KillSwitchCheck {
-        -boolean active
-        +KillSwitchCheck()
-        +activate() void
-        +deactivate() void
-        +check(Order order, long nowMs, ExposureResults results) Result
-    }
+    RiskEngine o-- RiskCheckGroup
+    RiskCheckGroup o-- RiskCheck
 
-    class RiskCheckGroup {
-        +List~RiskCheck~ checks
-        +addCheck(RiskCheck check) void
-        +begin() void
-        +rollback() void
-        +check(Order order, long nowMs, ExposureResults results) Result
-        +onCancel(Order order) void
-    }
+    RiskCheck <|.. AbstractStatefulRiskCheck
+    AbstractStatefulRiskCheck <|-- MaxQtyCheck
+    AbstractStatefulRiskCheck <|-- ExposureCheck
+    AbstractStatefulRiskCheck <|-- TotalTradedPerTimeCheck
 
-    class RiskEngine {
-        -ConcurrentHashMap~Integer,RiskCheckGroup~ groups
-        +register(Account account, RiskCheckGroup group) void
-        +validate(Order order, long nowMs) ExposureResults
-        +onCancel(Order order) void
-    }
+    RiskCheck <|.. PriceDeviationCheck
+    RiskCheck <|.. KillSwitchCheck
 
-    RiskCheck <|.. AbstractRiskCheck
-    AbstractRiskCheck <|-- MaxQtyCheck
-    AbstractRiskCheck <|-- TotalTradedPerTimeCheck
-    AbstractRiskCheck <|-- KillSwitchCheck
+    RiskEngine --> Clock
+    RiskEngine --> RiskDecisionPublisher
+    RiskEngine --> RiskDecision
 
-    RiskCheckGroup o-- RiskCheck : contains
-    RiskEngine o-- RiskCheckGroup : accountId to group
-    Order --> Account : belongs to
-    RiskEngine --> Order : validates
-    RiskEngine --> ExposureResults : returns
+    MaxQtyCheck --> Predicate
+    ExposureCheck --> Predicate
+    TotalTradedPerTimeCheck --> Predicate
+    PriceDeviationCheck --> Predicate
+    KillSwitchCheck --> Predicate
+
+    PriceDeviationCheck --> ReferencePriceProvider
+    KillSwitchCheck --> BooleanSupplier
 ```
+
+Three extension seams to remember:
+
+```text
+NEW RULE
+→ implement RiskCheck
+→ addCheck(...)
+
+NEW APPLICABILITY
+→ inject another Predicate<Order>
+
+NEW INFRASTRUCTURE
+→ inject another Clock / Publisher / ReferencePriceProvider / BooleanSupplier
+```
+
+No new rule should require modifying `RiskEngine`.
 
 ---
 
-## 4.5 Canonical hand-code version
+## 4.5 Complete Java — compile-verified
 
 ```java
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 enum Side {
     Buy,
@@ -370,7 +353,7 @@ class Account {
 
     Account(int id, String name) {
         this.id = id;
-        this.name = name;
+        this.name = Objects.requireNonNull(name);
     }
 
     @Override
@@ -381,62 +364,171 @@ class Account {
 
 class Order {
 
+    final String orderId;
     final Account account;
     final String ticker;
+    final String marketSegment;
     final Side side;
-    final long price;
+    final BigDecimal price;
     final long quantity;
 
+    /*
+     * Event time belongs to the order.
+     * Processing time comes from the injected Clock in RiskEngine.
+     */
+    final Instant eventTime;
+
     Order(
+            String orderId,
             Account account,
             String ticker,
+            String marketSegment,
             Side side,
-            long price,
-            long quantity) {
+            BigDecimal price,
+            long quantity,
+            Instant eventTime) {
 
-        this.account = account;
-        this.ticker = ticker;
-        this.side = side;
-        this.price = price;
+        this.orderId = Objects.requireNonNull(orderId);
+        this.account = Objects.requireNonNull(account);
+        this.ticker = Objects.requireNonNull(ticker);
+        this.marketSegment = Objects.requireNonNull(marketSegment);
+        this.side = Objects.requireNonNull(side);
+        this.price = Objects.requireNonNull(price);
+        this.eventTime = Objects.requireNonNull(eventTime);
+
+        if (price.signum() <= 0) {
+            throw new IllegalArgumentException("price must be positive");
+        }
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+
         this.quantity = quantity;
     }
 }
 
-class ExposureResults {
+/*
+ * The single decision object used outside a RiskCheck.
+ *
+ * It can be:
+ * - returned synchronously to the order path
+ * - published to a bus
+ * - logged/audited
+ *
+ * Result is only the status field inside the decision.
+ */
+record RiskDecision(
+        String orderId,
+        int accountId,
+        String ticker,
+        Result result,
+        String checkName,
+        String reason,
+        Instant decidedAt) {
 
-    boolean accepted = true;
-    String reason = "OK";
+    static RiskDecision pass(
+            Order order,
+            long nowMs) {
 
-    void reject(String rejectionReason) {
-        accepted = false;
-        reason = rejectionReason;
+        return new RiskDecision(
+                order.orderId,
+                order.account.id,
+                order.ticker,
+                Result.PASS,
+                "NONE",
+                "OK",
+                Instant.ofEpochMilli(nowMs));
+    }
+
+    static RiskDecision breach(
+            Order order,
+            long nowMs,
+            String checkName,
+            String reason) {
+
+        return new RiskDecision(
+                order.orderId,
+                order.account.id,
+                order.ticker,
+                Result.BREACH,
+                checkName,
+                reason,
+                Instant.ofEpochMilli(nowMs));
+    }
+
+    boolean accepted() {
+        return result == Result.PASS;
     }
 }
 
-interface RiskCheck {
+/*
+ * Infrastructure port.
+ *
+ * Production can inject an asynchronous message-bus adapter.
+ * Tests can inject an in-memory/no-op lambda.
+ */
+@FunctionalInterface
+interface RiskDecisionPublisher {
 
-    Result check(
-            Order order,
-            long nowMs,
-            ExposureResults results);
-
-    void begin();
-
-    void rollback();
+    void publish(RiskDecision decision);
 }
 
-abstract class AbstractRiskCheck implements RiskCheck {
+/*
+ * Market-data port.
+ *
+ * PriceDeviationCheck does not know where reference prices come from.
+ */
+@FunctionalInterface
+interface ReferencePriceProvider {
+
+    BigDecimal referencePrice(Order order);
+}
+
+/*
+ * Universal rule contract.
+ *
+ * Stateful checks override begin/rollback/onCancel.
+ * Stateless checks implement only check().
+ */
+interface RiskCheck {
+
+    RiskDecision check(
+            Order order,
+            long nowMs);
+
+    default void begin() {
+    }
+
+    default void rollback() {
+    }
+
+    default void onCancel(Order order) {
+    }
+}
+
+/*
+ * Shared transaction support for checks that own mutable state.
+ *
+ * T should be immutable (Long, BigDecimal, immutable value object)
+ * so snapshot assignment is sufficient.
+ */
+abstract class AbstractStatefulRiskCheck<T>
+        implements RiskCheck {
 
     final String name;
-    final long limit;
 
-    long consumption;
+    T consumption;
 
-    private long lastConsumption;
+    private T lastConsumption;
 
-    AbstractRiskCheck(String name, long limit) {
-        this.name = name;
-        this.limit = limit;
+    AbstractStatefulRiskCheck(
+            String name,
+            T initialConsumption) {
+
+        this.name = Objects.requireNonNull(name);
+        this.consumption =
+                Objects.requireNonNull(initialConsumption);
     }
 
     @Override
@@ -448,32 +540,97 @@ abstract class AbstractRiskCheck implements RiskCheck {
     public void rollback() {
         consumption = lastConsumption;
     }
+}
 
-    @Override
-    public String toString() {
-        return name + "[" + consumption + "/" + limit + "]";
+/*
+ * Reusable applicability predicates.
+ *
+ * The rule and the scope to which it applies are separate concerns.
+ */
+final class Scopes {
+
+    private Scopes() {
+    }
+
+    static Predicate<Order> all() {
+        return order -> true;
+    }
+
+    static Predicate<Order> ticker(String ticker) {
+
+        return order ->
+                order.ticker.equals(ticker);
+    }
+
+    static Predicate<Order> tickers(
+            Set<String> tickers) {
+
+        Set<String> copy =
+                Set.copyOf(tickers);
+
+        return order ->
+                copy.contains(order.ticker);
+    }
+
+    static Predicate<Order> marketSegment(
+            String marketSegment) {
+
+        return order ->
+                order.marketSegment.equals(
+                        marketSegment);
+    }
+
+    static Predicate<Order> side(Side side) {
+
+        return order ->
+                order.side == side;
     }
 }
 
-class MaxQtyCheck extends AbstractRiskCheck {
+/*
+ * Accumulated open quantity for any injected scope.
+ *
+ * Examples:
+ * - one ticker BUY
+ * - one ticker SELL
+ * - collection of tickers
+ * - market segment
+ * - whole group
+ */
+class MaxQtyCheck
+        extends AbstractStatefulRiskCheck<Long> {
 
-    final String ticker;
+    private final Predicate<Order> appliesTo;
 
-    MaxQtyCheck(String ticker, long limit) {
-        super("MaxQty[" + ticker + "]", limit);
-        this.ticker = ticker;
+    private final long limit;
+
+    MaxQtyCheck(
+            String name,
+            Predicate<Order> appliesTo,
+            long limit) {
+
+        super(name, 0L);
+
+        this.appliesTo =
+                Objects.requireNonNull(appliesTo);
+
+        if (limit < 0) {
+            throw new IllegalArgumentException(
+                    "limit must be non-negative");
+        }
+
+        this.limit = limit;
     }
 
     @Override
-    public Result check(
+    public RiskDecision check(
             Order order,
-            long nowMs,
-            ExposureResults results) {
+            long nowMs) {
 
-        if (order.side != Side.Buy
-                || !order.ticker.equals(ticker)) {
-
-            return Result.PASS;
+        if (!appliesTo.test(order)) {
+            return RiskDecision.pass(
+                    order,
+                    nowMs);
         }
 
         long candidate =
@@ -482,328 +639,1007 @@ class MaxQtyCheck extends AbstractRiskCheck {
                         order.quantity);
 
         if (candidate > limit) {
-            results.reject("POSITION BREACH " + this);
-            return Result.BREACH;
+
+            return RiskDecision.breach(
+                    order,
+                    nowMs,
+                    name,
+                    "MAX QTY BREACH candidate="
+                            + candidate
+                            + " limit="
+                            + limit);
         }
 
         consumption = candidate;
-        return Result.PASS;
+
+        return RiskDecision.pass(
+                order,
+                nowMs);
     }
 
-    void onCancel(Order order) {
+    @Override
+    public void onCancel(Order order) {
 
-        if (order.side == Side.Buy
-                && order.ticker.equals(ticker)) {
-
-            consumption =
-                    Math.max(
-                            consumption - order.quantity,
-                            0);
+        if (!appliesTo.test(order)) {
+            return;
         }
+
+        consumption =
+                Math.max(
+                        consumption - order.quantity,
+                        0L);
     }
 }
 
-class TotalTradedPerTimeCheck extends AbstractRiskCheck {
+/*
+ * Signed net monetary exposure.
+ *
+ * BUY  => +price * quantity
+ * SELL => -price * quantity
+ *
+ * BigDecimal is used here for explicit decimal money semantics.
+ * A production low-latency venue may instead use fixed-point long/ticks.
+ */
+class ExposureCheck
+        extends AbstractStatefulRiskCheck<BigDecimal> {
 
-    private long windowStartMs;
-    private long lastWindowMs;
+    private final Predicate<Order> appliesTo;
 
-    TotalTradedPerTimeCheck(long limit) {
-        super("TotalTradedPerTimeCheck", limit);
+    private final BigDecimal limit;
+
+    ExposureCheck(
+            String name,
+            Predicate<Order> appliesTo,
+            BigDecimal limit) {
+
+        super(
+                name,
+                BigDecimal.ZERO);
+
+        this.appliesTo =
+                Objects.requireNonNull(appliesTo);
+
+        this.limit =
+                Objects.requireNonNull(limit);
+
+        if (limit.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "limit must be non-negative");
+        }
+    }
+
+    @Override
+    public RiskDecision check(
+            Order order,
+            long nowMs) {
+
+        if (!appliesTo.test(order)) {
+            return RiskDecision.pass(
+                    order,
+                    nowMs);
+        }
+
+        BigDecimal delta =
+                signedValue(order);
+
+        BigDecimal candidate =
+                consumption.add(delta);
+
+        if (candidate.abs()
+                .compareTo(limit) > 0) {
+
+            return RiskDecision.breach(
+                    order,
+                    nowMs,
+                    name,
+                    "EXPOSURE BREACH candidate="
+                            + candidate.toPlainString()
+                            + " limit="
+                            + limit.toPlainString());
+        }
+
+        consumption = candidate;
+
+        return RiskDecision.pass(
+                order,
+                nowMs);
+    }
+
+    @Override
+    public void onCancel(Order order) {
+
+        if (!appliesTo.test(order)) {
+            return;
+        }
+
+        consumption =
+                consumption.subtract(
+                        signedValue(order));
+    }
+
+    private BigDecimal signedValue(
+            Order order) {
+
+        BigDecimal value =
+                order.price.multiply(
+                        BigDecimal.valueOf(
+                                order.quantity));
+
+        return order.side == Side.Buy
+                ? value
+                : value.negate();
+    }
+}
+
+/*
+ * Fixed processing-time window.
+ *
+ * Scope and window duration are constructor-injected.
+ */
+class TotalTradedPerTimeCheck
+        extends AbstractStatefulRiskCheck<BigDecimal> {
+
+    private final Predicate<Order> appliesTo;
+
+    private final BigDecimal limit;
+
+    private final long windowMs;
+
+    private long windowStartMs = -1L;
+
+    private long lastWindowStartMs;
+
+    TotalTradedPerTimeCheck(
+            String name,
+            Predicate<Order> appliesTo,
+            BigDecimal limit,
+            long windowMs) {
+
+        super(
+                name,
+                BigDecimal.ZERO);
+
+        this.appliesTo =
+                Objects.requireNonNull(appliesTo);
+
+        this.limit =
+                Objects.requireNonNull(limit);
+
+        if (limit.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "limit must be non-negative");
+        }
+
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException(
+                    "windowMs must be positive");
+        }
+
+        this.windowMs = windowMs;
     }
 
     @Override
     public void begin() {
         super.begin();
-        lastWindowMs = windowStartMs;
+        lastWindowStartMs =
+                windowStartMs;
     }
 
     @Override
     public void rollback() {
         super.rollback();
-        windowStartMs = lastWindowMs;
+        windowStartMs =
+                lastWindowStartMs;
     }
 
     @Override
-    public Result check(
+    public RiskDecision check(
             Order order,
-            long nowMs,
-            ExposureResults results) {
+            long nowMs) {
 
-        if (nowMs - windowStartMs >= 1_000L) {
-            windowStartMs = nowMs;
-            consumption = 0;
+        if (!appliesTo.test(order)) {
+            return RiskDecision.pass(
+                    order,
+                    nowMs);
         }
 
-        long tradedValue =
-                Math.multiplyExact(
-                        order.price,
-                        order.quantity);
+        if (windowStartMs < 0
+                || nowMs - windowStartMs
+                >= windowMs) {
 
-        long candidate =
-                Math.addExact(
-                        consumption,
-                        tradedValue);
+            windowStartMs = nowMs;
+            consumption =
+                    BigDecimal.ZERO;
+        }
 
-        if (candidate > limit) {
-            results.reject(
-                    "TOTAL TRADED PER TIME BREACH " + this);
+        BigDecimal value =
+                order.price.multiply(
+                        BigDecimal.valueOf(
+                                order.quantity));
 
-            return Result.BREACH;
+        BigDecimal candidate =
+                consumption.add(value);
+
+        if (candidate.compareTo(limit) > 0) {
+
+            return RiskDecision.breach(
+                    order,
+                    nowMs,
+                    name,
+                    "TOTAL PER TIME BREACH candidate="
+                            + candidate.toPlainString()
+                            + " limit="
+                            + limit.toPlainString());
         }
 
         consumption = candidate;
-        return Result.PASS;
+
+        return RiskDecision.pass(
+                order,
+                nowMs);
     }
 }
 
-class KillSwitchCheck extends AbstractRiskCheck {
+/*
+ * Stateless rule.
+ *
+ * ReferencePriceProvider is injected so this check is independent
+ * of market-data storage/transport.
+ */
+class PriceDeviationCheck
+        implements RiskCheck {
 
-    private boolean active;
+    private static final
+    BigDecimal BPS =
+            BigDecimal.valueOf(10_000L);
 
-    KillSwitchCheck() {
-        super("KillSwitch", Long.MAX_VALUE);
-    }
+    private final String name;
 
-    void activate() {
-        active = true;
-    }
+    private final Predicate<Order> appliesTo;
 
-    void deactivate() {
-        active = false;
+    private final
+    ReferencePriceProvider referencePriceProvider;
+
+    private final long maxDeviationBps;
+
+    PriceDeviationCheck(
+            String name,
+            Predicate<Order> appliesTo,
+            ReferencePriceProvider referencePriceProvider,
+            long maxDeviationBps) {
+
+        this.name =
+                Objects.requireNonNull(name);
+
+        this.appliesTo =
+                Objects.requireNonNull(appliesTo);
+
+        this.referencePriceProvider =
+                Objects.requireNonNull(
+                        referencePriceProvider);
+
+        if (maxDeviationBps < 0) {
+            throw new IllegalArgumentException(
+                    "maxDeviationBps must be non-negative");
+        }
+
+        this.maxDeviationBps =
+                maxDeviationBps;
     }
 
     @Override
-    public Result check(
+    public RiskDecision check(
             Order order,
-            long nowMs,
-            ExposureResults results) {
+            long nowMs) {
 
-        if (active) {
-            results.reject("KILL SWITCH active");
-            return Result.BREACH;
+        if (!appliesTo.test(order)) {
+            return RiskDecision.pass(
+                    order,
+                    nowMs);
         }
 
-        return Result.PASS;
-    }
-}
+        BigDecimal referencePrice =
+                referencePriceProvider
+                        .referencePrice(order);
 
-class RiskCheckGroup {
+        if (referencePrice == null
+                || referencePrice.signum() <= 0) {
 
-    final List<RiskCheck> checks =
-            new ArrayList<>();
-
-    void addCheck(RiskCheck check) {
-        checks.add(check);
-    }
-
-    void begin() {
-        checks.forEach(RiskCheck::begin);
-    }
-
-    void rollback() {
-        checks.forEach(RiskCheck::rollback);
-    }
-
-    Result check(
-            Order order,
-            long nowMs,
-            ExposureResults results) {
-
-        for (RiskCheck check : checks) {
-
-            if (check.check(
+            return RiskDecision.breach(
                     order,
                     nowMs,
-                    results) == Result.BREACH) {
-
-                return Result.BREACH;
-            }
+                    name,
+                    "REFERENCE PRICE UNAVAILABLE");
         }
 
-        return Result.PASS;
-    }
+        BigDecimal deviation =
+                order.price
+                        .subtract(referencePrice)
+                        .abs();
 
-    void onCancel(Order order) {
+        /*
+         * deviation / referencePrice * 10_000 > maxDeviationBps
+         *
+         * Cross-multiplication avoids division/rounding:
+         *
+         * deviation * 10_000
+         * >
+         * referencePrice * maxDeviationBps
+         */
+        BigDecimal actual =
+                deviation.multiply(BPS);
 
-        for (RiskCheck check : checks) {
+        BigDecimal allowed =
+                referencePrice.multiply(
+                        BigDecimal.valueOf(
+                                maxDeviationBps));
 
-            if (check instanceof MaxQtyCheck maxQtyCheck) {
-                maxQtyCheck.onCancel(order);
-            }
+        if (actual.compareTo(allowed) > 0) {
+
+            return RiskDecision.breach(
+                    order,
+                    nowMs,
+                    name,
+                    "PRICE DEVIATION BREACH");
         }
+
+        return RiskDecision.pass(
+                order,
+                nowMs);
     }
 }
 
+/*
+ * Kill-switch state is supplied from outside.
+ *
+ * AtomicBoolean::get is one possible injected BooleanSupplier.
+ */
+class KillSwitchCheck
+        implements RiskCheck {
+
+    private final String name;
+
+    private final Predicate<Order> appliesTo;
+
+    private final BooleanSupplier active;
+
+    KillSwitchCheck(
+            String name,
+            Predicate<Order> appliesTo,
+            BooleanSupplier active) {
+
+        this.name =
+                Objects.requireNonNull(name);
+
+        this.appliesTo =
+                Objects.requireNonNull(appliesTo);
+
+        this.active =
+                Objects.requireNonNull(active);
+    }
+
+    @Override
+    public RiskDecision check(
+            Order order,
+            long nowMs) {
+
+        if (appliesTo.test(order)
+                && active.getAsBoolean()) {
+
+            return RiskDecision.breach(
+                    order,
+                    nowMs,
+                    name,
+                    "KILL SWITCH ACTIVE");
+        }
+
+        return RiskDecision.pass(
+                order,
+                nowMs);
+    }
+}
+
+/*
+ * Owns:
+ * - heterogeneous rule composition
+ * - transaction snapshot/rollback
+ * - synchronization for all mutable check state in this group
+ *
+ * consumption does NOT need AtomicLong because every state mutation
+ * is performed while holding this group monitor.
+ */
+class RiskCheckGroup {
+
+    final String groupId;
+
+    private final List<RiskCheck> checks =
+            new ArrayList<>();
+
+    RiskCheckGroup(String groupId) {
+        this.groupId =
+                Objects.requireNonNull(groupId);
+    }
+
+    RiskCheckGroup addCheck(
+            RiskCheck check) {
+
+        checks.add(
+                Objects.requireNonNull(check));
+
+        return this;
+    }
+
+    synchronized RiskDecision evaluate(
+            Order order,
+            long nowMs) {
+
+        begin();
+
+        try {
+
+            for (RiskCheck check : checks) {
+
+                RiskDecision decision =
+                        check.check(
+                                order,
+                                nowMs);
+
+                if (!decision.accepted()) {
+                    rollback();
+                    return decision;
+                }
+            }
+
+            return RiskDecision.pass(
+                    order,
+                    nowMs);
+
+        } catch (RuntimeException e) {
+
+            rollback();
+            throw e;
+        }
+    }
+
+    synchronized void onCancel(
+            Order order) {
+
+        begin();
+
+        try {
+
+            checks.forEach(
+                    check ->
+                            check.onCancel(order));
+
+        } catch (RuntimeException e) {
+
+            rollback();
+            throw e;
+        }
+    }
+
+    private void begin() {
+        checks.forEach(
+                RiskCheck::begin);
+    }
+
+    private void rollback() {
+        checks.forEach(
+                RiskCheck::rollback);
+    }
+}
+
+/*
+ * Composition root dependencies are constructor-injected:
+ *
+ * Clock                  -> processing time
+ * RiskDecisionPublisher  -> bus/audit output
+ *
+ * RiskCheckGroup owns rule-level concurrency.
+ */
 class RiskEngine {
 
     private final
     ConcurrentHashMap<Integer, RiskCheckGroup> groups =
             new ConcurrentHashMap<>();
 
-    void register(Account account, RiskCheckGroup group) {
-        groups.put(account.id, group);
+    private final Clock clock;
+
+    private final
+    RiskDecisionPublisher publisher;
+
+    RiskEngine(
+            Clock clock,
+            RiskDecisionPublisher publisher) {
+
+        this.clock =
+                Objects.requireNonNull(clock);
+
+        this.publisher =
+                Objects.requireNonNull(publisher);
     }
 
-    ExposureResults validate(Order order, long nowMs) {
+    void register(
+            Account account,
+            RiskCheckGroup group) {
 
-        ExposureResults results =
-                new ExposureResults();
+        groups.put(
+                account.id,
+                Objects.requireNonNull(group));
+    }
+
+    RiskDecision validate(
+            Order order) {
+
+        long nowMs =
+                clock.millis();
 
         RiskCheckGroup group =
-                groups.get(order.account.id);
+                groups.get(
+                        order.account.id);
+
+        RiskDecision decision;
 
         if (group == null) {
-            results.reject("no group for " + order.account);
-            return results;
+
+            decision =
+                    RiskDecision.breach(
+                            order,
+                            nowMs,
+                            "RiskEngine",
+                            "NO RISK GROUP");
+
+        } else {
+
+            /*
+             * The map retains the same group object across validate() calls.
+             * The group retains the same RiskCheck objects.
+             * Their instance consumption therefore survives between calls
+             * until the process is restarted/rebuilt.
+             */
+            decision =
+                    group.evaluate(
+                            order,
+                            nowMs);
         }
 
-        synchronized (group) {
+        /*
+         * Keep broker-specific code outside RiskEngine.
+         * Inject an asynchronous publisher in production if bus latency
+         * must stay off the risk hot path.
+         */
+        publisher.publish(decision);
 
-            group.begin();
-
-            if (group.check(
-                    order,
-                    nowMs,
-                    results) == Result.BREACH) {
-
-                group.rollback();
-            }
-        }
-
-        return results;
+        return decision;
     }
 
-    void onCancel(Order order) {
+    void onCancel(
+            Order order) {
 
         RiskCheckGroup group =
-                groups.get(order.account.id);
+                groups.get(
+                        order.account.id);
 
         if (group != null) {
-
-            synchronized (group) {
-                group.onCancel(order);
-            }
+            group.onCancel(order);
         }
+    }
+}
+
+/*
+ * Composition root / wiring example.
+ *
+ * This is where dependencies and behavior are injected.
+ */
+public class RiskEngineExtensible {
+
+    public static void main(String[] args) {
+
+        Account account =
+                new Account(
+                        101,
+                        "CLIENT-101");
+
+        Set<String> techTickers =
+                Set.of(
+                        "AAPL",
+                        "MSFT",
+                        "GOOG");
+
+        Predicate<Order> aaplBuys =
+                Scopes.ticker("AAPL")
+                        .and(
+                                Scopes.side(
+                                        Side.Buy));
+
+        Predicate<Order> techSells =
+                Scopes.tickers(techTickers)
+                        .and(
+                                Scopes.side(
+                                        Side.Sell));
+
+        Predicate<Order> cashEquities =
+                Scopes.marketSegment(
+                        "CASH");
+
+        Predicate<Order> allOrders =
+                Scopes.all();
+
+        Map<String, BigDecimal> referencePrices =
+                Map.of(
+                        "AAPL",
+                        new BigDecimal("200.00"),
+                        "MSFT",
+                        new BigDecimal("500.00"),
+                        "GOOG",
+                        new BigDecimal("180.00"));
+
+        ReferencePriceProvider
+                referencePriceProvider =
+                order ->
+                        referencePrices.get(
+                                order.ticker);
+
+        AtomicBoolean killSwitch =
+                new AtomicBoolean(false);
+
+        /*
+         * In production:
+         * decision -> messageBus.publish(decision)
+         *
+         * The adapter should normally hand off asynchronously.
+         */
+        RiskDecisionPublisher publisher =
+                decision ->
+                        System.out.println(
+                                "BUS -> " + decision);
+
+        RiskCheckGroup group =
+                new RiskCheckGroup(
+                        "ACCOUNT-101")
+
+                        /*
+                         * Same MaxQtyCheck class.
+                         * Different injected scopes.
+                         */
+                        .addCheck(
+                                new MaxQtyCheck(
+                                        "AAPL-BUY-OPEN-QTY",
+                                        aaplBuys,
+                                        1_000))
+
+                        .addCheck(
+                                new MaxQtyCheck(
+                                        "TECH-SELL-OPEN-QTY",
+                                        techSells,
+                                        5_000))
+
+                        /*
+                         * Whole-account/group exposure.
+                         */
+                        .addCheck(
+                                new ExposureCheck(
+                                        "NET-EXPOSURE",
+                                        allOrders,
+                                        new BigDecimal(
+                                                "10000000.00")))
+
+                        /*
+                         * Only orders in the CASH market segment.
+                         */
+                        .addCheck(
+                                new TotalTradedPerTimeCheck(
+                                        "CASH-VALUE-PER-SECOND",
+                                        cashEquities,
+                                        new BigDecimal(
+                                                "50000000.00"),
+                                        1_000L))
+
+                        .addCheck(
+                                new PriceDeviationCheck(
+                                        "PRICE-DEVIATION",
+                                        cashEquities,
+                                        referencePriceProvider,
+                                        100L))
+
+                        .addCheck(
+                                new KillSwitchCheck(
+                                        "KILL-SWITCH",
+                                        allOrders,
+                                        killSwitch::get));
+
+        RiskEngine engine =
+                new RiskEngine(
+                        Clock.systemUTC(),
+                        publisher);
+
+        engine.register(
+                account,
+                group);
+
+        Order order =
+                new Order(
+                        "ORD-1",
+                        account,
+                        "AAPL",
+                        "CASH",
+                        Side.Buy,
+                        new BigDecimal(
+                                "201.00"),
+                        100,
+                        Instant.now());
+
+        RiskDecision decision =
+                engine.validate(order);
+
+        System.out.println(
+                "CALLER -> " + decision);
+
+        /*
+         * Feature changes require composition changes, not engine changes:
+         *
+         * new scope          -> inject another Predicate<Order>
+         * new risk rule      -> implement RiskCheck and addCheck(...)
+         * new market source  -> inject another ReferencePriceProvider
+         * new bus            -> inject another RiskDecisionPublisher
+         * deterministic test -> inject Clock.fixed(...)
+         * kill switch source -> inject another BooleanSupplier
+         */
     }
 }
 ```
 
----
-
-## 4.6 Why the transaction works
-
-A check may provisionally mutate `consumption`. `begin()` snapshots every check first. If any rule returns `BREACH`, `RiskCheckGroup` stops and `RiskEngine` rolls the group back.
+Standalone file:
 
 ```text
-synchronized(group)
-        ↓
-begin() snapshots all checks
-        ↓
-run checks in order
-        ↓
-any BREACH?
-├── yes → rollback all → rejected result
-└── no  → keep provisional state → accepted result
+RiskEngineExtensible.java
 ```
 
-The lock covers the **whole** business transaction. `ConcurrentHashMap` protects concurrent map access; it does not make `begin → check → rollback/keep` atomic.
-
-Different groups may progress concurrently because they use different monitor objects. Two mutations for the same group are serialized.
+The code above compiles with `javac`.
 
 ---
 
-## 4.7 What can breach?
+## 4.6 Where dependency injection happens
 
-| Check | Breach condition | Result |
+The bottom `main()` is the **composition root**.
+
+```text
+RiskEngine
+← Clock
+← RiskDecisionPublisher
+
+PriceDeviationCheck
+← ReferencePriceProvider
+
+KillSwitchCheck
+← BooleanSupplier
+
+MaxQty / Exposure / Time / PriceDeviation / KillSwitch
+← Predicate<Order>
+```
+
+Examples:
+
+```text
+AAPL BUY
+→ Scopes.ticker("AAPL").and(Scopes.side(Buy))
+
+TECH SELL
+→ Scopes.tickers(techTickers).and(Scopes.side(Sell))
+
+CASH segment
+→ Scopes.marketSegment("CASH")
+
+whole group
+→ Scopes.all()
+```
+
+In Spring, the same constructor dependencies can be supplied by `@Configuration` / beans or a factory. The risk classes do not need Spring annotations to support constructor injection.
+
+---
+
+## 4.7 Open for extension, closed for modification
+
+| Feature request | Change | Existing engine code |
 |---|---|---|
-| `MaxQtyCheck` | matching-ticker BUY makes quantity consumption exceed its limit | `POSITION BREACH` |
-| `TotalTradedPerTimeCheck` | price × quantity pushes traded value in the current 1-second bucket over its limit | `TOTAL TRADED PER TIME BREACH` |
-| `KillSwitchCheck` | kill switch is active | `KILL SWITCH active` |
+| New risk rule | implement `RiskCheck`, then `addCheck()` | unchanged |
+| New ticker/side combination | inject another `Predicate<Order>` | unchanged |
+| Collection of tickers | `Scopes.tickers(set)` | unchanged |
+| Market segment limit | compose `Scopes.marketSegment(...)` | unchanged |
+| Whole-group limit | inject `Scopes.all()` | unchanged |
+| Different market-data source | inject another `ReferencePriceProvider` | unchanged |
+| Different bus | inject another `RiskDecisionPublisher` | unchanged |
+| Deterministic test time | inject `Clock.fixed(...)` | unchanged |
+| Different kill-switch source | inject another `BooleanSupplier` | unchanged |
+| Different time window | constructor value `windowMs` | unchanged |
 
-`RiskCheckGroup` does **not** create a fourth type of breach. It propagates the first breach returned by a contained `RiskCheck`.
+This is the OCP target:
 
-The time check above uses a **fixed one-second bucket**, not an exact rolling window. If asked for exact rolling one second: keep timestamped traded values in a deque, evict entries older than `now - 1000 ms`, and maintain a running sum.
+```text
+new behavior
+→ add implementation or change wiring
+
+not
+→ edit RiskEngine switch/if chains
+```
 
 ---
 
-## 4.8 Does this Java file itself block the exchange order?
+## 4.8 Scope limits of this sample
 
-No. Its boundary is:
+`Predicate<Order>` changes **which orders a rule sees**; it does not change the ownership domain of the group's mutable state.
 
-```text
-RiskEngine.validate(order)
-→ ExposureResults
-```
-
-A breach sets:
+Current lookup:
 
 ```text
-accepted = false
-reason = ...
+accountId
+→ one RiskCheckGroup
 ```
 
-The **upstream matching-engine/order-processing integration** must use that result to stop the order:
+Therefore a check scoped to `marketSegment == CASH` means:
 
 ```text
-incoming order
-→ RiskEngine.validate()
-→ PASS   → continue order processing
-→ BREACH → reject / do not reach order book
+CASH orders
+within that group's ownership domain
 ```
 
-Interview phrasing:
+A truly market-wide aggregate across many accounts requires either:
 
-> “The concrete `RiskCheck` detects the breach, `RiskCheckGroup` propagates it, and `RiskEngine` rolls back provisional state and returns a rejected `ExposureResults`. The upstream order-processing layer uses that rejection to prevent the order from proceeding to the book.”
+```text
+shared market-level RiskCheckGroup
+```
 
-Do not claim that exchange blocking is implemented inside this standalone file.
+or a higher-level group resolver/partitioning design.
+
+If one order must atomically update multiple independent groups, define deterministic ownership/lock ordering or route the key hierarchy through a single partition owner. Do not casually add nested locks.
 
 ---
 
-## 4.9 Why each design choice exists
+## 4.9 Change isolation — what changes for each requirement?
 
-**`RiskCheck` interface:** one contract lets the group compose different rules without knowing their implementation.
+OCP does **not** mean arbitrary behavior changes require zero code. It means the stable engine stays untouched and the change has one local home.
 
-**`AbstractRiskCheck`:** centralizes `limit`, mutable `consumption`, snapshot and rollback behavior.
+```text
+CHANGE LIMIT
+→ constructor/config value only
 
-**First-breach short circuit:** once one mandatory rule rejects, continuing adds work and provisional mutations with no possible change to the final decision.
+CHANGE TICKER / SIDE / SEGMENT / TICKER SET
+→ Predicate<Order> only
 
-**`Math.addExact` / `Math.multiplyExact`:** fail explicitly on `long` overflow instead of silently wrapping financial values.
+CHANGE REFERENCE-PRICE SOURCE
+→ ReferencePriceProvider implementation only
 
-**Same lock for cancel:** cancel mutates the same quantity state as validation, so it must share the same atomic boundary.
+CHANGE BUS
+→ RiskDecisionPublisher implementation only
 
-**Why not one engine-wide lock:** it would serialize unrelated groups.
+CHANGE TIME SOURCE
+→ Clock only
 
-**Why not one lock per check:** another order could interleave between checks and observe a partially-applied transaction.
+CHANGE EXISTING RULE SEMANTICS
+→ that concrete RiskCheck + its tests only
+
+ADD NEW RISK RULE
+→ new RiskCheck implementation
+→ one addCheck(...) wiring line
+
+RiskEngine
+RiskCheckGroup
+other RiskCheck classes
+→ unchanged
+```
+
+This is the target blast radius:
+
+```text
+RDM / REST configuration
+        ↓
+composition / factory layer
+        ↓
+construct rule + injected scope/dependencies
+        ↓
+RiskCheckGroup.addCheck(...)
+        ↓
+RiskEngine does not care which rules exist
+```
+
+For a production config-driven system, put RDM/REST parsing outside the rule classes. That adapter turns persisted configuration into constructor arguments / predicates. The runtime checks stay typed and do not depend on database, JSON or REST formats.
+
+Example:
+
+```java
+Predicate<Order> scope =
+        Scopes.tickers(configuredTickers)
+                .and(Scopes.side(configuredSide));
+
+RiskCheck check =
+        new MaxQtyCheck(
+                configuredName,
+                scope,
+                configuredLimit);
+
+group.addCheck(check);
+```
+
+Changing the configured limit or scope then changes **data/wiring**, not `MaxQtyCheck`.
+
+If a completely new rule arrives:
+
+```java
+class MaxOrderValueCheck
+        implements RiskCheck {
+
+    // only the new rule lives here
+}
+```
+
+and composition adds:
+
+```java
+group.addCheck(
+        new MaxOrderValueCheck(...));
+```
+
+No `switch(type)`, `if (newRule)` or edits inside `RiskEngine`.
+
+> **Stable orchestration; replaceable rules; injected scope; injected infrastructure; configuration outside the hot-path algorithm.**
 
 ---
 
-## 4.10 Concurrency/scaling follow-ups
+## 4.10 Money representation
 
-### Multiple caller threads
-
-Current Level-1 answer:
-
-> `ConcurrentHashMap` supports concurrent group lookup, while `synchronized(group)` serializes the complete state transition for one group.
-
-### More throughput
-
-> Measure first. If independent state can be partitioned by a stable ownership key, route each key consistently to one partition so unrelated partitions run in parallel.
-
-### Remove per-group locks
-
-> Give each partition one mutation owner and route **all** state-changing events for that key through the same owner.
-
-Those events include:
+Current extensible sample uses:
 
 ```text
-order
-cancel
-configuration update
-kill switch
+quantity
+→ long
+
+price / exposure / traded value
+→ BigDecimal
 ```
 
-This partitioned-owner model is an **interview redesign**, not a claim about exact deployed PTR topology.
+Interview distinction:
+
+> “I would never use `double` for exact monetary risk. For ordinary financial-domain services, `BigDecimal` is a strong default. On a latency-sensitive exchange hot path, an explicitly defined fixed-point or integer-tick `long` representation can be preferable.”
+
+The abstraction does not depend on the choice; the numeric type belongs to the concrete rule.
+
+---
+
+## 4.11 Retrieval anchors
+
+```text
+CONCURRENCY
+→ group lock protects the whole invariant
+→ not AtomicLong per field
+
+STATE LIFETIME
+→ map retains same group
+→ group retains same check objects
+→ their consumption survives validate() calls
+→ restart requires state rebuild/recovery
+
+SCOPE
+→ Predicate<Order>
+
+TIME
+→ Clock injected into RiskEngine
+→ Order.eventTime remains separate event timestamp
+
+BUS
+→ RiskDecisionPublisher
+→ broker-specific code outside RiskEngine
+
+REFERENCE PRICE
+→ ReferencePriceProvider
+
+EXTENSION
+→ implement RiskCheck + addCheck
+```
+
+Strong sentence:
+
+> **“Inject configuration, infrastructure and applicability; keep the risk algorithm dependent only on stable contracts.”**
 
 ---
 
@@ -1419,26 +2255,26 @@ measure
 
 These are **coverage anchors**, not predictions of the exact interview question. Do not add new DSA tomorrow.
 
-| # | Pri | Question | Local solution | Core ask | Pattern / invariant | Edge to test | Time / Space |
-|---:|:---:|---|---|---|---|---|---|
-| 1 | **A** | **Group Anagrams** | **Gap:** no dedicated solution; [closest anagram reconstruction](../../src/main/java/org/chijai/day3/session3/ValidAnagram.java) | Group strings containing the same character multiset | HashMap + canonical immutable key | empty string, duplicates | sorted key: O(n·k log k); count key: O(n·k) |
-| 2 | **A** | **Longest Substring Without Repeating Characters** | [LongestSubString.java](../../src/main/java/org/chijai/day3/session1/LongestSubString.java) | Longest contiguous substring with unique chars | Sliding window; current window has no duplicate; `left` only moves forward | empty, repeat before `left` | O(n) / O(charset) |
-| 3 | **A** | **Merge Intervals** | [IntervalSortByStart.java](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java) | Merge all overlapping intervals | Sort by start; current interval stores merged coverage | nested, touching, disjoint | O(n log n) / O(n) output |
-| 4 | **A** | **Time-Based Key-Value Store** | [TimeBasedKeyValueStore.java](../../src/main/java/org/chijai/day2/session3/TimeBasedKeyValueStore.java) | `set(key,value,time)`; `get(key,time)` returns latest value at or before time | Per-key ordered history + binary search; rightmost timestamp `<= target` | missing key, query before first timestamp | set O(1)*, get O(log n) |
-| 5 | **A** | **Sliding Window Maximum** | [SlidingWindowMaximum.java](../../src/main/java/org/chijai/day5/stack/session1/monotonic/SlidingWindowMaximum.java) | Maximum for every window of size `k` | Monotonic deque of indices; front is current max | duplicates, k=1, stale index | O(n) / O(k) |
-| 6 | **A** | **Top K Frequent Elements** | [TopKFrequentElements.java](../../src/main/java/org/chijai/day7/session1/heap/TopKFrequentElements.java) | Return `k` most frequent values | Frequency map + size-k min heap | ties, k=1 | O(n log k) / O(n) |
-| 7 | **A** | **LRU Cache** | [LruCache.java](../../src/main/java/org/chijai/day4/LinkedList/session3/LruCache.java) | O(1) `get`/`put` with least-recent eviction | HashMap + doubly linked list; map locates, list owns recency | update existing key, capacity=1 | O(1) ops / O(capacity) |
-| 8 | **A** | **Number of Islands** | [Islands.java](../../src/main/java/org/chijai/day8/graph/session1/Islands.java) | Count connected land components | DFS/BFS; every unseen land cell starts exactly one traversal | empty, one cell, disconnected | O(R·C) / O(R·C) worst |
-| 9 | **A** | **Course Schedule** | [CourseSchedule.java](../../src/main/java/org/chijai/day8/graph/session2/CourseSchedule.java) | Can all courses finish given prerequisites? | Kahn topo sort; indegree 0 means prerequisites satisfied | cycle, disconnected graph | O(V+E) / O(V+E) |
-| 10 | **A** | **Koko Eating Bananas** | [KokoBananas.java](../../src/main/java/org/chijai/day2/session2/KokoBananas.java) | Minimum speed that finishes within `h` hours | Binary search on answer; feasibility is monotonic | one pile, tight `h`, ceiling division | O(n log maxPile) / O(1) |
-| 11 | **A** | **3Sum** | [Three3Sum2Sum.java](../../src/main/java/org/chijai/day1/Arrays/session2/Three3Sum2Sum.java) | Unique triplets summing to zero | Sort + fix one + two pointers; skip duplicates at every layer | all zero, duplicates, no result | O(n²) / O(1)* |
-| 12 | **A** | **Letter Combinations of a Phone Number** | [LetterCombinationsOfAPhoneNumber.java](../../src/main/java/org/chijai/day11/backtracking/session1/LetterCombinationsOfAPhoneNumber.java) | Generate all keypad combinations | Backtracking; depth = digit index; choose → recurse → undo | empty input | O(output) / O(depth) excluding output |
-| 13 | **B** | **Validate Binary Search Tree** | [ValidateBST.java](../../src/main/java/org/chijai/day6/trees/session3/ValidateBST.java) | Determine whether tree satisfies BST ordering globally | DFS with inherited lower/upper bounds | invalid deep descendant, int extremes | O(n) / O(h) |
-| 14 | **B** | **Coin Change** | [CoinChange.java](../../src/main/java/org/chijai/day9/dp/session2/CoinChange.java) | Minimum coins for exact amount | 1D DP; `dp[a]` = min coins for amount `a` | amount 0, impossible | O(amount·coins) / O(amount) |
-| 15 | **B** | **First Unique Character** | [FirstUniqueCharacterInAString.java](../../src/main/java/org/chijai/day1/Arrays/session1/FirstUniqueCharacterInAString.java) | Index/character occurring exactly once first | Count frequencies, then scan original order | none unique, empty | O(n) / O(charset) |
-| 16 | **B** | **Min Stack** | [MinStackDesign.java](../../src/main/java/org/chijai/day5/stack/session2/MinStackDesign.java) | Stack supporting `getMin()` in O(1) | Store current minimum with stack state | duplicate minima, empty ops | O(1) ops / O(n) |
-| 17 | **B** | **Employee Maximum Salary — Streams** | [EmployeeMaxSalary.java](../../src/main/java/org/chijai/java/EmployeeMaxSalary.java) | Find highest-paid employee | `max(Comparator.comparingLong(...))`; define empty/tie behavior | empty list, equal salaries | O(n) / O(1) |
-| 18 | **B** | **Sequence Gap / Duplicate Execution Detector** | [SequenceGapDetector.java](../../src/main/java/org/chijai/java/SequenceGapDetector.java) · [ExecutionDeduplication.java](../../src/main/java/org/chijai/java/ExecutionDeduplication.java) | Detect duplicate IDs and/or sequence gaps under an explicit ordering contract | Set/Map + previous/expected sequence invariant | duplicate, missing value, out-of-order input | O(n) expected / O(n) |
+| # | Pri | Question | Core ask | Pattern / invariant | Edge to test | Time / Space |
+|---:|:---:|---|---|---|---|---|
+| 1 | **A** | **Group Anagrams** | Group strings containing the same character multiset | HashMap + canonical immutable key | empty string, duplicates | sorted key: O(n·k log k); count key: O(n·k) |
+| 2 | **A** | **Longest Substring Without Repeating Characters** | Longest contiguous substring with unique chars | Sliding window; current window has no duplicate; `left` only moves forward | empty, repeat before `left` | O(n) / O(charset) |
+| 3 | **A** | **Merge Intervals** | Merge all overlapping intervals | Sort by start; current interval stores merged coverage | nested, touching, disjoint | O(n log n) / O(n) output |
+| 4 | **A** | **Time-Based Key-Value Store** | `set(key,value,time)`; `get(key,time)` returns latest value at or before time | Per-key ordered history + binary search; rightmost timestamp `<= target` | missing key, query before first timestamp | set O(1)*, get O(log n) |
+| 5 | **A** | **Sliding Window Maximum** | Maximum for every window of size `k` | Monotonic deque of indices; front is current max | duplicates, k=1, stale index | O(n) / O(k) |
+| 6 | **A** | **Top K Frequent Elements** | Return `k` most frequent values | Frequency map + size-k min heap | ties, k=1 | O(n log k) / O(n) |
+| 7 | **A** | **LRU Cache** | O(1) `get`/`put` with least-recent eviction | HashMap + doubly linked list; map locates, list owns recency | update existing key, capacity=1 | O(1) ops / O(capacity) |
+| 8 | **A** | **Number of Islands** | Count connected land components | DFS/BFS; every unseen land cell starts exactly one traversal | empty, one cell, disconnected | O(R·C) / O(R·C) worst |
+| 9 | **A** | **Course Schedule** | Can all courses finish given prerequisites? | Kahn topo sort; indegree 0 means prerequisites satisfied | cycle, disconnected graph | O(V+E) / O(V+E) |
+| 10 | **A** | **Koko Eating Bananas** | Minimum speed that finishes within `h` hours | Binary search on answer; feasibility is monotonic | one pile, tight `h`, ceiling division | O(n log maxPile) / O(1) |
+| 11 | **A** | **3Sum** | Unique triplets summing to zero | Sort + fix one + two pointers; skip duplicates at every layer | all zero, duplicates, no result | O(n²) / O(1)* |
+| 12 | **A** | **Letter Combinations of a Phone Number** | Generate all keypad combinations | Backtracking; depth = digit index; choose → recurse → undo | empty input | O(output) / O(depth) excluding output |
+| 13 | **B** | **Validate Binary Search Tree** | Determine whether tree satisfies BST ordering globally | DFS with inherited lower/upper bounds | invalid deep descendant, int extremes | O(n) / O(h) |
+| 14 | **B** | **Coin Change** | Minimum coins for exact amount | 1D DP; `dp[a]` = min coins for amount `a` | amount 0, impossible | O(amount·coins) / O(amount) |
+| 15 | **B** | **First Unique Character** | Index/character occurring exactly once first | Count frequencies, then scan original order | none unique, empty | O(n) / O(charset) |
+| 16 | **B** | **Min Stack** | Stack supporting `getMin()` in O(1) | Store current minimum with stack state | duplicate minima, empty ops | O(1) ops / O(n) |
+| 17 | **B** | **Employee Maximum Salary — Streams** | Find highest-paid employee | `max(Comparator.comparingLong(...))`; define empty/tie behavior | empty list, equal salaries | O(n) / O(1) |
+| 18 | **B** | **Sequence Gap / Duplicate Execution Detector** | Detect duplicate IDs and/or sequence gaps under an explicit ordering contract | Set/Map + previous/expected sequence invariant | duplicate, missing value, out-of-order input | O(n) expected / O(n) |
 
 `*` State assumptions: TimeMap O(1) `set` assumes timestamps arrive in order; 3Sum O(1) auxiliary space excludes the sort implementation/output.
 
@@ -1494,22 +2330,6 @@ Stop rule: if you can state **pattern + invariant + first data structure + edge 
 ---
 
 # 10. Treasury + interview-sized LLD
-
-## Local LLDProjects map — use by question, not as a reading list
-
-There is no dedicated Treasury-margin project in `LLDProjects`. Do not describe a neighboring project as a Treasury implementation. Use the Treasury code linked in §1.1 for the exact coding exercise; use the projects below only to retrieve the corresponding class design, state machine, invariant, or follow-up.
-
-| Pri | If the interviewer asks for | Local code solution | Design/reference | Retrieve and defend |
-|:---:|---|---|---|---|
-| **P0** | OMS / order lifecycle | [OrderManagementSystem.java](../../../../LLDProjects/order-management-system/src/main/java/com/chiranjeev/lld/oms/OrderManagementSystem.java) · [OrderState.java](../../../../LLDProjects/order-management-system/src/main/java/com/chiranjeev/lld/oms/OrderState.java) | [OMS low-level design](../../../../LLDProjects/order-management-system/docs/LOW_LEVEL_DESIGN.md) | Legal transitions, partial fill, fill-vs-cancel race, terminal-state invariant, client/exchange ID correlation |
-| **P0** | Order book / price-time priority | [OrderBook.java](../../../../LLDProjects/DesignOrderBook/src/main/java/org/chijai/orderbook/OrderBook.java) · [PriceLevel.java](../../../../LLDProjects/DesignOrderBook/src/main/java/org/chijai/orderbook/PriceLevel.java) | [OrderBook low-level design](../../../../LLDProjects/DesignOrderBook/docs/LOW_LEVEL_DESIGN.md) | Bid/ask ordering, FIFO inside one price, partial fill, active-order lookup, cancel/replace complexity |
-| **P0** | Matching engine | [MatchingEngine.java](../../../../LLDProjects/matching-engine/src/main/java/com/chiranjeev/lld/matching/MatchingEngine.java) | [Matching-engine low-level design](../../../../LLDProjects/matching-engine/docs/LOW_LEVEL_DESIGN.md) | Crossing condition, deterministic price-time matching, residual quantity, trade/fill creation |
-| **P1** | Extensible risk checks / limit engine | [RiskEngine.java](../../../../LLDProjects/pre-trade-risk-engine/src/main/java/com/chiranjeev/lld/risk/RiskEngine.java) · [RiskRule.java](../../../../LLDProjects/pre-trade-risk-engine/src/main/java/com/chiranjeev/lld/risk/RiskRule.java) | [Pre-trade-risk low-level design](../../../../LLDProjects/pre-trade-risk-engine/docs/LOW_LEVEL_DESIGN.md) | Policy composition, immutable decision/context, fail-fast versus collect-all violations; this is an analogue, not Treasury itself |
-| **P2** | Per-key rate limiting | [InMemoryTokenBucketRateLimiter.java](../../../../LLDProjects/token-bucket-rate-limiter/src/main/java/com/example/ratelimiter/InMemoryTokenBucketRateLimiter.java) | [Token-bucket low-level design](../../../../LLDProjects/token-bucket-rate-limiter/docs/LOW_LEVEL_DESIGN.md) | Refill arithmetic, time abstraction, atomic consume, per-key ownership |
-| **P2** | FIX sequencing / recovery | [FixSessionManager.java](../../../../LLDProjects/fix-session-manager/src/main/java/com/chiranjeev/lld/fixsession/FixSessionManager.java) | [FIX-session low-level design](../../../../LLDProjects/fix-session-manager/docs/LOW_LEVEL_DESIGN.md) | Sequence numbers, duplicate/gap handling, resend/reset, session-state transitions |
-| **P2** | Exchange adapter / outbound gateway | [ExchangeGateway.java](../../../../LLDProjects/exchange-gateway/src/main/java/com/chiranjeev/lld/gateway/ExchangeGateway.java) | [Exchange-gateway low-level design](../../../../LLDProjects/exchange-gateway/docs/LOW_LEVEL_DESIGN.md) | Protocol adapter boundary, validation, rate limiting, submission result, venue-event correlation |
-
-**Time-critical cut rule:** during the scheduled `12:20–12:30` block, open only the two P0 designs that correspond to a red recall item. P1 is for a direct risk-design question. P2 is after the interview or for an explicit follow-up; it is not required morning study.
 
 ## Minimum domain vocabulary
 
@@ -1994,3 +2814,4 @@ active C# study block
 ```
 
 Mermaid repetition is limited to the high-level order path and the code-adjacent RiskLimitEngine, TreasuryMarginMonitor, and MatchingEngine diagrams; all prose keeps one canonical location per idea.
+
