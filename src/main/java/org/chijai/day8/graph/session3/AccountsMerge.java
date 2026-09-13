@@ -3,674 +3,294 @@ package org.chijai.day8.graph.session3;
 import java.util.*;
 
 /**
- * ============================================================================
- *  AccountsMerge
- * ============================================================================
+ * =============================================================================
+ * AccountsMerge
+ * JAVA GOLD — FINAL CANONICAL
+ * =============================================================================
  *
- *  LeetCode:
- *  https://leetcode.com/problems/accounts-merge/
+ * PRIMARY GOAL OF THIS VERSION
+ * ----------------------------
+ * Learn Union Find once.
+ * Reuse the same engine and the same visible solution skeleton.
+ * For each related problem, store only the DELTA.
  *
- * ============================================================================
- *  📘 PRIMARY PROBLEM
- * ============================================================================
+ *      SAME BOILERPLATE
  *
- * Title:
- * Accounts Merge
+ *          UnionFind unionFind = new UnionFind(numberOfNodes);
  *
- * Difficulty:
- * Hard
+ *          connectRelationships(..., unionFind);   // DELTA #1
  *
- * Tags:
- * Graph
- * Disjoint Set Union (Union Find)
- * Connected Components
- * HashMap
- * Set
- * Sorting
+ *          return buildResult(..., unionFind);     // DELTA #2
  *
- * ----------------------------------------------------------------------------
- * Problem
- * ----------------------------------------------------------------------------
+ * PHOTOGRAPHIC MEMORY RULE:
+ * Keep two uninterrupted optimal snapshots immediately after the problem statement:
  *
- * A person may own multiple accounts.
+ *      2A. SHORTEST / CRISPEST interview reconstruction
+ *      2B. REUSABLE DSUNode version for learn-once / store-only-the-DELTA
  *
- * Each account is represented as:
- *
- *      [name, email1, email2, email3...]
- *
- * Two accounts belong to the same person if they share at least one email.
- *
- * The name itself is NOT sufficient because different people may have the same
- * name.
- *
- * Merge all accounts belonging to the same person.
- *
- * Output:
- *
- * One merged account per connected person.
- *
- * Every merged account contains:
- *
- *      name
- *      all unique emails sorted lexicographically
- *
- * Order of merged accounts does not matter.
- *
- * ----------------------------------------------------------------------------
- * Constraints
- * ----------------------------------------------------------------------------
- *
- * 1 <= accounts.length <= 1000
- *
- * 2 <= accounts[i].length <= 10
- *
- * 1 <= total emails <= 10000
- *
- * Email strings are unique inside one account.
- *
- * ----------------------------------------------------------------------------
- * Example
- * ----------------------------------------------------------------------------
- *
- * Input
- *
- * [
- *   ["John","johnsmith@mail.com","john_newyork@mail.com"],
- *   ["John","johnsmith@mail.com","john00@mail.com"],
- *   ["Mary","mary@mail.com"],
- *   ["John","johnnybravo@mail.com"]
- * ]
- *
- * Output
- *
- * [
- *   ["John",
- *    "john00@mail.com",
- *    "john_newyork@mail.com",
- *    "johnsmith@mail.com"],
- *
- *   ["Mary","mary@mail.com"],
- *
- *   ["John","johnnybravo@mail.com"]
- * ]
- *
- * Explanation
- *
- * Account 0 and Account 1 share an email.
- *
- * Therefore they are the same connected component.
- *
- * Account 2 is isolated.
- *
- * Account 3 is isolated.
- *
- * ============================================================================
- *  🔵 CORE PATTERN OVERVIEW
- * ============================================================================
- *
- * Pattern
- * -------
- * Disjoint Set Union (Union Find)
- *
- * Archetype
- * ---------
- * Dynamic Connected Components
- *
- * Core Invariant
- * --------------
- * Every account inside one connected component has exactly one representative
- * (root).
- *
- * If two accounts share even one email, they MUST eventually obtain the same
- * representative.
- *
- * Why It Works
- * ------------
- * Email overlap defines graph edges.
- *
- * Accounts are graph nodes.
- *
- * Shared email means:
- *
- *      accountA ----- accountB
- *
- * We never actually build the graph.
- *
- * Union Find maintains connected components incrementally while scanning
- * emails.
- *
- * Recognition Signals
- * -------------------
- *
- * ✓ Merge groups
- *
- * ✓ Connectivity
- *
- * ✓ Transitive relation
- *
- * ✓ "belongs to same person"
- *
- * ✓ Common identifier joins objects
- *
- * ✓ Components discovered through repeated merging
- *
- * When To Use
- * -----------
- *
- * • Merge accounts
- *
- * • Merge islands
- *
- * • Friend circles
- *
- * • Network connectivity
- *
- * • Similar strings
- *
- * • Kruskal MST
- *
- * When NOT To Use
- * ---------------
- *
- * Do not use DSU if:
- *
- * • shortest path required
- *
- * • traversal order matters
- *
- * • parent-child hierarchy matters
- *
- * • graph changes require deletions
- *
- * Pattern Comparison
- * ------------------
- *
- * DFS/BFS
- * --------
- * Requires explicit graph construction.
- *
- * DSU
- * ---
- * Builds connectivity online while reading edges.
- *
- * Graph Coloring
- * --------------
- * Answers reachability.
- *
- * DSU
- * ---
- * Answers connected component membership.
- *
- * ============================================================================
- *  🟢 MENTAL MODEL & INVARIANTS
- * ============================================================================
- *
- * Mental Model
- * ------------
- *
- * Imagine every account starts as its own island.
- *
- * Every time an email appears again,
- * we discover a bridge between two islands.
- *
- * DSU permanently joins those islands.
- *
- * Eventually every connected island represents one person.
- *
- * ---------------------------------------------------------------------------
- * 🟢 Invariant 1
- * ---------------------------------------------------------------------------
- *
- * parent[root] == root
- *
- * Every connected component owns exactly one representative.
- *
- * ---------------------------------------------------------------------------
- * 🟢 Invariant 2
- * ---------------------------------------------------------------------------
- *
- * find(x)
- *
- * always returns the representative of x's component.
- *
- * After path compression,
- * future finds become almost constant time.
- *
- * ---------------------------------------------------------------------------
- * 🟢 Invariant 3
- * ---------------------------------------------------------------------------
- *
- * emailToAccount
- *
- * always stores the FIRST account that introduced an email.
- *
- * When another account contains the same email,
- * those two accounts must be unioned.
- *
- * Notice:
- *
- * We never need to remember every account containing an email.
- *
- * One representative account is sufficient because DSU preserves transitivity.
- *
- * Example
- *
- * email E
- *
- * first seen in account 2
- *
- * later appears in
- *
- * account 7
- *
- * union(2,7)
- *
- * later appears again
- *
- * account 15
- *
- * union(2,15)
- *
- * Since 2 and 7 are already connected,
- * all three become connected.
- *
- * ---------------------------------------------------------------------------
- * 🟢 Invariant 4
- * ---------------------------------------------------------------------------
- *
- * During grouping,
- *
- * every account contributes ALL its emails into exactly one root bucket.
- *
- * Bucket =
- * connected component.
- *
- * ---------------------------------------------------------------------------
- * 🟢 Variable Meanings
- * ---------------------------------------------------------------------------
- *
- * parent[]
- *
- * DSU forest
- *
- * emailToFirstAccount
- *
- * First occurrence of every email.
- *
- * rootToEmails
- *
- * Emails belonging to one connected component.
- *
- * root
- *
- * Representative of one merged person.
- *
- * ---------------------------------------------------------------------------
- * Allowed State Transitions
- * ---------------------------------------------------------------------------
- *
- * unseen email
- *
- *      ->
- *
- * record owner
- *
- *
- * repeated email
- *
- *      ->
- *
- * union owners
- *
- *
- * finished scanning
- *
- *      ->
- *
- * group by root
- *
- * ---------------------------------------------------------------------------
- * Forbidden Moves
- * ---------------------------------------------------------------------------
- *
- * ❌ Merge by person name.
- *
- * Different people may share identical names.
- *
- * ❌ Assume adjacent accounts are related.
- *
- * Connectivity depends ONLY on shared emails.
- *
- * ❌ Output before grouping by representative.
- *
- * Intermediate parents are not guaranteed to be roots.
- *
- * ---------------------------------------------------------------------------
- * Why Naive Solutions Fail
- * ---------------------------------------------------------------------------
- *
- * Consider
- *
- * A shares with B
- *
- * B shares with C
- *
- * A never directly shares with C.
- *
- * Pairwise merging misses transitive closure.
- *
- * DSU automatically preserves transitivity.
- *
- * ---------------------------------------------------------------------------
- * Termination
- * ---------------------------------------------------------------------------
- *
- * Every account scanned exactly once.
- *
- * Every email processed exactly once.
- *
- * Every account assigned to exactly one root.
- *
- * ============================================================================
- *  🔴 WHY WRONG SOLUTIONS FAIL
- * ============================================================================
- *
- * Mistake 1
- * ---------
- * Merge by names.
- *
- * Looks reasonable because output starts with names.
- *
- * Violated Invariant
- * ------------------
- * Connectivity is defined only by shared emails.
- *
- * Counterexample
- *
- * John
- *
- * john1@mail
- *
- * John
- *
- * john2@mail
- *
- * Different people.
- *
- * ---------------------------------------------------------------------------
- * Mistake 2
- * ---------
- * Store every email owner in a list.
- *
- * Looks harmless.
- *
- * Actually unnecessary.
- *
- * One representative account is enough because unions are transitive.
- *
- * ---------------------------------------------------------------------------
- * Mistake 3
- * ---------
- * Forget path compression.
- *
- * Correctness survives.
- *
- * Performance degrades badly.
- *
- * ---------------------------------------------------------------------------
- * Mistake 4
- * ---------
- * Build answer before calling find().
- *
- * Parent pointers may still point to intermediate nodes.
- *
- * Multiple buckets appear for one component.
- *
- * ============================================================================
- *  ⚙ IMPLEMENTATION BLUEPRINT
- * ============================================================================
- *
- * Typing Order
- * ------------
- *
- * 1.
- * Build DSU.
- *
- * 2.
- * Create email -> first account map.
- *
- * 3.
- * Scan every account.
- *
- * 4.
- * First email occurrence?
- *      store account.
- *
- * Otherwise
- *      union(previous,current).
- *
- * 5.
- * Scan accounts again.
- *
- * 6.
- * Find root.
- *
- * 7.
- * Add emails into root bucket.
- *
- * 8.
- * Sort emails.
- *
- * 9.
- * Produce answer.
- *
- * Function Skeleton
- * -----------------
- *
- * accountsMerge(...)
- *
- * create DSU
- *
- * first pass
- *
- * second pass
- *
- * build answer
- *
- * return
- *
- * ============================================================================
- *  🧾 ULTRA-COMPACT PSEUDOCODE
- * ============================================================================
- *
- * init DSU
- *
- * for every account
- *      union repeated emails
- *
- * for every account
- *      root=find(account)
- *      collect emails
- *
- * format answer
- *
- * return
- *
- * ============================================================================
- *  6. SOLUTION CLASSES
- * ============================================================================
- *
- * ---------------------------------------------------------------------------
- * Brute Force
- * ---------------------------------------------------------------------------
- *
- * Idea
- * ----
- * Keep repeatedly comparing every pair of accounts until no merges remain.
- *
- * Invariant
- * ---------
- * Every iteration reduces the number of components.
- *
- * Limitation
- * ----------
- * Extremely expensive because every merge changes future comparisons.
- *
- * Complexity
- * ----------
- * Roughly O(N² × E)
- *
- * Interview Usefulness
- * --------------------
- * Good only as a starting discussion.
- *
- * ---------------------------------------------------------------------------
- * Improved
- * ---------------------------------------------------------------------------
- *
- * Idea
- * ----
- * Build explicit graph:
- *
- * account -> account
- *
- * using shared emails,
- * then run DFS over connected components.
- *
- * Invariant
- * ---------
- * One DFS visits exactly one connected component.
- *
- * Improvement
- * -----------
- * Avoid repeated merging.
- *
- * Complexity
- * ----------
- * O(E log E) for sorting + graph construction.
- *
- * Interview Usefulness
- * --------------------
- * Acceptable but graph construction is unnecessary.
- *
- * ---------------------------------------------------------------------------
- * Optimal (Interview Preferred)
- * ---------------------------------------------------------------------------
- *
- * Idea
- * ----
- * Union accounts while reading emails.
- *
- * Never explicitly construct graph edges.
- *
- * Invariant
- * ---------
- * DSU representative uniquely identifies one merged person.
- *
- * Correctness
- * -----------
- * Every shared email creates an edge.
- * DSU computes connected components induced by those edges.
- *
- * Complexity
- * ----------
- * Time:
- * O(T α(N) + T log T)
- *
- * T = total emails.
- *
- * Space:
- * O(T)
- *
- * Interview Usefulness
- * --------------------
- * Canonical DSU problem.
+ * Put recognition, invariants, dry runs, trade-offs, and all long explanation AFTER.
  */
-
 public class AccountsMerge {
 
     /**
-     * Stores one merged account before formatting.
+     * =========================================================================
+     * 1. PROBLEM STATEMENT
+     * =========================================================================
+     *
+     * Each account is represented as:
+     *
+     *      [name, email1, email2, ...]
+     *
+     * Two accounts belong to the same person if they share at least one email.
+     * The relation is transitive.
+     *
+     * Example:
+     *
+     *      Account 0 -> [a, b]
+     *      Account 1 -> [b, c]
+     *      Account 2 -> [c, d]
+     *
+     * Hidden graph:
+     *
+     *          b           c
+     *      0 ------- 1 ------- 2
+     *
+     * Even though 0 and 2 share no email directly, all three accounts belong to
+     * the same connected component.
+     *
+     * Return one merged account per person containing:
+     *
+     *      name
+     *      all unique emails sorted lexicographically
      */
+
+
+    /**
+     * =========================================================================
+     * 2A. SHORTEST / CRISPEST OPTIMAL SOLUTION — FAST INTERVIEW SNAPSHOT
+     * =========================================================================
+     *
+     * Same DSU algorithm, minimum abstraction surface.
+     * Use this when you want the whole answer in one quick photographic snapshot.
+     * Detailed explanation still comes after BOTH code versions.
+     */
+    static class ShortestSolution {
+
+        static class UnionFind {
+
+            private final int[] parent;
+            private final int[] size;
+
+            UnionFind(int n) {
+                parent = new int[n];
+                size = new int[n];
+
+                for (int node = 0; node < n; node++) {
+                    parent[node] = node;
+                    size[node] = 1;
+                }
+            }
+
+            int find(int node) {
+                if (parent[node] == node) {
+                    return node;
+                }
+
+                parent[node] = find(parent[node]);
+                return parent[node];
+            }
+
+            void union(int a, int b) {
+                int rootA = find(a);
+                int rootB = find(b);
+
+                if (rootA == rootB) {
+                    return;
+                }
+
+                if (size[rootA] < size[rootB]) {
+                    int temp = rootA;
+                    rootA = rootB;
+                    rootB = temp;
+                }
+
+                parent[rootB] = rootA;
+                size[rootA] += size[rootB];
+            }
+        }
+
+        public List<List<String>> accountsMerge(List<List<String>> accounts) {
+
+            if (accounts == null || accounts.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            UnionFind unionFind = new UnionFind(accounts.size());
+            Map<String, Integer> emailToFirstAccount = new HashMap<>();
+
+            for (int accountIndex = 0; accountIndex < accounts.size(); accountIndex++) {
+                List<String> account = accounts.get(accountIndex);
+
+                for (int emailIndex = 1; emailIndex < account.size(); emailIndex++) {
+                    String email = account.get(emailIndex);
+                    Integer previousAccount = emailToFirstAccount.get(email);
+
+                    if (previousAccount == null) {
+                        emailToFirstAccount.put(email, accountIndex);
+                    } else {
+                        unionFind.union(previousAccount, accountIndex);
+                    }
+                }
+            }
+
+            Map<Integer, TreeSet<String>> rootToEmails = new HashMap<>();
+
+            for (Map.Entry<String, Integer> entry : emailToFirstAccount.entrySet()) {
+                int root = unionFind.find(entry.getValue());
+                TreeSet<String> emails = rootToEmails.get(root);
+
+                if (emails == null) {
+                    emails = new TreeSet<>();
+                    rootToEmails.put(root, emails);
+                }
+
+                emails.add(entry.getKey());
+            }
+
+            List<List<String>> answer = new ArrayList<>();
+
+            for (Map.Entry<Integer, TreeSet<String>> entry : rootToEmails.entrySet()) {
+                int root = entry.getKey();
+                List<String> mergedAccount = new ArrayList<>();
+
+                mergedAccount.add(accounts.get(root).get(0));
+                mergedAccount.addAll(entry.getValue());
+                answer.add(mergedAccount);
+            }
+
+            return answer;
+        }
+    }
+
+
+    /**
+     * =========================================================================
+     * 2B. REUSABLE DSUNODE SOLUTION — ONE PHOTOGRAPHIC CODE SNAPSHOT
+     * =========================================================================
+     *
+     * Keep the richer learn-once / reuse-many version together:
+     *
+     *      DSUNode
+     *      UnionFind
+     *      AccountEntry
+     *      MergedAccount
+     *      OptimalSolution
+     *
+     * Read / remember this entire block as ONE reusable solution image.
+     * The shorter 2A version is for instant reconstruction; this 2B version
+     * makes the reusable DSU structure and problem DELTAs explicit.
+     */
+    static class DSUNode {
+
+        final int id;
+        DSUNode parent;
+        int size;
+
+        DSUNode(int id) {
+            this.id = id;
+            this.parent = this;
+            this.size = 1;
+        }
+    }
+
+    static class UnionFind {
+
+        private final DSUNode[] nodes;
+        private int components;
+
+        UnionFind(int n) {
+
+            nodes = new DSUNode[n];
+            components = n;
+
+            for (int node = 0; node < n; node++) {
+                nodes[node] = new DSUNode(node);
+            }
+        }
+
+        DSUNode find(int node) {
+
+            DSUNode current =
+                    nodes[node];
+
+            if (current.parent == current) {
+                return current;
+            }
+
+            current.parent =
+                    find(current.parent.id);
+
+            return current.parent;
+        }
+
+        boolean union(int a, int b) {
+
+            DSUNode rootA = find(a);
+            DSUNode rootB = find(b);
+
+            if (rootA == rootB) {
+                return false;
+            }
+
+            if (rootA.size < rootB.size) {
+                DSUNode temp = rootA;
+                rootA = rootB;
+                rootB = temp;
+            }
+
+            rootB.parent = rootA;
+            rootA.size += rootB.size;
+
+            components--;
+
+            return true;
+        }
+
+        int components() {
+            return components;
+        }
+    }
+
+
+    record AccountEntry(
+            String name,
+            List<String> emails) {
+    }
+
     static class MergedAccount {
 
         final String name;
-
         final TreeSet<String> emails = new TreeSet<>();
 
         MergedAccount(String name) {
             this.name = name;
         }
 
+        void addEmails(List<String> newEmails) {
+            emails.addAll(newEmails);
+        }
+
         List<String> toList() {
+
             List<String> result = new ArrayList<>();
             result.add(name);
             result.addAll(emails);
+
             return result;
         }
     }
 
-    /**
-     * Classic Union Find with
-     * path compression
-     * union by size.
-     */
-    static class UnionFind {
 
-        private final int[] parent;
-
-        private final int[] size;
-
-        UnionFind(int n) {
-            parent = new int[n];
-            size = new int[n];
-
-            for (int i = 0; i < n; i++) {
-                parent[i] = i;
-                size[i] = 1;
-            }
-        }
-
-        int find(int node) {
-
-            // 🟢 Invariant:
-            // Returned node is always the component representative.
-            if (parent[node] == node) {
-                return node;
-            }
-
-            parent[node] = find(parent[node]);
-
-            return parent[node];
-        }
-
-        void union(int a, int b) {
-
-            int rootA = find(a);
-            int rootB = find(b);
-
-            // Already one connected component.
-            if (rootA == rootB) {
-                return;
-            }
-
-            // Keep larger tree as representative.
-            if (size[rootA] < size[rootB]) {
-                int temp = rootA;
-                rootA = rootB;
-                rootB = temp;
-            }
-
-            parent[rootB] = rootA;
-            size[rootA] += size[rootB];
-        }
-    }
-
-    /**
-     * ------------------------------------------------------------------------
-     * Optimal Interview Solution
-     * ------------------------------------------------------------------------
-     */
     static class OptimalSolution {
 
         public List<List<String>> accountsMerge(List<List<String>> accounts) {
@@ -679,83 +299,495 @@ public class AccountsMerge {
                 return Collections.emptyList();
             }
 
-            UnionFind unionFind = new UnionFind(accounts.size());
+            List<AccountEntry> accountEntries =
+                    toAccountEntries(accounts);
 
-            // Email -> first account index that introduced this email.
-            Map<String, Integer> emailToFirstAccount = new HashMap<>();
+            UnionFind unionFind =
+                    new UnionFind(accountEntries.size());
 
-            // -----------------------------------------------------------------
-            // First Pass
-            //
-            // Build connected components online.
-            // -----------------------------------------------------------------
-            for (int accountIndex = 0; accountIndex < accounts.size(); accountIndex++) {
+            connectAccountsBySharedEmail(
+                    accountEntries,
+                    unionFind);
 
-                List<String> account = accounts.get(accountIndex);
+            return buildMergedAccounts(
+                    accountEntries,
+                    unionFind);
+        }
 
-                for (int emailIndex = 1; emailIndex < account.size(); emailIndex++) {
+        private List<AccountEntry> toAccountEntries(
+                List<List<String>> accounts) {
 
-                    String email = account.get(emailIndex);
+            List<AccountEntry> accountEntries =
+                    new ArrayList<>();
 
-                    Integer previousOwner = emailToFirstAccount.get(email);
+            for (List<String> rawAccount : accounts) {
 
-                    if (previousOwner == null) {
+                String name =
+                        rawAccount.get(0);
 
-                        // First occurrence establishes the representative owner.
-                        emailToFirstAccount.put(email, accountIndex);
+                List<String> emails =
+                        rawAccount.subList(1, rawAccount.size());
+
+                accountEntries.add(
+                        new AccountEntry(name, emails));
+            }
+
+            return accountEntries;
+        }
+
+        private void connectAccountsBySharedEmail(
+                List<AccountEntry> accountEntries,
+                UnionFind unionFind) {
+
+            Map<String, Integer> emailToFirstAccount =
+                    new HashMap<>();
+
+            for (int accountIndex = 0;
+                 accountIndex < accountEntries.size();
+                 accountIndex++) {
+
+                AccountEntry accountEntry =
+                        accountEntries.get(accountIndex);
+
+                for (String email : accountEntry.emails()) {
+
+                    Integer previousAccountIndex =
+                            emailToFirstAccount.get(email);
+
+                    if (previousAccountIndex == null) {
+
+                        emailToFirstAccount.put(
+                                email,
+                                accountIndex);
 
                     } else {
 
-                        // Shared email means both accounts belong to one component.
-                        unionFind.union(previousOwner, accountIndex);
+                        unionFind.union(
+                                previousAccountIndex,
+                                accountIndex);
                     }
                 }
             }
+        }
 
-            // -----------------------------------------------------------------
-            // Second Pass
-            //
-            // Gather every email under the true DSU representative.
-            // -----------------------------------------------------------------
-            Map<Integer, MergedAccount> rootToAccount = new HashMap<>();
+        private List<List<String>> buildMergedAccounts(
+                List<AccountEntry> accountEntries,
+                UnionFind unionFind) {
 
-            for (int accountIndex = 0; accountIndex < accounts.size(); accountIndex++) {
+            Map<Integer, MergedAccount> rootToMergedAccount =
+                    new HashMap<>();
 
-                int root = unionFind.find(accountIndex);
+            for (int accountIndex = 0;
+                 accountIndex < accountEntries.size();
+                 accountIndex++) {
 
-                MergedAccount merged =
-                        rootToAccount.computeIfAbsent(
-                                root,
-                                ignored -> new MergedAccount(accounts.get(root).get(0))
-                        );
+                AccountEntry accountEntry =
+                        accountEntries.get(accountIndex);
 
-                List<String> account = accounts.get(accountIndex);
+                int rootId =
+                        unionFind.find(accountIndex).id;
 
-                for (int emailIndex = 1; emailIndex < account.size(); emailIndex++) {
+                MergedAccount mergedAccount =
+                        rootToMergedAccount.get(rootId);
 
-                    // TreeSet guarantees uniqueness and sorted order.
-                    merged.emails.add(account.get(emailIndex));
+                if (mergedAccount == null) {
+
+                    mergedAccount =
+                            new MergedAccount(accountEntry.name());
+
+                    rootToMergedAccount.put(
+                            rootId,
+                            mergedAccount);
                 }
+
+                mergedAccount.addEmails(
+                        accountEntry.emails());
             }
 
-            List<List<String>> answer = new ArrayList<>();
+            List<List<String>> answer =
+                    new ArrayList<>();
 
-            for (MergedAccount account : rootToAccount.values()) {
-                answer.add(account.toList());
+            for (MergedAccount mergedAccount :
+                    rootToMergedAccount.values()) {
+
+                answer.add(
+                        mergedAccount.toList());
             }
 
             return answer;
         }
     }
 
+
     /**
-     * ------------------------------------------------------------------------
-     * Alternative Optimal Solution
+     * =========================================================================
+     * 3. RECOGNITION + FIRST-PRINCIPLES INVENTION PATH
+     * =========================================================================
      *
-     * Group using the unique email map instead of iterating every account twice.
-     * ------------------------------------------------------------------------
+     * account       = node
+     * shared email  = relationship / edge
+     * person        = connected component
+     *
+     * We do not need shortest paths or traversal order.
+     * We only need to know which component each account belongs to.
+     *
+     * Therefore:
+     *
+     *      repeated email
+     *          -> union(previousAccount, currentAccount)
+     *
+     *      after all relationships are processed
+     *          -> find(accountIndex)
+     *          -> group by root
+     *
+     * Re-derivation cue:
+     *
+     *      shared identifier -> union -> root -> group -> answer
      */
-    static class EmailCentricSolution {
+
+
+    /**
+     * =========================================================================
+     * 4. UNION FIND EXPLANATION
+     * =========================================================================
+     *
+     * CANONICAL STRUCTURAL PRIMITIVE
+     * ------------------------------
+     *
+     *      Linked List -> ListNode
+     *      Binary Tree -> TreeNode
+     *      Trie        -> TrieNode
+     *      Union Find  -> DSUNode
+     *
+     * A DSU is a forest. Every node points upward to a parent, and every
+     * component has one representative root whose parent is itself.
+     *
+     *      node.parent -> parent / representative link
+     *      node.size   -> component size, meaningful at the root
+     *
+     * WHY DSUNode IS A CLASS, NOT A RECORD
+     * ------------------------------------
+     *
+     * DSUNode is mutable algorithm state:
+     *
+     *      find()  changes parent during path compression
+     *      union() changes parent and size
+     *
+     * A record is a better fit for value-like input data such as AccountEntry.
+     *
+     * CORE REPRESENTATION INVARIANT
+     * -----------------------------
+     *
+     *      nodes[i] is the one canonical DSUNode for logical node i
+     *      nodes[i].id == i
+     *
+     * Every parent reference points to one of these canonical nodes.
+     * Therefore recursive find can move from the parent object back to the
+     * integer-indexed DSU with:
+     *
+     *      find(current.parent.id)
+     *
+     * DENSE-ID ASSUMPTION
+     * -------------------
+     *
+     * Canonical UnionFind assumes ids:
+     *
+     *      0 .. n - 1
+     *
+     * If the domain starts with arbitrary labels such as emails or strings,
+     * map those labels to dense integer ids outside UnionFind.
+     *
+     * ONE CANONICAL find()
+     * --------------------
+     *
+     *      DSUNode find(int node)
+     *
+     * There is no second findRoot(), find(DSUNode), or root() method.
+     *
+     *      input  = integer node id
+     *      output = representative DSUNode
+     *
+     * If business logic needs a grouping key:
+     *
+     *      int rootId = unionFind.find(node).id;
+     *
+     * If it only needs to know whether two nodes share a component:
+     *
+     *      unionFind.find(a) == unionFind.find(b)
+     *
+     * This identity comparison is intentional because find() returns the one
+     * canonical representative object for the component.
+     *
+     * RECURSIVE FIND + PATH COMPRESSION
+     * ---------------------------------
+     *
+     *      if I am my own parent
+     *          -> I am the root
+     *
+     *      otherwise
+     *          -> find my parent's root
+     *          -> make that root my direct parent
+     *          -> return it
+     *
+     *      before                 after find(x)
+     *
+     *         A                       A
+     *         |                    /  |  \
+     *         B                   B   C   x
+     *         |
+     *         C
+     *         |
+     *         x
+     *
+     * UNION BY SIZE
+     * -------------
+     *
+     * Keep rootA as the larger component. If it is smaller, swap the roots.
+     * Then one attachment line always means:
+     *
+     *      smaller rootB -> larger rootA
+     *
+     *      rootB.parent = rootA;
+     *      rootA.size += rootB.size;
+     *
+     * Memory peg:
+     *
+     *      union by size    -> avoid creating tall trees
+     *      path compression -> flatten trees during find()
+     *
+     * union() returns false when both nodes already have the same root.
+     * That becomes the answer directly in problems such as Redundant Connection.
+     *
+     * components starts at n and decreases after every successful merge:
+     *
+     *      {A} + {B} -> {A,B}
+     *      components--
+     *
+     * COMPACT ARRAY ENCODING
+     * ----------------------
+     *
+     * The equally standard implementation is:
+     *
+     *      node.parent <=> parent[node]
+     *      node.size   <=> size[node]
+     *
+     * int[] parent + int[] size is more compact and avoids object allocation.
+     * The algorithm and invariants are identical. This Gold version keeps the
+     * explicit DSUNode because the forest structure is easier to retain visually.
+     */
+
+
+    /**
+     * 5. DOMAIN MODEL NOTES
+     * ------------------
+     *
+     * LeetCode gives:
+     *
+     *      [name, email1, email2, ...]
+     *
+     * AccountEntry removes that positional knowledge from the algorithm:
+     *
+     *      accountEntry.name()
+     *      accountEntry.emails()
+     *
+     * AccountEntry is a semantic input record.
+     *
+     * MergedAccount is mutable because it accumulates all unique sorted emails
+     * belonging to one connected component. It avoids exposing plumbing such as:
+     *
+     *      Map.Entry<Integer, TreeSet<String>>
+     *
+     * throughout the primary algorithm.
+     */
+
+
+    /**
+     * =========================================================================
+     * 6. PRIMARY SOLUTION EXPLANATION
+     * =========================================================================
+     *
+     * REUSABLE DSU SKELETON
+     * ---------------------
+     *
+     *      create UnionFind
+     *      connectRelationships(...)       <- DELTA #1
+     *      buildResultFromComponents(...)  <- DELTA #2
+     *
+     * The public method stays tiny so this skeleton is visible immediately.
+     *
+     * BOUNDARY CONVERSION
+     * -------------------
+     *
+     *      raw [name, email1, email2, ...]
+     *          -> AccountEntry(name, emails)
+     *
+     * After this conversion, the algorithm no longer remembers get(0) vs get(1..).
+     *
+     * DELTA #1 — WHAT CREATES A RELATIONSHIP?
+     * ---------------------------------------
+     *
+     *      same email
+     *
+     * The first owner of an email is stored in emailToFirstAccount.
+     * Seeing the same email again means:
+     *
+     *      union(previousAccountIndex, accountIndex)
+     *
+     * DELTA #2 — WHAT DOES ONE COMPONENT MEAN?
+     * -----------------------------------------
+     *
+     *      one MergedAccount
+     *      = one name + all unique sorted emails
+     *
+     * VISUAL MEANING OF ROOT
+     * ----------------------
+     *
+     * Suppose shared emails create:
+     *
+     *      0 ------- 1 ------- 2
+     *
+     *      3
+     *
+     * DSU may produce:
+     *
+     *      find(0).id = 0
+     *      find(1).id = 0
+     *      find(2).id = 0
+     *      find(3).id = 3
+     *
+     * Keep these separate:
+     *
+     *      root node = DSUNode representative returned by find()
+     *      root id   = find(node).id, used as an integer grouping key
+     *
+     *      0 --\
+     *      1 ----> root id 0 -> one MergedAccount
+     *      2 --/
+     *
+     *      3 ------> root id 3 -> another MergedAccount
+     *
+     * The representative is not a special business account. Its id is merely
+     * the stable key for the component bucket.
+     */
+
+    /**
+     * =========================================================================
+     * 7. TRANSFER MAP — LEARN THE ENGINE ONCE, STORE ONLY THE DELTA
+     * =========================================================================
+     *
+     * STABLE DSU ENGINE:
+     *
+     *      UnionFind(numberOfNodes)
+     *      find(node)
+     *      union(a, b)
+     *      components()
+     *
+     * Problem                 Relationship DELTA        Result DELTA
+     * -------------------------------------------------------------------------
+     * Accounts Merge          shared email              root id -> emails
+     * Redundant Connection    explicit edge             failed union -> edge
+     * Equality Equations      a == b                    a != b + same root -> false
+     * Network Connected       cable edge                components - 1
+     * Smallest String Swaps   allowed index pair        root id -> characters
+     * Graph Valid Tree        explicit edge             failed union -> cycle
+     *
+     * CROSSOVER PROBLEMS:
+     *
+     *      Number of Islands   -> DFS/BFS is simpler for the static grid
+     *      Number of Provinces -> DFS/BFS is simpler for the static matrix
+     *
+     * DSU is still a valid transfer solution for both, but do not force the
+     * engine when direct traversal is easier to reconstruct.
+     *
+     * MEMORY RULE:
+     *
+     *      SAME = DSU engine
+     *      DELTA #1 = what creates a relationship?
+     *      DELTA #2 = what does the resulting component mean?
+     */
+
+    /**
+     * =========================================================================
+     * 8. PRIMARY DRY RUN
+     * =========================================================================
+     *
+     * Input:
+     *
+     *      0 -> [a, b]
+     *      1 -> [b, c]
+     *      2 -> [c, d]
+     *
+     * emailToFirstAccount:
+     *
+     *      a -> 0
+     *      b -> 0
+     *
+     * Account 1 sees b again:
+     *
+     *      union(0, 1)
+     *
+     * Account 1 introduces c:
+     *
+     *      c -> 1
+     *
+     * Account 2 sees c again:
+     *
+     *      union(1, 2)
+     *
+     * Final:
+     *
+     *      find(0) == find(1) == find(2)
+     *
+     * Their returned DSUNode representative is the same object.
+     * Its id is the grouping key used to build one MergedAccount.
+     */
+
+    /**
+     * =========================================================================
+     * 9. COMPLEXITY — DERIVED
+     * =========================================================================
+     *
+     * Let:
+     *
+     *      A = number of accounts
+     *      T = total email occurrences
+     *      E = number of unique emails
+     *
+     * Connectivity pass:
+     * Every email occurrence is processed once and repeated emails trigger union.
+     *
+     *      O(T * alpha(A))
+     *
+     * Grouping pass:
+     * Every email occurrence is inserted into a TreeSet.
+     *
+     *      O(T log E)
+     *
+     * Overall:
+     *
+     *      Time  = O(T * alpha(A) + T log E)
+     *      Space = O(A + E)
+     */
+
+    /**
+     * =========================================================================
+     * 10. GRAPH / DFS ALTERNATIVE — PATTERN BOUNDARY
+     * =========================================================================
+     *
+     * DFS can also solve Accounts Merge after an explicit graph is built.
+     *
+     *      DFS -> explore an existing component
+     *      DSU -> merge/maintain component membership as relationships appear
+     *
+     * Visual component:
+     *
+     *          b           c
+     *      0 ------- 1 ------- 2
+     *
+     * DFS physically walks 0 -> 1 -> 2.
+     * DSU discovers b and c and performs union(0,1), union(1,2).
+     */
+    static class GraphAlternative {
 
         public List<List<String>> accountsMerge(List<List<String>> accounts) {
 
@@ -763,796 +795,1068 @@ public class AccountsMerge {
                 return Collections.emptyList();
             }
 
-            UnionFind unionFind = new UnionFind(accounts.size());
+            Map<String, List<String>> graph = new HashMap<>();
+            Map<String, String> emailToName = new HashMap<>();
 
-            Map<String, Integer> emailToFirstAccount = new HashMap<>();
+            for (List<String> rawAccount : accounts) {
 
-            // -------------------------------------------------------------
-            // Step 1
-            //
-            // Connect accounts whenever an email repeats.
-            // -------------------------------------------------------------
-            for (int accountIndex = 0; accountIndex < accounts.size(); accountIndex++) {
+                String name = rawAccount.get(0);
+                String firstEmail = rawAccount.get(1);
 
-                List<String> account = accounts.get(accountIndex);
+                graph.putIfAbsent(firstEmail, new ArrayList<>());
 
-                for (int emailIndex = 1; emailIndex < account.size(); emailIndex++) {
+                for (int emailIndex = 1; emailIndex < rawAccount.size(); emailIndex++) {
 
-                    String email = account.get(emailIndex);
+                    String email = rawAccount.get(emailIndex);
+                    emailToName.put(email, name);
+                    graph.putIfAbsent(email, new ArrayList<>());
 
-                    Integer previous = emailToFirstAccount.putIfAbsent(email, accountIndex);
-
-                    if (previous != null) {
-
-                        // Shared identifier discovered.
-                        unionFind.union(previous, accountIndex);
+                    if (!email.equals(firstEmail)) {
+                        graph.get(firstEmail).add(email);
+                        graph.get(email).add(firstEmail);
                     }
                 }
             }
 
-            // -------------------------------------------------------------
-            // Step 2
-            //
-            // Every unique email is processed exactly once.
-            // -------------------------------------------------------------
-            Map<Integer, TreeSet<String>> rootToEmails = new HashMap<>();
-
-            for (Map.Entry<String, Integer> entry : emailToFirstAccount.entrySet()) {
-
-                int root = unionFind.find(entry.getValue());
-
-                rootToEmails
-                        .computeIfAbsent(root, ignored -> new TreeSet<>())
-                        .add(entry.getKey());
-            }
-
+            Set<String> visited = new HashSet<>();
             List<List<String>> answer = new ArrayList<>();
 
-            for (Map.Entry<Integer, TreeSet<String>> entry : rootToEmails.entrySet()) {
+            for (String email : graph.keySet()) {
 
-                LinkedList<String> merged = new LinkedList<>();
+                if (visited.contains(email)) {
+                    continue;
+                }
 
-                merged.add(accounts.get(entry.getKey()).get(0));
+                List<String> componentEmails = new ArrayList<>();
+                dfs(email, graph, visited, componentEmails);
+                Collections.sort(componentEmails);
 
-                merged.addAll(entry.getValue());
-
-                answer.add(merged);
+                List<String> mergedAccount = new ArrayList<>();
+                mergedAccount.add(emailToName.get(email));
+                mergedAccount.addAll(componentEmails);
+                answer.add(mergedAccount);
             }
 
             return answer;
         }
-    }
 
-/**
- * =========================================================================
- * 🟣 INTERVIEW ARTICULATION
- * =========================================================================
- *
- * What is the invariant?
- * ----------------------
- *
- * Every connected person is represented by exactly one DSU root.
- *
- * Every account belonging to that person eventually compresses to the same
- * representative.
- *
- * -------------------------------------------------------------------------
- * Why is the discard rule safe?
- * -------------------------------------------------------------------------
- *
- * We never discard information.
- *
- * Whenever a repeated email is discovered,
- * we merge the two connected components.
- *
- * Since connectivity is transitive,
- * all future accounts automatically inherit that relationship.
- *
- * -------------------------------------------------------------------------
- * Why is the solution correct?
- * -------------------------------------------------------------------------
- *
- * Every shared email introduces one graph edge.
- *
- * DSU computes connected components over all such edges.
- *
- * Every connected component corresponds to exactly one real person.
- *
- * Collecting emails by DSU representative therefore merges precisely the
- * correct accounts.
- *
- * -------------------------------------------------------------------------
- * Why does the algorithm terminate?
- * -------------------------------------------------------------------------
- *
- * Every account is scanned once.
- *
- * Every email is processed once while building unions.
- *
- * Every account contributes once while grouping.
- *
- * No loop revisits unfinished work indefinitely.
- *
- * -------------------------------------------------------------------------
- * Can this be done in-place?
- * -------------------------------------------------------------------------
- *
- * No.
- *
- * New structures are fundamentally required:
- *
- * • email -> account map
- * • DSU arrays
- * • merged email sets
- *
- * -------------------------------------------------------------------------
- * Is streaming possible?
- * -------------------------------------------------------------------------
- *
- * Partially.
- *
- * Online union operations are naturally streaming.
- *
- * Final output cannot be streamed because lexicographically sorted emails
- * require all emails of each component before emission.
- *
- * -------------------------------------------------------------------------
- * When should DSU NOT be chosen?
- * -------------------------------------------------------------------------
- *
- * When relationships are directional.
- *
- * When shortest paths are required.
- *
- * When deletions must dynamically split components.
- *
- * When tree ancestry rather than connectivity is the objective.
- *
- * =========================================================================
- * 🎯 INTERVIEW RECALL SHEET
- * =========================================================================
- *
- * Trigger
- * -------
- * Merge objects connected through shared identifiers.
- *
- * Pattern
- * -------
- * Union Find.
- *
- * Search Space
- * ------------
- * Accounts.
- *
- * State
- * -----
- * Connected component representative.
- *
- * Transition
- * ----------
- * Repeated email
- * ->
- * union(previous,current)
- *
- * Discard Rule
- * ------------
- * None.
- *
- * Connectivity only expands.
- *
- * Common Trap
- * -----------
- * Merge by names instead of emails.
- *
- * Edge Cases
- * ----------
- * Single account.
- *
- * Duplicate names.
- *
- * One huge connected component.
- *
- * Accounts containing only one email.
- *
- * One-Liner
- * ---------
- * Shared email means shared DSU representative.
- *
- * Re-Derivation Cue
- * -----------------
- * Email is the edge.
- *
- * DSU computes connected components.
- *
- * Group by root.
- *
- * =========================================================================
- * 🔄 VARIATIONS & TWEAKS
- * =========================================================================
- *
- * Variation 1
- * -----------
- * Email nodes instead of account nodes.
- *
- * Invariant
- * ---------
- * Every connected email belongs to one owner.
- *
- * Works?
- * ------
- * Yes.
- *
- * Frequently used in graph formulations.
- *
- * Variation 2
- * -----------
- * DFS over explicit graph.
- *
- * Invariant
- * ---------
- * One DFS visits one connected component.
- *
- * Works?
- * ------
- * Yes.
- *
- * Higher graph construction overhead.
- *
- * Variation 3
- * -----------
- * Union by email string directly.
- *
- * Works?
- * ------
- * Yes.
- *
- * Requires mapping every email to an integer id.
- *
- * Often used when accounts are extremely large.
- *
- * Variation 4
- * -----------
- * Remove path compression.
- *
- * Correct?
- * --------
- * Yes.
- *
- * Efficient?
- * ----------
- * No.
- *
- * Trees may become tall.
- *
- * Continue with the remaining sections and tests.
- */
+        private void dfs(
+                String email,
+                Map<String, List<String>> graph,
+                Set<String> visited,
+                List<String> componentEmails) {
+
+            visited.add(email);
+            componentEmails.add(email);
+
+            for (String neighbor : graph.get(email)) {
+                if (!visited.contains(neighbor)) {
+                    dfs(neighbor, graph, visited, componentEmails);
+                }
+            }
+        }
+    }
 
     /**
      * =========================================================================
-     * 🧠 MASTERY CHECKLIST
+     * 11. GRAPH / DSU FAMILY — SAME FOUNDATION, STORE ONLY THE DELTA
      * =========================================================================
      *
-     * Q. What is the invariant?
-     * -------------------------
-     * Every connected person has exactly one DSU representative.
+     * IMPORTANT:
      *
-     * -------------------------------------------------------------------------
-     * Q. What is the search space?
-     * -------------------------------------------------------------------------
-     * Account indices.
+     *      Do NOT force DSU onto every connected-components problem.
      *
-     * -------------------------------------------------------------------------
-     * Q. What defines a transition?
-     * -------------------------------------------------------------------------
-     * Encountering an already-seen email.
+     * Reuse happens at two levels:
      *
-     * -------------------------------------------------------------------------
-     * Q. What is the merge rule?
-     * -------------------------------------------------------------------------
-     * union(currentAccount, firstAccountOwningEmail)
+     *      LEVEL 1 — Graph foundation
+     *          node
+     *          relationship / neighbor
+     *          connected component
      *
-     * -------------------------------------------------------------------------
-     * Q. Why is one previous owner sufficient?
-     * -------------------------------------------------------------------------
-     * DSU preserves transitive connectivity.
+     *      LEVEL 2 — Algorithm engine
+     *          DFS/BFS traversal OR Union Find
      *
-     * If
-     *
-     * A ↔ B
-     * B ↔ C
-     *
-     * then
-     *
-     * A, B and C eventually obtain the same representative.
-     *
-     * -------------------------------------------------------------------------
-     * Q. Why doesn't merging by names work?
-     * -------------------------------------------------------------------------
-     * Names are not unique identifiers.
-     *
-     * Emails are.
-     *
-     * -------------------------------------------------------------------------
-     * Q. Why group after every union?
-     * -------------------------------------------------------------------------
-     * Parent pointers may still be intermediate.
-     *
-     * Calling find() guarantees the true representative.
-     *
-     * -------------------------------------------------------------------------
-     * Q. Which operation dominates complexity?
-     * -------------------------------------------------------------------------
-     * Sorting emails inside each merged component.
-     *
-     * DSU operations are almost constant:
-     *
-     * O(α(N))
-     *
-     * -------------------------------------------------------------------------
-     * Q. Edge cases?
-     * -------------------------------------------------------------------------
-     *
-     * ✓ Empty input
-     *
-     * ✓ One account
-     *
-     * ✓ Duplicate names
-     *
-     * ✓ One email per account
-     *
-     * ✓ Entire input forms one component
-     *
-     * ✓ Completely disconnected accounts
-     *
-     * -------------------------------------------------------------------------
-     * Q. Debugging checklist
-     * -------------------------------------------------------------------------
-     *
-     * □ Did every repeated email call union()?
-     *
-     * □ Did grouping use find() instead of parent[] directly?
-     *
-     * □ Is email uniqueness preserved?
-     *
-     * □ Are emails sorted?
-     *
-     * □ Is account name taken from the representative?
-     *
-     * □ Are duplicate emails eliminated?
-     *
-     * -------------------------------------------------------------------------
-     * Q. Pattern boundary
-     * -------------------------------------------------------------------------
-     *
-     * Use DSU whenever:
-     *
-     *      Connectivity evolves while reading relationships.
-     *
-     * Avoid DSU whenever:
-     *
-     *      Graph traversal order matters.
-     *
-     * =========================================================================
-     * ⚫ PATTERN MAPPING
-     * =========================================================================
-     *
-     * Similar Problems
-     * ----------------
-     *
-     * Number of Provinces
-     *
-     * Redundant Connection
-     *
-     * Graph Valid Tree
-     *
-     * Kruskal Minimum Spanning Tree
-     *
-     * Smallest String With Swaps
-     *
-     * Similar String Groups
-     *
-     * Satisfiability of Equality Equations
-     *
-     * Most Stones Removed
-     *
-     * =========================================================================
-     * FORENSIC DEBUGGING GUIDE
-     * =========================================================================
-     *
-     * Symptom
-     * -------
-     * Same person appears twice.
-     *
-     * Likely Cause
-     * ------------
-     * Grouping performed before find().
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Symptom
-     * -------
-     * Emails duplicated.
-     *
-     * Likely Cause
-     * ------------
-     * HashSet/TreeSet not used.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Symptom
-     * -------
-     * Emails unsorted.
-     *
-     * Likely Cause
-     * ------------
-     * TreeSet omitted.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Symptom
-     * -------
-     * Wrong merges.
-     *
-     * Likely Cause
-     * ------------
-     * Compared account names instead of emails.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Symptom
-     * -------
-     * Time unexpectedly high.
-     *
-     * Likely Cause
-     * ------------
-     * Missing path compression or union-by-size.
-     *
-     * =========================================================================
-     * IMPLEMENTATION RECONSTRUCTION
-     * =========================================================================
-     *
-     * Remember only these nine mechanical steps:
-     *
-     * 1.
-     * Create DSU.
-     *
-     * 2.
-     * Create email -> firstAccount map.
-     *
-     * 3.
-     * Scan every account.
-     *
-     * 4.
-     * First occurrence?
-     *
-     *      store.
-     *
-     * 5.
-     * Repeated occurrence?
-     *
-     *      union.
-     *
-     * 6.
-     * Scan accounts again.
-     *
-     * 7.
-     * Find representative.
-     *
-     * 8.
-     * Insert emails into TreeSet.
-     *
-     * 9.
-     * Convert buckets into answer.
-     *
-     * =========================================================================
-     * COMPLEXITY ANALYSIS
-     * =========================================================================
-     *
-     * Let
-     *
-     * A = number of accounts
-     *
-     * E = total number of unique emails
-     *
-     * T = total email occurrences
-     *
-     * Union-Find
-     * ----------
-     *
-     * Every union/find:
-     *
-     * O(α(A))
-     *
-     * Total:
-     *
-     * O(T α(A))
-     *
-     * Grouping
-     * --------
-     *
-     * O(T)
-     *
-     * Sorting
-     * -------
-     *
-     * TreeSet insertion:
-     *
-     * O(log E)
-     *
-     * Overall
-     * -------
-     *
-     * Time:
-     *
-     * O(T α(A) + T log E)
-     *
-     * Space:
-     *
-     * O(E + A)
-     *
-     * =========================================================================
-     * COMMON INTERVIEW FOLLOW-UPS
-     * =========================================================================
-     *
-     * Q.
-     * Could DFS replace DSU?
-     *
-     * A.
-     * Yes.
-     *
-     * Explicit graph construction is required first.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Q.
-     * Why not merge immediately into one answer list?
-     *
-     * A.
-     * The representative is not known until all unions finish.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Q.
-     * Why TreeSet?
-     *
-     * A.
-     *
-     * It simultaneously guarantees:
-     *
-     * • uniqueness
-     *
-     * • lexicographic ordering
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Q.
-     * Is union-by-rank mandatory?
-     *
-     * A.
-     *
-     * Correctness:
-     * No.
-     *
-     * Performance:
-     * Strongly recommended.
-     *
-     * -------------------------------------------------------------------------
-     *
-     * Q.
-     * Why is path compression safe?
-     *
-     * A.
-     *
-     * It changes only internal parent pointers.
-     *
-     * Connected components remain identical.
-     *
-     * Therefore correctness is preserved.
-     *
-     * =========================================================================
-     * MEMORY PEG
-     * =========================================================================
-     *
-     * Shared Email
-     *      ↓
-     * Union
-     *      ↓
-     * Representative
-     *      ↓
-     * Group
-     *      ↓
-     * Sort
-     *      ↓
-     * Answer
+     * If two problems genuinely use the same engine, reuse the boilerplate.
+     * If the natural engine changes, keep the mapping but store the delta.
      */
 
+    /**
+     * -------------------------------------------------------------------------
+     * CROSSOVER 1 — NUMBER OF ISLANDS
+     * -------------------------------------------------------------------------
+     *
+     * PRIMARY:
+     *      DFS/BFS Connected Components on a Grid
+     *
+     * IMPORTANT TERMINOLOGY:
+     *
+     *      "Flood fill" is NOT a separate algorithm to memorize.
+     *
+     *      It is simply the common name for DFS/BFS when traversal spreads
+     *      through neighboring cells in a grid/image.
+     *
+     * SAME BASE TEMPLATE AS NUMBER OF PROVINCES:
+     *
+     *      for every node:
+     *          if unvisited:
+     *              components++
+     *              dfs(node)
+     *
+     * ONLY THE NEIGHBOR GENERATOR CHANGES:
+     *
+     *      Number of Islands
+     *          node      = grid cell
+     *          neighbors = up / down / left / right LAND cells
+     *
+     *      Number of Provinces
+     *          node      = city
+     *          neighbors = every city j where isConnected[city][j] == 1
+     *
+     * DFS COMPLEXITY:
+     *
+     *      Time  = O(R * C)
+     *
+     *      There are R*C cells and every cell has at most four neighbors.
+     *
+     *      Space = O(R * C) worst-case recursion stack
+     *
+     *      If we mutate land '1' -> water '0', the grid itself stores visited
+     *      state, so no separate visited[][] is required.
+     *
+     * DSU ALTERNATIVE:
+     *
+     *      Time  = O(R * C * alpha(R*C))
+     *      Space = O(R * C)
+     *
+     * TRADE-OFF:
+     *
+     *      DFS/BFS
+     *          + simplest reconstruction for the static grid
+     *          + truly linear traversal
+     *          + same connected-components template as Provinces
+     *          + no Union Find / DSU machinery
+     *
+     *      DSU
+     *          + useful if land/connectivity changes dynamically
+     *          + reusable for Number of Islands II
+     *          - more machinery for the static problem
+     *
+     * GOLD CHOICE:
+     *
+     *      Static Number of Islands -> DFS/BFS primary.
+     *      Dynamic Islands          -> DSU becomes much more attractive.
+     */
+
+    static class NumberOfIslandsDFS {
+
+        int numIslands(char[][] grid) {
+
+            int islands = 0;
+
+            for (int row = 0; row < grid.length; row++) {
+                for (int col = 0; col < grid[0].length; col++) {
+
+                    if (grid[row][col] == '1') {
+                        islands++;
+                        dfs(grid, row, col);
+                    }
+                }
+            }
+
+            return islands;
+        }
+
+        private void dfs(
+                char[][] grid,
+                int row,
+                int col) {
+
+            if (row < 0 || row >= grid.length ||
+                col < 0 || col >= grid[0].length ||
+                grid[row][col] != '1') {
+
+                return;
+            }
+
+            grid[row][col] = '0';
+
+            dfs(grid, row - 1, col);
+            dfs(grid, row + 1, col);
+            dfs(grid, row, col - 1);
+            dfs(grid, row, col + 1);
+        }
+    }
+
+    static class NumberOfIslandsDSU {
+
+        int numIslands(char[][] grid) {
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            UnionFind unionFind = new UnionFind(rows * cols);
+
+            int landComponents = 0;
+
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    if (grid[row][col] != '1') {
+                        continue;
+                    }
+
+                    landComponents++;
+
+                    int current = row * cols + col;
+
+                    /*
+                     * Only connect UP and LEFT.
+                     *
+                     * DOWN and RIGHT will be handled when those cells become
+                     * the current cell, so this avoids duplicate work.
+                     */
+                    if (row > 0 && grid[row - 1][col] == '1') {
+
+                        int up = (row - 1) * cols + col;
+
+                        if (unionFind.union(current, up)) {
+                            landComponents--;
+                        }
+                    }
+
+                    if (col > 0 && grid[row][col - 1] == '1') {
+
+                        int left = row * cols + (col - 1);
+
+                        if (unionFind.union(current, left)) {
+                            landComponents--;
+                        }
+                    }
+                }
+            }
+
+            return landComponents;
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * CROSSOVER 2 — NUMBER OF PROVINCES
+     * -------------------------------------------------------------------------
+     *
+     * PRIMARY:
+     *      DFS/BFS Connected Components
+     *
+     * WHY PRIMARY?
+     *      The adjacency matrix already exposes every city's neighbors.
+     *      The question is directly:
+     *
+     *          "How many connected components exist?"
+     *
+     * DFS:
+     *
+     *      Time  = O(N^2)
+     *
+     *      Why?
+     *      In the worst case we scan one full matrix row for every city.
+     *
+     *      Space = O(N)
+     *
+     *      visited[] + at most O(N) recursion depth.
+     *
+     * DSU:
+     *
+     *      Time  = O(N^2 * alpha(N))
+     *              approximately O(N^2) in practice
+     *
+     *      Space = O(N)
+     *
+     * TRADE-OFF:
+     *
+     *      DFS/BFS
+     *          + simpler
+     *          + directly matches "consume one component"
+     *
+     *      DSU
+     *          + same reusable union/find engine
+     *          + useful if connectivity relationships arrive incrementally
+     *          - slightly more machinery for this static matrix
+     *
+     * GOLD CHOICE:
+     *
+     *      DFS/BFS primary.
+     *      DSU retained as the transfer solution.
+     */
+
+    static class NumberOfProvincesDFS {
+
+        int findCircleNum(int[][] isConnected) {
+
+            boolean[] visited = new boolean[isConnected.length];
+            int provinces = 0;
+
+            for (int city = 0; city < isConnected.length; city++) {
+
+                if (!visited[city]) {
+                    provinces++;
+                    dfs(city, isConnected, visited);
+                }
+            }
+
+            return provinces;
+        }
+
+        private void dfs(
+                int city,
+                int[][] isConnected,
+                boolean[] visited) {
+
+            visited[city] = true;
+
+            for (int otherCity = 0;
+                 otherCity < isConnected.length;
+                 otherCity++) {
+
+                if (isConnected[city][otherCity] == 1 &&
+                    !visited[otherCity]) {
+
+                    dfs(otherCity, isConnected, visited);
+                }
+            }
+        }
+    }
+
+    static class NumberOfProvincesDSU {
+
+        int findCircleNum(int[][] isConnected) {
+
+            UnionFind unionFind = new UnionFind(isConnected.length);
+
+            connectCities(isConnected, unionFind);
+
+            return unionFind.components();
+        }
+
+        private void connectCities(
+                int[][] isConnected,
+                UnionFind unionFind) {
+
+            for (int city = 0; city < isConnected.length; city++) {
+                for (int otherCity = city + 1;
+                     otherCity < isConnected.length;
+                     otherCity++) {
+
+                    if (isConnected[city][otherCity] == 1) {
+                        unionFind.union(city, otherCity);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * PROBLEM 2 — REDUNDANT CONNECTION
+     * -------------------------------------------------------------------------
+     *
+     * SAME:
+     *      create DSU
+     *      process relationships
+     *
+     * DELTA:
+     *      relationship = explicit edge [a,b]
+     *      result condition = union(a,b) returns false
+     *
+     * Why false?
+     * The endpoints were already in the same component, so this edge closes a
+     * cycle and is redundant.
+     */
+    static class RedundantConnection {
+
+        int[] findRedundantConnection(int[][] edges) {
+
+            UnionFind unionFind = new UnionFind(edges.length + 1);
+
+            return findFirstEdgeThatCannotMerge(edges, unionFind);
+        }
+
+        private int[] findFirstEdgeThatCannotMerge(
+                int[][] edges,
+                UnionFind unionFind) {
+
+            for (int[] edge : edges) {
+
+                int nodeA = edge[0];
+                int nodeB = edge[1];
+
+                if (!unionFind.union(nodeA, nodeB)) {
+                    return edge;
+                }
+            }
+
+            return new int[0];
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * PROBLEM 3 — SATISFIABILITY OF EQUALITY EQUATIONS
+     * -------------------------------------------------------------------------
+     *
+     * SAME:
+     *      create DSU
+     *      connect relationships
+     *      inspect roots
+     *
+     * DELTA #1:
+     *      relationship = a == b
+     *
+     * DELTA #2:
+     *      contradiction = a != b but find(a) == find(b)
+     *
+     * find() returns the canonical DSUNode representative, so == here compares
+     * representative identity intentionally.
+     */
+    static class EqualityEquations {
+
+        boolean equationsPossible(String[] equations) {
+
+            UnionFind unionFind = new UnionFind(26);
+
+            connectEqualVariables(equations, unionFind);
+
+            return noInequalityContradiction(equations, unionFind);
+        }
+
+        private void connectEqualVariables(
+                String[] equations,
+                UnionFind unionFind) {
+
+            for (String equation : equations) {
+
+                if (equation.charAt(1) == '=') {
+                    int variableA = equation.charAt(0) - 'a';
+                    int variableB = equation.charAt(3) - 'a';
+
+                    unionFind.union(variableA, variableB);
+                }
+            }
+        }
+
+        private boolean noInequalityContradiction(
+                String[] equations,
+                UnionFind unionFind) {
+
+            for (String equation : equations) {
+
+                if (equation.charAt(1) == '!') {
+                    int variableA = equation.charAt(0) - 'a';
+                    int variableB = equation.charAt(3) - 'a';
+
+                    if (unionFind.find(variableA) == unionFind.find(variableB)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * PROBLEM 4 — NUMBER OF OPERATIONS TO MAKE NETWORK CONNECTED
+     * -------------------------------------------------------------------------
+     *
+     * SAME:
+     *      create DSU
+     *      union explicit relationships
+     *      use final component count
+     *
+     * DELTA #1:
+     *      relationship = cable [computerA, computerB]
+     *
+     * DELTA #2:
+     *      if fewer than n - 1 cables exist, impossible
+     *      otherwise answer = components - 1
+     *
+     * DSU:
+     *      Time  = O(E * alpha(N))
+     *      Space = O(N)
+     *
+     * DFS/BFS alternative:
+     *      Time  = O(N + E)
+     *      Space = O(N + E) because an adjacency list must be built
+     *
+     * GOLD CHOICE:
+     *      DSU is a very strong primary here because the input is already an
+     *      edge list and the final answer is directly component-count based.
+     */
+    static class NetworkConnected {
+
+        int makeConnected(int n, int[][] connections) {
+
+            if (connections.length < n - 1) {
+                return -1;
+            }
+
+            UnionFind unionFind = new UnionFind(n);
+
+            connectComputers(connections, unionFind);
+
+            return unionFind.components() - 1;
+        }
+
+        private void connectComputers(
+                int[][] connections,
+                UnionFind unionFind) {
+
+            for (int[] connection : connections) {
+                unionFind.union(connection[0], connection[1]);
+            }
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * PROBLEM 5 — SMALLEST STRING WITH SWAPS
+     * -------------------------------------------------------------------------
+     *
+     * SAME:
+     *      create DSU
+     *      union related nodes
+     *      group by root
+     *
+     * DELTA #1:
+     *      relationship = allowed swap pair [indexA, indexB]
+     *
+     * DELTA #2:
+     *      one component means its characters can be rearranged among all indices
+     *      in that component; assign the smallest available characters first.
+     */
+    static class SmallestStringWithSwaps {
+
+        String smallestStringWithSwaps(
+                String s,
+                List<List<Integer>> pairs) {
+
+            UnionFind unionFind = new UnionFind(s.length());
+
+            connectSwapPairs(pairs, unionFind);
+
+            return buildSmallestString(s, unionFind);
+        }
+
+        private void connectSwapPairs(
+                List<List<Integer>> pairs,
+                UnionFind unionFind) {
+
+            for (List<Integer> pair : pairs) {
+                int indexA = pair.get(0);
+                int indexB = pair.get(1);
+
+                unionFind.union(indexA, indexB);
+            }
+        }
+
+        private String buildSmallestString(
+                String s,
+                UnionFind unionFind) {
+
+            Map<Integer, PriorityQueue<Character>> rootToCharacters =
+                    new HashMap<>();
+
+            for (int index = 0; index < s.length(); index++) {
+
+                int rootId = unionFind.find(index).id;
+                PriorityQueue<Character> characters = rootToCharacters.get(rootId);
+
+                if (characters == null) {
+                    characters = new PriorityQueue<>();
+                    rootToCharacters.put(rootId, characters);
+                }
+
+                characters.offer(s.charAt(index));
+            }
+
+            StringBuilder answer = new StringBuilder();
+
+            for (int index = 0; index < s.length(); index++) {
+                int rootId = unionFind.find(index).id;
+                answer.append(rootToCharacters.get(rootId).poll());
+            }
+
+            return answer.toString();
+        }
+    }
+
+    /**
+     * -------------------------------------------------------------------------
+     * CROSSOVER 3 — GRAPH VALID TREE
+     * -------------------------------------------------------------------------
+     *
+     * Both DFS and DSU are strong solutions here.
+     *
+     * A valid tree requires:
+     *
+     *      1. exactly n - 1 edges
+     *      2. no cycle
+     *
+     * DFS:
+     *
+     *      Time  = O(N + E)
+     *      Space = O(N + E)
+     *
+     *      We build an adjacency list, then traverse while tracking the parent.
+     *
+     * DSU:
+     *
+     *      Time  = O(E * alpha(N))
+     *      Space = O(N)
+     *
+     *      No adjacency list is required because the input already gives edges.
+     *
+     * TRADE-OFF:
+     *
+     *      DFS
+     *          + directly expresses graph traversal and cycle detection
+     *          - must build adjacency list
+     *
+     *      DSU
+     *          + extremely compact for edge-list input
+     *          + lower extra space here
+     *          + failed union directly means cycle
+     *
+     * GOLD CHOICE:
+     *
+     *      Both are interview-primary quality.
+     *      DSU is arguably cleaner when the input is already an edge list.
+     */
+
+    static class GraphValidTreeDFS {
+
+        boolean validTree(int n, int[][] edges) {
+
+            if (edges.length != n - 1) {
+                return false;
+            }
+
+            List<List<Integer>> graph = new ArrayList<>();
+
+            for (int node = 0; node < n; node++) {
+                graph.add(new ArrayList<>());
+            }
+
+            for (int[] edge : edges) {
+                graph.get(edge[0]).add(edge[1]);
+                graph.get(edge[1]).add(edge[0]);
+            }
+
+            boolean[] visited = new boolean[n];
+
+            if (hasCycle(0, -1, graph, visited)) {
+                return false;
+            }
+
+            for (boolean nodeVisited : visited) {
+                if (!nodeVisited) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private boolean hasCycle(
+                int node,
+                int parent,
+                List<List<Integer>> graph,
+                boolean[] visited) {
+
+            visited[node] = true;
+
+            for (int neighbor : graph.get(node)) {
+
+                if (neighbor == parent) {
+                    continue;
+                }
+
+                if (visited[neighbor]) {
+                    return true;
+                }
+
+                if (hasCycle(neighbor, node, graph, visited)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    static class GraphValidTreeDSU {
+
+        boolean validTree(int n, int[][] edges) {
+
+            if (edges.length != n - 1) {
+                return false;
+            }
+
+            UnionFind unionFind = new UnionFind(n);
+
+            for (int[] edge : edges) {
+
+                if (!unionFind.union(edge[0], edge[1])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    /**
+     * =========================================================================
+     * 12. GRAPH FAMILY BOUNDARY — DO NOT FORCE DSU EVERYWHERE
+     * =========================================================================
+     *
+     * Number of Islands
+     *      base algorithm = DFS/BFS connected components
+     *      graph representation = grid
+     *      delta = neighbors come from up/down/left/right LAND cells
+     *      "flood fill" = only a nickname for this grid DFS/BFS
+     *
+     * Number of Provinces
+     *      base algorithm = DFS/BFS connected components
+     *      graph representation = adjacency matrix
+     *      delta = neighbors come from isConnected[city][otherCity] == 1
+     *      DSU is also clean, but traversal is the simpler primary
+     *
+     * Accounts Merge
+     *      base idea = connected components
+     *      delta = relationships discovered through shared identifiers
+     *      primary = DSU
+     *
+     * Pacific Atlantic
+     *      NOT component grouping
+     *      base machinery = DFS/BFS
+     *      delta = reverse reachability from two source sets + intersection
+     *
+     * Bipartite
+     *      NOT component grouping
+     *      base machinery = DFS/BFS
+     *      delta = visited becomes RED/BLUE coloring + conflict checking
+     *
+     * SHARED DFS TEMPLATE:
+     *
+     *      Number of Islands
+     *      Number of Provinces
+     *
+     *      both reduce to:
+     *
+     *          for every node:
+     *              if unvisited:
+     *                  components++
+     *                  dfs(node)
+     *
+     *      Only neighbor(node) changes.
+     *
+     * PACIFIC ATLANTIC IS DIFFERENT:
+     *
+     *      We are NOT consuming disjoint components.
+     *      We are asking which cells are REACHABLE from two source sets.
+     *
+     *      Pacific borders  -> reverse DFS/BFS uphill -> pacificReachable
+     *      Atlantic borders -> reverse DFS/BFS uphill -> atlanticReachable
+     *
+     *      answer = intersection of the two reachable sets
+     *
+     * Fast recognition:
+     *
+     *      "How many groups/components?"
+     *          -> connected-components DFS/BFS or DSU
+     *
+     *      "Can this node reach destination X?"
+     *          -> reachability
+     *
+     *      "Can this node reach A AND B?"
+     *          -> two reachability sets + intersection
+     */
+
+    /**
+     * =========================================================================
+     * 13. INTERVIEW RECALL SHEET
+     * =========================================================================
+     *
+     * BASE DSU TEMPLATE
+     * -----------------
+     *
+     *      UnionFind unionFind = new UnionFind(numberOfNodes);
+     *
+     *      // DELTA #1
+     *      discover relationship (a, b)
+     *      unionFind.union(a, b);
+     *
+     *      // DELTA #2
+     *      use find()/components()/union-return-value according to the problem.
+     *
+     * CLEAN-DESIGN LESSON WITHOUT LLD OVERHEAD
+     * ----------------------------------------
+     *
+     *      AccountEntry   = semantic input record
+     *      MergedAccount = mutable component accumulator
+     *      UnionFind     = stable reusable engine
+     *
+     *      connectAccountsBySharedEmail() = DELTA #1
+     *      buildMergedAccounts()           = DELTA #2
+     *
+     * Stable core + isolated delta resembles Open/Closed thinking:
+     * reuse the engine unchanged and extend only problem-specific behavior.
+     * No interfaces/factories/frameworks are needed for a DSA interview.
+     *
+     * Accounts Merge memory peg:
+     *
+     *      shared email
+     *          -> union owners
+     *          -> root
+     *          -> MergedAccount
+     *          -> sorted emails
+     *
+     * Union Find memory peg:
+     *
+     *      find      = representative DSUNode
+     *      find().id = integer component key when business logic needs one
+     *      union     = merge components
+     *      false     = already same component
+     *      components= how many groups remain?
+     */
+
+    /**
+     * =========================================================================
+     * 14. MAIN + SELF-VERIFYING TESTS
+     * =========================================================================
+     */
     public static void main(String[] args) {
-        OptimalSolution solver = new OptimalSolution();
 
         // ---------------------------------------------------------------------
-        // Happy Path
-        //
-        // Standard example from the problem statement.
+        // Union Find primitive — verify the reusable engine itself
         // ---------------------------------------------------------------------
-        List<List<String>> accounts1 = List.of(
+        UnionFind unionFind = new UnionFind(4);
+
+        assert unionFind.components() == 4;
+        assert unionFind.union(0, 1);
+        assert unionFind.union(1, 2);
+        assert !unionFind.union(0, 2);
+        assert unionFind.find(0) == unionFind.find(2);
+        assert unionFind.find(0).id == unionFind.find(2).id;
+        assert unionFind.components() == 2;
+
+        // ---------------------------------------------------------------------
+        // Accounts Merge
+        // ---------------------------------------------------------------------
+        ShortestSolution shortestAccountsSolver = new ShortestSolution();
+        OptimalSolution accountsSolver = new OptimalSolution();
+
+        List<List<String>> accounts = List.of(
                 List.of("John", "johnsmith@mail.com", "john_newyork@mail.com"),
                 List.of("John", "johnsmith@mail.com", "john00@mail.com"),
                 List.of("Mary", "mary@mail.com"),
                 List.of("John", "johnnybravo@mail.com")
         );
 
-        List<List<String>> result1 = solver.accountsMerge(accounts1);
+        List<List<String>> shortestMergedAccounts =
+                shortestAccountsSolver.accountsMerge(accounts);
 
-        // Three connected components should remain.
-        assert result1.size() == 3;
+        List<List<String>> mergedAccounts =
+                accountsSolver.accountsMerge(accounts);
 
-        boolean foundMergedJohn = false;
+        assert shortestMergedAccounts.size() == 3;
+        assert mergedAccounts.size() == 3;
 
-        for (List<String> account : result1) {
+        List<String> shortestMergedJohn = findAccountContaining(
+                shortestMergedAccounts,
+                "john00@mail.com");
 
-            if (account.contains("john00@mail.com")) {
+        assert shortestMergedJohn != null;
+        assert shortestMergedJohn.equals(List.of(
+                "John",
+                "john00@mail.com",
+                "john_newyork@mail.com",
+                "johnsmith@mail.com"
+        ));
 
-                foundMergedJohn = true;
+        List<String> mergedJohn = findAccountContaining(
+                mergedAccounts,
+                "john00@mail.com");
 
-                // Representative should contain all connected emails.
-                assert account.size() == 4;
+        assert mergedJohn != null;
+        assert mergedJohn.equals(List.of(
+                "John",
+                "john00@mail.com",
+                "john_newyork@mail.com",
+                "johnsmith@mail.com"
+        ));
 
-                assert account.get(0).equals("John");
-
-                assert account.contains("johnsmith@mail.com");
-                assert account.contains("john_newyork@mail.com");
-                assert account.contains("john00@mail.com");
-            }
-        }
-
-        assert foundMergedJohn;
-
-        // ---------------------------------------------------------------------
-        // Edge Case
-        //
-        // Single isolated account.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts2 = List.of(
-                List.of("Alice", "alice@mail.com")
-        );
-
-        List<List<String>> result2 = solver.accountsMerge(accounts2);
-
-        assert result2.size() == 1;
-        assert result2.get(0).get(0).equals("Alice");
-        assert result2.get(0).get(1).equals("alice@mail.com");
-
-        // ---------------------------------------------------------------------
-        // Duplicate names but different people.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts3 = List.of(
-                List.of("Bob", "bob1@mail.com"),
-                List.of("Bob", "bob2@mail.com")
-        );
-
-        List<List<String>> result3 = solver.accountsMerge(accounts3);
-
-        // Must NOT merge based on name.
-        assert result3.size() == 2;
-
-        // ---------------------------------------------------------------------
-        // Entire input becomes one connected component.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts4 = List.of(
-                List.of("A", "1", "2"),
-                List.of("A", "2", "3"),
-                List.of("A", "3", "4"),
-                List.of("A", "4", "5")
-        );
-
-        List<List<String>> result4 = solver.accountsMerge(accounts4);
-
-        assert result4.size() == 1;
-
-        List<String> merged = result4.get(0);
-
-        assert merged.size() == 6;
-
-        // ---------------------------------------------------------------------
-        // No shared emails anywhere.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts5 = List.of(
-                List.of("A", "a"),
-                List.of("B", "b"),
-                List.of("C", "c")
-        );
-
-        List<List<String>> result5 = solver.accountsMerge(accounts5);
-
-        assert result5.size() == 3;
-
-        // ---------------------------------------------------------------------
         // Transitive connectivity.
-        //
-        // A-B
-        // B-C
-        // therefore
-        // A-C
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts6 = List.of(
+        List<List<String>> transitiveAccounts = List.of(
                 List.of("User", "a", "b"),
                 List.of("User", "b", "c"),
                 List.of("User", "c", "d")
         );
 
-        List<List<String>> result6 = solver.accountsMerge(accounts6);
-
-        assert result6.size() == 1;
-
-        List<String> chain = result6.get(0);
-
-        assert chain.contains("a");
-        assert chain.contains("b");
-        assert chain.contains("c");
-        assert chain.contains("d");
-
-        // ---------------------------------------------------------------------
-        // Lexicographic ordering verification.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts7 = List.of(
-                List.of("Lex", "z@mail", "b@mail", "a@mail")
+        assert shortestAccountsSolver.accountsMerge(transitiveAccounts).equals(
+                List.of(List.of("User", "a", "b", "c", "d"))
         );
 
-        List<List<String>> result7 = solver.accountsMerge(accounts7);
-
-        List<String> ordered = result7.get(0);
-
-        assert ordered.get(1).equals("a@mail");
-        assert ordered.get(2).equals("b@mail");
-        assert ordered.get(3).equals("z@mail");
-
-        // ---------------------------------------------------------------------
-        // Duplicate email inside merged component.
-        //
-        // TreeSet should eliminate duplicates.
-        // ---------------------------------------------------------------------
-        List<List<String>> accounts8 = List.of(
-                List.of("P", "x", "y"),
-                List.of("P", "y", "z"),
-                List.of("P", "x")
+        assert accountsSolver.accountsMerge(transitiveAccounts).equals(
+                List.of(List.of("User", "a", "b", "c", "d"))
         );
 
-        List<List<String>> result8 = solver.accountsMerge(accounts8);
+        // ---------------------------------------------------------------------
+        // Number of Islands — primary DFS connected components vs DSU alternative
+        // ---------------------------------------------------------------------
+        NumberOfIslandsDFS islandsDFS =
+                new NumberOfIslandsDFS();
 
-        assert result8.size() == 1;
+        NumberOfIslandsDSU islandsDSU =
+                new NumberOfIslandsDSU();
 
-        List<String> deduplicated = result8.get(0);
+        char[][] islandGrid1 = {
+                {'1', '1', '0', '0'},
+                {'1', '0', '0', '1'},
+                {'0', '0', '1', '1'}
+        };
 
-        assert deduplicated.size() == 4;
+        char[][] islandGrid2 = {
+                {'1', '1', '0', '0'},
+                {'1', '0', '0', '1'},
+                {'0', '0', '1', '1'}
+        };
+
+        assert islandsDFS.numIslands(islandGrid1) == 2;
+        assert islandsDSU.numIslands(islandGrid2) == 2;
 
         // ---------------------------------------------------------------------
-        // Empty input.
+        // Number of Provinces — primary DFS vs DSU transfer solution
         // ---------------------------------------------------------------------
-        List<List<String>> result9 =
-                solver.accountsMerge(Collections.emptyList());
+        NumberOfProvincesDFS provincesDFS =
+                new NumberOfProvincesDFS();
 
-        assert result9.isEmpty();
+        NumberOfProvincesDSU provincesDSU =
+                new NumberOfProvincesDSU();
+
+        int[][] provinceGraph = {
+                {1, 1, 0},
+                {1, 1, 0},
+                {0, 0, 1}
+        };
+
+        assert provincesDFS.findCircleNum(provinceGraph) == 2;
+        assert provincesDSU.findCircleNum(provinceGraph) == 2;
 
         // ---------------------------------------------------------------------
-        // Verify alternative implementation produces equivalent component count.
+        // Redundant Connection
         // ---------------------------------------------------------------------
-        EmailCentricSolution alternative = new EmailCentricSolution();
+        RedundantConnection redundantSolver = new RedundantConnection();
 
-        List<List<String>> alt =
-                alternative.accountsMerge(accounts1);
+        assert Arrays.equals(
+                redundantSolver.findRedundantConnection(new int[][]{
+                        {1, 2},
+                        {1, 3},
+                        {2, 3}
+                }),
+                new int[]{2, 3}
+        );
 
-        assert alt.size() == result1.size();
+        // ---------------------------------------------------------------------
+        // Equality Equations
+        // ---------------------------------------------------------------------
+        EqualityEquations equationsSolver = new EqualityEquations();
 
-        System.out.println("All self-verifying assertions passed.");
+        assert equationsSolver.equationsPossible(
+                new String[]{"a==b", "b==c", "a==c"}
+        );
+
+        assert !equationsSolver.equationsPossible(
+                new String[]{"a==b", "b!=a"}
+        );
+
+        // ---------------------------------------------------------------------
+        // Network Connected
+        // ---------------------------------------------------------------------
+        NetworkConnected networkSolver = new NetworkConnected();
+
+        assert networkSolver.makeConnected(
+                4,
+                new int[][]{
+                        {0, 1},
+                        {0, 2},
+                        {1, 2}
+                }
+        ) == 1;
+
+        // ---------------------------------------------------------------------
+        // Smallest String With Swaps
+        // ---------------------------------------------------------------------
+        SmallestStringWithSwaps swapsSolver = new SmallestStringWithSwaps();
+
+        assert swapsSolver.smallestStringWithSwaps(
+                "dcab",
+                List.of(
+                        List.of(0, 3),
+                        List.of(1, 2)
+                )
+        ).equals("bacd");
+
+        // ---------------------------------------------------------------------
+        // Graph Valid Tree — DFS and DSU are both strong primary solutions
+        // ---------------------------------------------------------------------
+        GraphValidTreeDFS treeDFS =
+                new GraphValidTreeDFS();
+
+        GraphValidTreeDSU treeDSU =
+                new GraphValidTreeDSU();
+
+        int[][] validTreeEdges = {
+                {0, 1},
+                {0, 2},
+                {0, 3},
+                {1, 4}
+        };
+
+        int[][] cyclicTreeEdges = {
+                {0, 1},
+                {1, 2},
+                {2, 3},
+                {1, 3},
+                {1, 4}
+        };
+
+        assert treeDFS.validTree(5, validTreeEdges);
+        assert treeDSU.validTree(5, validTreeEdges);
+
+        assert !treeDFS.validTree(5, cyclicTreeEdges);
+        assert !treeDSU.validTree(5, cyclicTreeEdges);
+
+        System.out.println("All Java Gold FINAL assertions passed.");
+    }
+
+    private static List<String> findAccountContaining(
+            List<List<String>> accounts,
+            String email) {
+
+        for (List<String> rawAccount : accounts) {
+            if (rawAccount.contains(email)) {
+                return rawAccount;
+            }
+        }
+
+        return null;
     }
 }
 
 /*
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
+I know the DSU engine once.
+I can point to the DELTA in each related problem.
+I can reconstruct the boilerplate without memorizing each problem separately.
 */

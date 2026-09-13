@@ -1,587 +1,809 @@
 package org.chijai.day10.session1.trie;
 
-
-
 import java.util.*;
 
-/*
-================================================================================
-📘 LEETCODE 211 — DESIGN ADD AND SEARCH WORDS DATA STRUCTURE
-Difficulty : Medium
+/**
+ * ============================================================================
+ * LEETCODE 211 — DESIGN ADD AND SEARCH WORDS DATA STRUCTURE
+ * JAVA GOLD V4
+ * ============================================================================
+ *
+ * OFFICIAL PROBLEM
+ * ----------------
+ *
+ * Design a data structure supporting:
+ *
+ * addWord(String word)
+ *      Add a lowercase English word.
+ *
+ * search(String word)
+ *      Return true if any inserted word matches the query.
+ *
+ * The search query may contain:
+ *
+ * '.'
+ *
+ * which matches ANY SINGLE lowercase English letter.
+ *
+ * Example
+ * -------
+ *
+ * WordDictionary dictionary = new WordDictionary();
+ *
+ * dictionary.addWord("bad");
+ * dictionary.addWord("dad");
+ * dictionary.addWord("mad");
+ *
+ * dictionary.search("pad");     // false
+ * dictionary.search("bad");     // true
+ * dictionary.search(".ad");     // true
+ * dictionary.search("b..");     // true
+ *
+ * Constraints
+ * -----------
+ *
+ * 1 <= word.length <= 25
+ *
+ * addWord()
+ *      lowercase English letters only
+ *
+ * search()
+ *      lowercase English letters or '.'
+ *
+ * At most 10^4 total calls.
+ *
+ * Search contains at most two dots.
+ *
+ * Difficulty
+ * ----------
+ * Medium
+ *
+ * Pattern
+ * -------
+ * Trie + wildcard DFS
+ *
+ * Foundation
+ * ----------
+ * LeetCode 208 — Implement Trie
+ *
+ * Official Link
+ * -------------
+ * https://leetcode.com/problems/design-add-and-search-words-data-structure/
+ *
+ */
 
-Tags
-Trie
-DFS
-Backtracking
-Design
-String
-
-LeetCode
-https://leetcode.com/problems/design-add-and-search-words-data-structure/
-
---------------------------------------------------------------------------------
-PROBLEM
-
-Design a data structure supporting two operations.
-
-addWord(word)
-    Insert a lowercase English word.
-
-search(word)
-    Return whether a previously inserted word matches.
-
-The search string may contain '.'
-
-'.' matches ANY SINGLE lowercase letter.
-
-Examples
-
-addWord("bad")
-addWord("dad")
-addWord("mad")
-
-search("pad") -> false
-search("bad") -> true
-search(".ad") -> true
-search("b..") -> true
-
---------------------------------------------------------------------------------
-Constraints
-
-1 <= word.length <= 25
-
-addWord()
-    lowercase letters only
-
-search()
-    lowercase letters OR '.'
-
-At most 10^4 total operations.
-
-Search contains at most TWO dots.
-
-================================================================================
-🔵 CORE PATTERN OVERVIEW
-
-Pattern
-Trie + DFS State Search
-
-Problem Archetype
-
-Store many strings while supporting
-prefix navigation plus wildcard expansion.
-
-Whenever search reaches '.',
-we branch into every existing child.
-
-This is NOT brute force over all words.
-
-It is DFS over ONLY feasible Trie paths.
-
---------------------------------------------------------------------------------
-🟢 CORE INVARIANT
-
-At every recursive call
-
-(node, index)
-
-represents
-
-"We have successfully matched every character
-before index and are currently positioned at
-the Trie node representing exactly that prefix."
-
-Nothing before index is ever reconsidered.
-
-Every recursive branch preserves this invariant.
-
---------------------------------------------------------------------------------
-Why it works
-
-Trie stores common prefixes once.
-
-Normal characters
-
-follow exactly ONE edge.
-
-Wildcard '.'
-
-tries every possible child.
-
-Because every recursive call preserves the matched
-prefix invariant, correctness follows naturally.
-
---------------------------------------------------------------------------------
-Recognition Signals
-
-✓ Dictionary of words
-
-✓ Multiple insertions
-
-✓ Many search queries
-
-✓ Prefix sharing
-
-✓ Wildcard matching
-
-✓ Alphabet is small (26)
-
-Whenever you see
-
-"many strings"
-
-+
-
-"wildcard"
-
-+
-
-"online insert"
-
-Trie should become the default candidate.
-
---------------------------------------------------------------------------------
-Similar Patterns
-
-HashSet
-
-Good:
-Exact lookup
-
-Bad:
-Wildcard search
-
---------------------------------------------------
-
-Balanced BST
-
-Good:
-Ordered traversal
-
-Bad:
-Wildcard expansion
-
---------------------------------------------------
-
-Trie
-
-Excellent:
-Prefix queries
-Wildcard search
-Autocomplete
-Dictionary matching
-
-================================================================================
-🟢 MENTAL MODEL
-
-Imagine a road network.
-
-Root
-
-represents
-
-empty string.
-
-Each edge
-
-adds ONE character.
-
-Example
-
-root
- |
- b
- |
- a
- |
- d
-
-represents
-
-"bad"
-
-Now suppose search()
-
-".ad"
-
-First character is unknown.
-
-Instead of choosing one road,
-
-we temporarily explore every available road.
-
-Every branch still represents
-
-"matched prefix so far."
-
-Only successful branches survive.
-
-================================================================================
-🟢 VARIABLES
-
-root
-
-Starting Trie node.
-
-node
-
-Current matched prefix.
-
-index
-
-Current character in search word.
-
-children[26]
-
-Possible next letters.
-
-isWord
-
-Marks complete inserted word.
-
-================================================================================
-🟢 INVARIANTS
-
-Invariant 1
-
-Current node represents exactly
-
-word[0...index-1]
-
-Invariant 2
-
-Nothing before index changes.
-
-Invariant 3
-
-Every recursive call consumes exactly one character.
-
-Invariant 4
-
-Normal letters create exactly one recursive path.
-
-Invariant 5
-
-Wildcard creates independent recursive branches.
-
-Invariant 6
-
-Search succeeds only if
-
-all characters consumed
-
-AND
-
-current node marks complete word.
-
-================================================================================
-🟢 ALLOWED MOVES
-
-Letter
-
-Move to corresponding child.
-
-'.'
-
-Visit every non-null child.
-
-Return true immediately when one succeeds.
-
-================================================================================
-🔴 FORBIDDEN MOVES
-
-Never skip characters.
-
-Never consume two characters together.
-
-Never return true merely because prefix exists.
-
-Never ignore isWord.
-
-Never revisit previous index.
-
-================================================================================
-🟡 TERMINATION
-
-If index == word.length()
-
-search succeeds iff
-
-node.isWord == true
-
-================================================================================
-🔴 WHY NAIVE APPROACHES FAIL
-
-------------------------------------------------------------------------------
-Wrong Idea 1
-
-Store all words inside HashSet.
-
-Seems correct
-
-Exact lookup works.
-
-Fails
-
-Wildcard requires generating all possibilities.
-
-Example
-
-".."
-
-26^2 possibilities.
-
-Impossible to scale.
-
-Invariant violation
-
-Search state is no longer represented by prefix.
-
-------------------------------------------------------------------------------
-Wrong Idea 2
-
-Compare against every inserted word.
-
-Works logically.
-
-Time
-
-O(number_of_words × length)
-
-Too expensive.
-
-Invariant violation
-
-No prefix pruning.
-
-------------------------------------------------------------------------------
-Wrong Idea 3
-
-Return true after matching every character,
-ignoring isWord.
-
-Counterexample
-
-Inserted
-
-badger
-
-Searching
-
-bad
-
-Prefix exists.
-
-Word does not.
-
-Need terminal marker.
-
-================================================================================
-⚙️ HOW TO PHYSICALLY ASSEMBLE THE CODE
-
-🛠 IMPLEMENTATION BLUEPRINT
-
-STEP 1
-
-Create TrieNode.
-
-Fields
-
-children[26]
-isWord
-
---------------------------------------------------
-
-STEP 2
-
-Create root.
-
---------------------------------------------------
-
-STEP 3
-
-addWord()
-
-Start at root.
-
-Loop over characters.
-
-Create missing child.
-
-Move forward.
-
-Mark final node.
-
---------------------------------------------------
-
-STEP 4
-
-search()
-
-Delegate to DFS
-
-(root, word, 0)
-
---------------------------------------------------
-
-STEP 5
-
-DFS
-
-Base case
-
-index reached end
-
-Return node.isWord
-
---------------------------------------------------
-
-STEP 6
-
-Read current character.
-
---------------------------------------------------
-
-STEP 7
-
-If normal character
-
-Follow one child.
-
---------------------------------------------------
-
-STEP 8
-
-If '.'
-
-Loop over every child.
-
-Return true immediately if any succeeds.
-
-Else false.
-
-================================================================================
-🧾 ULTRA-COMPACT PSEUDOCODE
-
-insert
-
-start root
-
-for char
-
-create child
-
-move
-
-mark word
-
----------------------
-
-search(node,index)
-
-finished?
-
-return terminal
-
-letter?
-
-follow one edge
-
-dot?
-
-try every child
-
-return any success
-
-================================================================================
-PRIMARY SOLUTION CLASSES
-
-1.
-Brute Force
-
-Store every inserted word.
-
-Search compares against all compatible words.
-
-Time
-
-Add
-O(1)
-
-Search
-O(N × L)
-
-Useful only for understanding.
-
---------------------------------------------------------------------------------
-2.
-Improved
-
-Trie
-
-Exact search
-
-O(L)
-
-Wildcard
-
-DFS over matching branches.
-
---------------------------------------------------------------------------------
-3.
-Optimal (Interview Preferred)
-
-Trie
-
-+
-
-Recursive DFS
-
-Only explores reachable prefixes.
-
-================================================================================
-*/
 public class TrieWordDictionary {
 
-    /*
-    ============================================================================
-    Trie Node
+    /**
+     * ============================================================================
+     * 🎯 RECOGNITION CUE
+     * ============================================================================
+     *
+     * Trigger:
+     *
+     *      many inserted words
+     *      +
+     *      '.' matches any ONE character
+     *
+     * Candidate:
+     *
+     *      Trie + wildcard DFS
+     *
+     * Fast re-derivation cue:
+     *
+     *      "LC 208 + branch on dot."
+     *
+     */
 
-    Character is NOT stored.
+    /**
+     * ============================================================================
+     * ±Δ FROM TRIEPREFIX — LC 208 -> LC 211
+     * ============================================================================
+     *
+     * This is the shortest way to re-derive the problem.
+     *
+     * TriePrefix / LC 208 already gives us:
+     *
+     *      children[26]
+     *      isWord
+     *      insert()
+     *      exact search
+     *
+     * The ONLY new search rule is:
+     *
+     *      '.' matches ANY ONE character
+     *
+     * So the conceptual delta is:
+     *
+     *      normal letter
+     *          -> exactly ONE legal child
+     *
+     *      '.'
+     *          -> up to 26 legal children
+     *
+     * Nothing about the Trie itself changes.
+     * Only the number of possible continuations changes.
+     *
+     * ---------------------------------------------------------------------------
+     * WHY USE DFS FOR EVERY CHARACTER THEN?
+     * ---------------------------------------------------------------------------
+     *
+     * We do NOT need branching for a normal letter.
+     *
+     * But a uniform recursive helper saves duplicated traversal logic:
+     *
+     *      normal letter -> DFS with branching factor 1
+     *      '.'           -> DFS with branching factor up to 26
+     *
+     * When there is no '.', recursion behaves exactly like the LC 208 loop:
+     *
+     *      one node
+     *          -> one child
+     *              -> one child
+     *                  -> one child
+     *
+     * There is no search-tree branching.
+     *
+     * The recursive form keeps these rules in ONE place:
+     *
+     *      null handling
+     *      end-of-pattern handling
+     *      index advancement
+     *      terminal isWord validation
+     *      remaining suffix traversal
+     *
+     * ---------------------------------------------------------------------------
+     * PRIMARY STATE
+     * ---------------------------------------------------------------------------
+     *
+     *      dfs(node, word, index)
+     *
+     * means:
+     *
+     *      every character before index has already matched,
+     *      node represents that matched prefix,
+     *      word[index] is the next pattern character to process.
+     *
+     * ---------------------------------------------------------------------------
+     * ALTERNATIVE IMPLEMENTATION
+     * ---------------------------------------------------------------------------
+     *
+     * We can also preserve the LC 208 loop and recurse only when '.' appears.
+     * That version is kept as Primary Solution 2 because it makes the delta
+     * from TriePrefix visually obvious.
+     *
+     * ---------------------------------------------------------------------------
+     * API DIFFERENCE
+     * ---------------------------------------------------------------------------
+     *
+     * TriePrefix / LC 208
+     *
+     *      insert(word)
+     *      search(word)
+     *      startsWith(prefix)
+     *
+     * TrieWordDictionary / LC 211
+     *
+     *      addWord(word)
+     *      search(pattern)
+     *
+     * startsWith() disappears from the required API.
+     * Wildcard search is the new behavior.
+     *
+     */
 
-    Child index itself implies character.
+    /**
+     * ============================================================================
+     * 🧠 FIRST-PRINCIPLES INVENTION PATH
+     * ============================================================================
+     *
+     * Step 1 — Start from LC 208
+     * --------------------------
+     *
+     * Exact Trie search means:
+     *
+     *      known character
+     *          -> exactly one child
+     *
+     *      missing child
+     *          -> impossible path
+     *
+     *      all characters consumed
+     *          -> answer is final node.isWord
+     *
+     *
+     * Step 2 — Ask what wording changed
+     * ----------------------------------
+     *
+     * LC 211 adds only:
+     *
+     *      '.' matches any single lowercase letter.
+     *
+     * Therefore a dot has MANY possible next children instead of one.
+     *
+     *
+     * Step 3 — What state must one search call know?
+     * ------------------------------------------------
+     *
+     *      node
+     *          current matched Trie prefix
+     *
+     *      index
+     *          next pattern character to process
+     *
+     * So:
+     *
+     *      dfs(node, word, index)
+     *
+     *
+     * Step 4 — Define the two moves
+     * --------------------------------
+     *
+     * Normal character:
+     *
+     *      recurse to exactly ONE child
+     *
+     * Dot:
+     *
+     *      recurse to EVERY existing child
+     *
+     * Both consume exactly one pattern character:
+     *
+     *      index + 1
+     *
+     *
+     * Step 5 — Why recursion for normal letters too?
+     * ------------------------------------------------
+     *
+     * We could keep a loop for normal letters.
+     *
+     * But the fully recursive form reuses the same continuation logic.
+     * A normal character is simply a DFS state with one legal branch.
+     *
+     * That avoids maintaining two traversal mechanisms in the primary code.
+     *
+     *
+     * Step 6 — Base cases
+     * -------------------
+     *
+     * Dead path:
+     *
+     *      node == null
+     *          -> false
+     *
+     * Pattern consumed:
+     *
+     *      index == word.length()
+     *          -> node.isWord
+     *
+     *
+     * Step 7 — Why can wildcard search stop early?
+     * ------------------------------------------------
+     *
+     * search() asks whether ANY matching word exists.
+     *
+     * Therefore wildcard children are combined with OR:
+     *
+     *      first successful child -> return true
+     *
+     */
 
-    0 -> a
-    1 -> b
-    ...
-    25 -> z
+    /**
+     * ============================================================================
+     * ✅ PRIMARY SOLUTION 1 — UNIFORM RECURSIVE DFS
+     * ============================================================================
+     *
+     * Interview-preferred implementation for this file.
+     *
+     * Why this is primary:
+     *
+     *      one search mechanism handles both ordinary letters and wildcard dots,
+     *      so continuation logic is not duplicated.
+     *
+     * Mental model:
+     *
+     *      normal letter -> branching factor 1
+     *      '.'           -> branching factor up to 26
+     *
+     * Core invariant
+     * --------------
+     *
+     *      dfs(node, word, index)
+     *
+     * means:
+     *
+     *      every character before index has already matched,
+     *      and node represents exactly that matched prefix.
+     *
+     */
 
-    This reduces redundancy.
+    static class TrieNode {
 
-    Parent edge determines the character.
-    ============================================================================
-    */
+        TrieNode[] children = new TrieNode[26];
 
+        boolean isWord;
 
-    /*
-    ============================================================================
-    BRUTE FORCE SOLUTION
+    }
 
-    Idea
+    static class WordDictionary {
 
-    Store every inserted word.
+        private final TrieNode root = new TrieNode();
 
-    During search,
+        public void addWord(String word) {
 
-    compare against every stored word.
+            TrieNode current = root;
 
-    Supports wildcard by checking each position.
+            for (char ch : word.toCharArray()) {
 
-    Good for reasoning.
+                int index = ch - 'a';
 
-    Poor scalability.
-    ============================================================================
-    */
+                if (current.children[index] == null) {
+
+                    current.children[index] = new TrieNode();
+
+                }
+
+                current = current.children[index];
+
+            }
+
+            current.isWord = true;
+
+        }
+
+        public boolean search(String word) {
+
+            return dfs(root, word, 0);
+
+        }
+
+        private boolean dfs(TrieNode node,
+                            String word,
+                            int index) {
+
+            if (node == null) {
+
+                return false;
+
+            }
+
+            if (index == word.length()) {
+
+                return node.isWord;
+
+            }
+
+            char ch = word.charAt(index);
+
+            if (ch != '.') {
+
+                return dfs(
+                        node.children[ch - 'a'],
+                        word,
+                        index + 1
+                );
+
+            }
+
+            for (TrieNode child : node.children) {
+
+                if (child != null
+                        && dfs(child, word, index + 1)) {
+
+                    return true;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+    }
+
+    /**
+     * ============================================================================
+     * ✅ PRIMARY SOLUTION 2 — LC 208 LOOP + RECURSE ONLY AT DOT
+     * ============================================================================
+     *
+     * Same algorithmic idea, different implementation style.
+     *
+     * This version keeps ordinary Trie traversal iterative
+     * and introduces recursion only where '.' creates alternatives.
+     *
+     * Why keep it:
+     *
+     *      it is the easiest visual derivation directly from TriePrefix / LC 208.
+     *
+     * Trade-off:
+     *
+     *      clearer delta from LC 208,
+     *      but two traversal mechanisms exist in the same helper:
+     *      loop for normal characters + recursion for wildcard branches.
+     *
+     */
+
+    static class WordDictionaryLoopThenDFS {
+
+        private final TrieNode root = new TrieNode();
+
+        public void addWord(String word) {
+
+            TrieNode current = root;
+
+            for (char ch : word.toCharArray()) {
+
+                int index = ch - 'a';
+
+                if (current.children[index] == null) {
+
+                    current.children[index] = new TrieNode();
+
+                }
+
+                current = current.children[index];
+
+            }
+
+            current.isWord = true;
+
+        }
+
+        public boolean search(String word) {
+
+            return searchFrom(root, word, 0);
+
+        }
+
+        private boolean searchFrom(TrieNode node,
+                                   String word,
+                                   int start) {
+
+            TrieNode current = node;
+
+            for (int i = start; i < word.length(); i++) {
+
+                char ch = word.charAt(i);
+
+                if (ch == '.') {
+
+                    for (TrieNode child : current.children) {
+
+                        if (child != null
+                                && searchFrom(child, word, i + 1)) {
+
+                            return true;
+
+                        }
+
+                    }
+
+                    return false;
+
+                }
+
+                TrieNode child = current.children[ch - 'a'];
+
+                if (child == null) {
+
+                    return false;
+
+                }
+
+                current = child;
+
+            }
+
+            return current.isWord;
+
+        }
+
+    }
+
+    /**
+     * ============================================================================
+     * 🧩 PRIMARY CODE — HARD LINES
+     * ============================================================================
+     *
+     * 1.
+     *
+     *      return dfs(root, word, 0);
+     *
+     * Start from the empty prefix.
+     * index 0 is the first pattern character.
+     *
+     *
+     * 2.
+     *
+     *      if (node == null)
+     *          return false;
+     *
+     * This centralizes missing-child handling.
+     *
+     * A normal character can recurse directly into a null child.
+     * The next dfs() call rejects that dead path.
+     *
+     *
+     * 3.
+     *
+     *      if (index == word.length())
+     *          return node.isWord;
+     *
+     * Consuming the pattern proves only that a Trie path exists.
+     * isWord proves that the path is a complete inserted word.
+     *
+     *
+     * 4.
+     *
+     *      return dfs(node.children[ch - 'a'], word, index + 1);
+     *
+     * A normal character has exactly ONE legal continuation.
+     *
+     * This recursion is logically the same as one iteration of the LC 208 loop.
+     * There is no branching here.
+     *
+     *
+     * 5.
+     *
+     *      for (TrieNode child : node.children)
+     *
+     * '.' has no known child index.
+     * Every existing child is a legal one-character match.
+     *
+     *
+     * 6.
+     *
+     *      dfs(child, word, index + 1)
+     *
+     * The chosen child itself consumes the wildcard character,
+     * so the next unresolved character is index + 1.
+     *
+     *
+     * 7.
+     *
+     *      if (child != null && dfs(...))
+     *          return true;
+     *
+     * Search is existential:
+     * one successful wildcard branch is sufficient.
+     *
+     *
+     * 8. Why no choose / un-choose backtracking?
+     * -------------------------------------------
+     *
+     * dfs() does not mutate a shared path, board, visited set, or list.
+     * Every recursive call receives only node, word, and index.
+     * Nothing needs restoring.
+     *
+     */
+
+    /**
+     * ============================================================================
+     * 👁 VISUAL DRY RUN
+     * ============================================================================
+     *
+     * Insert:
+     *
+     *      bad
+     *      dad
+     *      mad
+     *
+     * --------------------------------------------------
+     * SEARCH WITHOUT DOT
+     * --------------------------------------------------
+     *
+     *      search("bad")
+     *
+     *      dfs(root, 0)
+     *          b -> dfs(node("b"), 1)
+     *          a -> dfs(node("ba"), 2)
+     *          d -> dfs(node("bad"), 3)
+     *          end -> node("bad").isWord
+     *
+     * There was exactly one recursive child at every step.
+     *
+     * So although the code says dfs(), it behaved exactly like a loop:
+     *
+     *      one node -> one child -> one child -> one child
+     *
+     * --------------------------------------------------
+     * SEARCH WITH DOT
+     * --------------------------------------------------
+     *
+     *      search("b.d")
+     *
+     * index = 0
+     * ch = 'b'
+     *
+     *      one legal child
+     *      -> node("b")
+     *
+     * index = 1
+     * ch = '.'
+     *
+     * Now branching actually appears.
+     * Try every existing child below "b".
+     *
+     *      a -> dfs(node("ba"), 2)
+     *      ... other existing children if any
+     *
+     * On the 'a' branch:
+     *
+     * index = 2
+     * ch = 'd'
+     *
+     *      one legal child
+     *      -> node("bad")
+     *
+     * index = 3
+     * pattern consumed
+     *
+     *      node("bad").isWord == true
+     *
+     * Therefore the wildcard branch returns true immediately.
+     *
+     * Mental picture:
+     *
+     *      normal char -> DFS behaves like loop
+     *      '.'         -> DFS actually branches
+     *
+     */
+
+    /**
+     * ============================================================================
+     * ⚖ COMPLEXITY — DERIVED
+     * ============================================================================
+     *
+     * Let:
+     *
+     *      L = pattern / word length
+     *      D = number of wildcard dots
+     *      A = alphabet size = 26
+     *
+     * addWord
+     * -------
+     *
+     * We process each of L characters exactly once.
+     *
+     *      Time = O(L)
+     *
+     *
+     * search without '.'
+     * ------------------
+     *
+     * Every recursive state has exactly one continuation.
+     * Exactly L characters are consumed.
+     *
+     *      Time = O(L)
+     *
+     * The recursion is only an implementation form here;
+     * there is no branching search tree.
+     *
+     *
+     * search with '.'
+     * ---------------
+     *
+     * A normal character creates one continuation.
+     * A dot may create at most 26 continuations.
+     *
+     * With D dots, a loose worst-case branch bound is:
+     *
+     *      26^D
+     *
+     * Each branch consumes at most L characters.
+     *
+     * Simple upper bound:
+     *
+     *      O(26^D * L)
+     *
+     * Actual work is often much smaller because nonexistent children
+     * terminate immediately.
+     *
+     *
+     * Trie space
+     * ----------
+     *
+     *      O(total inserted characters)
+     *
+     *
+     * Recursive auxiliary space
+     * -------------------------
+     *
+     * Primary Solution 1 recursively consumes one pattern character per call.
+     * Maximum active depth is therefore L.
+     *
+     *      O(L)
+     *
+     * Primary Solution 2 keeps normal stretches iterative and only recurses
+     * at wildcard branching points, but O(L) remains a safe general bound.
+     *
+     */
+
+    /**
+     * ============================================================================
+     * 🔴 TRAPS / WRONG TURNS
+     * ============================================================================
+     *
+     * Trap 1 — Treat '.' as a literal edge
+     * -------------------------------------
+     *
+     * Wrong:
+     *
+     *      children['.' - 'a']
+     *
+     * '.' is not stored in the Trie.
+     * It is a SEARCH instruction meaning:
+     *
+     *      try every possible one-character continuation.
+     *
+     *
+     * Trap 2 — Restart from root after '.'
+     * ------------------------------------
+     *
+     * Wildcard alternatives continue from the CURRENT matched prefix.
+     *
+     * Never restart from root.
+     *
+     *
+     * Trap 3 — Recurse from i instead of i + 1
+     * -------------------------------------------
+     *
+     * The chosen child already represents the ONE character matched by '.'.
+     *
+     * Therefore recursion must continue from:
+     *
+     *      i + 1
+     *
+     *
+     * Trap 4 — Return true when pattern is merely consumed
+     * ----------------------------------------------------
+     *
+     * Must still check:
+     *
+     *      node.isWord
+     *
+     *
+     * Trap 5 — Generate all 26^D concrete strings first
+     * -------------------------------------------------
+     *
+     * That creates many strings whose prefixes may not exist.
+     *
+     * Trie DFS instead branches only through actual children.
+     *
+     *
+     * Trap 6 — Add StringBuilder to boolean search
+     * ---------------------------------------------
+     *
+     * The boolean problem does not need the matched word itself.
+     *
+     * Adding a shared path introduces unnecessary mutable state
+     * and unnecessary backtracking.
+     *
+     */
+
+    /**
+     * ============================================================================
+     * 📈 APPROACH PROGRESSION
+     * ============================================================================
+     *
+     * 1. Brute Force — List<String>
+     * ----------------------------
+     *
+     * Store every word.
+     *
+     * Search every stored word position-by-position.
+     *
+     * addWord
+     *      O(1)
+     *
+     * search
+     *      O(N * L)
+     *
+     * Useful for deriving the matching rule.
+     *
+     */
+
     static class WordDictionaryBruteForce {
 
         private final List<String> words = new ArrayList<>();
@@ -597,25 +819,31 @@ public class TrieWordDictionary {
             for (String word : words) {
 
                 if (word.length() != pattern.length()) {
+
                     continue;
+
                 }
 
                 boolean matches = true;
 
                 for (int i = 0; i < word.length(); i++) {
 
-                    char p = pattern.charAt(i);
+                    char patternChar = pattern.charAt(i);
 
-                    if (p != '.' && p != word.charAt(i)) {
+                    if (patternChar != '.'
+                            && patternChar != word.charAt(i)) {
 
                         matches = false;
                         break;
 
                     }
+
                 }
 
                 if (matches) {
+
                     return true;
+
                 }
 
             }
@@ -626,789 +854,147 @@ public class TrieWordDictionary {
 
     }
 
+    /**
+     * 2. HashSet
+     * ----------
+     *
+     * Exact lookup improves,
+     * but wildcard lookup is still not directly indexed.
+     *
+     * Exact search:
+     *
+     *      O(L) expected because Java must hash the String.
+     *
+     * Wildcard search:
+     *
+     *      O(N * L)
+     *
+     * Remaining problem:
+     *
+     *      HashSet indexes whole strings.
+     *      Trie indexes prefixes.
+     *
+     */
 
-    /*
-    ============================================================================
-    IMPROVED / OPTIMAL
+    static class WordDictionaryHashSet {
 
-    Trie + DFS
+        private final Set<String> words = new HashSet<>();
 
-    All wildcard handling happens naturally by DFS.
-
-    Shared prefixes are stored only once.
-
-    ============================================================================
-    */
-
-    static class TrieNode {
-
-        TrieNode[] children = new TrieNode[26];
-
-        boolean isWord;
-
-    }
-
-    static class WordDictionary {
-
-        private final TrieNode root = new TrieNode();
-
-        /*
-        ------------------------------------------------------------------------
-        Core Idea
-
-        Walk down the Trie.
-
-        Missing node?
-
-        Create it.
-
-        Final node marks complete word.
-
-        Invariant
-
-        Current node always represents
-        processed prefix.
-        ------------------------------------------------------------------------
-        */
         public void addWord(String word) {
 
-            TrieNode current = root;
+            words.add(word);
 
-            for (char ch : word.toCharArray()) {
+        }
 
-                int index = ch - 'a';
+        public boolean search(String pattern) {
 
-                if (current.children[index] == null) {
+            if (pattern.indexOf('.') == -1) {
 
-                    current.children[index] = new TrieNode();
-
-                }
-
-                current = current.children[index];
+                return words.contains(pattern);
 
             }
 
-            current.isWord = true;
+            for (String word : words) {
+
+                if (matches(word, pattern)) {
+
+                    return true;
+
+                }
+
+            }
+
+            return false;
 
         }
 
-        /*
-        ------------------------------------------------------------------------
-        Interview narration
+        private boolean matches(String word,
+                                String pattern) {
 
-        // Search always starts from empty prefix.
+            if (word.length() != pattern.length()) {
 
-        // Every recursive call preserves the matched prefix invariant.
-
-        ------------------------------------------------------------------------
-        */
-        public boolean search(String word) {
-
-            return dfs(root, word, 0);
-
-        }
-
-        /*
-        ------------------------------------------------------------------------
-        DFS State
-
-        (node,index)
-
-        Means
-
-        Prefix before index has already matched exactly.
-
-        Remaining work begins at index.
-
-        ------------------------------------------------------------------------
-        */
-        private boolean dfs(TrieNode node, String word, int index) {
-
-            // Dead path.
-
-            if (node == null) {
                 return false;
-            }
-
-            // Entire pattern consumed.
-
-            // Only succeed if this is a complete word.
-
-            if (index == word.length()) {
-
-                return node.isWord;
 
             }
 
-            char currentChar = word.charAt(index);
+            for (int i = 0; i < word.length(); i++) {
 
-            // Normal character.
-            // Follow exactly one edge.
+                char patternChar = pattern.charAt(i);
 
-            if (currentChar != '.') {
+                if (patternChar != '.'
+                        && patternChar != word.charAt(i)) {
 
-                int child = currentChar - 'a';
-
-                // Invariant:
-                // matched prefix grows by one character.
-
-                return dfs(node.children[child], word, index + 1);
-
-            }
-
-            // Wildcard.
-
-            // Explore every feasible continuation.
-            //```
-
-
-            for (TrieNode next : node.children) {
-
-                // Ignore impossible branches immediately.
-
-                if (next == null) {
-                    continue;
-                }
-
-                // Invariant:
-                // Every recursive branch independently represents
-                // one possible matched prefix.
-
-                if (dfs(next, word, index + 1)) {
-
-                    // One successful branch is sufficient.
-
-                    return true;
+                    return false;
 
                 }
 
             }
 
-            // Every branch failed.
-
-            return false;
+            return true;
 
         }
 
     }
 
-    /*
-=============================================================================
-⚫ VARIATION
+    /**
+     * 3. Trie + wildcard branching
+     * ----------------------------
+     *
+     * Primary Solution 1 uses one uniform recursive search:
+     * normal letter = one child, dot = many children.
+     *
+     * Primary Solution 2 preserves the LC 208 loop and recurses only at '.'.
+     *
+     * In both versions, wildcard branching happens only through
+     * prefixes that actually exist.
+     *
+     */
+
+    /**
+     * ============================================================================
+     * ±Δ FAMILY MAP — WHAT CHANGES, WHAT STAYS
+     * ============================================================================
+     *
+     * Problem                            Delta from ordinary Trie
+     * ---------------------------------------------------------------------------
+     * LC 208 exact search                One edge per character; final isWord.
+     * LC 208 startsWith                  One edge per character; ignore isWord.
+     * LC 211 wildcard                    '.' branches to every existing child.
+     * Return all wildcard matches        Explore ALL branches; no early true.
+     * Count wildcard matches             SUM branch results instead of OR.
+     * LC 648 shortest root               Stop at FIRST terminal node.
+     * LC 212 Word Search II              State = board cell + Trie node.
+     * LC 1268 suggestions                Find prefix node, then enumerate below.
+     * Approximate / edit-distance match  Trie alone is insufficient.
+     *
+     * Stable invariant across the family:
+     *
+     *      Trie node represents a prefix.
+     *
+     * What usually changes:
+     *
+     *      branching
+     *      stopping
+     *      validation
+     *      aggregation
+     *
+     */
+
+    /**
+     * ============================================================================
+     * ⚫ REINFORCEMENT 1 — LC 208 IMPLEMENT TRIE
+     * ============================================================================
+     *
+     * Purpose
+     * -------
+     *
+     * Reconstruct the foundation implementation directly.
+     *
+     * The conceptual delta from LC 208 -> LC 211 is defined once near the top
+     * in the "±Δ FROM TRIEPREFIX" section.
+     *
+     */
 
-Return ALL Matching Words
-
-Problem
-
-Instead of
-
-    boolean search(pattern)
-
-suppose we need
-
-    List<String> searchAll(pattern)
-
-Example
-
-Inserted
-
-bad
-dad
-mad
-bed
-
-searchAll(".ad")
-
-returns
-
-[bad, dad, mad]
-
-----------------------------------------------------------------------------
-
-Core Observation
-
-The Trie does NOT change.
-
-The invariant does NOT change.
-
-(node, index)
-
-still means
-
-"The prefix before index has already matched exactly."
-
-Only the objective changes.
-
-----------------------------------------------------------------------------
-
-Original Problem
-
-Goal
-
-Does ANY matching word exist?
-
-Therefore
-
-return immediately after first successful branch.
-
-----------------------------------------------------------------------------
-
-New Problem
-
-Goal
-
-Return EVERY matching word.
-
-Therefore
-
-explore every valid branch.
-
-No early return.
-
-----------------------------------------------------------------------------
-
-Why Backtracking Is Needed Here
-
-Original search()
-
-only tracked
-
-(node, index)
-
-Both are local variables.
-
-Nothing was modified.
-
-Therefore no backtracking was required.
-
-Here we introduce
-
-StringBuilder path
-
-which is shared across recursive calls.
-
-Before recursion
-
-append character.
-
-After recursion
-
-remove character.
-
-Every recursive call must leave
-
-path
-
-exactly as it found it.
-
-----------------------------------------------------------------------------
-
-Rule of Thumb
-
-DFS without shared mutable state
-
-    → No backtracking.
-
-DFS with shared mutable state
-(StringBuilder, List, visited array, board, etc.)
-
-    → Backtracking is mandatory.
-
-=============================================================================
-*/
-    static class WordDictionaryAllMatches {
-
-        /*-----------------------------------------------------------------------
-         Trie Node
-         -----------------------------------------------------------------------*/
-        static class TrieNode {
-
-            TrieNode[] children = new TrieNode[26];
-
-            boolean isWord;
-
-        }
-
-        private final TrieNode root = new TrieNode();
-
-        /*-----------------------------------------------------------------------
-         Insert a word into the Trie.
-         -----------------------------------------------------------------------*/
-        public void addWord(String word) {
-
-            TrieNode current = root;
-
-            for (char ch : word.toCharArray()) {
-
-                int index = ch - 'a';
-
-                if (current.children[index] == null) {
-                    current.children[index] = new TrieNode();
-                }
-
-                current = current.children[index];
-            }
-
-            current.isWord = true;
-        }
-
-        /*-----------------------------------------------------------------------
-         Return every word matching the pattern.
-         '.' matches any single character.
-         -----------------------------------------------------------------------*/
-        public List<String> searchAll(String pattern) {
-
-            List<String> matches = new ArrayList<>();
-
-            dfs(root,
-                    pattern,
-                    0,
-                    new StringBuilder(),
-                    matches);
-
-            return matches;
-        }
-
-        /*-----------------------------------------------------------------------
-         DFS State
-
-         (node, index)
-
-         means
-
-         Every character before index has already matched.
-
-         path stores the currently matched word.
-
-         -----------------------------------------------------------------------*/
-        private void dfs(TrieNode node,
-                         String pattern,
-                         int index,
-                         StringBuilder path,
-                         List<String> matches) {
-
-            if (node == null) {
-                return;
-            }
-
-            // Entire pattern has been matched.
-            if (index == pattern.length()) {
-
-                if (node.isWord) {
-                    matches.add(path.toString());
-                }
-
-                return;
-            }
-
-            char current = pattern.charAt(index);
-
-            // Wildcard: explore every child.
-            if (current == '.') {
-
-                for (int i = 0; i < 26; i++) {
-
-                    TrieNode child = node.children[i];
-
-                    if (child == null) {
-                        continue;
-                    }
-
-                    char letter = (char) ('a' + i);
-
-                    visit(child,
-                            letter,
-                            pattern,
-                            index + 1,
-                            path,
-                            matches);
-                }
-
-            }
-
-            // Normal character: follow only one edge.
-            else {
-
-                TrieNode child = node.children[current - 'a'];
-
-                visit(child,
-                        current,
-                        pattern,
-                        index + 1,
-                        path,
-                        matches);
-            }
-
-        }
-
-        /*-----------------------------------------------------------------------
-         Visit one child.
-
-         Choose
-             Add current letter.
-
-         Explore
-             Continue DFS.
-
-         Un-Choose (Backtrack)
-             Restore path before returning.
-         -----------------------------------------------------------------------*/
-        private void visit(TrieNode child,
-                           char letter,
-                           String pattern,
-                           int nextIndex,
-                           StringBuilder path,
-                           List<String> matches) {
-
-            // Dead branch.
-            if (child == null) {
-                return;
-            }
-
-            // Choose
-            path.append(letter);
-
-            // Explore
-            dfs(child,
-                    pattern,
-                    nextIndex,
-                    path,
-                    matches);
-
-            // Un-Choose (Backtrack)
-            path.deleteCharAt(path.length() - 1);
-        }
-
-    }
-
-    /*
-    =============================================================================
-    🟣 INTERVIEW ARTICULATION (NO CODE)
-
-    Q. What is the invariant?
-
-    Every recursive state
-
-        (node, index)
-
-    means
-
-    "All characters before index have already matched exactly,
-    and node represents that matched prefix."
-
-    This invariant never changes.
-
-    -----------------------------------------------------------------------------
-
-    Q. Why is DFS correct?
-
-    There are only two possibilities.
-
-    1.
-
-    Current character is a letter.
-
-    There is exactly ONE legal continuation.
-
-    2.
-
-    Current character is '.'
-
-    Every child is a legal continuation.
-
-    DFS simply enumerates all invariant-preserving continuations.
-
-    -----------------------------------------------------------------------------
-
-    Q. Why can we stop on first successful branch?
-
-    Search asks
-
-        "Does ANY matching word exist?"
-
-    Therefore
-
-    existential search
-
-    ==
-
-    OR over every recursive branch.
-
-    -----------------------------------------------------------------------------
-
-    Q. Why is isWord necessary?
-
-    Trie node represents a prefix.
-
-    Not every prefix is a complete word.
-
-    Example
-
-    inserted
-
-        badger
-
-    searching
-
-        bad
-
-    Prefix exists.
-
-    Word does not.
-
-    Terminal marker distinguishes both.
-
-    -----------------------------------------------------------------------------
-
-    Q. Why is recursion natural here?
-
-    Every recursive call consumes exactly one character.
-
-    State size continuously shrinks.
-
-    Remaining suffix becomes the next subproblem.
-
-    -----------------------------------------------------------------------------
-
-    Q. Is this in-place?
-
-    Not applicable.
-
-    Trie is an external data structure.
-
-    -----------------------------------------------------------------------------
-
-    Q. Streaming feasibility?
-
-    Insertion
-
-    Yes.
-
-    Online.
-
-    Search
-
-    Yes.
-
-    Each query is independent.
-
-    -----------------------------------------------------------------------------
-
-    Q. When should Trie NOT be used?
-
-    Few words.
-
-    Rare searches.
-
-    Huge alphabet.
-
-    Memory-constrained environment.
-
-    Exact lookup only.
-
-    HashSet is simpler.
-
-    =============================================================================
-    🎯 INTERVIEW RECALL SHEET
-
-    Pattern Trigger
-
-    • Many strings
-    • Prefix sharing
-    • Wildcards
-    • Online insertion
-
-    ------------------------------------------------------------
-
-    Core Invariant
-
-    (node,index)
-
-    ==
-    matched prefix before index.
-
-    ------------------------------------------------------------
-
-    Search Target
-
-    Reach end of pattern
-    AND
-    node.isWord
-
-    ------------------------------------------------------------
-
-    Wildcard Rule
-
-    '.'
-
-    Try every child.
-
-    Any success
-    =>
-    success.
-
-    ------------------------------------------------------------
-
-    Letter Rule
-
-    Follow exactly one edge.
-
-    ------------------------------------------------------------
-
-    Common Trap
-
-    Forgetting terminal marker.
-
-    ------------------------------------------------------------
-
-    Edge Cases
-
-    Empty child.
-
-    Prefix only.
-
-    Single letter.
-
-    Multiple dots.
-
-    Duplicate insertion.
-
-    ------------------------------------------------------------
-
-    Interview One-Liner
-
-    Trie compresses common prefixes,
-    while DFS explores only wildcard branches that remain feasible.
-
-    ------------------------------------------------------------
-
-    Re-derivation Cue
-
-    "Current node always equals matched prefix."
-
-    =============================================================================
-    🔄 VARIATIONS & TWEAKS
-
-    -----------------------------------------------------------------------------
-    Variation
-
-    Exact Dictionary
-
-    Wildcards removed.
-
-    DFS unnecessary.
-
-    Trie traversal only.
-
-    Time
-
-    O(L)
-
-    -----------------------------------------------------------------------------
-    Variation
-
-    Prefix Search
-
-    Instead of checking isWord,
-
-    simply return true after consuming prefix.
-
-    Same invariant.
-
-    Different termination condition.
-
-    -----------------------------------------------------------------------------
-    Variation
-
-    Autocomplete
-
-    Reach prefix node.
-
-    DFS collects descendants.
-
-    Trie unchanged.
-
-    Search objective changes.
-
-    -----------------------------------------------------------------------------
-    Variation
-
-    Count Matching Words
-
-    Instead of boolean,
-
-    sum successful branches.
-
-    Invariant preserved.
-
-    Aggregation changes.
-
-    -----------------------------------------------------------------------------
-    Variation
-
-    Delete Word
-
-    Unmark terminal.
-
-    Remove unused nodes during unwind.
-
-    Invariant preserved.
-
-    -----------------------------------------------------------------------------
-    Pattern Break Signal
-
-    Alphabet becomes extremely large.
-
-    Trie memory becomes excessive.
-
-    Consider
-
-    HashMap children
-
-    instead of fixed array.
-
-    -----------------------------------------------------------------------------
-    Pattern Break Signal
-
-    Approximate matching
-
-    edit distance
-
-    substitutions
-
-    insertions
-
-    deletions
-
-    Simple Trie no longer sufficient.
-
-    DP or Automaton required.
-
-    =============================================================================
-    ⚫ REINFORCEMENT PROBLEM 1
-
-    IMPLEMENT TRIE (LEETCODE 208)
-
-    Summary
-
-    Design
-
-    insert
-
-    search
-
-    startsWith
-
-    No wildcard.
-
-    Pattern
-
-    Same Trie.
-
-    Simpler traversal.
-
-    =============================================================================
-    */
     static class ImplementTrie {
 
         static class Node {
@@ -1425,9 +1011,9 @@ DFS with shared mutable state
 
             Node current = root;
 
-            for (char c : word.toCharArray()) {
+            for (char ch : word.toCharArray()) {
 
-                int index = c - 'a';
+                int index = ch - 'a';
 
                 if (current.children[index] == null) {
 
@@ -1445,9 +1031,9 @@ DFS with shared mutable state
 
         public boolean search(String word) {
 
-            Node node = walk(word);
+            Node current = walk(word);
 
-            return node != null && node.isWord;
+            return current != null && current.isWord;
 
         }
 
@@ -1461,9 +1047,9 @@ DFS with shared mutable state
 
             Node current = root;
 
-            for (char c : text.toCharArray()) {
+            for (char ch : text.toCharArray()) {
 
-                int index = c - 'a';
+                int index = ch - 'a';
 
                 if (current.children[index] == null) {
 
@@ -1481,194 +1067,52 @@ DFS with shared mutable state
 
     }
 
-    /*
-    -----------------------------------------------------------------------------
-
-    Key Example
-
-    insert("apple")
-
-    search("apple") -> true
-
-    startsWith("app") -> true
-
-    search("app") -> false
-
-    insert("app")
-
-    search("app") -> true
-
-    -----------------------------------------------------------------------------
-
-    Invariant Mapping
-
-    Current node
-    ==
-    processed prefix.
-
-    -----------------------------------------------------------------------------
-
-    Edge Cases
-
-    Duplicate insertion.
-
-    Prefix not terminal.
-
-    Missing edge.
-
-    -----------------------------------------------------------------------------
-
-    Interview Trap
-
-    startsWith()
-
-    does NOT require terminal node.
-
-    =============================================================================
-    ⚫ REINFORCEMENT PROBLEM 2
-
-    MAP SUM PAIRS (LEETCODE 677)
-
-    Summary
-
-    Store
-
-    key -> value
-
-    Return sum of all values
-    having given prefix.
-
-    Same Trie.
-
-    Extra aggregate stored.
-
-    =============================================================================
-    */
-    static class MapSum {
-
-        static class Node {
-
-            Node[] children = new Node[26];
-
-            int sum;
-
-        }
-
-        private final Node root = new Node();
-
-        private final Map<String, Integer> values = new HashMap<>();
-
-        public void insert(String key, int value) {
-
-            int delta = value - values.getOrDefault(key, 0);
-
-            values.put(key, value);
-
-            Node current = root;
-
-            current.sum += delta;
-
-            for (char c : key.toCharArray()) {
-
-                int index = c - 'a';
-
-                if (current.children[index] == null) {
-
-                    current.children[index] = new Node();
-
-                }
-
-                current = current.children[index];
-
-                current.sum += delta;
-
-            }
-
-        }
-
-        public int sum(String prefix) {
-
-            Node current = root;
-
-            for (char c : prefix.toCharArray()) {
-
-                int index = c - 'a';
-
-                if (current.children[index] == null) {
-
-                    return 0;
-
-                }
-
-                current = current.children[index];
-
-            }
-
-            return current.sum;
-
-        }
-
-    }
-
-    /*
-    -----------------------------------------------------------------------------
-
-    Invariant
-
-    Every node stores
-
-    sum of every key passing through it.
-
-    Therefore
-
-    Prefix answer
-
-    becomes O(length).
-
-    -----------------------------------------------------------------------------
-
-    Edge Cases
-
-    Updating existing key.
-
-    Missing prefix.
-
-    Empty Trie.
-
-    -----------------------------------------------------------------------------```
-
-
-        Interview Trap
-
-    Forgetting to update previous value.
-
-    The node stores cumulative sums.
-
-    Therefore updates require
-
-    delta = newValue - oldValue
-
-    not simply adding the new value.
-
-    =============================================================================
-    ⚫ REINFORCEMENT PROBLEM 3
-
-    REPLACE WORDS (LEETCODE 648)
-
-    Summary
-
-    Given a dictionary of roots,
-    replace each word by its shortest matching root.
-
-    Pattern
-
-    Same Trie.
-
-    Stop immediately when a terminal node is reached.
-
-    =============================================================================
-    */
-    static class ReplaceWords {
+    /**
+     * ============================================================================
+     * ⚫ REINFORCEMENT 2 — RETURN ALL MATCHING WORDS
+     * ============================================================================
+     *
+     * Example
+     * -------
+     *
+     * Insert:
+     *
+     *      bad
+     *      dad
+     *      mad
+     *      bed
+     *
+     * searchAll(".ad")
+     *
+     * returns:
+     *
+     *      [bad, dad, mad]
+     *
+     * Delta from LC 211
+     * -----------------
+     *
+     * Boolean search:
+     *
+     *      first success -> return true
+     *
+     * Return-all search:
+     *
+     *      continue every valid branch
+     *
+     * We now need the actual matched word,
+     * so StringBuilder path becomes shared mutable state.
+     *
+     * Therefore:
+     *
+     *      choose
+     *      explore
+     *      un-choose
+     *
+     * is real backtracking here.
+     *
+     */
+
+    static class WordDictionaryAllMatches {
 
         static class Node {
 
@@ -1680,13 +1124,13 @@ DFS with shared mutable state
 
         private final Node root = new Node();
 
-        public void insert(String word) {
+        public void addWord(String word) {
 
             Node current = root;
 
-            for (char c : word.toCharArray()) {
+            for (char ch : word.toCharArray()) {
 
-                int index = c - 'a';
+                int index = ch - 'a';
 
                 if (current.children[index] == null) {
 
@@ -1702,155 +1146,231 @@ DFS with shared mutable state
 
         }
 
-        public String replace(String word) {
+        public List<String> searchAll(String pattern) {
 
-            Node current = root;
+            List<String> matches = new ArrayList<>();
 
-            StringBuilder prefix = new StringBuilder();
+            dfs(
+                    root,
+                    pattern,
+                    0,
+                    new StringBuilder(),
+                    matches
+            );
 
-            for (char c : word.toCharArray()) {
-
-                int index = c - 'a';
-
-                if (current.children[index] == null) {
-
-                    return word;
-
-                }
-
-                current = current.children[index];
-
-                prefix.append(c);
-
-                if (current.isWord) {
-
-                    return prefix.toString();
-
-                }
-
-            }
-
-            return word;
+            return matches;
 
         }
 
-        public String replaceSentence(List<String> dictionary,
-                                      String sentence) {
+        private void dfs(Node node,
+                         String pattern,
+                         int index,
+                         StringBuilder path,
+                         List<String> matches) {
 
-            for (String rootWord : dictionary) {
+            if (node == null) {
 
-                insert(rootWord);
+                return;
 
             }
 
-            StringBuilder answer = new StringBuilder();
+            if (index == pattern.length()) {
 
-            String[] words = sentence.split(" ");
+                if (node.isWord) {
 
-            for (int i = 0; i < words.length; i++) {
-
-                if (i > 0) {
-
-                    answer.append(' ');
+                    matches.add(path.toString());
 
                 }
 
-                answer.append(replace(words[i]));
+                return;
 
             }
 
-            return answer.toString();
+            char currentChar = pattern.charAt(index);
+
+            if (currentChar == '.') {
+
+                for (int i = 0; i < 26; i++) {
+
+                    Node child = node.children[i];
+
+                    if (child == null) {
+
+                        continue;
+
+                    }
+
+                    path.append((char) ('a' + i));
+
+                    dfs(
+                            child,
+                            pattern,
+                            index + 1,
+                            path,
+                            matches
+                    );
+
+                    path.deleteCharAt(path.length() - 1);
+
+                }
+
+                return;
+
+            }
+
+            Node child = node.children[currentChar - 'a'];
+
+            if (child == null) {
+
+                return;
+
+            }
+
+            path.append(currentChar);
+
+            dfs(
+                    child,
+                    pattern,
+                    index + 1,
+                    path,
+                    matches
+            );
+
+            path.deleteCharAt(path.length() - 1);
 
         }
 
     }
 
-    /*
-    -----------------------------------------------------------------------------
+    /**
+     * ============================================================================
+     * ⚫ REINFORCEMENT 3 — COUNT MATCHING WORDS
+     * ============================================================================
+     *
+     * Same:
+     *
+     *      Trie
+     *      DFS state
+     *      branching
+     *
+     * Only aggregation changes.
+     *
+     * Boolean:
+     *
+     *      OR
+     *
+     * Count:
+     *
+     *      SUM
+     *
+     */
 
-    Key Example
+    static class WordDictionaryCountMatches {
 
-    Dictionary
+        static class Node {
 
-    cat
-    bat
-    rat
+            Node[] children = new Node[26];
 
-    Sentence
+            boolean isWord;
 
-    cattle was rattled by battery
+        }
 
-    Answer
+        private final Node root = new Node();
 
-    cat was rat by bat
+        public void addWord(String word) {
 
-    -----------------------------------------------------------------------------
+            Node current = root;
 
-    Invariant Mapping
+            for (char ch : word.toCharArray()) {
 
-    Current node
-    ==
-    processed prefix.
+                int index = ch - 'a';
 
-    First terminal node
-    ==
-    shortest valid root.
+                if (current.children[index] == null) {
 
-    -----------------------------------------------------------------------------
+                    current.children[index] = new Node();
 
-    Edge Cases
+                }
 
-    No matching root.
+                current = current.children[index];
 
-    Entire word already a root.
+            }
 
-    Multiple possible roots.
+            current.isWord = true;
 
-    Always choose shortest.
+        }
 
-    -----------------------------------------------------------------------------
+        public int countMatches(String pattern) {
 
-    Interview Trap
+            return dfs(root, pattern, 0);
 
-    Continue traversal after terminal.
+        }
 
-    Wrong.
+        private int dfs(Node node,
+                        String pattern,
+                        int index) {
 
-    First terminal is already the shortest root.
+            if (node == null) {
 
-    =============================================================================
-    🧩 RELATED PROBLEM 1
+                return 0;
 
-    WORD SEARCH II (LEETCODE 212)
+            }
 
-    Summary
+            if (index == pattern.length()) {
 
-    Find every dictionary word inside a board.
+                return node.isWord ? 1 : 0;
 
-    Pattern
+            }
 
-    Trie
-    +
-    DFS on grid.
+            char currentChar = pattern.charAt(index);
 
-    Same Invariant?
+            if (currentChar != '.') {
 
-    Modified.
+                return dfs(
+                        node.children[currentChar - 'a'],
+                        pattern,
+                        index + 1
+                );
 
-    Trie still stores dictionary.
+            }
 
-    DFS state now becomes
+            int count = 0;
 
-    (boardCell,
-     trieNode)
+            for (Node child : node.children) {
 
-    instead of
+                count += dfs(child, pattern, index + 1);
 
-    (trieNode,
-     stringIndex)
+            }
 
-    =============================================================================
-    */
+            return count;
+
+        }
+
+    }
+
+    /**
+     * ============================================================================
+     * 🧩 RELATED 1 — LC 212 WORD SEARCH II
+     * ============================================================================
+     *
+     * Relationship
+     * ------------
+     *
+     * LC 211:
+     *
+     *      state = (trieNode, stringIndex)
+     *
+     * LC 212:
+     *
+     *      state = (boardCell, trieNode)
+     *
+     * Trie still means:
+     *
+     *      matched dictionary prefix.
+     *
+     * Grid DFS supplies the next character.
+     *
+     */
+
     static class WordSearchII {
 
         static class Node {
@@ -1864,18 +1384,15 @@ DFS with shared mutable state
         public List<String> findWords(char[][] board,
                                       String[] words) {
 
-            Node root = build(words);
+            Node root = buildTrie(words);
 
             List<String> answer = new ArrayList<>();
 
-            int rows = board.length;
-            int cols = board[0].length;
+            for (int row = 0; row < board.length; row++) {
 
-            for (int r = 0; r < rows; r++) {
+                for (int col = 0; col < board[0].length; col++) {
 
-                for (int c = 0; c < cols; c++) {
-
-                    dfs(board, r, c, root, answer);
+                    dfs(board, row, col, root, answer);
 
                 }
 
@@ -1885,7 +1402,7 @@ DFS with shared mutable state
 
         }
 
-        private Node build(String[] words) {
+        private Node buildTrie(String[] words) {
 
             Node root = new Node();
 
@@ -1944,9 +1461,6 @@ DFS with shared mutable state
             if (next.word != null) {
 
                 answer.add(next.word);
-
-                // Prevent duplicate reporting.
-
                 next.word = null;
 
             }
@@ -1964,192 +1478,24 @@ DFS with shared mutable state
 
     }
 
-    /*
-    -----------------------------------------------------------------------------
-
-    Same Invariant?
-
-    Modified.
-
-    Trie node
-    ==
-    matched dictionary prefix.
-
-    Grid position
-    ==
-    current board path.
-
-    -----------------------------------------------------------------------------
-
-    Edge Case
-
-    Duplicate discovery.
-
-    Remove stored word after first match.
-
-    -----------------------------------------------------------------------------
-
-    Interview Note
-
-    Trie prunes impossible paths immediately.
-
-    =============================================================================
-    🧩 RELATED PROBLEM 2
-
-    LONGEST WORD IN DICTIONARY (LEETCODE 720)
-
-    Summary
-
-    Find longest word such that every prefix
-    is also a valid word.
-
-    Pattern
-
-    Trie
-
-    DFS
-
-    Terminal-node validation.
-
-    =============================================================================
-    */
-    static class LongestWordDictionary {
-
-        static class Node {
-
-            Node[] children = new Node[26];
-
-            boolean isWord;
-
-            String word;
-
-        }
-
-        public String longestWord(String[] words) {
-
-            Node root = new Node();
-
-            root.isWord = true;
-
-            for (String word : words) {
-
-                Node current = root;
-
-                for (char c : word.toCharArray()) {
-
-                    int index = c - 'a';
-
-                    if (current.children[index] == null) {
-
-                        current.children[index] = new Node();
-
-                    }
-
-                    current = current.children[index];
-
-                }
-
-                current.isWord = true;
-
-                current.word = word;
-
-            }
-
-            String[] best = new String[]{""};
-
-            dfs(root, best);
-
-            return best[0];
-
-        }
-
-        private void dfs(Node node,
-                         String[] best) {
-
-            if (node == null || !node.isWord) {
-
-                return;
-
-            }
-
-            if (node.word != null) {
-
-                if (node.word.length() > best[0].length()
-                        || (node.word.length() == best[0].length()
-                        && node.word.compareTo(best[0]) < 0)) {
-
-                    best[0] = node.word;
-
-                }
-
-            }
-
-            for (Node child : node.children) {
-
-                dfs(child, best);
-
-            }
-
-        }
-
-    }
-
-    /*
-    -----------------------------------------------------------------------------
-
-    Same Invariant?
-
-    Modified.
-
-    DFS is allowed to continue
-
-    ONLY through terminal nodes.
-
-    Every explored path therefore has
-    all prefixes present.
-
-    -----------------------------------------------------------------------------```
-
-        Edge Cases
-
-    Single valid word.
-
-    Multiple answers with same length.
-
-    Lexicographically smallest wins.
-
-    -----------------------------------------------------------------------------
-
-    Interview Note
-
-    The Trie is identical.
-
-    Only the traversal invariant changes.
-
-    =============================================================================
-    🧩 RELATED PROBLEM 3
-
-    SEARCH SUGGESTIONS SYSTEM (LEETCODE 1268)
-
-    Summary
-
-    Given products and a search word,
-    return at most three lexicographically smallest suggestions
-    after each typed character.
-
-    Pattern
-
-    Trie
-
-    +
-    Prefix traversal
-
-    +
-    DFS collection.
-
-    =============================================================================
-    */
-    static class SearchSuggestionsSystem {
+    /**
+     * ============================================================================
+     * 🧩 RELATED 2 — LC 648 REPLACE WORDS
+     * ============================================================================
+     *
+     * Same prefix Trie.
+     *
+     * No wildcard branching.
+     *
+     * Key stopping rule:
+     *
+     *      FIRST terminal node wins
+     *
+     * because the shortest matching root is required.
+     *
+     */
+
+    static class ReplaceWords {
 
         static class Node {
 
@@ -2161,13 +1507,13 @@ DFS with shared mutable state
 
         private final Node root = new Node();
 
-        public void insert(String word) {
+        private void insert(String word) {
 
             Node current = root;
 
-            for (char c : word.toCharArray()) {
+            for (char ch : word.toCharArray()) {
 
-                int index = c - 'a';
+                int index = ch - 'a';
 
                 if (current.children[index] == null) {
 
@@ -2183,56 +1529,158 @@ DFS with shared mutable state
 
         }
 
-        public List<List<String>> suggestedProducts(String[] products,
-                                                    String searchWord) {
+        public String replaceWords(List<String> dictionary,
+                                   String sentence) {
 
-            Arrays.sort(products);
+            for (String rootWord : dictionary) {
 
-            for (String product : products) {
-
-                insert(product);
+                insert(rootWord);
 
             }
 
-            List<List<String>> answer = new ArrayList<>();
+            String[] words = sentence.split(" ");
+
+            StringBuilder answer = new StringBuilder();
+
+            for (int i = 0; i < words.length; i++) {
+
+                if (i > 0) {
+
+                    answer.append(' ');
+
+                }
+
+                answer.append(findRoot(words[i]));
+
+            }
+
+            return answer.toString();
+
+        }
+
+        private String findRoot(String word) {
 
             Node current = root;
 
             StringBuilder prefix = new StringBuilder();
 
-            for (char c : searchWord.toCharArray()) {
+            for (char ch : word.toCharArray()) {
 
-                prefix.append(c);
+                int index = ch - 'a';
 
-                if (current != null) {
+                if (current.children[index] == null) {
 
-                    current = current.children[c - 'a'];
-
-                }
-
-                List<String> suggestions = new ArrayList<>();
-
-                if (current != null) {
-
-                    collect(current,
-                            prefix,
-                            suggestions);
+                    return word;
 
                 }
 
-                answer.add(suggestions);
+                current = current.children[index];
+                prefix.append(ch);
+
+                if (current.isWord) {
+
+                    return prefix.toString();
+
+                }
 
             }
+
+            return word;
+
+        }
+
+    }
+
+    /**
+     * ============================================================================
+     * 🧩 RELATED 3 — LC 1268 SEARCH SUGGESTIONS
+     * ============================================================================
+     *
+     * Phase 1
+     * -------
+     *
+     * Deterministically locate the requested prefix node.
+     *
+     * Phase 2
+     * -------
+     *
+     * DFS below that node to enumerate suggestions.
+     *
+     * Compare with LC 211:
+     *
+     * LC 211 branches because the QUERY character is ambiguous.
+     *
+     * Suggestions branch only AFTER the prefix itself is known.
+     *
+     */
+
+    static class SearchSuggestions {
+
+        static class Node {
+
+            Node[] children = new Node[26];
+
+            boolean isWord;
+
+        }
+
+        private final Node root = new Node();
+
+        public void insert(String word) {
+
+            Node current = root;
+
+            for (char ch : word.toCharArray()) {
+
+                int index = ch - 'a';
+
+                if (current.children[index] == null) {
+
+                    current.children[index] = new Node();
+
+                }
+
+                current = current.children[index];
+
+            }
+
+            current.isWord = true;
+
+        }
+
+        public List<String> suggestions(String prefix) {
+
+            Node current = root;
+
+            for (char ch : prefix.toCharArray()) {
+
+                current = current.children[ch - 'a'];
+
+                if (current == null) {
+
+                    return new ArrayList<>();
+
+                }
+
+            }
+
+            List<String> answer = new ArrayList<>();
+
+            dfs(
+                    current,
+                    new StringBuilder(prefix),
+                    answer
+            );
 
             return answer;
 
         }
 
-        private void collect(Node node,
-                             StringBuilder prefix,
-                             List<String> answer) {
+        private void dfs(Node node,
+                         StringBuilder path,
+                         List<String> answer) {
 
-            if (answer.size() == 3) {
+            if (node == null || answer.size() == 3) {
 
                 return;
 
@@ -2240,11 +1688,11 @@ DFS with shared mutable state
 
             if (node.isWord) {
 
-                answer.add(prefix.toString());
+                answer.add(path.toString());
 
             }
 
-            for (int i = 0; i < 26; i++) {
+            for (int i = 0; i < 26 && answer.size() < 3; i++) {
 
                 if (node.children[i] == null) {
 
@@ -2252,19 +1700,11 @@ DFS with shared mutable state
 
                 }
 
-                prefix.append((char) ('a' + i));
+                path.append((char) ('a' + i));
 
-                collect(node.children[i],
-                        prefix,
-                        answer);
+                dfs(node.children[i], path, answer);
 
-                prefix.deleteCharAt(prefix.length() - 1);
-
-                if (answer.size() == 3) {
-
-                    return;
-
-                }
+                path.deleteCharAt(path.length() - 1);
 
             }
 
@@ -2272,206 +1712,112 @@ DFS with shared mutable state
 
     }
 
-    /*
-    -----------------------------------------------------------------------------
-
-    Same Invariant
-
-    Current node
-
-    ==
-    typed prefix.
-
-    DFS only extends legal continuations.
-
-    -----------------------------------------------------------------------------
-
-    Edge Cases
-
-    Missing prefix.
-
-    Fewer than three answers.
-
-    Empty suggestion list.
-
-    -----------------------------------------------------------------------------
-
-    Interview Note
-
-    Sorting once guarantees DFS naturally produces
-    lexicographic answers.
-
-    =============================================================================
-    🧠 MASTERY CHECKLIST
-
-    □ Can I explain why Trie is better than HashSet here?
-
-    □ Can I define the recursive state exactly?
-
-    □ Can I explain what node represents?
-
-    □ Can I explain what index represents?
-
-    □ Can I justify every recursive call?
-
-    □ Can I explain why '.' branches?
-
-    □ Can I explain why normal letters do not?
-
-    □ Can I explain why node.isWord is necessary?
-
-    □ Can I derive the recursion without memorizing?
-
-    □ Can I implement addWord() from memory?
-
-    □ Can I implement search() from only the invariant?
-
-    □ Can I explain complexity with and without wildcards?
-
-    □ Can I modify the Trie for prefix search?
-
-    □ Can I adapt it for autocomplete?
-
-    □ Can I debug a missing terminal marker?
-
-    □ Can I debug incorrect wildcard branching?
-
-    -----------------------------------------------------------------------------
-
-    Explicit Answers
-
-    -----------------------------------------------------------------------------
-
-    Invariant
-
-    (node,index)
-
-    ==
-    matched prefix before index.
-
-    -----------------------------------------------------------------------------
-
-    Search Target
-
-    End of pattern
-
-    AND
-
-    terminal node.
-
-    -----------------------------------------------------------------------------
-
-    Discard Rule
-
-    Letter
-
-    Follow one edge.
-
-    Dot
-
-    Explore every child.
-
-    -----------------------------------------------------------------------------
-
-    Termination Logic
-
-    index == pattern.length()
-
-    return node.isWord
-
-    -----------------------------------------------------------------------------
-
-    Naive Failure
-
-    HashSet
-
-    Cannot efficiently expand wildcards.
-
-    -----------------------------------------------------------------------------
-
-    Critical Edge Cases
-
-    Prefix only.
-
-    Duplicate insert.
-
-    Missing child.
-
-    Multiple dots.
-
-    Empty branch.
-
-    -----------------------------------------------------------------------------
-
-    Debugging Readiness
-
-    If search unexpectedly returns true,
-
-    verify
-
-    node.isWord
-
-    not merely prefix existence.
-
-    If wildcard misses answers,
-
-    verify
-
-    every non-null child is explored.
-
-    If insertion fails,
-
-    verify
-
-    child creation before movement.
-
-    -----------------------------------------------------------------------------
-
-    Variant Readiness
-
-    Prefix search
-
-    Autocomplete
-
-    Replace words
-
-    Word Search II
-
-    Search Suggestions
-
-    Map Sum
-
-    Trie Delete
-
-    -----------------------------------------------------------------------------
-
-    Pattern Boundary
-
-    Trie excels when
-
-    many strings
-
-    share prefixes
-
-    and repeated queries exist.
-
-    It becomes memory-expensive for
-
-    huge sparse alphabets.
-
-    =============================================================================
-    🧪 SELF-VERIFYING TEST HELPERS
-
-    Every test throws AssertionError on failure.
-
-    A passing run prints nothing except the
-    final success message.
-
-    =============================================================================
-    */
-
-    private static void assertTrue(boolean value,
-                                   String message) {
+    /**
+     * ============================================================================
+     * 🟣 INTERVIEW ARTICULATION
+     * ============================================================================
+     *
+     * "I use the same Trie structure as LC 208.
+     *
+     * The only new behavior is the wildcard dot.
+     * I model search as dfs(node, index), where node is the prefix already
+     * matched and index is the next pattern character.
+     *
+     * For a normal character there is exactly one legal child, so the DFS has
+     * branching factor one and behaves like the ordinary LC 208 loop.
+     * For '.', every existing child is legal, so I branch across those children.
+     *
+     * Every recursive call consumes exactly one pattern character.
+     * If the pattern is exhausted I return node.isWord, because path existence
+     * alone can represent only a prefix.
+     *
+     * I use the uniform recursive form as the primary implementation because it
+     * keeps null handling, termination, and continuation logic in one place."
+     *
+     */
+
+    /**
+     * ============================================================================
+     * 🎯 30-SECOND RECALL
+     * ============================================================================
+     *
+     * Foundation
+     *      Same Trie as LC 208.
+     *
+     * State
+     *      dfs(node, word, index)
+     *      = prefix before index already matched.
+     *
+     * Normal letter
+     *      recurse to ONE child.
+     *      DFS behaves like a loop.
+     *
+     * Dot
+     *      recurse to EVERY existing child.
+     *      first success wins.
+     *
+     * Missing child
+     *      node == null -> false.
+     *
+     * Pattern consumed
+     *      return node.isWord.
+     *
+     * Why uniform DFS?
+     *      same continuation logic for both cases;
+     *      less duplicated traversal code.
+     *
+     * Alternative
+     *      keep LC 208 loop and recurse only at '.'.
+     *
+     * Backtracking?
+     *      No shared mutable state, so no un-choose step.
+     *
+     * Re-derivation cue
+     *      "Normal char = one branch. Dot = many branches."
+     *
+     */
+
+    /**
+     * ============================================================================
+     * 🧠 MASTERY CHECKLIST
+     * ============================================================================
+     *
+     * □ Can I state the exact delta from LC 208?
+     *
+     * □ Can I define dfs(node, word, index)?
+     *
+     * □ Can I explain why a normal character is DFS with branching factor 1?
+     *
+     * □ Can I explain why that behaves like the old LC 208 loop?
+     *
+     * □ Can I explain exactly why '.' forces branching?
+     *
+     * □ Can I explain why every recursive call uses index + 1?
+     *
+     * □ Can I explain why node == null centralizes missing-child handling?
+     *
+     * □ Can I explain why node.isWord is required at the end?
+     *
+     * □ Can I explain why this is DFS but not backtracking?
+     *
+     * □ Can I derive O(L) when there is no wildcard?
+     *
+     * □ Can I derive the wildcard branching upper bound?
+     *
+     * □ Can I reconstruct the loop-then-DFS alternative from LC 208?
+     *
+     * □ Can I explain why uniform DFS removes duplicated traversal logic?
+     *
+     */
+
+    /**
+     * ============================================================================
+     * TEST UTILITIES
+     * ============================================================================
+     */
+
+    static void assertTrue(boolean value,
+                           String message) {
 
         if (!value) {
 
@@ -2481,8 +1827,8 @@ DFS with shared mutable state
 
     }
 
-    private static void assertFalse(boolean value,
-                                    String message) {
+    static void assertFalse(boolean value,
+                            String message) {
 
         if (value) {
 
@@ -2492,9 +1838,9 @@ DFS with shared mutable state
 
     }
 
-    private static void assertEquals(Object expected,
-                                     Object actual,
-                                     String message) {
+    static void assertEquals(Object expected,
+                             Object actual,
+                             String message) {
 
         if (!Objects.equals(expected, actual)) {
 
@@ -2503,22 +1849,20 @@ DFS with shared mutable state
                             + "\nExpected : "
                             + expected
                             + "\nActual   : "
-                            + actual);
+                            + actual
+            );
 
         }
 
     }
 
-    /*
-    =============================================================================
-    TEST GROUP 1
+    /**
+     * ============================================================================
+     * MAIN — SELF-VERIFYING TESTS
+     * ============================================================================
+     */
 
-    Official Example
-
-    =============================================================================
-    */
-
-    private static void testOfficialExample() {
+    public static void main(String[] args) {
 
         WordDictionary dictionary = new WordDictionary();
 
@@ -2533,285 +1877,111 @@ DFS with shared mutable state
 
         assertTrue(
                 dictionary.search("bad"),
-                "Exact word should exist."
+                "Exact inserted word should exist."
         );
 
         assertTrue(
                 dictionary.search(".ad"),
-                "Wildcard should match first letter."
+                "Wildcard at beginning should match."
         );
 
         assertTrue(
                 dictionary.search("b.."),
-                "Wildcard suffix should match."
+                "Multiple wildcard positions should match."
         );
 
-    }
+        WordDictionaryLoopThenDFS loopThenDFS =
+                new WordDictionaryLoopThenDFS();
 
-    /*
-    =============================================================================
-    TEST GROUP 2
+        loopThenDFS.addWord("bad");
+        loopThenDFS.addWord("dad");
+        loopThenDFS.addWord("mad");
 
-    Terminal Marker Validation
-
-    =============================================================================
-    */
-
-    private static void testPrefixVsWord() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("badger");
+        assertTrue(
+                loopThenDFS.search(".ad"),
+                "Loop-then-DFS primary alternative should match wildcard."
+        );
 
         assertFalse(
-                dictionary.search("bad"),
-                "Prefix alone is not a word."
+                loopThenDFS.search("pad"),
+                "Loop-then-DFS primary alternative should reject absent word."
+        );
+
+        WordDictionary prefixOnly = new WordDictionary();
+
+        prefixOnly.addWord("badger");
+
+        assertFalse(
+                prefixOnly.search("bad"),
+                "Prefix path must not count as a complete word."
         );
 
         assertTrue(
-                dictionary.search("badger"),
+                prefixOnly.search("badger"),
                 "Complete inserted word must match."
         );
 
-    }
+        WordDictionary single = new WordDictionary();
 
-    /*
-    =============================================================================
-    TEST GROUP 3
-
-    Duplicate Insertions
-
-    =============================================================================
-    */
-
-    private static void testDuplicateInsertions() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("apple");
-        dictionary.addWord("apple");
-        dictionary.addWord("apple");
+        single.addWord("a");
+        single.addWord("z");
 
         assertTrue(
-                dictionary.search("apple"),
-                "Duplicate insertions must remain valid."
-        );
-
-    }
-
-
-
-        /*
-    =============================================================================
-    TEST GROUP 4
-
-    Single Character Words
-
-    =============================================================================
-    */
-
-    private static void testSingleCharacterWords() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("a");
-        dictionary.addWord("z");
-
-        assertTrue(
-                dictionary.search("a"),
-                "Single character should match."
-        );
-
-        assertTrue(
-                dictionary.search("."),
-                "Wildcard should match any one-letter word."
+                single.search("."),
+                "Single wildcard should match one-character word."
         );
 
         assertFalse(
-                dictionary.search("b"),
-                "Non-existent one-letter word should fail."
+                single.search("b"),
+                "Missing one-character word should fail."
         );
 
-    }
+        WordDictionary sharedPrefix = new WordDictionary();
 
-    /*
-    =============================================================================
-    TEST GROUP 5
-
-    Multiple Wildcards
-
-    =============================================================================
-    */
-
-    private static void testMultipleWildcards() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("code");
-        dictionary.addWord("cope");
-        dictionary.addWord("cake");
+        sharedPrefix.addWord("app");
+        sharedPrefix.addWord("apple");
+        sharedPrefix.addWord("application");
 
         assertTrue(
-                dictionary.search("c..e"),
-                "Multiple wildcard branches should succeed."
+                sharedPrefix.search("app"),
+                "Inserted shared prefix should remain a complete word."
         );
 
         assertTrue(
-                dictionary.search("...."),
-                "All wildcard pattern should match length-4 words."
+                sharedPrefix.search("appl."),
+                "Wildcard at end should match apple."
         );
 
         assertFalse(
-                dictionary.search("....."),
-                "Incorrect length must fail."
-        );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 6
-
-    Missing Child Pruning
-
-    =============================================================================
-    */
-
-    private static void testMissingChildPruning() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("tree");
-
-        assertFalse(
-                dictionary.search("free"),
-                "Traversal should terminate immediately on missing child."
-        );
-
-        assertFalse(
-                dictionary.search("trie"),
-                "Different path should fail."
-        );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 7
-
-    Prefix Sharing
-
-    =============================================================================
-    */
-
-    private static void testSharedPrefixes() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("app");
-        dictionary.addWord("apple");
-        dictionary.addWord("application");
-
-        assertTrue(
-                dictionary.search("app"),
-                "Shortest inserted prefix should match."
-        );
-
-        assertTrue(
-                dictionary.search("apple"),
-                "Longer shared-prefix word should match."
-        );
-
-        assertTrue(
-                dictionary.search("appl."),
-                "Wildcard at end should match."
-        );
-
-        assertFalse(
-                dictionary.search("apply"),
+                sharedPrefix.search("apply"),
                 "Uninserted word should fail."
         );
 
-    }
+        WordDictionary duplicate = new WordDictionary();
 
-    /*
-    =============================================================================
-    TEST GROUP 8
-
-    Wildcard Branch Selection
-
-    Ensures DFS explores every feasible child.
-
-    =============================================================================
-    */
-
-    private static void testWildcardBranchSelection() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("bat");
-        dictionary.addWord("cat");
-        dictionary.addWord("rat");
+        duplicate.addWord("hello");
+        duplicate.addWord("hello");
 
         assertTrue(
-                dictionary.search(".at"),
-                "Wildcard should discover any matching branch."
+                duplicate.search("hello"),
+                "Duplicate insertion must not corrupt Trie."
         );
 
+        WordDictionary allDots = new WordDictionary();
+
+        allDots.addWord("code");
+        allDots.addWord("cope");
+        allDots.addWord("cake");
+
         assertTrue(
-                dictionary.search("..t"),
-                "Two wildcards should still succeed."
+                allDots.search("...."),
+                "All-wildcard pattern should match same-length word."
         );
 
         assertFalse(
-                dictionary.search(".ax"),
-                "Every explored branch should fail."
+                allDots.search("....."),
+                "Different-length wildcard pattern should fail."
         );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 9
-
-    Deep Trie Paths
-
-    =============================================================================
-    */
-
-    private static void testDeepTrie() {
-
-        WordDictionary dictionary = new WordDictionary();
-
-        dictionary.addWord("abcdefghijklmnopqrstuvwxy");
-
-        assertTrue(
-                dictionary.search("abcdefghijklmnopqrstuvwxy"),
-                "Deep exact path should match."
-        );
-
-        assertTrue(
-                dictionary.search(".bcdefghijklmnopqrstuvwxy"),
-                "Wildcard at root should match."
-        );
-
-        assertTrue(
-                dictionary.search("abcdefghijklmnopqrstuvwx."),
-                "Wildcard at leaf should match."
-        );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 10
-
-    Reinforcement Problem Verification
-
-    =============================================================================
-    */
-
-    private static void testImplementTrie() {
 
         ImplementTrie trie = new ImplementTrie();
 
@@ -2819,185 +1989,76 @@ DFS with shared mutable state
 
         assertTrue(
                 trie.search("apple"),
-                "Inserted word should exist."
+                "LC 208 exact search failed."
         );
 
         assertFalse(
                 trie.search("app"),
-                "Prefix should not automatically be a word."
+                "LC 208 prefix must not automatically be a word."
         );
 
         assertTrue(
                 trie.startsWith("app"),
-                "Prefix lookup should succeed."
+                "LC 208 startsWith failed."
         );
 
-        trie.insert("app");
+        WordDictionaryAllMatches allMatches = new WordDictionaryAllMatches();
 
-        assertTrue(
-                trie.search("app"),
-                "Inserted prefix should now become a word."
+        allMatches.addWord("bad");
+        allMatches.addWord("dad");
+        allMatches.addWord("mad");
+        allMatches.addWord("bed");
+
+        List<String> matches = allMatches.searchAll(".ad");
+
+        Collections.sort(matches);
+
+        assertEquals(
+                Arrays.asList("bad", "dad", "mad"),
+                matches,
+                "Return-all wildcard variation failed."
         );
 
-    }
+        WordDictionaryCountMatches countMatches =
+                new WordDictionaryCountMatches();
 
-    /*
-    =============================================================================
-    TEST GROUP 11
-
-    Map Sum
-
-    =============================================================================
-    */
-
-    private static void testMapSum() {
-
-        MapSum map = new MapSum();
-
-        map.insert("apple", 3);
+        countMatches.addWord("bat");
+        countMatches.addWord("cat");
+        countMatches.addWord("rat");
+        countMatches.addWord("bed");
 
         assertEquals(
                 3,
-                map.sum("ap"),
-                "Prefix sum incorrect."
+                countMatches.countMatches(".at"),
+                "Count-matches aggregation failed."
         );
 
-        map.insert("app", 2);
+        ReplaceWords replaceWords = new ReplaceWords();
 
         assertEquals(
-                5,
-                map.sum("ap"),
-                "Both keys should contribute."
-        );
-
-        map.insert("apple", 5);
-
-        assertEquals(
-                7,
-                map.sum("ap"),
-                "Delta update should be applied."
-        );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 12
-
-    Replace Words
-
-    =============================================================================
-    */
-
-    private static void testReplaceWords() {
-
-        ReplaceWords solution = new ReplaceWords();
-
-        String answer = solution.replaceSentence(
-                Arrays.asList("cat", "bat", "rat"),
-                "the cattle was rattled by battery"
-        );
-
-        assertEquals(
-                "the cat was rat by bat",
-                answer,
-                "Shortest root replacement failed."
-        );
-
-    }
-
-
-
-        /*
-    =============================================================================
-    TEST GROUP 13
-
-    Longest Word in Dictionary
-
-    =============================================================================
-    */
-
-    private static void testLongestWordDictionary() {
-
-        LongestWordDictionary solution = new LongestWordDictionary();
-
-        String answer = solution.longestWord(
-                new String[]{
-                        "w",
-                        "wo",
-                        "wor",
-                        "worl",
-                        "world",
-                        "banana"
-                }
-        );
-
-        assertEquals(
-                "world",
-                answer,
-                "Longest buildable word is incorrect."
-        );
-
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 14
-
-    Search Suggestions System
-
-    =============================================================================
-    */
-
-    private static void testSearchSuggestionsSystem() {
-
-        SearchSuggestionsSystem system = new SearchSuggestionsSystem();
-
-        List<List<String>> answer =
-                system.suggestedProducts(
-                        new String[]{
-                                "mobile",
-                                "mouse",
-                                "moneypot",
-                                "monitor",
-                                "mousepad"
-                        },
-                        "mouse"
-                );
-
-        assertEquals(
-                Arrays.asList(
-                        "mobile",
-                        "moneypot",
-                        "monitor"
+                "the cat was rat by the bat",
+                replaceWords.replaceWords(
+                        Arrays.asList("cat", "bat", "rat"),
+                        "the cattle was rattled by the battery"
                 ),
-                answer.get(0),
-                "Suggestions for prefix 'm' are incorrect."
+                "Replace Words variation failed."
         );
+
+        SearchSuggestions suggestions = new SearchSuggestions();
+
+        suggestions.insert("mobile");
+        suggestions.insert("mouse");
+        suggestions.insert("moneypot");
+        suggestions.insert("monitor");
+        suggestions.insert("mousepad");
 
         assertEquals(
-                Arrays.asList(
-                        "mouse",
-                        "mousepad"
-                ),
-                answer.get(answer.size() - 1),
-                "Suggestions for complete prefix are incorrect."
+                Arrays.asList("mobile", "moneypot", "monitor"),
+                suggestions.suggestions("mo"),
+                "Search Suggestions variation failed."
         );
 
-    }
-
-    /*
-    =============================================================================
-    TEST GROUP 15
-
-    Word Search II
-
-    =============================================================================
-    */
-
-    private static void testWordSearchII() {
-
-        WordSearchII solution = new WordSearchII();
+        WordSearchII wordSearch = new WordSearchII();
 
         char[][] board = {
                 {'o', 'a', 'a', 'n'},
@@ -3006,7 +2067,7 @@ DFS with shared mutable state
                 {'i', 'f', 'l', 'v'}
         };
 
-        List<String> found = solution.findWords(
+        List<String> found = wordSearch.findWords(
                 board,
                 new String[]{
                         "oath",
@@ -3021,67 +2082,16 @@ DFS with shared mutable state
         assertEquals(
                 Arrays.asList("eat", "oath"),
                 found,
-                "Board search produced incorrect words."
+                "Word Search II variation failed."
         );
 
-    }
-
-    /*
-    =============================================================================
-    MAIN
-
-    Executes every verification test.
-
-    Any AssertionError immediately identifies
-    the failed invariant.
-
-    =============================================================================
-    */
-
-    public static void main(String[] args) {
-
-        testOfficialExample();
-
-        testPrefixVsWord();
-
-        testDuplicateInsertions();
-
-        testSingleCharacterWords();
-
-        testMultipleWildcards();
-
-        testMissingChildPruning();
-
-        testSharedPrefixes();
-
-        testWildcardBranchSelection();
-
-        testDeepTrie();
-
-        testImplementTrie();
-
-        testMapSum();
-
-        testReplaceWords();
-
-        testLongestWordDictionary();
-
-        testSearchSuggestionsSystem();
-
-        testWordSearchII();
-
-        System.out.println("====================================================");
-        System.out.println("All self-verifying tests passed.");
-        System.out.println("Trie + DFS wildcard implementation verified.");
-        System.out.println("====================================================");
         System.out.println();
-        System.out.println("I understand the invariant.");
-        System.out.println("I can re-derive the solution.");
-        System.out.println("I can physically reconstruct the implementation under pressure.");
-        System.out.println("This chapter is complete.");
+        System.out.println("==================================================");
+        System.out.println("JAVA GOLD V4 VERIFIED");
+        System.out.println("All self-verifying tests passed.");
+        System.out.println("Uniform Trie DFS + wildcard branching invariant preserved.");
+        System.out.println("==================================================");
 
     }
 
 }
-
-

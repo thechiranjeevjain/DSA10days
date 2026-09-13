@@ -11,1376 +11,1508 @@ import java.util.*;
  * Difficulty:
  * Hard
  *
- * Tags:
- * Graph
- * Breadth First Search (BFS)
- * Shortest Path
- * HashSet
- * String
- *
- * =====================================================================================
- * 2. 📘 PRIMARY PROBLEM
- * =====================================================================================
- *
- * Problem
- * -------
- * A transformation sequence from beginWord to endWord using a dictionary wordList is
- * defined as:
- *
- * beginWord -> s1 -> s2 -> ... -> sk
- *
- * such that:
- *
- * 1. Every adjacent pair differs by exactly one character.
- * 2. Every intermediate word belongs to wordList.
- * 3. beginWord does NOT have to exist inside wordList.
- * 4. endWord must be reached.
- *
- * Return the number of words in the shortest transformation sequence.
- * If impossible, return 0.
- *
- * Constraints
- * -----------
- * • 1 <= beginWord.length <= 10
- * • endWord.length == beginWord.length
- * • 1 <= wordList.length <= 5000
- * • All words have identical length.
- * • All words consist of lowercase English letters.
- * • All words are unique.
- *
- * Representative Example
- * ----------------------
- * begin = "hit"
- * end   = "cog"
- *
- * dictionary
- * hot dot dog lot log cog
- *
- * hit
- *  |
- * hot
- * / \
- * dot lot
- * |    |
- * dog log
- *   \ /
- *   cog
- *
- * Shortest sequence:
- *
- * hit
- * ->
- * hot
- * ->
- * dot
- * ->
- * dog
- * ->
- * cog
- *
- * Answer = 5
- *
- * Example 2
- * ---------
- * endWord absent from dictionary.
- *
- * No valid transformation.
- *
- * Return 0.
- *
- *
- * =====================================================================================
- * 3. 🔵 CORE PATTERN OVERVIEW
- * =====================================================================================
- *
- * Pattern
- * -------
- * Unweighted Graph Shortest Path using Breadth First Search.
- *
- * Archetype
- * ---------
- * Level-order exploration.
- *
- * Core Invariant
- * --------------
- * Every word removed from the BFS queue is reached using the minimum possible
- * number of transformations.
- *
- * Therefore the first time endWord is discovered, the answer is optimal.
- *
- * Why It Works
- * ------------
- * Every valid character replacement represents one graph edge.
- *
- * Every edge has equal cost (=1).
- *
- * BFS explores states in increasing path length.
- *
- * Recognition Signals
- * -------------------
- * ✔ minimum number of operations
- * ✔ every operation costs exactly one
- * ✔ transformations
- * ✔ graph not explicitly given
- * ✔ shortest path
- *
- * When To Use
- * -----------
- * • Equal edge weights
- * • Minimum moves
- * • Implicit graph
- * • State transitions generated on demand
- *
- * When NOT To Use
- * ---------------
- * • Different edge costs
- * • Negative weights
- * • Weighted shortest path
- * • Longest path
- *
- * Comparison
- * ----------
- *
- * DFS
- * ----
- * Finds a path.
- * Not guaranteed shortest.
- *
- * Dijkstra
- * --------
- * Weighted graphs.
- * Unnecessary overhead here.
- *
- * A*
- * ---
- * Uses heuristic.
- * Useful for huge search spaces.
- *
- * Bidirectional BFS
- * -----------------
- * Faster practical optimization.
- * Same correctness.
- * More implementation complexity.
- *
- *
- * =====================================================================================
- * 4. 🟢 MENTAL MODEL & INVARIANTS
- * =====================================================================================
- *
- * Mental Model
- * ------------
- * Imagine every valid dictionary word as a node.
- *
- * Two nodes are connected if they differ by exactly one character.
- *
- * We never explicitly build this graph.
- *
- * Instead, while standing on one word, we mechanically generate all possible
- * neighbors by changing one character at every position.
- *
- * BFS walks outward layer by layer.
- *
- * Layer 1
- * --------
- * Words reachable in one transformation.
- *
- * Layer 2
- * --------
- * Words reachable in two transformations.
- *
- * ...
- *
- * Eventually endWord appears.
- *
- * Since BFS never skips layers, that layer is optimal.
- *
- *
- * --------------------------
- * 🟢 Invariant 1
- * --------------------------
- *
- * Every queued word belongs to exactly one BFS level.
- *
- * Meaning:
- *
- * All words inside the queue before processing a level represent paths having
- * identical length.
- *
- *
- * --------------------------
- * 🟢 Invariant 2
- * --------------------------
- *
- * A dictionary word is visited at most once.
- *
- * We immediately remove it from the HashSet when discovered.
- *
- * This guarantees:
- *
- * • no duplicate work
- * • no infinite cycles
- * • no longer path replacing a shorter one
- *
- *
- * --------------------------
- * 🟢 Invariant 3
- * --------------------------
- *
- * The remaining HashSet is exactly the unexplored search space.
- *
- * Every removal permanently shrinks future work.
- *
- *
- * --------------------------
- * 🟢 Invariant 4
- * --------------------------
- *
- * step equals the number of words in the transformation sequence represented by
- * the current BFS layer.
- *
- * Initial state:
- *
- * Queue:
- * hit
- *
- * step = 1
- *
- * because the sequence currently contains only beginWord.
- *
- *
- * --------------------------
- * 🟢 Variable Meanings
- * --------------------------
- *
- * wordSet
- *
- * Remaining unexplored dictionary.
- *
- * queue
- *
- * Current BFS frontier.
- *
- * size
- *
- * Number of states belonging to the current shortest distance.
- *
- * step
- *
- * Transformation sequence length for current layer.
- *
- * currWord
- *
- * Current graph node.
- *
- *
- * --------------------------
- * 🟢 Allowed State Transition
- * --------------------------
- *
- * Current word
- *
- * Change exactly one character.
- *
- * If new word exists inside unexplored dictionary:
- *
- * enqueue
- * remove from dictionary
- *
- *
- * --------------------------
- * 🔴 Forbidden Transition
- * --------------------------
- *
- * Visiting an already removed word.
- *
- * That would violate shortest-path ordering.
- *
- *
- * --------------------------
- * 🟢 Termination
- * --------------------------
- *
- * BFS stops when:
- *
- * 1. endWord discovered
- *
- * OR
- *
- * 2. queue empty
- *
- * Queue empty means the reachable connected component has been exhausted.
- *
- *
- * --------------------------
- * Why Naive Solutions Fail
- * --------------------------
- *
- * Naive DFS
- * ---------
- * May discover a very long transformation before the shortest one.
- *
- * Backtracking over all possibilities is exponential.
- *
- * Recursive search revisits states repeatedly.
- *
- * BFS avoids all of these by exploring strictly in increasing distance.
- *
- *
- * =====================================================================================
- * 5. 🔴 WHY WRONG SOLUTIONS FAIL
- * =====================================================================================
- *
- * Mistake 1
- * ---------
- * Remove a word after dequeue instead of immediately after enqueue.
- *
- * Looks reasonable because the word is "processed" only when popped.
- *
- * Failure:
- *
- * Multiple parents enqueue the same node.
- *
- * Queue explodes.
- *
- * Invariant violated:
- *
- * "Every dictionary word is discovered once."
- *
- *
- * Mistake 2
- * ---------
- * Use DFS because graph seems small.
- *
- * Counterexample
- *
- * hit
- * |
- * hot
- * |
- * dot
- * |
- * dog
- * |
- * cog
- *
- * Another branch contains hundreds of useless words.
- *
- * DFS may traverse entire useless branch first.
- *
- *
- * Mistake 3
- * ---------
- * Forget to process level by level.
- *
- * Incrementing step after every node instead of every level.
- *
- * Counterexample:
- *
- * One BFS layer contains multiple words.
- *
- * All should share identical shortest distance.
- *
- *
- * Mistake 4
- * ---------
- * Continue searching after reaching endWord.
- *
- * BFS guarantee is lost conceptually.
- *
- * First discovery is already optimal.
- *
- *
- * Interview Trap
- * --------------
- *
- * "Can we mark visited after dequeue?"
- *
- * Correct answer:
- *
- * No.
- *
- * Multiple shortest parents may enqueue the same child before it is popped,
- * causing duplicate work and violating the one-discovery invariant.
- *
- *
- * =====================================================================================
- * ⚙ IMPLEMENTATION BLUEPRINT
- * =====================================================================================
- *
- * Mechanical typing order:
- *
- * 1.
- *
- * int ladderLength(...)
- *
- * 2.
- *
- * Validate endWord exists.
- *
- * 3.
- *
- * Build HashSet.
- *
- * 4.
- *
- * Create queue.
- *
- * 5.
- *
- * Push beginWord.
- *
- * 6.
- *
- * step = 1.
- *
- * 7.
- *
- * while queue not empty
- *
- *      levelSize
- *
- *      repeat levelSize times
- *
- *          pop word
- *
- *          for every position
- *
- *              try all 26 letters
- *
- *                  generate neighbor
- *
- *                  if neighbor absent
- *                      continue
- *
- *                  if neighbor == endWord
- *                      return step + 1
- *
- *                  enqueue
- *
- *                  remove immediately
- *
- *      step++
- *
- * 8.
- *
- * return 0
- *
- *
- * =====================================================================================
- * 🧾 ULTRA-COMPACT PSEUDOCODE
- * =====================================================================================
- *
- * build set
- * verify end exists
- *
- * enqueue(begin)
- * step = 1
- *
- * while queue
- *      process one level
- *      generate neighbors
- *      visit once
- *      return on target
- *      step++
- *
- * return 0
- *
- *
- * =====================================================================================
- * 6. SOLUTION CLASSES
- * =====================================================================================
- */
-
-/**
- * Exactly one top-level public class as required.
+ * Java Gold V18
+ *
+ * Primary learning goal:
+ *
+ * Decompose an unfamiliar-looking problem into familiar reusable pieces:
+ *
+ * orchestration
+ * +
+ * problem-specific getNeighbors()
+ * +
+ * reusable graph materialization
+ * +
+ * reusable BFS
  */
 public class WordLadder {
 
-    /**
-     * =========================================================================
-     * Brute Force
-     * =========================================================================
+    /*
+     * =============================================================================
+     * 1. 📘 PROBLEM STATEMENT
+     * =============================================================================
      *
-     * Idea
-     * ----
-     * Try every possible transformation recursively.
+     * A transformation sequence from beginWord to endWord is:
      *
-     * Invariant
-     * ---------
-     * Current path remains valid.
+     * beginWord -> s1 -> s2 -> ... -> sk
      *
-     * Limitation
-     * ----------
-     * Explores exponentially many paths.
+     * such that:
      *
-     * Complexity
-     * ----------
-     * Exponential.
+     * 1. Every adjacent pair differs by exactly one character.
+     * 2. Every transformed word must belong to wordList.
+     * 3. beginWord does not have to exist in wordList.
+     * 4. endWord must be reached.
      *
-     * Interview Usefulness
-     * --------------------
-     * Only useful as a baseline discussion.
+     * Return the number of WORDS in the shortest transformation sequence.
+     *
+     * If no valid transformation exists, return 0.
+     *
+     * Example:
+     *
+     * beginWord = "hit"
+     * endWord   = "cog"
+     *
+     * wordList =
+     * ["hot", "dot", "dog", "lot", "log", "cog"]
+     *
+     * hit -> hot -> dot -> dog -> cog
+     *
+     * Answer = 5
      */
-    static class BruteForce {
 
-        public int ladderLength(String beginWord,
-                                String endWord,
-                                List<String> wordList) {
-            throw new UnsupportedOperationException(
-                    "Brute-force recursion is intentionally omitted because it is exponential and unsuitable for interviews."
-            );
-        }
-    }
 
-    /**
-     * =========================================================================
-     * Improved
-     * =========================================================================
+    /*
+     * =============================================================================
+     * 2. 🧠 MASTER REUSABLE MAP — MEMORIZE THIS ONCE
+     * =============================================================================
      *
-     * Idea
-     * ----
-     * Build the implicit graph on demand using BFS.
+     *        SHORTEST NUMBER OF MOVES
+     *                 +
+     *        EVERY MOVE COSTS THE SAME
+     *                 ↓
+     *                BFS
      *
-     * Invariant
-     * ---------
-     * Every visited word has already been reached optimally.
      *
-     * Improvement
-     * -----------
-     * Avoids exponential exploration.
+     * CLEAN ARCHITECTURE
+     * ==================
      *
-     * Complexity
-     * ----------
+     * EACH PROBLEM STANDS ALONE:
+     *
+     * public problem method
+     *          ↓
+     * buildGraph()
+     *          ↓
+     * getNeighbors()
+     *          ↓
+     * bfs()
+     *
+     *
+     * WHAT CHANGES?
+     * =============
+     *
+     * Word Ladder
+     * ->
+     * getNeighbors = mutate one letter
+     *
+     * Genetic Mutation
+     * ->
+     * getNeighbors = mutate one gene
+     *
+     * Open Lock
+     * ->
+     * getNeighbors = rotate one wheel
+     * ->
+     * generate lazily during BFS
+     *
+     *
+     * WHAT STAYS CONCEPTUALLY?
+     * =========================
+     *
+     * buildGraph()
+     * bfs()
+     * visited
+     * queue
+     * levelSize
+     *
+     * The COUNTER keeps its domain meaning:
+     *
+     * Word Ladder -> sequenceLength
+     * Genetic Mutation -> mutations
+     * Open Lock -> turns
+     *
+     *
+     * IMPORTANT:
+     *
+     * We intentionally REPEAT that boilerplate inside each standalone delta
+     * problem instead of extracting a generic GraphBfs framework.
+     *
+     * Why?
+     *
+     * Each delta should be copy-pastable, independently reconstructable, and
+     * visually comparable beside the primary solution.
+     *
+     *
+     * MEMORY:
+     *
+     * ACTUAL PROBLEM LOGIC
+     * =
+     * getNeighbors()
+     *
+     * Familiar boilerplate repeats around it.
+     */
+
+
+    /*
+     * =============================================================================
+     * 3. ⭐ PRIMARY — WORD LADDER
+     * =============================================================================
+     *
+     * Pattern:
+     * Graph Materialization + BFS
+     *
      * Time:
-     * O(N * L * 26)
+     * O(N * L²)
      *
      * Space:
-     * O(N)
+     * O(N * L + E * L) conservatively for stored generated String neighbors
      *
-     * Interview Usefulness
-     * --------------------
-     * This is already the accepted interview solution.
+     * N = number of words
+     * L = word length
+     * E = number of directed adjacency entries
+     *
+     *
+     * SIX-MONTH RECONSTRUCTION:
+     *
+     * Word Ladder
+     * ->
+     * define legal neighboring words
+     * ->
+     * build normal graph
+     * ->
+     * run normal BFS
      */
-    static class Improved {
+
+    static class Optimal {
+
+        private static final String CHOICES =
+                "abcdefghijklmnopqrstuvwxyz";
 
 
         public int ladderLength(String beginWord,
                                 String endWord,
                                 List<String> wordList) {
 
-            if (!wordList.contains(endWord)) {
+            Set<String> validWords =
+                    new HashSet<>(wordList);
+
+            if (!validWords.contains(endWord)) {
                 return 0;
             }
 
-            Set<String> wordSet = new HashSet<>(wordList);
+            validWords.add(beginWord);
 
-            Queue<String> queue = new ArrayDeque<>();
+            Map<String, List<String>> graph =
+                    buildGraph(validWords);
+
+            return bfs(
+                    beginWord,
+                    endWord,
+                    graph
+            );
+        }
+
+
+        /*
+         * FAMILIAR GRAPH-MATERIALIZATION BOILERPLATE
+         *
+         * buildGraph() does NOT care which replacement characters are legal.
+         *
+         * Its responsibility is only:
+         *
+         * current
+         * ->
+         * getNeighbors(current)
+         * ->
+         * adjacency list
+         */
+        private Map<String, List<String>> buildGraph(
+                Set<String> validValues) {
+
+            Map<String, List<String>> graph =
+                    new HashMap<>();
+
+            for (String current : validValues) {
+
+                graph.put(
+                        current,
+                        getNeighbors(
+                                current,
+                                validValues
+                        )
+                );
+            }
+
+            return graph;
+        }
+
+
+        /*
+         * ACTUAL TRANSITION ENGINE
+         *
+         * SAVE
+         * ->
+         * CHOOSE
+         * ->
+         * EXPLORE
+         * ->
+         * RESTORE
+         *
+         *
+         * WORD-LADDER POLICY:
+         *
+         * CHOICES =
+         * "abcdefghijklmnopqrstuvwxyz"
+         */
+        private List<String> getNeighbors(
+                String current,
+                Set<String> validValues) {
+
+            List<String> neighbors =
+                    new ArrayList<>();
+
+            char[] characters =
+                    current.toCharArray();
+
+            for (int position = 0;
+                 position < characters.length;
+                 position++) {
+
+                char original =
+                        characters[position];
+
+                for (int i = 0;
+                     i < CHOICES.length();
+                     i++) {
+
+                    char choice =
+                            CHOICES.charAt(i);
+
+                    if (choice == original) {
+                        continue;
+                    }
+
+                    // CHOOSE
+                    characters[position] =
+                            choice;
+
+                    // EXPLORE
+                    String candidate =
+                            new String(characters);
+
+                    if (validValues.contains(candidate)) {
+                        neighbors.add(candidate);
+                    }
+
+                    // RESTORE
+                    characters[position] =
+                            original;
+                }
+            }
+
+            return neighbors;
+        }
+
+
+        /*
+         * WORD-LADDER BFS
+         *
+         * sequenceLength
+         * =
+         * number of WORDS in the transformation sequence
+         */
+        private int bfs(
+                String beginWord,
+                String endWord,
+                Map<String, List<String>> graph) {
+
+            Queue<String> queue =
+                    new ArrayDeque<>();
+
+            Set<String> visited =
+                    new HashSet<>();
+
             queue.offer(beginWord);
+            visited.add(beginWord);
 
-            // Prevent revisiting beginWord if it exists in the dictionary.
-            wordSet.remove(beginWord);
-
-            int step = 1;
+            int sequenceLength = 1;
 
             while (!queue.isEmpty()) {
 
-                // Every word currently in the queue belongs to the same BFS layer.
-                int levelSize = queue.size();
+                int levelSize =
+                        queue.size();
 
-                for (int levelIndex = 0; levelIndex < levelSize; levelIndex++) {
+                for (int i = 0;
+                     i < levelSize;
+                     i++) {
 
-                    String currentWord = queue.poll();
+                    String current =
+                            queue.poll();
 
-                    char[] characters = currentWord.toCharArray();
+                    for (String neighbor :
+                            graph.get(current)) {
 
-                    for (int position = 0; position < characters.length; position++) {
-
-                        char originalCharacter = characters[position];
-
-                        for (char candidate = 'a'; candidate <= 'z'; candidate++) {
-
-                            if (candidate == originalCharacter) {
-                                continue;
-                            }
-
-                            characters[position] = candidate;
-
-                            String nextWord = new String(characters);
-
-                            if (!wordSet.contains(nextWord)) {
-                                continue;
-                            }
-
-                            // First discovery of endWord is guaranteed optimal.
-                            if (nextWord.equals(endWord)) {
-                                return step + 1;
-                            }
-
-                            // Remove immediately to preserve one-discovery invariant.
-                            wordSet.remove(nextWord);
-
-                            queue.offer(nextWord);
+                        if (neighbor.equals(endWord)) {
+                            return sequenceLength + 1;
                         }
 
-                        // Restore state before mutating another position.
-                        characters[position] = originalCharacter;
+                        if (visited.add(neighbor)) {
+                            queue.offer(neighbor);
+                        }
                     }
                 }
 
-                // Entire layer processed; advance shortest-path length.
-                step++;
+                sequenceLength++;
             }
 
             return 0;
         }
     }
 
-    /**
-     * =========================================================================
-     * Optimal (Interview Preferred)
-     * =========================================================================
+
+    /*
+     * =============================================================================
+     * 4. 🔄 DELTA 1 — MINIMUM GENETIC MUTATION
+     * =============================================================================
      *
-     * Idea
-     * ----
-     * Treat every dictionary word as a node in an implicit graph.
+     * LeetCode 433
      *
-     * Generate neighbors by replacing one character at every position.
+     * SAME ARCHITECTURE:
      *
-     * BFS guarantees that nodes are explored in increasing transformation
-     * length, so the first time endWord is discovered we have the shortest
-     * possible sequence.
+     * minMutation()
+     * ->
+     * getNeighbors()
+     * ->
+     * GraphBfs.buildGraph()
+     * ->
+     * GraphBfs.shortestDistance()
      *
-     * 🟢 Invariant
-     * ------------
-     * Every queued word has already been reached using the minimum possible
-     * number of transformations.
      *
-     * Correctness
-     * -----------
-     * Equal edge weights imply BFS is equivalent to shortest-path search.
+     * ONLY IMPORTANT DELTA:
      *
-     * Complexity
-     * ----------
+     * Word Ladder alphabet:
+     *
+     * a..z
+     *
+     * becomes:
+     *
+     * A / C / G / T
+     *
+     *
+     * State:
+     * gene string
+     *
+     * Valid:
+     * gene exists in bank
+     *
+     * Target:
+     * endGene
+     */
+
+    static class MinimumGeneticMutation {
+
+        private static final String CHOICES =
+                "ACGT";
+
+
+        public int minMutation(String startGene,
+                               String endGene,
+                               String[] bank) {
+
+            Set<String> validGenes =
+                    new HashSet<>(
+                            Arrays.asList(bank)
+                    );
+
+            if (!validGenes.contains(endGene)) {
+                return -1;
+            }
+
+            validGenes.add(startGene);
+
+            Map<String, List<String>> graph =
+                    buildGraph(validGenes);
+
+            return bfs(
+                    startGene,
+                    endGene,
+                    graph
+            );
+        }
+
+
+        /*
+         * SAME GRAPH-MATERIALIZATION SHAPE AS WORD LADDER.
+         *
+         * No transition-policy parameter is passed through this method.
+         */
+        private Map<String, List<String>> buildGraph(
+                Set<String> validValues) {
+
+            Map<String, List<String>> graph =
+                    new HashMap<>();
+
+            for (String current : validValues) {
+
+                graph.put(
+                        current,
+                        getNeighbors(
+                                current,
+                                validValues
+                        )
+                );
+            }
+
+            return graph;
+        }
+
+
+        /*
+         * SAME getNeighbors() ENGINE AS WORD LADDER.
+         *
+         * GENETIC-MUTATION POLICY:
+         *
+         * CHOICES =
+         * "ACGT"
+         */
+        private List<String> getNeighbors(
+                String current,
+                Set<String> validValues) {
+
+            List<String> neighbors =
+                    new ArrayList<>();
+
+            char[] characters =
+                    current.toCharArray();
+
+            for (int position = 0;
+                 position < characters.length;
+                 position++) {
+
+                char original =
+                        characters[position];
+
+                for (int i = 0;
+                     i < CHOICES.length();
+                     i++) {
+
+                    char choice =
+                            CHOICES.charAt(i);
+
+                    if (choice == original) {
+                        continue;
+                    }
+
+                    // CHOOSE
+                    characters[position] =
+                            choice;
+
+                    // EXPLORE
+                    String candidate =
+                            new String(characters);
+
+                    if (validValues.contains(candidate)) {
+                        neighbors.add(candidate);
+                    }
+
+                    // RESTORE
+                    characters[position] =
+                            original;
+                }
+            }
+
+            return neighbors;
+        }
+
+
+        /*
+         * GENETIC-MUTATION BFS
+         *
+         * mutations
+         * =
+         * number of mutation edges taken
+         */
+        private int bfs(
+                String startGene,
+                String endGene,
+                Map<String, List<String>> graph) {
+
+            Queue<String> queue =
+                    new ArrayDeque<>();
+
+            Set<String> visited =
+                    new HashSet<>();
+
+            queue.offer(startGene);
+            visited.add(startGene);
+
+            int mutations = 0;
+
+            while (!queue.isEmpty()) {
+
+                int levelSize =
+                        queue.size();
+
+                for (int i = 0;
+                     i < levelSize;
+                     i++) {
+
+                    String current =
+                            queue.poll();
+
+                    if (current.equals(endGene)) {
+                        return mutations;
+                    }
+
+                    for (String neighbor :
+                            graph.get(current)) {
+
+                        if (visited.add(neighbor)) {
+                            queue.offer(neighbor);
+                        }
+                    }
+                }
+
+                mutations++;
+            }
+
+            return -1;
+        }
+    }
+
+
+    /*
+     * =============================================================================
+     * 5. 🔄 DELTA 2 — OPEN THE LOCK
+     * =============================================================================
+     *
+     * LeetCode 752
+     *
+     * SAME BFS FAMILY, DIFFERENT GRAPH EXPOSURE:
+     *
+     * openLock()
+     * ->
+     * bfs()
+     * ->
+     * getNeighbors(current)
+     *
+     *
+     * No buildGraph() here.
+     *
+     * Open Lock's neighbors are cheap and naturally generated on demand.
+     *
+     *
+     * ONLY IMPORTANT TRANSITION DELTA:
+     *
+     * instead of mutating letters:
+     *
+     * rotate one wheel
+     *
+     * forward
+     * or
+     * backward
+     *
+     *
+     * State:
+     * 4-digit lock string
+     *
+     * Valid:
+     * not a deadend
+     *
+     * Target:
+     * requested lock state
+     */
+
+    static class OpenTheLock {
+
+        private static final String START =
+                "0000";
+
+
+        public int openLock(String[] deadends,
+                            String target) {
+
+            Set<String> blocked =
+                    new HashSet<>(
+                            Arrays.asList(deadends)
+                    );
+
+            if (blocked.contains(START)) {
+                return -1;
+            }
+
+            return bfs(
+                    START,
+                    target,
+                    blocked
+            );
+        }
+
+
+        /*
+         * OPEN-LOCK-SPECIFIC TRANSITION LOGIC
+         *
+         * For every wheel:
+         *
+         * SAVE
+         * ->
+         * rotate forward
+         * ->
+         * EXPLORE
+         * ->
+         * RESTORE
+         *
+         * then:
+         *
+         * rotate backward
+         * ->
+         * EXPLORE
+         * ->
+         * RESTORE
+         *
+         *
+         * Unlike Word Ladder / Genetic Mutation:
+         *
+         * there is no supplied dictionary of all legal states that we need to
+         * materialize first.
+         *
+         * The next states are cheap to generate directly from the current lock.
+         */
+        private List<String> getNeighbors(
+                String current) {
+
+            List<String> neighbors =
+                    new ArrayList<>();
+
+            char[] digits =
+                    current.toCharArray();
+
+            for (int position = 0;
+                 position < digits.length;
+                 position++) {
+
+                char original =
+                        digits[position];
+
+
+                /*
+                 * CHOOSE FORWARD
+                 */
+                digits[position] =
+                        original == '9'
+                                ? '0'
+                                : (char) (original + 1);
+
+                /*
+                 * EXPLORE
+                 */
+                neighbors.add(
+                        new String(digits)
+                );
+
+                /*
+                 * RESTORE
+                 */
+                digits[position] =
+                        original;
+
+
+                /*
+                 * CHOOSE BACKWARD
+                 */
+                digits[position] =
+                        original == '0'
+                                ? '9'
+                                : (char) (original - 1);
+
+                /*
+                 * EXPLORE
+                 */
+                neighbors.add(
+                        new String(digits)
+                );
+
+                /*
+                 * RESTORE
+                 */
+                digits[position] =
+                        original;
+            }
+
+            return neighbors;
+        }
+
+
+        /*
+         * LAZY IMPLICIT-GRAPH BFS
+         *
+         * We do NOT build:
+         *
+         * 0000 ... 9999
+         *
+         * and we do NOT precompute every adjacency list.
+         *
+         * Instead:
+         *
+         * BFS reaches current
+         * ->
+         * getNeighbors(current)
+         * ->
+         * inspect only those 8 next lock states
+         *
+         *
+         * turns
+         * =
+         * number of wheel turns
+         */
+        private int bfs(
+                String start,
+                String target,
+                Set<String> blocked) {
+
+            Queue<String> queue =
+                    new ArrayDeque<>();
+
+            Set<String> visited =
+                    new HashSet<>();
+
+            queue.offer(start);
+            visited.add(start);
+
+            int turns = 0;
+
+            while (!queue.isEmpty()) {
+
+                int levelSize =
+                        queue.size();
+
+                for (int i = 0;
+                     i < levelSize;
+                     i++) {
+
+                    String current =
+                            queue.poll();
+
+                    if (current.equals(target)) {
+                        return turns;
+                    }
+
+                    for (String neighbor :
+                            getNeighbors(current)) {
+
+                        if (!blocked.contains(neighbor)
+                                && visited.add(neighbor)) {
+
+                            queue.offer(neighbor);
+                        }
+                    }
+                }
+
+                turns++;
+            }
+
+            return -1;
+        }
+    }
+
+
+    /*
+     * =============================================================================
+     * 6. 👀 READ THESE THREE SOLUTIONS SIDE BY SIDE
+     * =============================================================================
+     *
+     * WORD LADDER
+     * ===========
+     *
+     * choices =
+     * "abcdefghijklmnopqrstuvwxyz"
+     *
+     *
+     * GENETIC MUTATION
+     * ================
+     *
+     * choices =
+     * "ACGT"
+     *
+     *
+     * EVERYTHING BELOW THAT LINE IS INTENTIONALLY THE SAME SHAPE:
+     *
+     * buildGraph(validValues)
+     *
+     * getNeighbors(current, validValues)
+     *
+     * bfs(...)
+     *
+     *
+     * CHOICES belongs only to getNeighbors().
+     *
+     * buildGraph() should not receive transition-policy details it does not use.
+     *
+     *
+     * OPEN LOCK
+     * =========
+     *
+     * getNeighbors(current)
+     *
+     * position
+     * ×
+     * forward/backward rotation
+     *
+     * blocked / visited filtering happens inside BFS.
+     *
+     *
+     * EACH CLASS STILL CONTAINS ITS OWN:
+     *
+     * buildGraph()
+     * bfs()
+     *
+     * so every delta is standalone and copy-pastable.
+     *
+     *
+     * WHAT SHOULD YOUR EYE NOTICE?
+     *
+     * Word Ladder and Genetic Mutation are nearly the SAME standalone solution.
+     *
+     * buildGraph() is the same shape.
+     * getNeighbors() is the same shape.
+     * bfs() is the same shape.
+     *
+     * The main transition delta is:
+     *
+     * choices.
+     *
+     *
+     * Open Lock keeps the same higher-level mutation idea:
+     *
+     * SAVE -> CHOOSE -> EXPLORE -> RESTORE
+     *
+     * but it does NOT force the same buildGraph() structure.
+     *
+     * Its state space is naturally implicit and cheap to expand:
+     *
+     * current lock
+     * ->
+     * 8 neighbors
+     *
+     * so it uses lazy getNeighbors() directly inside BFS.
+     *
+     *
+     * THAT IS THE LEARNING GOAL:
+     *
+     * NEW PROBLEM
+     *      ↓
+     * RECOGNIZE FAMILIAR BOILERPLATE
+     *      ↓
+     * IDENTIFY THE NEW getNeighbors()
+     *      ↓
+     * RECONSTRUCT THE WHOLE STANDALONE SOLUTION.
+     */
+
+
+    /*
+     * =============================================================================
+     * 7. 🌳 CODE ↔ BFS TREE VISUAL MAPPING
+     * =============================================================================
+     *
+     * Word Ladder graph:
+     *
+     *                           hit
+     *                            |
+     *                           hot
+     *                         /     \
+     *                       dot     lot
+     *                        |       |
+     *                       dog     log
+     *                         \     /
+     *                           cog
+     *
+     *
+     * levelSize = queue.size()
+     * ->
+     * freeze one horizontal tree row
+     *
+     *
+     * queue.poll()
+     * ->
+     * move horizontally across that row
+     *
+     *
+     * graph.get(current)
+     * ->
+     * look downward at prebuilt children
+     *
+     *
+     * queue.offer(neighbor)
+     * ->
+     * build the next row
+     *
+     *
+     * moves++
+     * ->
+     * move the horizontal ruler down one row
+     *
+     *
+     * Example:
+     *
+     * current queue:
+     *
+     * [dot, lot]
+     *
+     * levelSize = 2
+     *
+     * poll dot
+     * ->
+     * enqueue dog
+     *
+     * queue:
+     *
+     * [lot, dog]
+     *
+     * lot
+     * =
+     * still current row
+     *
+     * dog
+     * =
+     * already next row
+     *
+     * levelSize keeps those rows separate.
+     */
+
+
+    /*
+     * =============================================================================
+     * 8. 🟢 FIRST-PRINCIPLES INVENTION PATH
+     * =============================================================================
+     *
+     * Need:
+     *
+     * minimum transformations
+     *
+     * Every transformation:
+     *
+     * costs exactly one
+     *
+     * Therefore:
+     *
+     * shortest equal-cost path
+     * ->
+     * BFS
+     *
+     *
+     * But input does not explicitly give edges.
+     *
+     * So ask:
+     *
+     * "For one state, how do I derive its legal neighbors?"
+     *
+     * Word Ladder:
+     *
+     * mutate one character
+     * +
+     * dictionary membership
+     *
+     *
+     * Once that transition rule exists:
+     *
+     * states + getNeighbors()
+     * ->
+     * buildGraph()
+     * ->
+     * ordinary BFS
+     *
+     *
+     * This is the reconstruction-first decomposition.
+     */
+
+
+    /*
+     * =============================================================================
+     * 9. 🧠 EXPLICIT vs IMPLICIT GRAPH DECISION RULE
+     * =============================================================================
+     *
+     * EXPLICIT EDGES GIVEN
+     * ====================
+     *
+     * Example:
+     * Course Schedule
+     *
+     * prerequisites already describe edges
+     *
+     * ->
+     * directly build adjacency list
+     *
+     *
+     * IMPLICIT EDGES DEFINED BY RULE
+     * ==============================
+     *
+     * Example:
+     * Word Ladder
+     *
+     * words are given
+     * edge rule is:
+     *
+     * "differ by exactly one character"
+     *
+     * ->
+     * derive neighbors
+     *
+     *
+     * Then choose:
+     *
+     * LAZY
+     * ->
+     * derive neighbors during traversal
+     *
+     * or
+     *
+     * MATERIALIZED
+     * ->
+     * derive all neighbors first
+     * then run ordinary graph traversal
+     *
+     *
+     * CURRENT FILE:
+     *
+     * Word Ladder / Genetic Mutation
+     * ->
+     * materialized graph for reconstruction familiarity
+     *
+     * Open Lock
+     * ->
+     * lazy implicit graph because each current state has only 8 immediately
+     * derivable neighbors and prebuilding all 10,000 lock states adds clutter
+     *
+     *
+     * Java Gold preference:
+     *
+     * If required time complexity remains acceptable and graph materialization
+     * makes the solution dramatically easier to reconstruct using familiar
+     * templates, it is a valid primary choice.
+     *
+     * Document the memory trade-off.
+     */
+
+
+    /*
+     * =============================================================================
+     * 10. 🔁 MUTATION ↔ BACKTRACKING CONNECTION
+     * =============================================================================
+     *
+     * getNeighbors() is not itself a full recursive backtracking algorithm.
+     *
+     * But it uses the same reusable state-restoration micro-pattern:
+     *
+     * SAVE
+     *   ↓
+     * CHOOSE
+     *   ↓
+     * EXPLORE
+     *   ↓
+     * RESTORE
+     *
+     *
+     * Word Ladder:
+     *
+     * save original char
+     * ->
+     * replace char
+     * ->
+     * inspect candidate
+     * ->
+     * restore original char
+     *
+     *
+     * Word Search:
+     *
+     * save board cell
+     * ->
+     * mark used
+     * ->
+     * recurse
+     * ->
+     * restore board cell
+     *
+     *
+     * Permutations:
+     *
+     * add choice
+     * ->
+     * recurse
+     * ->
+     * remove choice
+     *
+     *
+     * Reusable rule:
+     *
+     * If shared mutable state is temporarily changed for one sibling choice,
+     * restore it before exploring the next sibling.
+     */
+
+
+    /*
+     * =============================================================================
+     * 11. 🔀 WORD LADDER vs WORD SEARCH
+     * =============================================================================
+     *
+     * Both belong to:
+     *
+     * STATE-SPACE SEARCH
+     *
+     *
+     * WORD LADDER
+     * ===========
+     *
+     * State:
+     * complete word
+     *
+     * Neighbor:
+     * one-character mutation
+     *
+     * Objective:
+     * shortest equal-cost path
+     *
+     * Engine:
+     * BFS
+     *
+     * Visited:
+     * global
+     *
+     *
+     * WORD SEARCH
+     * ===========
+     *
+     * State:
+     * row + col + word index
+     *
+     * Neighbor:
+     * adjacent board cell
+     *
+     * Objective:
+     * does one valid path exist?
+     *
+     * Engine:
+     * DFS / backtracking
+     *
+     * Visited:
+     * path-local
+     *
+     *
+     * DECISION:
+     *
+     * Need shortest equal-cost path?
+     * ->
+     * BFS
+     *
+     * Need to explore one path deeply and undo choices?
+     * ->
+     * DFS / backtracking
+     */
+
+
+    /*
+     * =============================================================================
+     * 12. ⏱ PRIMARY COMPLEXITY — DERIVATION
+     * =============================================================================
+     *
      * Let:
      *
-     * N = number of dictionary words
-     * L = length of each word
+     * N = number of words
+     * L = word length
+     * E = number of directed adjacency entries
      *
-     * Each word is discovered at most once.
      *
-     * For every discovered word:
+     * -------------------------------------------------------------------------
+     * Word Ladder graph construction
+     * -------------------------------------------------------------------------
      *
-     * • L character positions
-     * • 26 candidate letters
+     * For each of N words:
      *
-     * Time:
-     * O(N × L × 26)
+     * L positions
+     * ×
+     * 26 replacement letters
      *
-     * Since 26 is constant:
+     * Each:
      *
-     * O(N × L)
+     * new String(letters)
+     *
+     * materializes O(L) characters.
+     *
+     * Therefore:
+     *
+     * O(N * L * 26 * L)
+     *
+     * 26 is constant:
+     *
+     * O(N * L²)
+     *
+     *
+     * -------------------------------------------------------------------------
+     * BFS
+     * -------------------------------------------------------------------------
+     *
+     * Each node:
+     * processed at most once
+     *
+     * Each stored edge:
+     * scanned at most once
+     *
+     * O(N + E)
+     *
+     *
+     * A lowercase word can have at most:
+     *
+     * 25 * L
+     *
+     * one-character neighbors.
+     *
+     * Therefore:
+     *
+     * E = O(N * L)
+     *
+     *
+     * Overall:
+     *
+     * O(N * L² + N + E)
+     *
+     * =
+     *
+     * O(N * L²)
+     *
      *
      * Space:
-     * O(N)
      *
-     * Interview Usefulness
-     * --------------------
-     * This is the standard expected solution for Word Ladder.
+     * valid word storage
+     * +
+     * adjacency lists
+     * +
+     * generated neighbor strings
+     *
+     * conservatively:
+     *
+     * O(N * L + E * L)
+     *
+     *
+     * TRADE-OFF:
+     *
+     * Lazy neighbor generation uses less graph memory.
+     *
+     * This primary chooses graph materialization because it makes:
+     *
+     * buildGraph()
+     * +
+     * bfs()
+     *
+     * completely familiar reusable templates.
      */
-    static class Optimal {
 
-        public int ladderLength(String beginWord,
-                                String endWord,
-                                List<String> wordList) {
 
-            if (!wordList.contains(endWord)) {
-                return 0;
-            }
+    /*
+     * =============================================================================
+     * 13. 🔁 DISTINCT ALTERNATIVE — WILDCARD INDEX
+     * =============================================================================
+     *
+     * Another genuinely different way to expose adjacency:
+     *
+     * hot
+     * ->
+     * *ot
+     * h*t
+     * ho*
+     *
+     * dot
+     * ->
+     * *ot
+     * d*t
+     * do*
+     *
+     *
+     * Shared:
+     *
+     * *ot
+     *
+     * means:
+     *
+     * hot and dot are neighbors.
+     *
+     *
+     * Reusable idea:
+     *
+     * Instead of directly materializing:
+     *
+     * node -> neighbors
+     *
+     * build an INDEX that groups compatible states:
+     *
+     * pattern -> states
+     *
+     *
+     * Keep as alternative because it teaches indexing/preprocessing,
+     * not because primary BFS needs it.
+     */
 
-            Set<String> unexploredWords = new HashSet<>(wordList);
 
-            Queue<String> bfsQueue = new ArrayDeque<>();
+    /*
+     * =============================================================================
+     * 14. 🎯 30-SECOND RECALL
+     * =============================================================================
+     *
+     * Trigger
+     * ->
+     * shortest moves + equal move cost
+     *
+     * Engine
+     * ->
+     * BFS
+     *
+     * Architecture
+     * ->
+     * getNeighbors()
+     * -> buildGraph()
+     * -> BFS
+     *
+     * Actual Word Ladder delta
+     * ->
+     * choices = "abcdefghijklmnopqrstuvwxyz"
+     *
+     * Mutation template
+     * ->
+     * SAVE → CHOOSE → EXPLORE → RESTORE
+     *
+     * Time
+     * ->
+     * O(N * L²)
+     *
+     * Main trade-off
+     * ->
+     * materialize when it simplifies reconstruction;
+     * stay lazy when materialization adds unnecessary work/code
+     *
+     * Biggest learning
+     * ->
+     * keep the engine boring;
+     * push variability into getNeighbors()
+     */
 
-            bfsQueue.offer(beginWord);
 
-            unexploredWords.remove(beginWord);
+    /*
+     * =============================================================================
+     * 15. 🧠 MASTERY CHECKLIST
+     * =============================================================================
+     *
+     * [ ] Can I derive BFS from shortest + equal-cost moves?
+     *
+     * [ ] Can I distinguish explicit and implicit graphs?
+     *
+     * [ ] Can I write a standalone buildGraph() from memory?
+     *
+     * [ ] Can I write a standalone bfs() from memory?
+     *
+     * [ ] Can I write the generic-named getNeighbors() template from memory?
+     *
+     * [ ] Can I see that Genetic Mutation mainly changes the CHOICES constant?
+     *
+     * [ ] Can I explain why Open Lock stays lazy instead of building all states?
+     *
+     * [ ] Can I explain SAVE → CHOOSE → EXPLORE → RESTORE?
+     *
+     * [ ] Can I map levelSize directly to one BFS-tree row?
+     *
+     * [ ] Can I derive O(N * L²)?
+     *
+     * [ ] Can I explain the graph-materialization memory trade-off?
+     */
 
-            int step = 1;
 
-            while (!bfsQueue.isEmpty()) {
+    /*
+     * =============================================================================
+     * 16. 🧪 SELF-VERIFYING TESTS
+     * =============================================================================
+     */
 
-                // Invariant: every node in this batch has identical distance.
-                int currentLevelSize = bfsQueue.size();
+    public static void main(String[] args) {
 
-                for (int node = 0; node < currentLevelSize; node++) {
+        Optimal wordLadder =
+                new Optimal();
 
-                    String currentWord = bfsQueue.poll();
+        assert wordLadder.ladderLength(
+                "hit",
+                "cog",
+                Arrays.asList(
+                        "hot",
+                        "dot",
+                        "dog",
+                        "lot",
+                        "log",
+                        "cog"
+                )
+        ) == 5;
 
-                    char[] letters = currentWord.toCharArray();
+        assert wordLadder.ladderLength(
+                "hit",
+                "cog",
+                Arrays.asList(
+                        "hot",
+                        "dot",
+                        "dog",
+                        "lot",
+                        "log"
+                )
+        ) == 0;
 
-                    for (int index = 0; index < letters.length; index++) {
+        assert wordLadder.ladderLength(
+                "a",
+                "c",
+                Arrays.asList(
+                        "a",
+                        "b",
+                        "c"
+                )
+        ) == 2;
 
-                        char original = letters[index];
 
-                        for (char replacement = 'a';
-                             replacement <= 'z';
-                             replacement++) {
+        MinimumGeneticMutation mutation =
+                new MinimumGeneticMutation();
 
-                            if (replacement == original) {
-                                continue;
-                            }
-
-                            letters[index] = replacement;
-
-                            String candidate = new String(letters);
-
-                            if (!unexploredWords.contains(candidate)) {
-                                continue;
-                            }
-
-                            // Invariant:
-                            // First discovery means shortest transformation.
-                            if (candidate.equals(endWord)) {
-                                return step + 1;
-                            }
-
-                            // Remove immediately so no second parent can
-                            // enqueue the same state.
-                            unexploredWords.remove(candidate);
-
-                            bfsQueue.offer(candidate);
-                        }
-
-                        // Restore original state before changing another
-                        // position.
-                        letters[index] = original;
-                    }
+        assert mutation.minMutation(
+                "AACCGGTT",
+                "AACCGGTA",
+                new String[]{
+                        "AACCGGTA"
                 }
+        ) == 1;
 
-                // Entire shortest-distance frontier has been exhausted.
-                step++;
-            }
+        assert mutation.minMutation(
+                "AACCGGTT",
+                "AAACGGTA",
+                new String[]{
+                        "AACCGGTA",
+                        "AACCGCTA",
+                        "AAACGGTA"
+                }
+        ) == 2;
 
-            // Search space exhausted without reaching target.
-            return 0;
-        }
+
+        OpenTheLock lock =
+                new OpenTheLock();
+
+        assert lock.openLock(
+                new String[]{
+                        "0201",
+                        "0101",
+                        "0102",
+                        "1212",
+                        "2002"
+                },
+                "0202"
+        ) == 6;
+
+        assert lock.openLock(
+                new String[]{
+                        "8888"
+                },
+                "0009"
+        ) == 1;
+
+        assert lock.openLock(
+                new String[]{
+                        "0000"
+                },
+                "8888"
+        ) == -1;
+
+
+        System.out.println(
+                "All assertions passed."
+        );
     }
-
-/**
- * =========================================================================
- * 🟣 INTERVIEW ARTICULATION
- * =========================================================================
- *
- * Explain the Invariant
- * ---------------------
- *
- * I model every valid word as a graph node.
- *
- * Two nodes are adjacent when they differ by exactly one character.
- *
- * Instead of explicitly constructing the graph, I generate neighbors
- * lazily by replacing each character with every lowercase letter.
- *
- * BFS explores these nodes level by level.
- *
- * Therefore every word removed from the queue has already been reached
- * through the minimum possible number of transformations.
- *
- *
- * Explain the Discard Rule
- * ------------------------
- *
- * As soon as a neighbor is discovered, I immediately remove it from the
- * dictionary.
- *
- * This guarantees that each graph node is discovered exactly once.
- *
- * It prevents duplicate queue entries and preserves shortest-path
- * correctness.
- *
- *
- * Explain Correctness
- * -------------------
- *
- * Every transformation has equal cost.
- *
- * BFS explores states in increasing path length.
- *
- * Therefore the first discovery of endWord is necessarily optimal.
- *
- *
- * Explain Termination
- * -------------------
- *
- * The algorithm terminates because every dictionary word can enter the
- * queue at most once.
- *
- * Eventually either:
- *
- * • endWord is found
- *
- * or
- *
- * • the queue becomes empty.
- *
- *
- * In-place Feasibility
- * --------------------
- *
- * Not applicable.
- *
- * The dictionary must remain searchable.
- *
- * A HashSet is the natural state representation.
- *
- *
- * Streaming Feasibility
- * ---------------------
- *
- * Not naturally.
- *
- * Random membership queries over the entire dictionary are required.
- *
- *
- * When NOT To Use
- * ---------------
- *
- * • weighted transformations
- * • negative costs
- * • minimum-cost instead of minimum-step problems
- * • dynamic edge weights
- *
- *
- * =========================================================================
- * 🎯 INTERVIEW RECALL SHEET
- * =========================================================================
- *
- * Trigger
- * -------
- * Minimum transformations with equal cost.
- *
- * Pattern
- * -------
- * BFS on an implicit graph.
- *
- * Invariant
- * ---------
- * Queue stores one shortest-distance frontier.
- *
- * Search Target
- * -------------
- * First appearance of endWord.
- *
- * Discard Rule
- * ------------
- * Remove from HashSet immediately after enqueue.
- *
- * Common Trap
- * -----------
- * Removing only after dequeue duplicates work.
- *
- * Edge Cases
- * ----------
- * • endWord absent
- * • single-character words
- * • unreachable target
- * • beginWord already inside dictionary
- *
- * One-liner
- * ---------
- * Equal edge weights imply BFS.
- *
- * Re-derivation Cue
- * -----------------
- * Queue = shortest frontier.
- * HashSet = unexplored search space.
- */
-
-/**
- * =========================================================================
- * 🔄 VARIATIONS & TWEAKS
- * =========================================================================
- *
- * -------------------------------------------------------------------------
- * Variation 1
- * -------------------------------------------------------------------------
- * Return the actual transformation sequence.
- *
- * Reasoning Change
- * ----------------
- * Store the parent of every discovered word.
- *
- * Parent Map:
- *
- * child -> parent
- *
- * Once endWord is found, repeatedly follow parent pointers back to
- * beginWord and reverse the collected path.
- *
- * Invariant Preserved
- * -------------------
- * The first recorded parent always belongs to the shortest path because a
- * node is discovered only once.
- *
- *
- * -------------------------------------------------------------------------
- * Variation 2
- * -------------------------------------------------------------------------
- * Return every shortest transformation sequence.
- *
- * (Word Ladder II)
- *
- * Reasoning Change
- * ----------------
- * One parent is insufficient.
- *
- * Maintain:
- *
- * child -> list of shortest parents
- *
- * Finish processing the entire BFS layer where endWord is first reached.
- *
- * Afterwards perform DFS/backtracking over the parent graph.
- *
- * Pattern Break
- * -------------
- * Immediate termination is no longer valid because other shortest parents
- * may exist in the same BFS level.
- *
- *
- * -------------------------------------------------------------------------
- * Variation 3
- * -------------------------------------------------------------------------
- * Bidirectional BFS
- *
- * Reasoning Change
- * ----------------
- * Expand simultaneously from:
- *
- * beginWord
- * endWord
- *
- * Always expand the smaller frontier.
- *
- * Why It Still Works
- * ------------------
- * Both searches preserve BFS distance ordering.
- *
- * The first meeting point represents the optimal path.
- *
- * Practical Benefit
- * -----------------
- * Dramatically reduces explored states on large dictionaries.
- *
- *
- * -------------------------------------------------------------------------
- * Variation 4
- * -------------------------------------------------------------------------
- * Precomputed wildcard graph.
- *
- * Example
- * -------
- * hot
- *
- * generates
- *
- * *ot
- * h*t
- * ho*
- *
- * Build:
- *
- * wildcard
- * ->
- * words
- *
- * Neighbor lookup becomes faster because only compatible words are scanned.
- *
- * Trade-off
- * ---------
- * More preprocessing.
- *
- * More memory.
- *
- *
- * -------------------------------------------------------------------------
- * Variation 5
- * -------------------------------------------------------------------------
- * Weighted transformations.
- *
- * Pattern Break
- * -------------
- * BFS correctness disappears.
- *
- * Correct Pattern
- * ---------------
- * Dijkstra.
- *
- *
- * -------------------------------------------------------------------------
- * Variation 6
- * -------------------------------------------------------------------------
- * Different word lengths.
- *
- * Pattern Break
- * -------------
- * Single-character replacement alone no longer defines graph edges.
- *
- * Insertions and deletions must also be modeled.
- *
- * Graph definition changes completely.
- *
- *
- * =========================================================================
- * 🧠 MASTERY CHECKLIST
- * =========================================================================
- *
- * □ Can I state the invariant?
- *
- * Every queued node has already been reached optimally.
- *
- *
- * □ What is the search target?
- *
- * First discovery of endWord.
- *
- *
- * □ What is the discard rule?
- *
- * Remove from HashSet immediately after enqueue.
- *
- *
- * □ Why does BFS terminate?
- *
- * Every dictionary word is processed at most once.
- *
- *
- * □ Why does DFS fail?
- *
- * DFS does not preserve increasing path length.
- *
- *
- * □ Why is the answer optimal?
- *
- * Equal edge weights plus BFS level ordering.
- *
- *
- * □ Which data structures matter?
- *
- * Queue
- *
- * HashSet
- *
- *
- * □ Why not boolean visited[]?
- *
- * Words are strings.
- *
- * HashSet naturally provides:
- *
- * O(1)
- *
- * membership
- *
- * and
- *
- * visited removal.
- *
- *
- * □ Edge cases remembered?
- *
- * ✔ endWord absent
- *
- * ✔ unreachable graph
- *
- * ✔ beginWord inside dictionary
- *
- * ✔ dictionary of size one
- *
- * ✔ repeated generated candidates
- *
- *
- * □ Debugging readiness?
- *
- * Check:
- *
- * • level size
- *
- * • step increment timing
- *
- * • immediate removal
- *
- * • character restoration
- *
- *
- * □ Variant readiness?
- *
- * ✔ Word Ladder II
- *
- * ✔ Bidirectional BFS
- *
- * ✔ Wildcard preprocessing
- *
- * ✔ Parent reconstruction
- *
- *
- * □ Pattern boundary?
- *
- * Equal-cost shortest path
- * -> BFS
- *
- * Weighted shortest path
- * -> Dijkstra
- *
- *
- * =========================================================================
- * ⚫ PATTERN MAPPING
- * =========================================================================
- *
- * This problem belongs to the family:
- *
- * • Rotten Oranges
- * • Minimum Genetic Mutation
- * • Open the Lock
- * • Bus Routes
- * • Snakes and Ladders
- * • Binary Matrix Shortest Path
- *
- * Shared Invariant
- * ----------------
- * One BFS layer equals one unit of distance.
- *
- *
- * =========================================================================
- * 🔍 FORENSIC DEBUGGING GUIDE
- * =========================================================================
- *
- * Symptom
- * -------
- * Same word appears many times in the queue.
- *
- * Likely Cause
- * ------------
- * Removal performed after dequeue instead of after enqueue.
- *
- * Violated Invariant
- * ------------------
- * Every node must be discovered exactly once.
- *
- *
- * Symptom
- * -------
- * Returned answer is one larger or smaller.
- *
- * Likely Cause
- * ------------
- * step updated at the wrong time.
- *
- * Correct Rule
- * ------------
- * Increment only after processing an entire BFS layer.
- *
- *
- * Symptom
- * -------
- * Valid transformations disappear unexpectedly.
- *
- * Likely Cause
- * ------------
- * Character array not restored after mutation.
- *
- * Correct Rule
- * ------------
- * Restore the original character before changing another position.
- *
- *
- * Symptom
- * -------
- * Algorithm never reaches endWord even though a path exists.
- *
- * Likely Cause
- * ------------
- * Neighbor generation skipped some positions or letters.
- *
- * Verification
- * ------------
- * For every word:
- *
- * L positions
- *
- * ×
- *
- * 26 letters
- *
- * must be attempted.
- *
- *
- * Symptom
- * -------
- * Queue becomes empty immediately.
- *
- * Likely Cause
- * ------------
- * endWord missing from dictionary or neighbor generation incorrect.
- *
- *
- * =========================================================================
- * ⚫ IMPLEMENTATION RECONSTRUCTION DRILL
- * =========================================================================
- *
- * Memorize only these mechanical steps:
- *
- * 1.
- * Verify endWord exists.
- *
- * 2.
- * HashSet from dictionary.
- *
- * 3.
- * Queue beginWord.
- *
- * 4.
- * step = 1.
- *
- * 5.
- * While queue not empty:
- *
- *      levelSize
- *
- *      repeat levelSize:
- *
- *          poll
- *
- *          every position
- *
- *          every letter
- *
- *          create candidate
- *
- *          if absent -> continue
- *
- *          if target -> return step + 1
- *
- *          remove
- *
- *          enqueue
- *
- *      step++
- *
- * 6.
- * Return 0.
- *
- *
- * =========================================================================
- * 🧪 MAIN + SELF-VERIFYING TESTS
- * =========================================================================
- */
-
-public static void main(String[] args) {
-
-    Optimal solver = new Optimal();
-
-    // Representative LeetCode example.
-    assert solver.ladderLength(
-            "hit",
-            "cog",
-            Arrays.asList("hot", "dot", "dog", "lot", "log", "cog")
-    ) == 5 : "Expected shortest transformation length of 5.";
-
-    // endWord absent from dictionary.
-    assert solver.ladderLength(
-            "hit",
-            "cog",
-            Arrays.asList("hot", "dot", "dog", "lot", "log")
-    ) == 0 : "No valid transformation should exist.";
-
-    // Single-character transformation.
-    assert solver.ladderLength(
-            "a",
-            "c",
-            Arrays.asList("a", "b", "c")
-    ) == 2 : "Direct one-letter change should require two words.";
-
-    // One intermediate transformation.
-    assert solver.ladderLength(
-            "ab",
-            "bb",
-            Arrays.asList("ab", "bb")
-    ) == 2 : "Only one transformation required.";
-
-    // Longer chain.
-    assert solver.ladderLength(
-            "aaa",
-            "bbb",
-            Arrays.asList(
-                    "aab",
-                    "abb",
-                    "bbb",
-                    "aba",
-                    "baa"
-            )
-    ) == 4 : "Shortest chain should be aaa -> aab -> abb -> bbb.";
-
-    // Unreachable although endWord exists.
-    assert solver.ladderLength(
-            "aaa",
-            "ccc",
-            Arrays.asList(
-                    "aac",
-                    "acc",
-                    "bbb",
-                    "ccc"
-            )
-    ) == 0 : "Disconnected graph should return zero.";
-
-    // beginWord already inside dictionary.
-    assert solver.ladderLength(
-            "hit",
-            "hot",
-            Arrays.asList("hit", "hot")
-    ) == 2 : "Removing beginWord from the set must not break correctness.";
-
-    // Duplicate candidate generation should still discover each word once.
-    assert solver.ladderLength(
-            "red",
-            "tax",
-            Arrays.asList(
-                    "ted",
-                    "tex",
-                    "tax",
-                    "rex",
-                    "red"
-            )
-    ) == 4 : "Expected path: red -> ted -> tex -> tax.";
-
-    // Immediate failure because target is absent.
-    assert solver.ladderLength(
-            "abc",
-            "xyz",
-            Arrays.asList(
-                    "abd",
-                    "acd",
-                    "xbc"
-            )
-    ) == 0 : "Missing target must immediately return zero.";
-
-    // Boundary case: dictionary containing only the target.
-    assert solver.ladderLength(
-            "aa",
-            "ab",
-            Arrays.asList("ab")
-    ) == 2 : "Single valid transformation should succeed.";
-
-    System.out.println("All assertions passed.");
 }
-}
-
-/*
-I understand the invariant.
-
-I can re-derive the solution.
-
-I can physically reconstruct the implementation under pressure.
-
-This chapter is complete.
-*/
