@@ -91,18 +91,18 @@ public class AccountsMerge {
                 }
             }
 
-            int find(int node) {
+            int findRoot(int node) {
                 if (parent[node] == node) {
                     return node;
                 }
 
-                parent[node] = find(parent[node]);
+                parent[node] = findRoot(parent[node]);
                 return parent[node];
             }
 
             void union(int a, int b) {
-                int rootA = find(a);
-                int rootB = find(b);
+                int rootA = findRoot(a);
+                int rootB = findRoot(b);
 
                 if (rootA == rootB) {
                     return;
@@ -146,7 +146,7 @@ public class AccountsMerge {
             Map<Integer, TreeSet<String>> rootToEmails = new HashMap<>();
 
             for (Map.Entry<String, Integer> entry : emailToFirstAccount.entrySet()) {
-                int root = unionFind.find(entry.getValue());
+                int root = unionFind.findRoot(entry.getValue());
                 TreeSet<String> emails = rootToEmails.get(root);
 
                 if (emails == null) {
@@ -190,6 +190,7 @@ public class AccountsMerge {
      * The shorter 2A version is for instant reconstruction; this 2B version
      * makes the reusable DSU structure and problem DELTAs explicit.
      */
+
     static class DSUNode {
 
         final int id;
@@ -203,6 +204,7 @@ public class AccountsMerge {
         }
     }
 
+
     static class UnionFind {
 
         private final DSUNode[] nodes;
@@ -213,36 +215,40 @@ public class AccountsMerge {
             nodes = new DSUNode[n];
             components = n;
 
-            for (int node = 0; node < n; node++) {
-                nodes[node] = new DSUNode(node);
+            for (int i = 0; i < n; i++) {
+                nodes[i] = new DSUNode(i);
             }
         }
 
-        DSUNode find(int node) {
+        DSUNode findRoot(int id) {
 
             DSUNode current =
-                    nodes[node];
+                    nodes[id];
 
             if (current.parent == current) {
                 return current;
             }
 
             current.parent =
-                    find(current.parent.id);
+                    findRoot(current.parent.id);
 
             return current.parent;
         }
 
         boolean union(int a, int b) {
 
-            DSUNode rootA = find(a);
-            DSUNode rootB = find(b);
+            DSUNode rootA =
+                    findRoot(a);
+
+            DSUNode rootB =
+                    findRoot(b);
 
             if (rootA == rootB) {
                 return false;
             }
 
             if (rootA.size < rootB.size) {
+
                 DSUNode temp = rootA;
                 rootA = rootB;
                 rootB = temp;
@@ -261,95 +267,56 @@ public class AccountsMerge {
         }
     }
 
-
-    record AccountEntry(
-            String name,
-            List<String> emails) {
-    }
-
     static class MergedAccount {
 
         final String name;
         final TreeSet<String> emails = new TreeSet<>();
 
-        MergedAccount(String name) {
-            this.name = name;
-        }
-
-        void addEmails(List<String> newEmails) {
-            emails.addAll(newEmails);
-        }
-
-        List<String> toList() {
-
-            List<String> result = new ArrayList<>();
-            result.add(name);
-            result.addAll(emails);
-
-            return result;
-        }
+        MergedAccount(String name) { this.name = name; }
     }
-
 
     static class OptimalSolution {
 
-        public List<List<String>> accountsMerge(List<List<String>> accounts) {
+        public List<List<String>> accountsMerge(
+                List<List<String>> accounts) {
 
             if (accounts == null || accounts.isEmpty()) {
                 return Collections.emptyList();
             }
 
-            List<AccountEntry> accountEntries =
-                    toAccountEntries(accounts);
-
             UnionFind unionFind =
-                    new UnionFind(accountEntries.size());
+                    new UnionFind(accounts.size());
 
             connectAccountsBySharedEmail(
-                    accountEntries,
+                    accounts,
                     unionFind);
 
             return buildMergedAccounts(
-                    accountEntries,
+                    accounts,
                     unionFind);
         }
 
-        private List<AccountEntry> toAccountEntries(
-                List<List<String>> accounts) {
-
-            List<AccountEntry> accountEntries =
-                    new ArrayList<>();
-
-            for (List<String> rawAccount : accounts) {
-
-                String name =
-                        rawAccount.get(0);
-
-                List<String> emails =
-                        rawAccount.subList(1, rawAccount.size());
-
-                accountEntries.add(
-                        new AccountEntry(name, emails));
-            }
-
-            return accountEntries;
-        }
 
         private void connectAccountsBySharedEmail(
-                List<AccountEntry> accountEntries,
+                List<List<String>> accounts,
                 UnionFind unionFind) {
 
             Map<String, Integer> emailToFirstAccount =
                     new HashMap<>();
 
             for (int accountIndex = 0;
-                 accountIndex < accountEntries.size();
+                 accountIndex < accounts.size();
                  accountIndex++) {
 
-                AccountEntry accountEntry =
-                        accountEntries.get(accountIndex);
+                List<String> accountData =
+                        accounts.get(accountIndex);
 
-                for (String email : accountEntry.emails()) {
+                for (int emailIndex = 1;
+                     emailIndex < accountData.size();
+                     emailIndex++) {
+
+                    String email =
+                            accountData.get(emailIndex);
 
                     Integer previousAccountIndex =
                             emailToFirstAccount.get(email);
@@ -370,38 +337,45 @@ public class AccountsMerge {
             }
         }
 
+
         private List<List<String>> buildMergedAccounts(
-                List<AccountEntry> accountEntries,
+                List<List<String>> accounts,
                 UnionFind unionFind) {
 
-            Map<Integer, MergedAccount> rootToMergedAccount =
+            Map<DSUNode, MergedAccount> rootToMergedAccount =
                     new HashMap<>();
 
             for (int accountIndex = 0;
-                 accountIndex < accountEntries.size();
+                 accountIndex < accounts.size();
                  accountIndex++) {
 
-                AccountEntry accountEntry =
-                        accountEntries.get(accountIndex);
+                List<String> accountData =
+                        accounts.get(accountIndex);
 
-                int rootId =
-                        unionFind.find(accountIndex).id;
+                DSUNode root =
+                        unionFind.findRoot(accountIndex);
 
                 MergedAccount mergedAccount =
-                        rootToMergedAccount.get(rootId);
+                        rootToMergedAccount.get(root);
 
                 if (mergedAccount == null) {
 
                     mergedAccount =
-                            new MergedAccount(accountEntry.name());
+                            new MergedAccount(
+                                    accountData.get(0));
 
                     rootToMergedAccount.put(
-                            rootId,
+                            root,
                             mergedAccount);
                 }
 
-                mergedAccount.addEmails(
-                        accountEntry.emails());
+                for (int emailIndex = 1;
+                     emailIndex < accountData.size();
+                     emailIndex++) {
+
+                    mergedAccount.emails.add(
+                            accountData.get(emailIndex));
+                }
             }
 
             List<List<String>> answer =
@@ -410,14 +384,22 @@ public class AccountsMerge {
             for (MergedAccount mergedAccount :
                     rootToMergedAccount.values()) {
 
+                List<String> account =
+                        new ArrayList<>();
+
+                account.add(
+                        mergedAccount.name);
+
+                account.addAll(
+                        mergedAccount.emails);
+
                 answer.add(
-                        mergedAccount.toList());
+                        account);
             }
 
             return answer;
         }
     }
-
 
     /**
      * =========================================================================
@@ -1253,7 +1235,7 @@ public class AccountsMerge {
                     int variableA = equation.charAt(0) - 'a';
                     int variableB = equation.charAt(3) - 'a';
 
-                    if (unionFind.find(variableA) == unionFind.find(variableB)) {
+                    if (unionFind.findRoot(variableA) == unionFind.findRoot(variableB)) {
                         return false;
                     }
                 }
@@ -1368,7 +1350,7 @@ public class AccountsMerge {
 
             for (int index = 0; index < s.length(); index++) {
 
-                int rootId = unionFind.find(index).id;
+                int rootId = unionFind.findRoot(index).id;
                 PriorityQueue<Character> characters = rootToCharacters.get(rootId);
 
                 if (characters == null) {
@@ -1382,7 +1364,7 @@ public class AccountsMerge {
             StringBuilder answer = new StringBuilder();
 
             for (int index = 0; index < s.length(); index++) {
-                int rootId = unionFind.find(index).id;
+                int rootId = unionFind.findRoot(index).id;
                 answer.append(rootToCharacters.get(rootId).poll());
             }
 
@@ -1647,8 +1629,8 @@ public class AccountsMerge {
         assert unionFind.union(0, 1);
         assert unionFind.union(1, 2);
         assert !unionFind.union(0, 2);
-        assert unionFind.find(0) == unionFind.find(2);
-        assert unionFind.find(0).id == unionFind.find(2).id;
+        assert unionFind.findRoot(0) == unionFind.findRoot(2);
+        assert unionFind.findRoot(0).id == unionFind.findRoot(2).id;
         assert unionFind.components() == 2;
 
         // ---------------------------------------------------------------------
