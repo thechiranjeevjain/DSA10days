@@ -569,6 +569,32 @@ public class InvertBinaryTree {
         }
     }
 
+    /*
+     * IMPORTANT: `left` and `right` are local variables holding copies
+     * of the ORIGINAL child references.
+     *
+     * TreeNode left  = root.left;   // left  -> original left child
+     * TreeNode right = root.right;  // right -> original right child
+     *
+     * Later, when we do:
+     *
+     * root.left = invertTree(right);
+     *
+     * only `root.left` changes.
+     * The local variable `left` still points to the original left child.
+     *
+     * Think of `left` and `right` as snapshots of the original addresses.
+     * They do NOT automatically follow later changes to root.left/root.right.
+     *
+     * Therefore:
+     *
+     * root.left  = invertTree(right); // inverted ORIGINAL right
+     * root.right = invertTree(left);  // inverted ORIGINAL left
+     *
+     * Saving both references first prevents us from losing the original
+     * left subtree after root.left is overwritten.
+     */
+
     /**
      * ------------------------------------------------------------
      * Optimal (Interview Preferred)

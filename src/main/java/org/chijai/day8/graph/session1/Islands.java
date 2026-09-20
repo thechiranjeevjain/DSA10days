@@ -312,6 +312,124 @@ public class Islands {
         }
     }
 
+    /*
+     * NUMBER OF PROVINCES
+     *
+     * Do NOT count connections (matrix 1s).
+     * Count connected components.
+     *
+     * Outer loop:
+     *     unseen city
+     *         -> new province
+     *         -> count++
+     *         -> DFS consumes that whole province
+     *
+     * DFS:
+     *     mark current city visited
+     *     scan all neighbors
+     *     recurse into every unseen connected neighbor
+     *
+     * Important:
+     *
+     *     dfs(..., city)   ✅
+     *     dfs(..., count)  ❌
+     *
+     * DFS needs the current CITY,
+     * not the number of provinces found.
+     *
+     * Memory:
+     *
+     *     unseen city -> count province -> consume component
+     */
+
+    /*
+     * Why !visited[neighbor] is crucial:
+     *
+     * Graph connections can point back to cities we already explored.
+     *
+     * Example:
+     *
+     *     0 --- 1
+     *
+     * From 0 we visit 1.
+     * From 1 we can see 0 again.
+     *
+     * Without !visited[neighbor]:
+     *
+     *     0 -> 1 -> 0 -> 1 -> ...
+     *
+     * causing infinite recursion / repeated work.
+     *
+     * Meaning:
+     *
+     *     isConnected[city][neighbor] == 1
+     *         -> can we go there?
+     *
+     *     !visited[neighbor]
+     *         -> do we still need to go there?
+     */
+
+    class Solution {
+
+        public int findCircleNum(int[][] isConnected) {
+
+            int n = isConnected.length;
+
+            boolean[] visited =
+                    new boolean[n];
+
+            int provinceCount = 0;
+
+            for (int city = 0; city < n; city++) {
+
+                if (!visited[city]) {
+
+                    provinceCount++;
+
+                    dfs(
+                            isConnected,
+                            visited,
+                            city);
+                }
+            }
+
+            return provinceCount;
+        }
+
+
+        private void dfs(
+                int[][] isConnected,
+                boolean[] visited,
+                int startCity) {
+
+            Stack<Integer> stack =
+                    new Stack<>();
+
+            stack.push(startCity);
+            visited[startCity] = true;
+
+
+            while (!stack.isEmpty()) {
+
+                int city =
+                        stack.pop();
+
+                for (int neighbor = 0;
+                     neighbor < isConnected.length;
+                     neighbor++) {
+
+                    if (isConnected[city][neighbor] == 1
+                            && !visited[neighbor]) {
+
+                        visited[neighbor] = true;
+
+                        stack.push(neighbor);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * ------------------------------------------------------------------------
      * Δ MAX AREA OF ISLAND

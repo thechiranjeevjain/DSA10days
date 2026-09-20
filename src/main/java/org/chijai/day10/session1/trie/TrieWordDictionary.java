@@ -375,28 +375,23 @@ public class TrieWordDictionary {
 
             char ch = word.charAt(index);
 
-            if (ch != '.') {
+            if(ch == '.') {
+                for (TrieNode child : node.children) {
+
+                    if (dfs(child, word, index + 1)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            else {
 
                 return dfs(
                         node.children[ch - 'a'],
                         word,
-                        index + 1
-                );
-
+                        index + 1);
             }
-
-            for (TrieNode child : node.children) {
-
-                if (child != null
-                        && dfs(child, word, index + 1)) {
-
-                    return true;
-
-                }
-
-            }
-
-            return false;
 
         }
 

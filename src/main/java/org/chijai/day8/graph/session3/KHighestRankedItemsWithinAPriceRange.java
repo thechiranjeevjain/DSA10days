@@ -3,790 +3,182 @@ package org.chijai.day8.graph.session3;
 import java.util.*;
 
 /**
- * KHighestRankedItemsWithinAPriceRange
+ * ==========================================================================
+ * K Highest Ranked Items Within a Price Range — Java Gold
+ * ==========================================================================
  *
- * ============================================================
- * 2. 📘 PRIMARY PROBLEM
- * ============================================================
+ * LeetCode 2146
  *
- * Title:
- * K Highest Ranked Items Within a Price Range (Booking Hotel)
+ * Core classification:
  *
- * Difficulty:
- * Hard
+ *     Graph / Grid
+ *     Unweighted Shortest Path
+ *     BFS Level Traversal
+ *     Multi-Criteria Ranking
  *
- * Tags:
- * BFS
- * Graph
- * Matrix
- * Multi-Criteria Ranking
- * Queue
- * Sorting
+ * Core memory sentence:
  *
- * LeetCode:
- * https://leetcode.com/problems/k-highest-ranked-items-within-a-price-range/
+ *     BFS sorts DISTANCE.
+ *     Comparator sorts TIES inside the same distance.
  *
- * ------------------------------------------------------------
- * Problem
- * ------------------------------------------------------------
+ * ==========================================================================
+ * 1. PROBLEM STATEMENT
+ * ==========================================================================
  *
- * You are given a matrix where:
+ * You are given a grid where:
  *
- * 0 -> blocked cell (cannot pass)
- * 1 -> empty road
- * >1 -> item (hotel) with that price
+ *     0   = blocked cell; cannot enter
+ *     1   = empty traversable cell
+ *     > 1 = item whose price is the cell value
  *
- * Starting from start = [r,c], you may move in four directions.
+ * Starting from start = [row, col], you may move one cell at a time:
  *
- * Find the highest ranked k reachable items whose prices lie inside
- * the inclusive range:
+ *     up / down / left / right
  *
- * [low, high]
+ * You are also given:
  *
- * Ranking rules (highest priority first):
+ *     pricing = [low, high]
  *
- * 1. Smaller shortest-path distance.
- * 2. Smaller price.
- * 3. Smaller row.
- * 4. Smaller column.
+ * An item qualifies when:
  *
- * Return coordinates of the first k ranked items.
+ *     low <= itemPrice <= high
  *
- * ------------------------------------------------------------
- * Constraints
- * ------------------------------------------------------------
+ * Return the coordinates of at most k reachable qualifying items according
+ * to this ranking order:
  *
- * 1 <= m,n <= 200
- * 1 <= grid[i][j] <= 10^5 except blocked cells (0)
- * start is always inside the grid.
- * start is never blocked.
+ *     1. smaller SHORTEST-PATH DISTANCE
+ *     2. smaller PRICE
+ *     3. smaller ROW
+ *     4. smaller COLUMN
  *
- * ------------------------------------------------------------
- * Representative Example
- * ------------------------------------------------------------
+ * Example:
  *
- * grid =
- * [[1,2,0,1],
- *  [1,3,0,1],
- *  [0,2,5,1]]
+ *     grid =
  *
- * pricing = [2,5]
- * start = [0,0]
- * k = 3
+ *         1  2  0  1
+ *         1  3  0  1
+ *         0  2  5  1
  *
- * Output:
+ *     pricing = [2, 5]
+ *     start   = [0, 0]
+ *     k       = 3
  *
- * [[0,1],[1,1],[2,1]]
+ * Reachable qualifying items:
  *
- * Explanation:
- *
- * Reachable qualified items:
- *
- * (0,1)
- * (1,1)
- * (2,1)
- * (2,2)
- *
- * Distances:
- *
- * 1
- * 2
- * 3
- * 4
- *
- * Therefore first three are returned.
- *
- * ============================================================
- * 3. 🔵 CORE PATTERN OVERVIEW
- * ============================================================
- *
- * Pattern
- * -------
- * Breadth First Search with Level Ranking
- *
- * Archetype
- * ---------
- * Shortest path in an unweighted graph.
- *
- * Core Invariant
- * --------------
- * Every BFS level represents exactly one shortest-path distance.
+ *     coordinate   distance   price
+ *     --------------------------------
+ *     [0,1]            1        2
+ *     [1,1]            2        3
+ *     [2,1]            3        2
+ *     [2,2]            4        5
  *
  * Therefore:
  *
- * distance is already sorted automatically.
+ *     answer = [[0,1], [1,1], [2,1]]
  *
- * We only need to sort nodes INSIDE ONE LEVEL using the remaining
- * ranking rules.
+ * ==========================================================================
+ * 2. RECOGNITION + FIRST-PRINCIPLES INVENTION PATH
+ * ==========================================================================
  *
- * Why it works
- * ------------
- * BFS guarantees:
+ * STEP 1 — What is the FIRST ranking key?
  *
- * first visit
- * ==
- * shortest distance.
+ *     shortest-path distance
  *
- * Since ranking priority is
+ * STEP 2 — Are all moves equal cost?
  *
- * distance
- * ->
- * price
- * ->
- * row
- * ->
- * column
+ *     yes; every grid move costs exactly 1
  *
- * distance never needs explicit sorting.
+ * Therefore:
  *
- * Recognition Signals
- * -------------------
+ *     shortest path in an unweighted graph
+ *     -> BFS
  *
- * • unweighted movement
- * • shortest distance
- * • four directions
- * • obstacles
- * • grid
- * • return nearest objects
- * • multiple ranking keys
+ * STEP 3 — Notice what BFS gives us for free.
  *
- * When To Use
- * -----------
+ * BFS processes:
  *
- * Whenever primary ranking is shortest path and graph is unweighted.
+ *     distance 0
+ *     distance 1
+ *     distance 2
+ *     distance 3
+ *     ...
  *
- * When NOT To Use
- * ---------------
+ * Therefore we do NOT need to compare distance between items belonging to
+ * different BFS levels. Earlier levels automatically outrank later levels.
  *
- * If edge weights differ.
+ * STEP 4 — What remains unresolved inside one BFS level?
  *
- * Then BFS no longer preserves shortest distance.
+ * Every item in the same level has the SAME shortest distance.
  *
- * Use Dijkstra instead.
+ * So only sort by:
  *
- * Comparison
- * ----------
+ *     price
+ *     -> row
+ *     -> column
  *
- * BFS
- * ----
- * Primary key = shortest distance
+ * STEP 5 — Stop once k ranked items have been emitted.
  *
- * Dijkstra
- * --------
- * Primary key = minimum weighted cost
+ * The whole solution becomes:
  *
- * Multi-source BFS
- * ----------------
- * Many starting positions.
- *
- * Standard BFS
- * ------------
- * One starting position.
- *
- * ============================================================
- * 4. 🟢 MENTAL MODEL & INVARIANTS
- * ============================================================
- *
- * Mental Model
- * ------------
- *
- * Imagine expanding circles around the start.
- *
- * Every expansion ring represents one exact distance.
- *
- * We never return to an inner ring.
- *
- * Therefore once a level finishes,
- * every future discovered node is strictly farther.
- *
- * ------------------------------------------------------------
- * Invariant 1
- * ------------------------------------------------------------
- *
- * Queue contains exactly one frontier.
- *
- * ------------------------------------------------------------
- * Invariant 2
- * ------------------------------------------------------------
- *
- * Every node popped in current iteration has identical distance.
- *
- * ------------------------------------------------------------
- * Invariant 3
- * ------------------------------------------------------------
- *
- * First discovery gives shortest distance.
- *
- * Therefore visited is marked immediately upon enqueue,
- * not dequeue.
- *
- * ------------------------------------------------------------
- * Invariant 4
- * ------------------------------------------------------------
- *
- * All candidate items inside one BFS level share identical
- * distance.
- *
- * Thus sorting only needs:
- *
- * price
- * row
- * column
- *
- * ------------------------------------------------------------
- * Variable Meaning
- * ------------------------------------------------------------
- *
- * queue
- * -----
- * Current BFS frontier.
- *
- * visited
- * -------
- * Prevent revisiting.
- *
- * levelItems
- * ----------
- * Qualified items found at current distance.
- *
- * answer
- * ------
- * Global ranked result.
- *
- * ------------------------------------------------------------
- * Allowed Moves
- * ------------------------------------------------------------
- *
- * Up
- * Down
- * Left
- * Right
- *
- * Skip:
- *
- * outside grid
- * blocked
- * visited
- *
- * ------------------------------------------------------------
- * Forbidden Moves
- * ------------------------------------------------------------
- *
- * Revisiting nodes.
- *
- * Delaying visited marking.
- *
- * Mixing different BFS levels before sorting.
- *
- * ------------------------------------------------------------
- * Termination
- * ------------------------------------------------------------
- *
- * BFS ends when:
- *
- * queue empty
- *
- * OR
- *
- * answer size reaches k.
- *
- * ------------------------------------------------------------
- * Why Naive Solutions Fail
- * ------------------------------------------------------------
- *
- * Simply collecting every reachable hotel then sorting globally
- * destroys the primary ranking invariant.
- *
- * Distance must dominate every other comparison.
- *
- * ============================================================
- * 5. 🔴 WHY WRONG SOLUTIONS FAIL
- * ============================================================
- *
- * Mistake 1
- * ---------
- * Global sort after BFS.
- *
- * Why tempting:
- * Easier implementation.
- *
- * Violated Invariant:
- * Distance ordering no longer guaranteed unless distance stored.
- *
- * ------------------------------------------------------------
- * Mistake 2
- * ---------
- * Using DFS.
- *
- * Why tempting:
- * Easy traversal.
- *
- * Violation:
- * DFS does not preserve shortest distance.
- *
- * Counterexample:
- *
- * Long corridor explored before short branch.
- *
- * ------------------------------------------------------------
- * Mistake 3
- * ---------
- * Mark visited after dequeue.
- *
- * Violation:
- * Same cell may be inserted multiple times.
- *
- * Complexity increases dramatically.
- *
- * ------------------------------------------------------------
- * Mistake 4
- * ---------
- * Sorting the whole queue.
- *
- * Violation:
- * Queue represents traversal state,
- * not ranking state.
- *
- * ------------------------------------------------------------
- * Interview Trap
- * --------------
- *
- * Why don't we sort by distance?
- *
- * Because BFS has already sorted distance for us.
- *
- * ============================================================
- * ⚙ IMPLEMENTATION BLUEPRINT
- * ============================================================
- *
- * Typing Order
- * ------------
- *
- * 1.
- * Early validation.
- *
- * 2.
- * Extract dimensions.
- *
- * 3.
- * Prepare visited.
- *
- * 4.
- * Create queue.
- *
- * 5.
- * Push start.
- *
- * 6.
- * While queue not empty
- *
- *      determine current level size
- *
- *      create levelItems
- *
- *      process exactly levelSize nodes
- *
- *      explore neighbors
- *
- *      collect qualified items
- *
- *      sort levelItems
- *
- *      append into answer
- *
- *      stop if k reached
- *
- * 7.
- * Return answer.
- *
- * ============================================================
- * 🧾 ULTRA-COMPACT PSEUDOCODE
- * ============================================================
- *
- * enqueue(start)
- *
- * while queue not empty
- *
- *      process one level
- *
- *      collect candidates
- *
- *      sort candidates
- *
- *      append answers
- *
- * return answer
+ *     BFS one distance level
+ *         -> collect qualifying items
+ *         -> sort only that level
+ *         -> append to answer
+ *         -> stop at k
  */
 public class KHighestRankedItemsWithinAPriceRange {
 
-    private static final int[] DIR = {0, 1, 0, -1, 0};
+    private static final int[][] DIRECTIONS = {
+            {-1, 0},
+            {1, 0},
+            {0, -1},
+            {0, 1}
+    };
 
-    private static final class Cell {
-        final int row;
-        final int col;
 
-        Cell(int row, int col) {
-            this.row = row;
-            this.col = col;
-        }
+    /**
+     * Traversal state only.
+     */
+    record Cell(
+            int row,
+            int col) {
     }
 
-    /**
-     * ============================================================
-     * 6. SOLUTION CLASSES
-     * ============================================================
-     */
 
     /**
-     * ------------------------------------------------------------
-     * Brute Force
-     * ------------------------------------------------------------
+     * Ranking state.
      *
-     * Idea
-     * ----
-     * Explore every reachable node.
-     *
-     * Store:
-     * distance,
-     * price,
-     * row,
-     * column.
-     *
-     * Globally sort all candidates.
-     *
-     * Invariant
-     * ---------
-     * Distances are explicitly stored.
-     *
-     * Limitation
-     * ----------
-     * Stores every candidate before producing answer.
-     *
-     * Complexity
-     * ----------
-     * Time:
-     * O(MN log(MN))
-     *
-     * Space:
-     * O(MN)
-     *
-     * Interview usefulness
-     * --------------------
-     * Good stepping stone.
+     * Distance is intentionally absent because all RankedItems produced by
+     * processCurrentLevel() already belong to the same BFS distance.
      */
+    record RankedItem(
+            int price,
+            int row,
+            int col) {
 
-    static final class BruteForce {
-
-        private static final class Candidate {
-            final int distance;
-            final int price;
-            final int row;
-            final int col;
-
-            Candidate(int distance, int price, int row, int col) {
-                this.distance = distance;
-                this.price = price;
-                this.row = row;
-                this.col = col;
-            }
-        }
-
-        public List<List<Integer>> highestRankedKItems(
-                int[][] grid,
-                int[] pricing,
-                int[] start,
-                int k) {
-
-            int m = grid.length;
-            int n = grid[0].length;
-
-            boolean[][] visited = new boolean[m][n];
-
-            Queue<Cell> queue = new ArrayDeque<>();
-
-            queue.offer(new Cell(start[0], start[1]));
-
-            visited[start[0]][start[1]] = true;
-
-            int distance = 0;
-
-            List<Candidate> candidates = new ArrayList<>();
-
-            while (!queue.isEmpty()) {
-
-                int size = queue.size();
-
-                for (int s = 0; s < size; s++) {
-
-                    Cell current = queue.poll();
-
-                    int value = grid[current.row][current.col];
-
-                    if (value >= pricing[0] && value <= pricing[1]) {
-                        candidates.add(
-                                new Candidate(
-                                        distance,
-                                        value,
-                                        current.row,
-                                        current.col));
-                    }
-
-                    for (int d = 0; d < 4; d++) {
-
-                        int nr = current.row + DIR[d];
-                        int nc = current.col + DIR[d + 1];
-
-                        if (nr < 0 || nr >= m || nc < 0 || nc >= n)
-                            continue;
-
-                        if (visited[nr][nc])
-                            continue;
-
-                        if (grid[nr][nc] == 0)
-                            continue;
-
-                        visited[nr][nc] = true;
-
-                        queue.offer(new Cell(nr, nc));
-                    }
-                }
-
-                distance++;
-            }
-
-            candidates.sort((a, b) -> {
-
-                if (a.distance != b.distance)
-                    return Integer.compare(a.distance, b.distance);
-
-                if (a.price != b.price)
-                    return Integer.compare(a.price, b.price);
-
-                if (a.row != b.row)
-                    return Integer.compare(a.row, b.row);
-
-                return Integer.compare(a.col, b.col);
-            });
-
-            List<List<Integer>> answer = new ArrayList<>();
-
-            for (Candidate candidate : candidates) {
-
-                if (answer.size() == k)
-                    break;
-
-                answer.add(List.of(candidate.row, candidate.col));
-            }
-
-            return answer;
-        }
+        static final Comparator<RankedItem> COMPARATOR =
+                Comparator
+                        .comparingInt(RankedItem::price)
+                        .thenComparingInt(RankedItem::row)
+                        .thenComparingInt(RankedItem::col);
     }
 
-    /**
-     * ------------------------------------------------------------
-     * Improved
-     * ------------------------------------------------------------
-     *
-     * Idea
-     * ----
-     * Observe that BFS has already ordered nodes by distance.
-     *
-     * Therefore:
-     *
-     * We never globally sort every reachable item.
-     *
-     * Instead:
-     *
-     * 1. Process exactly one BFS level.
-     * 2. Collect only qualified items in this level.
-     * 3. Sort only this level using
-     *      price
-     *      row
-     *      column
-     * 4. Append into answer.
-     *
-     * Since later BFS levels are always farther,
-     * earlier levels always dominate the ranking.
-     *
-     * 🟢 Invariant
-     * ------------
-     * Every candidate inside levelItems has identical shortest-path
-     * distance.
-     *
-     * Therefore distance disappears from the comparator.
-     *
-     * Improvement
-     * -----------
-     * Avoids sorting every candidate globally.
-     *
-     * Complexity
-     * ----------
-     * Worst Case
-     *
-     * Time
-     * O(MN log(MN))
-     *
-     * because one level could theoretically contain O(MN) nodes.
-     *
-     * Typical practical behavior is better.
-     *
-     * Space
-     * O(MN)
-     *
-     * Interview usefulness
-     * --------------------
-     * Demonstrates understanding that BFS itself performs the first
-     * ranking key.
-     */
-
-    static final class Improved {
-
-        public List<List<Integer>> highestRankedKItems(
-                int[][] grid,
-                int[] pricing,
-                int[] start,
-                int k) {
-
-            int m = grid.length;
-            int n = grid[0].length;
-
-            int low = pricing[0];
-            int high = pricing[1];
-
-            boolean[][] visited = new boolean[m][n];
-
-            Queue<Cell> queue = new ArrayDeque<>();
-
-            queue.offer(new Cell(start[0], start[1]));
-
-            visited[start[0]][start[1]] = true;
-
-            List<List<Integer>> answer = new ArrayList<>();
-
-            while (!queue.isEmpty()) {
-
-                int levelSize = queue.size();
-
-                List<Cell> levelItems = new ArrayList<>();
-
-                for (int i = 0; i < levelSize; i++) {
-
-                    Cell current = queue.poll();
-
-                    int value = grid[current.row][current.col];
-
-                    if (value >= low && value <= high) {
-                        levelItems.add(current);
-                    }
-
-                    for (int d = 0; d < 4; d++) {
-
-                        int nr = current.row + DIR[d];
-                        int nc = current.col + DIR[d + 1];
-
-                        if (nr < 0 || nr >= m || nc < 0 || nc >= n)
-                            continue;
-
-                        if (visited[nr][nc])
-                            continue;
-
-                        if (grid[nr][nc] == 0)
-                            continue;
-
-                        // Invariant:
-                        // First enqueue guarantees shortest distance.
-                        visited[nr][nc] = true;
-
-                        queue.offer(new Cell(nr, nc));
-                    }
-                }
-
-                levelItems.sort((a, b) -> {
-
-                    if (grid[a.row][a.col] != grid[b.row][b.col]) {
-                        return Integer.compare(
-                                grid[a.row][a.col],
-                                grid[b.row][b.col]);
-                    }
-
-                    if (a.row != b.row)
-                        return Integer.compare(a.row, b.row);
-
-                    return Integer.compare(a.col, b.col);
-                });
-
-                for (Cell cell : levelItems) {
-
-                    answer.add(List.of(cell.row, cell.col));
-
-                    if (answer.size() == k)
-                        return answer;
-                }
-            }
-
-            return answer;
-        }
-    }
 
     /**
-     * ------------------------------------------------------------
-     * Optimal (Interview Preferred)
-     * ------------------------------------------------------------
+     * ======================================================================
+     * 3. ⭐ PRIMARY SOLUTION — PHOTOGRAPHIC CODE
+     * ======================================================================
      *
-     * Idea
-     * ----
-     * Use BFS level-order traversal.
+     * Keep this code visually together.
      *
-     * Distance ranking is produced naturally.
+     * Mental skeleton:
      *
-     * Inside one level,
-     * sort only by the remaining ranking rules.
-     *
-     * Final ranking therefore becomes:
-     *
-     * BFS level
-     * →
-     * price
-     * →
-     * row
-     * →
-     * column
-     *
-     * 🟢 Core Invariant
-     * -----------------
-     * Queue never mixes different shortest-path distances while one
-     * level is being processed.
-     *
-     * 🟢 Correctness
-     * --------------
-     * Because:
-     *
-     * 1.
-     * BFS discovers every node at minimum distance.
-     *
-     * 2.
-     * Current level contains exactly one distance.
-     *
-     * 3.
-     * Comparator resolves remaining ranking keys.
-     *
-     * 4.
-     * Earlier levels are always ranked before later levels.
-     *
-     * Complexity
-     * ----------
-     * Time
-     * O(MN log(MN))
-     *
-     * Space
-     * O(MN)
-     *
-     * Interview usefulness
-     * --------------------
-     * This is the intended solution.
+     *     initialize BFS
+     *     -> process current distance
+     *     -> sort that distance
+     *     -> append until k
      */
-
-    static final class Optimal {
+    static class Optimal {
 
         public List<List<Integer>> highestRankedKItems(
                 int[][] grid,
@@ -797,561 +189,883 @@ public class KHighestRankedItemsWithinAPriceRange {
             int rows = grid.length;
             int cols = grid[0].length;
 
-            int low = pricing[0];
-            int high = pricing[1];
+            boolean[][] visited =
+                    new boolean[rows][cols];
 
-            boolean[][] visited = new boolean[rows][cols];
+            Queue<Cell> queue =
+                    new ArrayDeque<>();
 
-            Queue<Cell> queue = new ArrayDeque<>();
-
-            List<List<Integer>> answer = new ArrayList<>();
-
-            // Invariant:
-            // Start is the unique node at distance zero.
-            queue.offer(new Cell(start[0], start[1]));
+            queue.offer(
+                    new Cell(start[0], start[1]));
 
             visited[start[0]][start[1]] = true;
 
+            List<List<Integer>> answer =
+                    new ArrayList<>();
+
             while (!queue.isEmpty()) {
 
-                int levelSize = queue.size();
+                List<RankedItem> currentDistanceItems =
+                        processCurrentLevel(
+                                grid,
+                                pricing,
+                                visited,
+                                queue);
 
-                List<Cell> currentDistanceItems = new ArrayList<>();
+                currentDistanceItems.sort(
+                        RankedItem.COMPARATOR);
+
+                for (RankedItem item : currentDistanceItems) {
+
+                    answer.add(
+                            List.of(item.row(), item.col()));
+
+                    if (answer.size() == k) {
+                        return answer;
+                    }
+                }
+            }
+
+            return answer;
+        }
+
+
+        private List<RankedItem> processCurrentLevel(
+                int[][] grid,
+                int[] pricing,
+                boolean[][] visited,
+                Queue<Cell> queue) {
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            int levelSize =
+                    queue.size();
+
+            List<RankedItem> currentDistanceItems =
+                    new ArrayList<>();
+
+            for (int i = 0; i < levelSize; i++) {
+
+                Cell current =
+                        queue.poll();
+
+                int cellValue =
+                        grid[current.row()][current.col()];
+
+                if (cellValue >= pricing[0]
+                        && cellValue <= pricing[1]) {
+
+                    currentDistanceItems.add(
+                            new RankedItem(
+                                    cellValue,
+                                    current.row(),
+                                    current.col()));
+                }
+
+                for (int[] direction : DIRECTIONS) {
+
+                    int nextRow =
+                            current.row() + direction[0];
+
+                    int nextCol =
+                            current.col() + direction[1];
+
+                    if (nextRow < 0
+                            || nextRow >= rows
+                            || nextCol < 0
+                            || nextCol >= cols) {
+                        continue;
+                    }
+
+                    if (grid[nextRow][nextCol] == 0) {
+                        continue;
+                    }
+
+                    if (visited[nextRow][nextCol]) {
+                        continue;
+                    }
+
+                    visited[nextRow][nextCol] = true;
+
+                    queue.offer(
+                            new Cell(nextRow, nextCol));
+                }
+            }
+
+            return currentDistanceItems;
+        }
+    }
+
+
+    /**
+     * ======================================================================
+     * 4. PRIMARY SOLUTION EXPLANATION
+     * ======================================================================
+     *
+     * ----------------------------------------------------------------------
+     * WHY BFS, NOT DFS?
+     * ----------------------------------------------------------------------
+     *
+     * This problem is different from pure reachability problems such as:
+     *
+     *     Number of Provinces
+     *     Pacific Atlantic Water Flow
+     *
+     * Those only ask whether something is connected/reachable, so DFS and BFS
+     * are interchangeable and DFS may be shorter.
+     *
+     * Here the FIRST ranking key is:
+     *
+     *     shortest distance
+     *
+     * BFS preserves shortest distance in an unweighted graph.
+     * DFS does not.
+     *
+     * ----------------------------------------------------------------------
+     * WHY levelSize?
+     * ----------------------------------------------------------------------
+     *
+     * At the beginning of an iteration:
+     *
+     *     levelSize = queue.size()
+     *
+     * freezes the number of cells belonging to the CURRENT distance.
+     *
+     * While those cells are processed, their neighbors are appended to the
+     * same queue. Therefore the queue may temporarily contain:
+     *
+     *     remaining current-level cells
+     *     +
+     *     newly discovered next-level cells
+     *
+     * The queue itself is NOT always "exactly one level".
+     * levelSize is what separates the levels.
+     *
+     * ----------------------------------------------------------------------
+     * WHY MARK visited WHEN ENQUEUING?
+     * ----------------------------------------------------------------------
+     *
+     * The first time an unweighted BFS discovers a cell, that route is already
+     * a shortest route to it.
+     *
+     * Therefore:
+     *
+     *     visited[next] = true
+     *     queue.offer(next)
+     *
+     * happen together.
+     *
+     * If visited were delayed until dequeue, multiple parents could enqueue the
+     * same cell unnecessarily.
+     *
+     * ----------------------------------------------------------------------
+     * WHY DOES RankedItem NOT STORE distance?
+     * ----------------------------------------------------------------------
+     *
+     * processCurrentLevel() returns only items from ONE BFS level.
+     *
+     * Therefore every returned item already has identical distance.
+     *
+     * Comparator only needs the remaining ranking keys:
+     *
+     *     price
+     *     -> row
+     *     -> column
+     *
+     * This is the central insight:
+     *
+     *     BFS handles distance.
+     *     RankedItem.COMPARATOR handles ties.
+     *
+     * ----------------------------------------------------------------------
+     * WHY CAN WE RETURN AS SOON AS answer.size() == k?
+     * ----------------------------------------------------------------------
+     *
+     * Items from earlier BFS levels always outrank every later level.
+     *
+     * Inside the current level, items have already been fully sorted by:
+     *
+     *     price -> row -> column
+     *
+     * So after taking the kth item, nothing remaining can outrank it.
+     */
+
+
+    /**
+     * ======================================================================
+     * 5. PRIMARY VISUAL DRY RUN
+     * ======================================================================
+     *
+     * grid =
+     *
+     *     1  2  0  1
+     *     1  3  0  1
+     *     0  2  5  1
+     *
+     * start   = [0,0]
+     * pricing = [2,5]
+     * k       = 3
+     *
+     * ----------------------------------------------------------------------
+     * DISTANCE 0
+     * ----------------------------------------------------------------------
+     *
+     * queue at level start:
+     *
+     *     [0,0]
+     *
+     * value = 1
+     * not an item
+     *
+     * enqueue:
+     *
+     *     [0,1]
+     *     [1,0]
+     *
+     * currentDistanceItems = []
+     *
+     * ----------------------------------------------------------------------
+     * DISTANCE 1
+     * ----------------------------------------------------------------------
+     *
+     * frozen current level:
+     *
+     *     [0,1], [1,0]
+     *
+     * [0,1] has price 2 -> qualifies
+     * [1,0] has value 1 -> road
+     *
+     * currentDistanceItems:
+     *
+     *     (price=2,row=0,col=1)
+     *
+     * answer:
+     *
+     *     [[0,1]]
+     *
+     * ----------------------------------------------------------------------
+     * DISTANCE 2
+     * ----------------------------------------------------------------------
+     *
+     * [1,1] has price 3 -> qualifies
+     *
+     * answer:
+     *
+     *     [[0,1], [1,1]]
+     *
+     * ----------------------------------------------------------------------
+     * DISTANCE 3
+     * ----------------------------------------------------------------------
+     *
+     * [2,1] has price 2 -> qualifies
+     *
+     * answer:
+     *
+     *     [[0,1], [1,1], [2,1]]
+     *
+     * answer.size() == k
+     * -> return immediately
+     */
+
+
+    /**
+     * ======================================================================
+     * 6. COMPLEXITY DERIVATION
+     * ======================================================================
+     *
+     * Let:
+     *
+     *     R = rows
+     *     C = columns
+     *     V = R * C reachable-grid upper bound
+     *
+     * BFS:
+     *
+     *     every cell is enqueued at most once
+     *     every processed cell checks four neighbors
+     *
+     *     O(V)
+     *
+     * Sorting:
+     *
+     * Suppose BFS levels contain:
+     *
+     *     t1, t2, ... items
+     *
+     * Sorting cost is:
+     *
+     *     Σ ti log ti
+     *
+     * which is at most:
+     *
+     *     O(V log V)
+     *
+     * Therefore worst-case total:
+     *
+     *     Time = O(R * C * log(R * C))
+     *
+     * Space:
+     *
+     *     visited                 O(R * C)
+     *     BFS queue               O(R * C)
+     *     currentDistanceItems    O(R * C) worst case
+     *
+     *     Space = O(R * C)
+     */
+
+
+    /**
+     * ======================================================================
+     * 7. DISTINCT ALTERNATIVE — STORE DISTANCE + GLOBAL SORT
+     * ======================================================================
+     *
+     * This is VALID, not wrong.
+     *
+     * Difference from the primary:
+     *
+     * PRIMARY
+     *     BFS already orders distance
+     *     -> sort only same-distance items
+     *
+     * ALTERNATIVE
+     *     explicitly store distance on every candidate
+     *     -> collect all candidates
+     *     -> globally sort by distance, price, row, column
+     *
+     * The alternative is conceptually simpler as a stepping stone, but stores
+     * and sorts information that BFS already gave us implicitly.
+     */
+    static class GlobalSortAlternative {
+
+        record Candidate(
+                int distance,
+                int price,
+                int row,
+                int col) {
+
+            static final Comparator<Candidate> COMPARATOR =
+                    Comparator
+                            .comparingInt(Candidate::distance)
+                            .thenComparingInt(Candidate::price)
+                            .thenComparingInt(Candidate::row)
+                            .thenComparingInt(Candidate::col);
+        }
+
+
+        public List<List<Integer>> highestRankedKItems(
+                int[][] grid,
+                int[] pricing,
+                int[] start,
+                int k) {
+
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            boolean[][] visited =
+                    new boolean[rows][cols];
+
+            Queue<Cell> queue =
+                    new ArrayDeque<>();
+
+            queue.offer(
+                    new Cell(start[0], start[1]));
+
+            visited[start[0]][start[1]] = true;
+
+            List<Candidate> candidates =
+                    new ArrayList<>();
+
+            int distance = 0;
+
+            while (!queue.isEmpty()) {
+
+                int levelSize =
+                        queue.size();
 
                 for (int i = 0; i < levelSize; i++) {
 
-                    Cell current = queue.poll();
+                    Cell current =
+                            queue.poll();
 
-                    int value = grid[current.row][current.col];
+                    int cellValue =
+                            grid[current.row()][current.col()];
 
-                    // Invariant:
-                    // Current node is visited at minimum distance.
-                    if (value >= low && value <= high) {
-                        currentDistanceItems.add(current);
+                    if (cellValue >= pricing[0]
+                            && cellValue <= pricing[1]) {
+
+                        candidates.add(
+                                new Candidate(
+                                        distance,
+                                        cellValue,
+                                        current.row(),
+                                        current.col()));
                     }
 
-                    for (int d = 0; d < 4; d++) {
+                    for (int[] direction : DIRECTIONS) {
 
-                        int nextRow = current.row + DIR[d];
-                        int nextCol = current.col + DIR[d + 1];
+                        int nextRow =
+                                current.row() + direction[0];
 
-                        if (nextRow < 0 || nextRow >= rows)
+                        int nextCol =
+                                current.col() + direction[1];
+
+                        if (nextRow < 0
+                                || nextRow >= rows
+                                || nextCol < 0
+                                || nextCol >= cols) {
                             continue;
+                        }
 
-                        if (nextCol < 0 || nextCol >= cols)
+                        if (grid[nextRow][nextCol] == 0) {
                             continue;
+                        }
 
-                        if (grid[nextRow][nextCol] == 0)
+                        if (visited[nextRow][nextCol]) {
                             continue;
+                        }
 
-                        if (visited[nextRow][nextCol])
-                            continue;
-
-                        // Invariant:
-                        // First enqueue locks shortest distance.
                         visited[nextRow][nextCol] = true;
 
-                        queue.offer(new Cell(nextRow, nextCol));
+                        queue.offer(
+                                new Cell(nextRow, nextCol));
                     }
                 }
 
-                currentDistanceItems.sort((a, b) -> {
+                distance++;
+            }
 
-                    int priceA = grid[a.row][a.col];
-                    int priceB = grid[b.row][b.col];
+            candidates.sort(
+                    Candidate.COMPARATOR);
 
-                    if (priceA != priceB)
-                        return Integer.compare(priceA, priceB);
+            List<List<Integer>> answer =
+                    new ArrayList<>();
 
-                    if (a.row != b.row)
-                        return Integer.compare(a.row, b.row);
+            for (Candidate candidate : candidates) {
 
-                    return Integer.compare(a.col, b.col);
-                });
-
-                for (Cell item : currentDistanceItems) {
-
-                    answer.add(List.of(item.row, item.col));
-
-                    // Correctness:
-                    // Remaining BFS levels are farther.
-                    if (answer.size() == k)
-                        return answer;
+                if (answer.size() == k) {
+                    break;
                 }
+
+                answer.add(
+                        List.of(
+                                candidate.row(),
+                                candidate.col()));
             }
 
             return answer;
         }
     }
 
-/**
- * ============================================================
- * 🟣 INTERVIEW ARTICULATION
- * ============================================================
- *
- * Explain the invariant:
- *
- * "Because movement is unweighted,
- * BFS guarantees that every node is discovered at its minimum
- * possible distance.
- *
- * Therefore every node processed in one BFS level has identical
- * distance.
- *
- * Distance is already sorted.
- *
- * I only need to sort the current level using:
- *
- * price,
- * row,
- * column.
- *
- * This preserves the required ranking exactly."
- *
- * ------------------------------------------------------------
- * Discard Rule
- * ------------------------------------------------------------
- *
- * Once one BFS level finishes,
- * every future node has larger distance.
- *
- * Therefore no later item can outrank an earlier-distance item.
- *
- * ------------------------------------------------------------
- * Correctness
- * ------------------------------------------------------------
- *
- * BFS guarantees shortest path.
- *
- * Level sorting resolves remaining tie-breakers.
- *
- * Combined ordering equals the specification.
- *
- * ------------------------------------------------------------
- * Termination
- * ------------------------------------------------------------
- *
- * Stop when:
- *
- * queue empty
- *
- * or
- *
- * k answers collected.
- *
- * ------------------------------------------------------------
- * In-place Feasibility
- * ------------------------------------------------------------
- *
- * No.
- *
- * Visited information must be maintained.
- *
- * ------------------------------------------------------------
- * Streaming Feasibility
- * ------------------------------------------------------------
- *
- * Partially.
- *
- * One BFS level must be completed before its candidates can be
- * emitted because they require intra-level sorting.
- *
- * ------------------------------------------------------------
- * When NOT To Use
- * ------------------------------------------------------------
- *
- * Weighted graph.
- *
- * Dynamic edge costs.
- *
- * Teleport edges with unequal cost.
- *
- * Those require Dijkstra rather than BFS.
- *
- * ============================================================
- * 🎯 INTERVIEW RECALL SHEET
- * ============================================================
- *
- * Trigger
- * -------
- * Grid
- * +
- * shortest path
- * +
- * ranking
- *
- * Pattern
- * -------
- * BFS Level Traversal
- *
- * Invariant
- * ---------
- * One level = one shortest distance.
- *
- * Search Space
- * ------------
- * Reachable cells.
- *
- * Discard Rule
- * ------------
- * Finished BFS levels can never be outranked.
- *
- * Common Trap
- * -----------
- * Global sorting.
- *
- * Edge Cases
- * ----------
- * Start already contains an item.
- *
- * No reachable item.
- *
- * k larger than available items.
- *
- * Entire grid blocked.
- *
- * One-liner
- * ---------
- * BFS sorts distance.
- * Comparator sorts ties.
- *
- * Re-derivation Cue
- * -----------------
- * Ask:
- *
- * "Which ranking key is already guaranteed by traversal?"
 
- /**
- * ============================================================
- * 🔄 VARIATIONS & TWEAKS
- * ============================================================
- *
- * ------------------------------------------------------------
- * Variation 1
- * ------------------------------------------------------------
- *
- * Ranking:
- *
- * Distance
- * →
- * Rating
- * →
- * Price
- *
- * Change:
- *
- * Only comparator changes.
- *
- * BFS invariant is unchanged.
- *
- * ------------------------------------------------------------
- * Variation 2
- * ------------------------------------------------------------
- *
- * Multiple starting locations.
- *
- * Use:
- *
- * Multi-source BFS.
- *
- * Invariant:
- *
- * First discovery is still the shortest distance from any source.
- *
- * ------------------------------------------------------------
- * Variation 3
- * ------------------------------------------------------------
- *
- * Weighted roads.
- *
- * Pattern breaks.
- *
- * Why?
- *
- * BFS no longer guarantees shortest distance.
- *
- * Replace with:
- *
- * Dijkstra.
- *
- * ------------------------------------------------------------
- * Variation 4
- * ------------------------------------------------------------
- *
- * Eight-direction movement.
- *
- * Only direction array changes.
- *
- * BFS correctness is unchanged because every edge still has unit
- * cost.
- *
- * ------------------------------------------------------------
- * Variation 5
- * ------------------------------------------------------------
- *
- * Return only nearest item.
- *
- * Stop after first qualified item in the current BFS level.
- *
- * If multiple qualified items exist in that same level, sort only
- * that level and return the first.
- *
- * ============================================================
- * 🧠 MASTERY CHECKLIST
- * ============================================================
- *
- * ✓ What is the invariant?
- *
- * One BFS level represents exactly one shortest-path distance.
- *
- * ✓ What is the search space?
- *
- * Every reachable non-blocked cell.
- *
- * ✓ What is the discard rule?
- *
- * Finished BFS levels can never be outranked by later levels.
- *
- * ✓ Why does termination happen?
- *
- * Queue becomes empty or k items have been collected.
- *
- * ✓ Why does the naive solution fail?
- *
- * It ignores that distance must dominate every other ranking key.
- *
- * ✓ Edge cases remembered?
- *
- * Yes:
- *
- * - start already qualifies
- * - no reachable items
- * - blocked paths
- * - k exceeds available items
- * - all roads
- *
- * ✓ Debugging readiness?
- *
- * Verify:
- *
- * - visited marked on enqueue
- * - process exactly one BFS level
- * - comparator excludes distance
- * - comparator order:
- *      price
- *      row
- *      column
- *
- * ✓ Variant readiness?
- *
- * Yes.
- *
- * Replace BFS only if edge weights change.
- *
- * ✓ Pattern boundary?
- *
- * Unweighted shortest-path search.
- *
- * ============================================================
- * 🧪 MAIN + SELF-VERIFYING TESTS
- * ============================================================
- */
+    /**
+     * ======================================================================
+     * 8. 🔁 PATTERN REUSE — SAME ENGINE, STORE ONLY THE Δ
+     * ======================================================================
+     *
+     * BASE ENGINE
+     *
+     *     unweighted graph/grid
+     *     -> BFS by level
+     *     -> first discovery gives shortest distance
+     *
+     * ----------------------------------------------------------------------
+     * Δ1 — MULTIPLE STARTING LOCATIONS
+     * ----------------------------------------------------------------------
+     *
+     * Example:
+     *
+     *     Find items nearest to ANY warehouse.
+     *
+     * SAME:
+     *
+     *     BFS levels still mean shortest distance.
+     *
+     * CHANGE:
+     *
+     *     seed every start into the queue at distance 0
+     *     mark every start visited
+     *
+     * This becomes multi-source BFS.
+     *
+     * ----------------------------------------------------------------------
+     * Δ2 — DIFFERENT TIE-BREAKERS
+     * ----------------------------------------------------------------------
+     *
+     * Ranking changes from:
+     *
+     *     distance -> price -> row -> col
+     *
+     * to:
+     *
+     *     distance -> rating -> price
+     *
+     * SAME:
+     *
+     *     BFS still handles distance.
+     *
+     * CHANGE:
+     *
+     *     RankedItem fields + comparator only.
+     *
+     * ----------------------------------------------------------------------
+     * Δ3 — EIGHT-DIRECTION MOVEMENT
+     * ----------------------------------------------------------------------
+     *
+     * SAME:
+     *
+     *     BFS engine
+     *     visited rule
+     *     level processing
+     *
+     * CHANGE:
+     *
+     *     DIRECTIONS only.
+     *
+     * ----------------------------------------------------------------------
+     * Δ4 — RETURN ONLY THE NEAREST QUALIFYING ITEM
+     * ----------------------------------------------------------------------
+     *
+     * Process one BFS level completely.
+     *
+     * If that level contains qualifying items:
+     *
+     *     sort that level
+     *     return its first item
+     *
+     * Do NOT return immediately upon seeing the first qualifying cell because
+     * another item in the SAME distance may win by price/row/column.
+     *
+     * ----------------------------------------------------------------------
+     * Δ5 — WEIGHTED ROADS
+     * ----------------------------------------------------------------------
+     *
+     * Example:
+     *
+     *     each move has a different travel cost.
+     *
+     * Pattern breaks:
+     *
+     *     BFS levels no longer mean minimum cost.
+     *
+     * Replace BFS with:
+     *
+     *     Dijkstra
+     *
+     * New primary key:
+     *
+     *     minimum accumulated cost
+     */
 
-public static void main(String[] args) {
 
-    Optimal solution = new Optimal();
+    /**
+     * ======================================================================
+     * 9. COMMON TRAPS
+     * ======================================================================
+     *
+     * TRAP 1 — DFS
+     *
+     * DFS can discover a farther item before a nearer item.
+     * It does not preserve shortest-distance ranking.
+     *
+     * TRAP 2 — Thinking the queue always contains one level.
+     *
+     * During processing, the queue can contain the remainder of the current
+     * level plus nodes from the next level.
+     *
+     * levelSize freezes the current level.
+     *
+     * TRAP 3 — Marking visited on dequeue.
+     *
+     * Multiple parents may enqueue the same cell.
+     * Mark visited when the cell is first enqueued.
+     *
+     * TRAP 4 — Putting distance into RankedItem.COMPARATOR.
+     *
+     * currentDistanceItems already contains exactly one BFS distance.
+     * Distance would be redundant there.
+     *
+     * TRAP 5 — Returning the first qualifying item seen in a level.
+     *
+     * Same-distance candidates still need:
+     *
+     *     price -> row -> column
+     *
+     * ordering.
+     *
+     * TRAP 6 — Calling global sorting incorrect.
+     *
+     * Global sorting is correct IF distance is explicitly stored and included
+     * as the first comparison key. It is simply a distinct, less specialized
+     * solution.
+     */
 
-    {
-        // Representative example 1.
+
+    /**
+     * ======================================================================
+     * 10. INTERVIEW RECONSTRUCTION SHEET
+     * ======================================================================
+     *
+     * Recognition cue:
+     *
+     *     "Rank reachable items primarily by shortest distance."
+     *
+     * Trigger:
+     *
+     *     shortest distance + equal edge cost
+     *     -> BFS
+     *
+     * Reconstruction:
+     *
+     *     1. visited[][]
+     *     2. queue with start
+     *     3. while queue not empty
+     *     4. levelSize = queue.size()
+     *     5. process exactly levelSize cells
+     *     6. collect qualifying items from this level
+     *     7. discover valid unvisited neighbors
+     *     8. sort current level by price, row, col
+     *     9. append to answer
+     *    10. stop at k
+     *
+     * One-liner:
+     *
+     *     BFS sorts distance; comparator sorts ties.
+     *
+     * Photographic object map:
+     *
+     *     Cell
+     *     -> traversal state
+     *
+     *     RankedItem
+     *     -> ranking state
+     *     -> price + row + col + comparator
+     *
+     *     processCurrentLevel()
+     *     -> one exact BFS distance
+     *     -> collect candidates + expand neighbors
+     */
+
+
+    /**
+     * ======================================================================
+     * 11. MAIN + SELF-VERIFYING TESTS
+     * ======================================================================
+     */
+    public static void main(String[] args) {
+
+        Optimal optimal =
+                new Optimal();
+
+        GlobalSortAlternative alternative =
+                new GlobalSortAlternative();
+
+        testRepresentativeExample(
+                optimal,
+                alternative);
+
+        testSameDistancePriceTieBreak(
+                optimal,
+                alternative);
+
+        testSamePriceRowColumnTieBreak(
+                optimal,
+                alternative);
+
+        testStartCellQualifies(
+                optimal,
+                alternative);
+
+        testBlockedItemIsUnreachable(
+                optimal,
+                alternative);
+
+        testKGreaterThanAvailable(
+                optimal,
+                alternative);
+
+        System.out.println(
+                "All K Highest Ranked Items Java Gold assertions passed.");
+    }
+
+
+    private static void testRepresentativeExample(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
+
         int[][] grid = {
                 {1, 2, 0, 1},
                 {1, 3, 0, 1},
                 {0, 2, 5, 1}
         };
 
-        List<List<Integer>> expected = List.of(
-                List.of(0, 1),
-                List.of(1, 1),
-                List.of(2, 1)
-        );
+        int[] pricing = {2, 5};
+        int[] start = {0, 0};
 
-        assert solution.highestRankedKItems(
+        List<List<Integer>> expected =
+                List.of(
+                        List.of(0, 1),
+                        List.of(1, 1),
+                        List.of(2, 1));
+
+        assert optimal.highestRankedKItems(
                 grid,
-                new int[]{2, 5},
-                new int[]{0, 0},
+                pricing,
+                start,
+                3
+        ).equals(expected);
+
+        assert alternative.highestRankedKItems(
+                grid,
+                pricing,
+                start,
                 3
         ).equals(expected);
     }
 
-    {
-        // Representative example 2.
+
+    private static void testSameDistancePriceTieBreak(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
+
         int[][] grid = {
-                {1, 2, 0, 1},
-                {1, 3, 3, 1},
-                {0, 2, 5, 1}
+                {1, 2},
+                {3, 1}
         };
 
-        List<List<Integer>> expected = List.of(
-                List.of(2, 1),
-                List.of(1, 2)
-        );
+        List<List<Integer>> expected =
+                List.of(
+                        List.of(0, 1),
+                        List.of(1, 0));
 
-        assert solution.highestRankedKItems(
+        assertBoth(
+                optimal,
+                alternative,
                 grid,
                 new int[]{2, 3},
-                new int[]{2, 3},
-                2
-        ).equals(expected);
+                new int[]{0, 0},
+                2,
+                expected);
     }
 
-    {
-        // Representative example 3.
+
+    private static void testSamePriceRowColumnTieBreak(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
+
         int[][] grid = {
+                {2, 1, 2},
                 {1, 1, 1},
-                {0, 0, 1},
-                {2, 3, 4}
+                {2, 1, 2}
         };
 
-        List<List<Integer>> expected = List.of(
-                List.of(2, 1),
-                List.of(2, 0)
-        );
+        List<List<Integer>> expected =
+                List.of(
+                        List.of(0, 0),
+                        List.of(0, 2),
+                        List.of(2, 0),
+                        List.of(2, 2));
 
-        assert solution.highestRankedKItems(
+        assertBoth(
+                optimal,
+                alternative,
                 grid,
-                new int[]{2, 3},
-                new int[]{0, 0},
-                3
-        ).equals(expected);
+                new int[]{2, 2},
+                new int[]{1, 1},
+                4,
+                expected);
     }
 
-    {
-        // Start cell itself qualifies.
+
+    private static void testStartCellQualifies(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
+
         int[][] grid = {
                 {5}
         };
 
-        List<List<Integer>> expected = List.of(
-                List.of(0, 0)
-        );
+        List<List<Integer>> expected =
+                List.of(
+                        List.of(0, 0));
 
-        assert solution.highestRankedKItems(
+        assertBoth(
+                optimal,
+                alternative,
                 grid,
                 new int[]{2, 6},
                 new int[]{0, 0},
-                1
-        ).equals(expected);
+                1,
+                expected);
     }
 
-    {
-        // No qualifying items.
-        int[][] grid = {
-                {1, 1},
-                {1, 1}
-        };
 
-        assert solution.highestRankedKItems(
-                grid,
-                new int[]{2, 5},
-                new int[]{0, 0},
-                3
-        ).isEmpty();
-    }
+    private static void testBlockedItemIsUnreachable(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
 
-    {
-        // Unreachable because of blockers.
         int[][] grid = {
                 {1, 0, 2},
                 {0, 0, 1},
                 {3, 1, 1}
         };
 
-        assert solution.highestRankedKItems(
+        assertBoth(
+                optimal,
+                alternative,
                 grid,
                 new int[]{2, 5},
                 new int[]{0, 0},
-                5
-        ).isEmpty();
+                5,
+                Collections.emptyList());
     }
 
-    {
-        // Same distance -> lower price first.
-        int[][] grid = {
-                {1, 2},
-                {3, 1}
-        };
 
-        List<List<Integer>> expected = List.of(
-                List.of(0, 1),
-                List.of(1, 0)
-        );
+    private static void testKGreaterThanAvailable(
+            Optimal optimal,
+            GlobalSortAlternative alternative) {
 
-        assert solution.highestRankedKItems(
-                grid,
-                new int[]{2, 3},
-                new int[]{0, 0},
-                2
-        ).equals(expected);
-    }
-
-    {
-        // Same distance and same price -> row then column.
-        int[][] grid = {
-                {1, 2, 2},
-                {1, 1, 1}
-        };
-
-        List<List<Integer>> expected = List.of(
-                List.of(0, 1),
-                List.of(0, 2)
-        );
-
-        assert solution.highestRankedKItems(
-                grid,
-                new int[]{2, 2},
-                new int[]{1, 1},
-                2
-        ).equals(expected);
-    }
-
-    {
-        // k larger than available items.
         int[][] grid = {
                 {1, 2},
                 {1, 1}
         };
 
-        List<List<Integer>> expected = List.of(
-                List.of(0, 1)
-        );
+        List<List<Integer>> expected =
+                List.of(
+                        List.of(0, 1));
 
-        assert solution.highestRankedKItems(
+        assertBoth(
+                optimal,
+                alternative,
                 grid,
                 new int[]{2, 2},
                 new int[]{0, 0},
-                10
+                10,
+                expected);
+    }
+
+
+    private static void assertBoth(
+            Optimal optimal,
+            GlobalSortAlternative alternative,
+            int[][] grid,
+            int[] pricing,
+            int[] start,
+            int k,
+            List<List<Integer>> expected) {
+
+        assert optimal.highestRankedKItems(
+                grid,
+                pricing,
+                start,
+                k
+        ).equals(expected);
+
+        assert alternative.highestRankedKItems(
+                grid,
+                pricing,
+                start,
+                k
         ).equals(expected);
     }
-
-    {
-        // Fully traversable grid with no obstacles.
-        int[][] grid = {
-                {1, 2, 3},
-                {1, 4, 5},
-                {1, 6, 7}
-        };
-
-        List<List<Integer>> result =
-                solution.highestRankedKItems(
-                        grid,
-                        new int[]{2, 7},
-                        new int[]{0, 0},
-                        6
-                );
-
-        assert result.size() == 6;
-    }
-
-    System.out.println("All tests passed.");
-}
 }

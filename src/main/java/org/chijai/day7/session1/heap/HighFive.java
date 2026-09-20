@@ -135,7 +135,7 @@ import java.util.TreeMap;
  * 3. 🟢 PRIMARY PHOTOGRAPHIC-MEMORY SOLUTION
  * =====================================================================================
  */
-public class HighFiveV3 {
+public class HighFive {
 
     static class Primary {
 
