@@ -1,5 +1,7 @@
 # START HERE — Interview Study Sequence, Ranking, and Roadmap
 
+> **Historical Goldman/Point72 roadmap, written for the 10 September 2026 Goldman interview.** The current single front door is [START_HERE_INTERVIEW_OPERATING_SYSTEM.md](START_HERE_INTERVIEW_OPERATING_SYSTEM.md). Keep this page for company-specific source provenance and targeted repair; its dated sequence is no longer the daily schedule.
+
 > **Purpose:** one front door for the existing Markdown files, PDFs, IntelliJ repositories, DSA solutions, Java notes, LLD projects, HLD projects, PTR material, and company-specific plans.
 >
 > **Immediate target:** Goldman Sachs VP CoderPad, Thursday, 10 September 2026, 12:00–1:00 PM IST.

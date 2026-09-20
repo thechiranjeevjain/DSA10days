@@ -1,5 +1,7 @@
 # DSA Interview Cockpit
 
+> **Current front door (20 September 2026 onward):** [Start here — one interview preparation operating system](START_HERE_INTERVIEW_OPERATING_SYSTEM.md). This README describes the older DSA-only cockpit. Its time-available table and coverage counts are historical reference, not a second daily plan. Use the operating-system page for September close-out, October mixed sittings, mocks, applications, and live-interview overrides.
+
 This folder is the near-interview view over the existing Java chapters.
 
 Source of truth remains `src/main/java/org/chijai`. These files link back to the Java chapters and to LeetCode where a link exists.
