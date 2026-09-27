@@ -20,12 +20,114 @@ Read top to bottom; the first applicable row wins. A replacement activity never 
 | **1–4 October bridge** | Use the short bridge blocks in the September file. | No. |
 | **Real interview within 72 hours** | Use the September file's interview override: format-specific mock or question, one targeted repair, company/project story, logistics, sleep. Open the relevant [Goldman](GoldmanSachs_Master_Revision_DSA_LLD_HLD.md), [Point72](Point72_Master_Revision_HackerRank_SQL_DSA_LLD_HLD.md), or [Wells Fargo](WellsFargo_Master_Revision_DSA_LLD_HLD.md) sheet only for that confirmed format. | No; resume the held row afterward. |
 | **Weekly mock day** | In the **MocksPractice project chat**, send `START MOCK Compressed` as the bounded default. Attempt cold, then send `DONE` and complete the viva. Review its scorecard and choose at most one consequential repair. | No; the mock replaces the sitting. |
+| **Normal morning with 180 minutes** | Run the 150-minute mixed-sitting `plan`, then use the fixed 30-minute career edge below. | Yes, after a real completed sitting only. |
 | **Normal day with 150 minutes** | Run the mixed-sitting `plan`; follow its exact clock; score once with `done`. | Yes, after a real completed sitting only. |
 | **Office, low-energy, or recovery day** | Do the 20-minute minimum in the [mixed circuit](OCTOBER_150_MIN_MIXED_INTERVIEW_CIRCUIT.md) using the **same next row**. | No. |
 | **A consequential real/mock failure** | Use the next available 150-minute block for the *exact* failed code move or design requirement. This repair replaces that day's numbered sitting. If the issue is small, use the next card's built-in mini-round instead. | No for a replacement repair block. |
 | **Three unproductive days or a rejection stall** | Apply the seven-day lighter recovery protocol in the September file, keep one small retrieval and one job action, then resume the held row. | No until a full sitting is completed. |
 
 **Week structure:** Use one mock in each calendar week. The first three weeks of a four-week cycle are build weeks; the fourth is lighter with brief retrieval and `START MOCK Micro` instead of a full new-coverage quota. A full sitting is available on any day you truly have 150 minutes; Mon/Tue office days may use the 20-minute minimum. Applications/referrals take a separate 10–20-minute action on up to five suitable days, with no poor-fit quota filling. These are capacity limits, not a command to make up missed rows at night.
+
+## Default 180-minute morning — one command, one sitting, one career edge
+
+Use this from **5 October** on a normal morning when three hours are genuinely available. It wraps the existing 150-minute circuit; it does not create another technical queue.
+
+| Clock | Minutes | Do exactly this | Evidence / stop rule |
+| --- | ---: | --- | --- |
+| 00:00–02:30 | 150 | Run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs plan` and follow the printed [mixed-circuit clock](OCTOBER_150_MIN_MIXED_INTERVIEW_CIRCUIT.md). This already contains three DSA turns, five rapid DSA cues, LLD, HLD, Java/backend, spaced changed-constraint recall, scoring, and one repair. | Run `done` only after the full sitting with actual scores. Stop every lane at its boundary. |
+| 02:30–02:45 | 15 | **Job-funnel action:** submit one relevant application, send one authorized referral request/follow-up, or record `zero suitable roles today` after checking the verified links. | A sent action or an honest zero-fit entry. Saving a link is not evidence. Maximum one action; no poor-fit quota filling. |
+| 02:45–03:00 | 15 | Do the sitting's **E01–E07 career-edge prompt printed by `plan`** from memory, then inspect one source only if needed. | One dated answer, query, story outline, or diagram. Stop at 15 minutes; do not turn it into a course session. |
+
+### Fifteen-minute career-edge circular queue
+
+This queue uses the same absolute sitting number as the technical circuit, so a missed weekday cannot repeatedly starve one area. After E07, return to E01.
+
+| Edge | Exact prompt | Green evidence |
+| --- | --- | --- |
+| **E01 Résumé impact story** | Give one 2-minute `context → problem → action → measurable result → lesson` story from Morgan Stanley, Nasdaq, or another real project. Answer two likely follow-ups. | Concrete ownership, scale/result, trade-off, and no invented metric. |
+| **E02 SQL and database reasoning** | Write or explain one query/index/execution-plan problem: joins, aggregation/windowing, pagination, isolation, locking, indexing, or a slow-query diagnosis. | Correct query or plan reasoning, one edge case, and one performance consequence. |
+| **E03 Project architecture** | Explain one local project end to end: entry point, request/data path, state, concurrency, failure, observability, and one production limitation. | Five-minute coherent walkthrough plus one changed requirement. |
+| **E04 Behavioral and leadership** | Answer one senior-engineer prompt: disagreement, incident, mentoring, prioritization, failure, influence without authority, or ambiguous requirements. | Specific situation, your decision, consequence, learning, and concise follow-ups. |
+| **E05 Trading and risk domain** | Explain one domain flow: order lifecycle, pre-trade control, market data, exposure/limits, venue connectivity, reconciliation, or failure recovery. | Correct actors/data path, invariant, latency/failure concern, and one business trade-off. |
+| **E06 System communication** | Take today's LLD or HLD and deliver a clean 10-minute interviewer-style explanation without code or notes; spend five minutes answering interruptions. | Structured requirements, decisive choices, one rejected alternative, and clear trade-off. |
+| **E07 Evidence and funnel control** | Run `status`, read the latest mock scorecard, count sent job actions/screens, and fill the weekly score line below. | One priority for the next seven sittings; no new syllabus or backlog creation. |
+
+**Warmth coverage:** The 150-minute core touches DSA, LLD, HLD, and Java/backend every completed sitting. Its circular queues rotate 263 DSA URLs, 15 LLDs, 8 HLDs, and 20 Java questions. The E01–E07 ring keeps résumé evidence, SQL, project explanation, behavioral leadership, trading/risk language, communication, and weekly control active every seven completed sittings. The job-funnel block keeps preparation connected to real interviews.
+
+```mermaid
+flowchart TD
+    A[Read the decision tree] --> B{First applicable mode}
+    B -->|Interview within 72 hours| I[Role-specific preparation]
+    B -->|Consequential failure| R[Targeted repair]
+    B -->|Weekly mock| M[MocksPractice]
+    B -->|Normal morning| P[Next sitting n]
+    P --> D[DSA row and cue ring]
+    P --> L[LLD n mod 15]
+    P --> H[HLD n mod 8]
+    P --> J[Java n mod 20]
+    P --> F[Design focus n mod 7]
+    P --> E[Career edge n mod 7]
+    D --> T[150-minute technical sitting]
+    L --> T
+    H --> T
+    J --> T
+    F --> T
+    E --> X[Three-hour extension]
+    T --> S[Record actual scores and one repair]
+    S --> N[Advance to n plus 1]
+    I --> K[Hold sitting n]
+    R --> K
+    M --> K
+```
+
+The queues choose **what to retrieve**. Scores measure the attempt. Repair, mocks, recovery, and the 72-hour interview rule choose **whether the normal queue runs at all**. Keeping those controls outside the circular content rings prevents an urgent failure or booked interview from waiting for its turn.
+
+**Replacement rules still win:** A mock replaces the 150-minute circuit; its generation, 60-minute Compressed attempt, grading, and viva have variable wall-clock time, so use the rest of the three-hour window for the mock and its feedback rather than promising another quota. A consequential repair replaces the numbered sitting. A live interview within 72 hours replaces the whole normal morning. The fourth lighter week and the three-bad-day protocol use their smaller prescribed load. A missed morning leaves the queue where it is and creates no catch-up debt.
+
+## Exact course protocol — courses repair a named gap; dashboards never choose the day
+
+Educative and AlgoMaster are **source libraries**, not parallel curricula and not completion goals. Never open a course because its dashboard says “continue,” because a progress bar is incomplete, or because today's mixed row felt uncomfortable. A course earns time only after a cold mixed sitting, mock, or real interview produces a named failure. The course block replaces the matching practice lane or a consequential-repair sitting; it is never added after the normal quota.
+
+### The one repair loop
+
+1. Write one sentence: `I failed ___ because I could not ___`.
+2. Attempt the exact skill cold before opening a lesson. Save code, a diagram, or a spoken-answer note.
+3. Open **one** matching lesson or problem for **at most 20 minutes**. Read only enough to identify the missing trigger, invariant, data path, trade-off, or Java rule.
+4. Close the lesson. Reconstruct the same skill from blank for **20–30 minutes**, then handle one changed constraint.
+5. Score the closed-book retry. Record one exact remaining miss through the normal mixed-sitting/Review OS evidence flow. Stop; do not continue to the next lesson.
+
+The useful completion unit is a **closed-book retry**, not a watched/read lesson, solved example, chapter, certificate, course percentage, or streak.
+
+| Resource | Open it only when | Exact bounded use | Required output / stop rule |
+| --- | --- | --- | --- |
+| [Educative system-design roadmap](https://www.educative.io/interview-prep/system-design?page=roadmap) | The HLD lane, a mock, or a real interview exposes one named gap such as partitioning, consistency, caching, queues, idempotency, capacity, or failure recovery. | Start with a 10–15-minute blank design. Read only the matching concept/example for up to 20 minutes. Close it and redraw the request/data path, state, failure handling, scale choice, and one trade-off in 20–30 minutes. | A fresh diagram and a 5-minute explanation that survives one changed requirement. Do not traverse the roadmap top to bottom. |
+| [Educative Decode the Coding Interview in Java](https://www.educative.io/courses/decode-coding-interview-java) | A DSA pattern remains Y/R after a cold attempt, or a mock shows that a real-world statement could not be mapped to a known pattern. | Search the course for the failed move; use one feature or DIY challenge. Attempt it cold, inspect one explanation, then recode from blank. Prefer a problem whose implementation move is absent from today's three DSA prompts; deduplicate against the local 263-question ledger. | Runnable Java, edge tests, invariant, complexity, and a 60-second explanation. Do not work through its 389 lessons/195 challenges sequentially. |
+| [AlgoMaster dashboard](https://algomaster.io/dashboard) | The mixed queue or a mock needs one unseen validation problem, or the 263-question ledger has a confirmed implementation-family gap. | Select one problem from the named weak pattern. Check whether it duplicates a local problem. If duplicate, add a changed constraint or choose a distinct implementation move. Use the normal 40-minute DSA standard and inspect its explanation only after scoring. | One cold score and one exact failure/repair. Do not run an independent AlgoMaster daily streak or second problem queue. The logged-in track inventory must be mapped before claiming unique coverage. |
+| [Educative coding-pattern mock](https://www.educative.io/mock-interview?category_id=coding-interviews&interview_id=coding-patterns-general) | You want an external coding calibration, ideally once in a four-week cycle, or a booked round closely matches its format. | It **replaces** that week's `START MOCK Compressed`; use the platform timer and attempt cold. Do not run both mocks in the same week to satisfy a quota. | Save the asked question, where you broke, score/feedback, and at most one repair. It does not advance the mixed-sitting pointer. |
+
+**Calendar rule:** Through 30 September, follow the dated September plan; use a course only inside its scheduled repair block for an observed miss. During the 1–4 October bridge, at most one 45-minute course repair may replace a bridge technical block. From 5 October onward, the mixed circuit chooses normal work; the table above activates only from evidence. A real interview within 72 hours may select one role-relevant module, but no broad course begins in that window.
+
+**Name check:** the supplied dashboard URL is **AlgoMaster**. Earlier notes also say **AlgoMonster**, which is a different product. Do not merge their progress or inventories unless both subscriptions and their exact tracks are deliberately audited.
+
+### How courses enter the operating loop
+
+```mermaid
+flowchart TD
+    A[September close-out or October mixed sitting] --> B[Cold attempt]
+    B --> C[Score evidence]
+    C -->|Green| D[Continue circular queue]
+    C -->|Small yellow or red| E[Next sitting mini-round]
+    C -->|Consequential failure| F[Replacement repair block]
+    F --> G[One matching Educative or AlgoMaster item]
+    G --> H[Close source and reconstruct]
+    H --> I[Changed requirement]
+    I --> J[Record result in normal evidence system]
+    J --> D
+    K[Weekly mock] --> C
+    L[Real interview] --> C
+```
+
+The course platforms do not select the next task. Evidence from a cold sitting, mock, or real interview selects a single repair; successful reconstruction returns the work to the same circular queue.
 
 ## Commands — which surface, what it changes
 
@@ -60,7 +162,7 @@ Only the **September plan** and then the **October circuit** choose a normal day
 | [Four-domain warm-up](DAILY_FOUR_DOMAIN_WARMUP.md) and [earlier coach guide](../../../../review-os/coach/README.md) | Earlier calendar-cue design retained as reference. The current 20-minute minimum is in the mixed circuit. | Only to inspect the earlier model or diagnose its generated cues. |
 | [Requirement audit snapshot](INTERVIEW_PREP_REQUIREMENTS_AND_DELIVERY_AUDIT_2026-09-20.md) | Records what was built and unproved before this single-entry-point correction. | For traceability; use the gap table below for current decisions. |
 | [MocksPractice](../../../../MocksPractice/README.md) | Blinded interview assessment, feedback, changed constraints and correction scheduling. | Weekly mock day and role-specific interview practice. |
-| [LLD learning order](../../../../LLDProjects/docs/LLD_LEARNING_ORDER_ROI_RANKING.md), [HLD catalog](../../../../SystemDesignProjects/LEARNING-ORDER.md), Java/deep company sheets, Educative, AlgoMonster | Source/reference libraries. The mixed card selects a bounded interview core; a confirmed gap can promote one distinct move. | After a cold attempt or for a booked format, never as blanket daily reading. |
+| [LLD learning order](../../../../LLDProjects/docs/LLD_LEARNING_ORDER_ROI_RANKING.md), [HLD catalog](../../../../SystemDesignProjects/LEARNING-ORDER.md), Java/deep company sheets, Educative, AlgoMaster (and AlgoMonster only if separately owned) | Source/reference libraries. The mixed card selects a bounded interview core; a confirmed gap can promote one distinct move. | After a cold attempt or for a booked format, never as blanket daily reading. |
 
 ### Complete map of this folder — every top-level Markdown file
 
