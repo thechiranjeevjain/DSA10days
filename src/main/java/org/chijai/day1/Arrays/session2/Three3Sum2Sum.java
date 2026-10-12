@@ -4,6 +4,8 @@ import java.util.*;
 /*
 ================================================================================
 📘 DSA TEXTBOOK CHAPTER — 3SUM
+LeetCode 15 — 3Sum
+https://leetcode.com/problems/3sum/
 Pattern: Fixed Anchor + Two Pointers on Sorted Array
 ================================================================================
 */
@@ -415,6 +417,7 @@ Sorted array (e.g., LeetCode 167 – Two Sum II): ✅ Two Pointers — O(n) time
 
     // --------------------------------------------------
     // ⚫ Reinforcement 3 — 4Sum
+    // LeetCode 18 — https://leetcode.com/problems/4sum/
     // --------------------------------------------------
     static class FourSumSolution {
         /*

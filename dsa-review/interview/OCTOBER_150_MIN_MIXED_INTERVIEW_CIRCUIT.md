@@ -1,21 +1,14 @@
 # Waiting-for-calls session pipeline + 150-minute mixed benchmark
 
-> **HISTORICAL SNAPSHOT — do not advance pointers here.** The single active operating surface is [Interview Ready Master Queue V2](INTERVIEW_READY_MASTER_QUEUE_V2.md). This October file is retained intact for provenance and comparison.
+> **HISTORICAL SNAPSHOT — do not advance pointers here.** Ordinary daily work uses the [Single-Domain 8-Session Circular Queue](SINGLE_DOMAIN_8_SESSION_CIRCULAR_QUEUE.md); deliberate mixed simulations use [Interview Ready Master Queue V2](INTERVIEW_READY_MASTER_QUEUE_V2.md). This compact file remains a reference for the earlier mixed-benchmark model.
 
-**Current start:** P01-A1 below. The held mixed row is 01 and is used only where P01-P05 assigns it. This is a session-and-packet queue, so a missed calendar day creates no catch-up debt. Any free 15-minute slot can complete the one next packet; a larger block simply consumes several packets in order.
+**Historical start:** P01-A1 below. The held mixed row was 01 and was used only where P01-P05 assigned it. This snapshot documents a session-and-packet model; it no longer selects daily work.
 
-## Current no-call interval mode - one sequential session pipeline
+## Historical no-call interval model - one sequential session pipeline
 
-**Use this mode while no real interview is booked within 72 hours.** It is based on completed sessions, not weekdays or calendar dates. If three days are missed, nothing moves and nothing becomes overdue. Resume the same next session.
+**Historical rule:** this mode was based on completed sessions rather than dates. Do not advance it; use the single-domain queue for current ordinary-day work.
 
-The right amount of parallelism is:
-
-- **One active build track:** finish its next unit, then the next unit, until the track exit test passes.
-- **One small maintenance rail:** DSA plus one rotating Java/LLD/HLD retrieval so interview ability does not fall to zero.
-- **One opportunity rail:** one bounded application/referral action.
-- **One periodic mock:** an unseen performance check after each acquisition cycle.
-
-These are parts of one session pipeline, not four courses in parallel.
+The ordered pipeline contains one active build track, one DSA/cross-domain maintenance rail, one opportunity step, and one periodic mock. They advance as parts of the same queue.
 
 ### Authoritative pointers
 
@@ -81,18 +74,7 @@ Holding packets create maintenance, career, and funnel evidence but do not advan
 | **P05 - Mixed benchmark** | Run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs plan`, complete the full 150-minute row cold, then use the 30-minute extension. Run `done` only with actual scores. | Mixed row advances once after actual completion. Build unit does not advance. |
 | **P06 - Mock checkpoint** | In MocksPractice send `START MOCK Compressed`. Send `START MOCK Micro` when `Completed cycles` is 3, 7, 11, and so on, or after three genuine study opportunities pass without a 60-minute block. Complete the candidate attempt, then `DONE`, grading, and viva. Choose at most one consequential repair. | Pipeline returns to P01 and completed-cycles increases by one after the completed mock. No build or mixed pointer advances. |
 
-If only 15 minutes exists, do the one next packet and create its resume token. If the mock exposes a critical failure, insert one repair packet sequence before returning to P01; do not restart a course.
-
-### Exact 180-minute P01-P04 full-block view - identical to the packet queue
-
-| Clock | Minutes | Do exactly this | Stop rule |
-| --- | ---: | --- | --- |
-| 00:00-01:15 | 75 | **Advance:** complete the next unit in the one active build track. Use the source for at most 25 minutes, close it, reconstruct for 40 minutes, and spend 10 minutes producing evidence. | The unit is done only with code, diagram, class model, state machine, tests, or a five-minute closed-book explanation. |
-| 01:15-02:00 | 45 | **DSA maintenance:** do the DSA turn assigned by P01-P04 above. Open local Java only after the cold attempt. | Main problem: runnable Java, tests, invariant, complexity, explanation. Short/retry: decisive move and an edge trace. |
-| 02:00-02:15 | 15 | **X1 cross-domain:** do the assigned Java, HLD, LLD, or weakest-domain retrieval from blank memory. | A 2-5 minute answer plus one failure, trade-off, or changed requirement. |
-| 02:15-02:30 | 15 | **C1 cue sweep:** use the held row's five cues and one changed wording/constraint. | Five honest G/Y/U cue marks and one changed-constraint answer. |
-| 02:30-02:45 | 15 | **F1 opportunity:** advance the current verified funnel stage. | Verified role/draft/sent action/zero-fit evidence; saving an unverified link is insufficient. |
-| 02:45-03:00 | 15 | **R1 close:** record evidence, one repair, resume token, and eligible pointer updates. | `date | P-session | packet | build result | cold result | funnel stage | next packet`. |
+A critical mock failure inserts one repair packet before returning to P01; do not restart a course.
 
 ### Funnel source queue
 
@@ -179,11 +161,9 @@ After **20 relevant sent actions** with zero screens, pause volume for one revie
 
 **Score:** DSA F is G only with cold runnable code, tests, invariant, complexity, and explanation; otherwise Y for partial or R for a missing move. The two short DSA turns and LLD/HLD/Java get G for the row's stated green evidence, Y for partial/slow, U for unlearned. A cue green does not turn into a full-solve green. Record S for a skipped sitting, never G. Do not open a source before the attempt.
 
-**After scoring:** If a real interview or mock exposed a consequential gap, run repair packets for the exact failed question and **do not call done** for the numbered row; it stays next. For an ordinary weak cue, log its exact failure and use the mixed mini-round next time. Review OS remains the spaced-review due-date owner where a matching card has an attempt. Low-energy periods consume one packet at a time; there is no backlog.
+**After scoring and overrides:** A consequential real-interview or mock failure inserts repair packets for the exact failed move; the numbered mixed row remains next and `done` is not called. Review OS owns matching spaced-review dates. A live interview within 72 hours freezes every pointer and runs company simulation → exact repair → résumé story → logistics; resume the frozen pointer afterward. Low-energy periods consume one packet with no backlog.
 
-**15-minute rule:** during P01-P04, consume the exact next A/D/X/C/F/R packet and advance that packet only with evidence. During P05/P06, consume the next H1-H4 holding packet without advancing the benchmark/mock. A live interview within 72 hours replaces this circuit with company-specific mock -> gap repair -> resume story -> logistics; return to the held pointers afterward.
-
-**Mock and job pipeline:** P06 owns the MocksPractice checkpoint; the numbered mixed row stays held. The bounded default is `START MOCK Compressed` in the **MocksPractice project chat**: its candidate attempt is 60 minutes, while generation, grading, and DONE/viva add variable time. `Standard` is 120 minutes of candidate attempt and `Full` is 180, both plus that extra time. On every fourth completed P01-P06 cycle, use `START MOCK Micro` and brief retrieval for P06. Job actions are already bounded inside P01-P05 through the funnel pointer. A mock or real interview is stronger evidence than cue coverage. Do not run the mixed-sitting `done` command for a MocksPractice mock.
+**Mock ownership:** P06 uses `START MOCK Compressed` in MocksPractice: 60-minute candidate attempt plus variable generation, grading, `DONE`, and viva. `Standard` and `Full` use 120- and 180-minute candidate attempts plus that variable work. Every fourth completed P01–P06 cycle uses `START MOCK Micro` and brief retrieval. P06 never uses mixed-sitting `done`; job actions remain inside the funnel pointer.
 
 ## Thirty-minute three-hour extension — same sitting pointer
 
@@ -203,7 +183,7 @@ After E07, return to E01. A 150-minute-only day may omit this extension; `done` 
 
 ## How the circular queue works
 
-1. When P05 arrives, start with row 01 below. Finish and score its benchmark with the `done` command; that increments **Next sitting** by one. There is no topic choice when P05 arrives.
+1. When P05 arrives, run the current row and record it with the command above. Completion increments **Next sitting** by one; there is no topic choice.
 2. On row 88, return to row 01 for circuit 2. The **F** main DSA changes from first to second link; on circuit 3 it changes to the third link. The two-link final row alternates. Thus every one of the 263 linked prompts receives a 40-minute main attempt once in three completed circuits, assuming no source is removed.
 3. LLD, HLD, Java, and career-edge counters continue from the **absolute sitting number** (not from row 01 again): L = 1 + ((n-1) mod 15), H = 1 + ((n-1) mod 8), J = 1 + ((n-1) mod 20), E = 1 + ((n-1) mod 7). From sitting 89 onward, the plan command prints every link, the correct focus, and the career edge automatically. For n 1–88, the table below is the complete technical card.
 4. After circuit 3, the generator rotates within each DSA pattern family and repeats the three-circuit process. Distinct families are interleaved; consecutive DSA links in a circuit do not share the same broad family. Broad family labels do not prove distinct implementation moves. The 40-minute main turn, mock failures, and score trend decide true interview readiness.
