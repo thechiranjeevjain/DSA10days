@@ -1,14 +1,158 @@
-# 150-minute mixed interview circuit — DSA + LLD + HLD + Java
+# Waiting-for-calls session pipeline + 150-minute mixed benchmark
 
-**Start:** 5 October 2026. **Next sitting:** run the coach plan command below; the first is 01. This is a session queue, so a missed calendar day creates no catch-up debt. On an office or low-energy day, do the 20-minute minimum below and leave the sitting number unchanged. Complete the next full sitting when time returns.
+> **HISTORICAL SNAPSHOT — do not advance pointers here.** The single active operating surface is [Interview Ready Master Queue V2](INTERVIEW_READY_MASTER_QUEUE_V2.md). This October file is retained intact for provenance and comparison.
 
-**If the morning has three hours:** use this file for the first **150 minutes**, then do the 30-minute extension printed by the same `plan` command: 15 minutes for one real job-funnel action and 15 minutes for the sitting's E01–E07 career-edge prompt. There is no separate 180-minute queue or second daily plan.
+**Current start:** P01-A1 below. The held mixed row is 01 and is used only where P01-P05 assigns it. This is a session-and-packet queue, so a missed calendar day creates no catch-up debt. Any free 15-minute slot can complete the one next packet; a larger block simply consumes several packets in order.
 
-**SMART outcome:** In each completed 150-minute sitting, attempt **three distinct linked DSA questions**, **one LLD**, **one HLD**, and **one Java/backend question** from a blank page or spoken memory; record the score and one repair. A separate four-minute dash tests **up to five DSA statement cues**, which are recognition only. Every 53 completed sittings, all **263 distinct DSA URLs** receive a quick cue; every 88 completed sittings they receive a substantive DSA slot (the last row has two). LLD repeats every 15 sittings, HLD every 8, Java every 20. Across three 88-sitting circuits, every DSA URL gets one designated **40-minute cold-code** slot; the other turns are 12-minute code skeletons. These are scheduling targets, not proof of mastery.
+## Current no-call interval mode - one sequential session pipeline
 
-**Start with the [single-entry operating system](START_HERE_INTERVIEW_OPERATING_SYSTEM.md).** This is its one full-sitting queue. The [earlier calendar coach](../../../../review-os/coach/README.md) is a diagnostic, not an extra quota or a second fallback on top of this sitting. The 20-minute minimum below uses the **same next row**. The [263-row DSA ledger](DSA_FULL_COLD_ATTEMPT_LEDGER.md) is the source inventory and detailed DSA history; the mixed-sitting score log does not write into it. The [hourly close-out plan](SEP_20_30_2026_INTERVIEW_READY_HOURLY_WINS.md) still owns September and live interview overrides. The selected 15 LLD, 8 HLD, and 20 Java items are a core interview deck; they do not silently represent every course, note, company sheet, or system-design project.
+**Use this mode while no real interview is booked within 72 hours.** It is based on completed sessions, not weekdays or calendar dates. If three days are missed, nothing moves and nothing becomes overdue. Resume the same next session.
 
-**One command to see the next sitting:** in PowerShell run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs plan`. To record a completed sitting and advance its pointer, run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs done G G Y G Y G GGYGU "one exact repair"`, replacing the six lane scores, five cue scores, and repair text with yours. The six lane scores are main DSA, short DSA 1, short DSA 2, LLD, HLD, Java. On the final two-DSA row use a hyphen for short DSA 2. On the short three-cue row give three cue scores. Use `status` to see the pointer and last evidence. Preview any later sitting with `plan 89`. Do not call done for a 20-minute minimum or a skipped day.
+The right amount of parallelism is:
+
+- **One active build track:** finish its next unit, then the next unit, until the track exit test passes.
+- **One small maintenance rail:** DSA plus one rotating Java/LLD/HLD retrieval so interview ability does not fall to zero.
+- **One opportunity rail:** one bounded application/referral action.
+- **One periodic mock:** an unseen performance check after each acquisition cycle.
+
+These are parts of one session pipeline, not four courses in parallel.
+
+### Authoritative pointers
+
+`Next pipeline session: P01 | Next packet: P01-A1 | Completed cycles: 0 | Active build track: AlgoMaster LLD Core | Next build unit: 01 | Mixed row: 01 | Funnel source: Naukri | Funnel stage: discover`
+
+Advance the packet pointer only after its evidence exists. Advance the P-session, build-unit, mixed-row, cycle, or funnel-source pointer only when its larger completion rule is satisfied. A read lesson without recall, open tab, elapsed hour, skipped day, or reminder firing does not advance anything.
+
+### Two-speed FIFO - the same queue works with 15 minutes or three hours
+
+1. Read `Next packet` and do that packet only. Do not choose an easier packet based on mood.
+2. Set a 15-minute timer. Stop when it rings and save the required evidence plus one resume sentence.
+3. If the packet's evidence exists, advance to the next packet. If the work is unfinished, the same packet remains next; record the exact next line, method, test, paragraph, diagram edge, or form field.
+4. With 30, 45, 60, or 180 minutes, consume 2, 3, 4, or up to 12 packets consecutively. The order does not change.
+5. Never inspect a DSA/design solution between cold-attempt packets. Inspect only after the scoring packet says to do so.
+6. P01-P04 may be completed across many small slots. P05 and P06 are timed checkpoints; short slots use the holding ring below and do not create a false benchmark score.
+
+**Resume token:** `date/time | packet | evidence created | exact next physical action | source still closed/open`. Record it in the [packet evidence log](INTERVIEW_PIPELINE_PACKET_LOG.md), which already contains the exact P01-A1 timer and worksheet.
+
+### P01-P04 packet queue - 12 packets, 15 minutes each
+
+| Packet | Exact work | Evidence to advance |
+| --- | --- | --- |
+| **A1 Acquire / map** | From memory, write what you already know about the current build unit, then use the active source for the remaining time. | Three recalled points, one uncertainty, and the exact source stopping point. |
+| **A2 Acquire / close** | Continue the active source, respecting the unit's total source-time cap. Close it before the timer ends. | Three missing ideas found and `SOURCE CLOSED` written. |
+| **A3 Reconstruct 1** | Rebuild the unit from blank: first half of code, model, flow, diagram, or explanation. | Saved artifact and exact continuation point. |
+| **A4 Reconstruct 2** | Continue from A3 without the source; add the invariant, state transition, trade-off, or failure path. | Substantive second half saved; no source copied. |
+| **A5 Prove unit** | Finish the required unit output and give its 90-second to five-minute explanation. | Unit's table output exists; mark G/Y/R and one exact gap. Only this packet may advance the build unit. |
+| **D1 DSA derive** | Read the assigned statement; derive examples, trigger, invariant, algorithm, and complexity without solution/reference code. | Written approach plus one edge trace; source still closed. |
+| **D2 DSA implement** | Write the decisive Java implementation cold. | Compiling core method, or an exact compile/error checkpoint if the packet must repeat. |
+| **D3 DSA prove** | Finish code, run normal and edge tests, explain complexity, score honestly, then inspect local Java. | G/Y/R, tests, explanation, and one exact repair. |
+| **X1 Cross-domain** | Do the P-session's Java, HLD, LLD, or weakest-domain retrieval from blank. | Two-to-five-minute answer plus one failure, trade-off, or changed requirement. |
+| **C1 Cue sweep** | Give trigger plus first invariant for the held row's five DSA cues; retry one weak cue under changed wording. | Five G/Y/U cue marks and one changed-constraint answer. |
+| **F1 Funnel step** | Do the next stage on the current funnel source: discover and official-site verify -> tailor/draft -> submit or authorized referral/follow-up. | Verified role plus fit/gap and next field, a completed draft, a sent action, or honest zero-fit evidence. A saved unverified link is insufficient. |
+| **R1 Close / resume** | Record evidence, select at most one repair, and update every eligible pointer. | Resume token plus the exact next packet. P-session advances only if A1-R1 evidence exists. |
+
+**Packet repeat rule:** difficult code, design, or an application form may require the same packet more than once. Repeat that packet rather than borrowing time from the next domain. The system measures completed evidence, not timer expirations.
+
+**Funnel rule:** F1 may advance from `discover` to `tailor` without a submission, but the funnel-source pointer advances only after a sent action or an honest official-site zero-fit search. This recognizes real 15-minute progress without calling a saved link an application.
+
+**Opportunity interrupt:** a newly verified high-fit role with a live deadline, or a warm referral that needs a response, may temporarily become the next F1 packet before the held technical packet. Spend 15 minutes on the next physical funnel stage, save its resume token, then return to the held packet. Allow at most one opportunity interrupt before completing one technical packet; open-ended job-board scrolling never qualifies.
+
+### P05/P06 short-slot holding ring
+
+P05 needs one contiguous 150-minute attempt to remain a benchmark. P06 uses the selected MocksPractice mode and its real candidate timer. While either checkpoint is waiting for a large enough block, take the next 15-minute holding packet and rotate H1 -> H2 -> H3 -> H4:
+
+| Holding packet | Productive short-slot work | Evidence |
+| --- | --- | --- |
+| **H1 Weak move** | Reconstruct the latest weak DSA move or design invariant under one changed constraint. | One cold answer and G/Y/U. |
+| **H2 Domain retrieval** | Rotate Java -> LLD -> HLD -> SQL/backend. | One interview-length answer and one failure/trade-off. |
+| **H3 Opportunity** | Continue the current funnel stage. | Verified target, draft progress, sent action, or honest zero-fit evidence. |
+| **H4 Career evidence** | Rotate resume story -> project architecture -> behavioral -> trading/risk explanation. | Two-minute answer outline and two follow-up answers. |
+
+Holding packets create maintenance, career, and funnel evidence but do not advance the P05 mixed row or claim a P06 mock. When the contiguous block arrives, run the checkpoint cold. If P06 reaches three genuine study opportunities without a 60-minute block, `START MOCK Micro` is an allowed fallback; complete `DONE` and the viva before advancing the cycle.
+
+### Six-session loop - follow top to bottom, then repeat
+
+| Session | Exact work | What advances |
+| --- | --- | --- |
+| **P01 - Progress 1** | Consume A1-R1 in one block or across 15-minute slots. Build the next acquisition unit; use the mixed row's **main DSA**, Java question, and cue row; use the current funnel source. | Packet advances after packet evidence. Build unit and P-session advance after A1-R1 evidence. Funnel source advances only after sent/zero-fit evidence. Mixed row stays held. |
+| **P02 - Progress 2** | Consume A1-R1 in one block or across slots: next build unit; mixed row's **short DSA 1**; HLD prompt; same cue row under changed wording; current funnel stage/source. | Same packet and completion rules as P01. Mixed row stays held. |
+| **P03 - Progress 3** | Consume A1-R1 in one block or across slots: next build unit; mixed row's **short DSA 2**; LLD prompt; cue row under changed constraints; current funnel stage/source. | Same packet and completion rules as P01. Mixed row stays held. |
+| **P04 - Progress 4** | Consume A1-R1 in one block or across slots: next build unit; retry the weakest P01-P03 technical move cold; use the weakest Java/HLD/LLD domain; current funnel stage/source. | Same packet and completion rules as P01. Mixed row stays held. |
+| **P05 - Mixed benchmark** | Run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs plan`, complete the full 150-minute row cold, then use the 30-minute extension. Run `done` only with actual scores. | Mixed row advances once after actual completion. Build unit does not advance. |
+| **P06 - Mock checkpoint** | In MocksPractice send `START MOCK Compressed`. Send `START MOCK Micro` when `Completed cycles` is 3, 7, 11, and so on, or after three genuine study opportunities pass without a 60-minute block. Complete the candidate attempt, then `DONE`, grading, and viva. Choose at most one consequential repair. | Pipeline returns to P01 and completed-cycles increases by one after the completed mock. No build or mixed pointer advances. |
+
+If only 15 minutes exists, do the one next packet and create its resume token. If the mock exposes a critical failure, insert one repair packet sequence before returning to P01; do not restart a course.
+
+### Exact 180-minute P01-P04 full-block view - identical to the packet queue
+
+| Clock | Minutes | Do exactly this | Stop rule |
+| --- | ---: | --- | --- |
+| 00:00-01:15 | 75 | **Advance:** complete the next unit in the one active build track. Use the source for at most 25 minutes, close it, reconstruct for 40 minutes, and spend 10 minutes producing evidence. | The unit is done only with code, diagram, class model, state machine, tests, or a five-minute closed-book explanation. |
+| 01:15-02:00 | 45 | **DSA maintenance:** do the DSA turn assigned by P01-P04 above. Open local Java only after the cold attempt. | Main problem: runnable Java, tests, invariant, complexity, explanation. Short/retry: decisive move and an edge trace. |
+| 02:00-02:15 | 15 | **X1 cross-domain:** do the assigned Java, HLD, LLD, or weakest-domain retrieval from blank memory. | A 2-5 minute answer plus one failure, trade-off, or changed requirement. |
+| 02:15-02:30 | 15 | **C1 cue sweep:** use the held row's five cues and one changed wording/constraint. | Five honest G/Y/U cue marks and one changed-constraint answer. |
+| 02:30-02:45 | 15 | **F1 opportunity:** advance the current verified funnel stage. | Verified role/draft/sent action/zero-fit evidence; saving an unverified link is insufficient. |
+| 02:45-03:00 | 15 | **R1 close:** record evidence, one repair, resume token, and eligible pointer updates. | `date | P-session | packet | build result | cold result | funnel stage | next packet`. |
+
+### Funnel source queue
+
+Advance this only after a completed P01-P04 or P05 funnel action:
+
+`Naukri -> Instahyre -> LinkedIn plus official site -> referral -> one global market -> repeat`
+
+For the global slot, rotate `Dubai -> London/Europe -> Australia -> repeat`. One relevant sent action is enough. Poor-fit quota filling is prohibited.
+
+### Single active build-track order - complete one, then activate the next
+
+1. **AlgoMaster LLD Interview Core:** complete Units 01-21 below and pass the unseen machine-coding rehearsal. AlgoMaster is the primary LLD teaching source; local `LLDProjects` supply reconstruction and code evidence.
+2. **Java Core:** complete Core sections 1-8 of `C:\Users\Chiranjeev Jain\Downloads\Java Notes (5).pdf`, one numbered topic per build unit, then pass a timed Java reconstruction/diagnosis session.
+3. **HLD Core:** complete Part 1 of `C:\Users\Chiranjeev Jain\Downloads\SystemDesignHLDLLD.pdf`, then the eight HLD prompts already linked in this circuit. Use AlgoMaster HLD for unseen case studies and repairs instead of repeating the same theory twice.
+4. **Educative DSA Translation:** complete [Decode the Coding Interview in Java](https://www.educative.io/courses/decode-coding-interview-java) one project chapter at a time. Attempt selected features and DIY challenges cold, deduplicate against the local ledger, and close each chapter with an unseen problem.
+5. **Applied depth:** choose the next track only from mock, interview, or job-description evidence. Java Applied/Awareness, deeper AlgoMaster patterns, and the remaining system-design handbook are reference inventories until selected.
+
+Do not open the next build track early because the active one feels difficult or boring. Use the maintenance rail and mocks to keep other domains alive while the active track moves to a real finish line.
+
+### Active build track - AlgoMaster LLD Interview Core
+
+| Unit | Bounded scope | Required output |
+| ---: | --- | --- |
+| 01 | How to learn LLD, what LLD is, LLD versus HLD, interview types | One-page interview flow and a 90-second explanation. |
+| 02 | Classes, objects, enums, interfaces | Small Java model with one useful interface and invariant. |
+| 03 | Encapsulation, abstraction, inheritance, polymorphism | Refactor one weak model; state why composition may be safer. |
+| 04 | Association, aggregation, composition, dependency, realization | Class diagram plus lifecycle/ownership explanation. |
+| 05 | DRY, KISS, YAGNI, Law of Demeter, coupling and cohesion | Review one local project and write three exact corrections. |
+| 06 | SOLID principles | One violating example and one corrected Java design. |
+| 07 | UML class, sequence, and state-machine diagrams | Three small diagrams for one familiar system. |
+| 08 | Builder and Factory Method | Reconstruct both and state their different triggers. |
+| 09 | Adapter, Decorator, and Facade | One example showing the structural difference. |
+| 10 | Strategy, Observer, State, and Command | Trigger table plus one runnable implementation. |
+| 11 | Repository, Dependency Injection, Producer-Consumer, Thread Pool | One backend flow with ownership, capacity, and failure behavior. |
+| 12 | Entity discovery, clean code, pattern choice, concurrency interview tips | A reusable 5-minute LLD opening script. |
+| 13 | Parking Lot | Cold API, model, allocation invariant, tests, and changed requirement. |
+| 14 | Elevator or Vending Machine | Cold state machine and scheduling/transition explanation. |
+| 15 | LRU Cache | Runnable Java, invariant, edge tests, and concurrency discussion. |
+| 16 | Splitwise | Expense model, balance invariant, settlement operation, tests. |
+| 17 | Payment Gateway | State machine, idempotency, retries, and failure recovery. |
+| 18 | Online Stock Exchange | Order lifecycle, price-time priority, partial execution, and concurrency boundary. |
+| 19 | URL Shortener or Rate Limiter | LLD API and state; explain where the design crosses into HLD. |
+| 20 | Pub-Sub, Chat, or Task Scheduler | Interfaces, state ownership, backpressure/failure, and tests. |
+| 21 | 60-minute unseen machine-coding rehearsal | Cold attempt, scorecard, and at most one repair. |
+
+**LLD track exit:** Units 01-21 have outputs, and the unseen rehearsal has no unresolved critical modeling or state-transition failure. Then change only the active-build-track and next-build-unit fields in the authoritative pointer line. The P01-P06 loop, maintenance rail, mixed row, funnel queue, and mock cadence continue unchanged.
+
+### Agency score - judge the session by controllable evidence
+
+Use four binary marks: `Build unit`, `Technical retrieval`, `Funnel action`, `Recovery protected`. A session with three marks is successful even if no recruiter replies. Interview calls, rejections, and offers are funnel outcomes; they are not session measures of effort or worth.
+
+After **20 relevant sent actions** with zero screens, pause volume for one review of role targeting, resume evidence, location/work-authorization fit, and referral quality. Do not respond by doubling DSA hours. After three attempted packets with no useful output, shrink the next action to one concrete artifact line, method, test, or form field and repeat the held packet; do not redesign the curriculum.
+
+**On a P05 mixed-benchmark session:** use the full circuit below for the first **150 minutes**, then do its 30-minute extension. P01-P04 use the progress clock above; P06 uses the mock workflow. These modes replace one another and are never additive quotas.
+
+**P05 SMART outcome:** In each completed 150-minute mixed benchmark, attempt **three distinct linked DSA questions**, **one LLD**, **one HLD**, and **one Java/backend question** from a blank page or spoken memory; record the score and one repair. A separate four-minute dash tests **up to five DSA statement cues**, which are recognition only. Every 53 completed P05 benchmarks, all **263 distinct DSA URLs** receive a quick cue; every 88 they receive a substantive DSA slot (the last row has two). LLD repeats every 15 benchmarks, HLD every 8, Java every 20. Across three 88-benchmark circuits, every DSA URL gets one designated **40-minute cold-code** slot; the other turns are 12-minute code skeletons. These are scheduling targets, not proof of mastery.
+
+**Start with the [single-entry operating system](START_HERE_INTERVIEW_OPERATING_SYSTEM.md).** This is its one P05 full-benchmark queue. The [earlier calendar coach](../../../../review-os/coach/README.md) is a diagnostic, not an extra quota. P01-P04 use the packet queue above; P05/P06 use holding packets when a timed block is unavailable. The [263-row DSA ledger](DSA_FULL_COLD_ATTEMPT_LEDGER.md) is the source inventory and detailed DSA history; the mixed-sitting score log does not write into it. The [hourly close-out plan](SEP_20_30_2026_INTERVIEW_READY_HOURLY_WINS.md) is historical but still supplies live interview overrides. The selected 15 LLD, 8 HLD, and 20 Java items are a core interview deck; they do not silently represent every course, note, company sheet, or system-design project.
+
+**P05 command:** in PowerShell run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs plan`. To record a completed contiguous P05 benchmark and advance its mixed-row pointer, run `node G:/TechStudyNotes/review-os/coach/mixed-sitting.mjs done G G Y G Y G GGYGU "one exact repair"`, replacing the six lane scores, five cue scores, and repair text with yours. The six lane scores are main DSA, short DSA 1, short DSA 2, LLD, HLD, Java. On the final two-DSA row use a hyphen for short DSA 2. On the short three-cue row give three cue scores. Use `status` to see the pointer and last evidence. Preview any later sitting with `plan 89`. Do not call `done` during P01-P04, P06, holding packets, or a skipped session.
 
 ## The exact clock — stop at 150 minutes
 
@@ -22,24 +166,24 @@
 | 01:44–01:59 | 15 | **Other design**: short interview answer from blank page. | LLD: API + transition + test; HLD: path + consistency + failure. |
 | 01:59–02:11 | 12 | Java/backend: answer aloud, give one production example and one failure/test. | Specific, correct, interview-length answer. |
 | 02:11–02:15 | 4 | Five DSA statement cues from the Cue column: 30–45 seconds each to name the trigger and first invariant; mark unknown honestly. | Recognition only; no full-solve credit. |
-| 02:15–02:23 | 8 | Spaced mini-round: roughly 2–3 minutes each on recent DSA, weekly DSA, and prior focus design printed by plan. Give each a changed requirement without reference. | Coherent spoken answer under interruption. |
+| 02:15–02:23 | 8 | Spaced mini-round: roughly 2-3 minutes each on recent DSA, seven-session DSA, and prior focus design printed by plan. Give each a changed requirement without reference. | Coherent spoken answer under interruption. |
 | 02:23–02:30 | 7 | Score each lane and the five brief cues, inspect local Java/README **after scoring**, write at most one repair and the next sitting number. | Six lane scores, cue scores, and one exact repair are recorded. |
 
 **Focus rule:** use the Focus column. It follows a seven-sitting cycle and keeps both design wheels from always landing in the short slot. The local Java links are **reference implementations**, not a claim they are correct, production ready, or identical to the prompt. Use them for comparison only after the cold attempt. HLD Java links illustrate one component; a full HLD answer must still cover the whole system.
 
 **Java/backend link rule:** each J01–J20 row now has a local **related Java** link and a scope note. Several questions ask for JVM diagnosis, SQL plans, Spring proxy behavior, or language rules that the linked file does **not** demonstrate. Answer the actual question cold; use the file for one relevant concrete example after scoring. If the scope note says a behavior is not shown, do not treat that link as a solved answer.
 
-**Spacing and repair rule:** the plan command fills the mini-round with the main DSA item from one sitting ago, the main DSA item from seven sittings ago, and the focus design from 15 sittings ago. In the first 15 sittings, it substitutes current-row items. If the last completed sitting scored a short DSA Y/U, that item takes the weekly DSA mini-slot; otherwise the first weak rapid cue takes it. If it scored LLD/HLD/Java Y/U, the first such item in that order takes the cross-domain mini-slot. This is a bounded immediate retry, not a full repair or a competing spaced-review engine. These short changed-constraint recalls stay inside the fixed clock and never mark the earlier item fully solved. If sessions are separated by many calendar days, the lag in days will be longer than the lag in sittings.
+**Spacing and repair rule:** the plan command fills the mini-round with the main DSA item from one sitting ago, the main DSA item from seven sittings ago, and the focus design from 15 sittings ago. In the first 15 sittings, it substitutes current-row items. If the last completed sitting scored a short DSA Y/U, that item takes the seven-session DSA mini-slot; otherwise the first weak rapid cue takes it. If it scored LLD/HLD/Java Y/U, the first such item in that order takes the cross-domain mini-slot. This is a bounded immediate retry, not a full repair or a competing spaced-review engine. These short changed-constraint recalls stay inside the fixed clock and never mark the earlier item fully solved. If sessions are separated by many calendar days, the lag in days will be longer than the lag in sittings.
 
 **Whole-inventory rule:** the five rapid DSA cues use a second family-interleaved circular queue. Its 53-sitting pass covers all 263 distinct URLs once, with three on the last cue row. This supplies broad recognition checks alongside the three deeper problems; it does not add five full solves to the day. A cue on the same problem as one of today's deeper slots can be scored from that deeper attempt without reopening it.
 
 **Score:** DSA F is G only with cold runnable code, tests, invariant, complexity, and explanation; otherwise Y for partial or R for a missing move. The two short DSA turns and LLD/HLD/Java get G for the row's stated green evidence, Y for partial/slow, U for unlearned. A cue green does not turn into a full-solve green. Record S for a skipped sitting, never G. Do not open a source before the attempt.
 
-**After scoring:** If a real interview or mock exposed a consequential gap, run a repair sitting using the same 150-minute clock and **do not call done** for the numbered row; it stays next. Put the exact failed question into the matching DSA or design slot, with the other lanes shortened as needed. For an ordinary weak cue, log its exact failure and use the 12-minute mixed mini-round next time to revisit it; no added hours. Review OS remains the spaced-review due-date owner where a matching card has an attempt. If you get three poor-energy days, use the minimum and resume at the same row; no backlog.
+**After scoring:** If a real interview or mock exposed a consequential gap, run repair packets for the exact failed question and **do not call done** for the numbered row; it stays next. For an ordinary weak cue, log its exact failure and use the mixed mini-round next time. Review OS remains the spaced-review due-date owner where a matching card has an attempt. Low-energy periods consume one packet at a time; there is no backlog.
 
-**20-minute minimum:** 5 minutes on today's row's three DSA triggers, 5 minutes LLD state transition, 5 minutes HLD request path/failure, 5 minutes Java answer. Score cues separately. **Do not mark the 150-minute sitting complete or advance the row.** A live interview within 72 hours replaces this circuit with company-specific mock → gap repair → résumé story → logistics; return to the held row afterward.
+**15-minute rule:** during P01-P04, consume the exact next A/D/X/C/F/R packet and advance that packet only with evidence. During P05/P06, consume the next H1-H4 holding packet without advancing the benchmark/mock. A live interview within 72 hours replaces this circuit with company-specific mock -> gap repair -> resume story -> logistics; return to the held pointers afterward.
 
-**Mock and job pipeline:** Once in each seven-day calendar week, replace one sitting with a MocksPractice mock; leave the numbered row next. The bounded default is `START MOCK Compressed` in the **MocksPractice project chat**: its candidate attempt is 60 minutes, while generation, grading, and DONE/viva add variable time. `Standard` is 120 minutes of candidate attempt and `Full` is 180, both plus that extra time; they are broader checkpoints when you can allow a longer day. In the fourth, lighter week use `START MOCK Micro` and brief retrieval. Use the existing job-link task and a separate 10–20-minute application/referral action on up to five suitable days each week. A mock or real interview is stronger evidence than cue coverage. Do not run the mixed-sitting `done` command for a MocksPractice mock.
+**Mock and job pipeline:** P06 owns the MocksPractice checkpoint; the numbered mixed row stays held. The bounded default is `START MOCK Compressed` in the **MocksPractice project chat**: its candidate attempt is 60 minutes, while generation, grading, and DONE/viva add variable time. `Standard` is 120 minutes of candidate attempt and `Full` is 180, both plus that extra time. On every fourth completed P01-P06 cycle, use `START MOCK Micro` and brief retrieval for P06. Job actions are already bounded inside P01-P05 through the funnel pointer. A mock or real interview is stronger evidence than cue coverage. Do not run the mixed-sitting `done` command for a MocksPractice mock.
 
 ## Thirty-minute three-hour extension — same sitting pointer
 
@@ -59,14 +203,14 @@ After E07, return to E01. A 150-minute-only day may omit this extension; `done` 
 
 ## How the circular queue works
 
-1. Start with row 01 below. Finish and score its sitting with the done command; that increments **Next sitting** by one. There is no topic choice in the morning.
+1. When P05 arrives, start with row 01 below. Finish and score its benchmark with the `done` command; that increments **Next sitting** by one. There is no topic choice when P05 arrives.
 2. On row 88, return to row 01 for circuit 2. The **F** main DSA changes from first to second link; on circuit 3 it changes to the third link. The two-link final row alternates. Thus every one of the 263 linked prompts receives a 40-minute main attempt once in three completed circuits, assuming no source is removed.
 3. LLD, HLD, Java, and career-edge counters continue from the **absolute sitting number** (not from row 01 again): L = 1 + ((n-1) mod 15), H = 1 + ((n-1) mod 8), J = 1 + ((n-1) mod 20), E = 1 + ((n-1) mod 7). From sitting 89 onward, the plan command prints every link, the correct focus, and the career edge automatically. For n 1–88, the table below is the complete technical card.
 4. After circuit 3, the generator rotates within each DSA pattern family and repeats the three-circuit process. Distinct families are interleaved; consecutive DSA links in a circuit do not share the same broad family. Broad family labels do not prove distinct implementation moves. The 40-minute main turn, mock failures, and score trend decide true interview readiness.
 
 **Capacity reality:** 263 DSA prompts at five quick cues per sitting need **53 completed sittings** for one recognition exposure; at three substantive prompts per sitting, **88 completed sittings**; at one full 40-minute code attempt per sitting, about **263 completed sittings** for every prompt to have that level of proof. No 2–3-hour daily schedule can promise cold mastery of all 263 plus 15 LLD and 8 HLD immediately. The queue limits forgetting opportunities and reveals gaps; interview performance and repeated cold evidence determine what is actually warm.
 
-## First 88 sittings — source-linked queue
+## First 88 P05 mixed benchmarks — source-linked queue
 
 **F** marks the 40-minute DSA item for circuit 1. The other two DSA items are 12-minute code skeletons. Tick Done only after the full clock and score it in the ledger or a dated note. The table does not self-score.
 
@@ -161,7 +305,7 @@ After E07, return to E01. A 150-minute-only day may omit this extension; `done` 
 | 87 | **F** [S131 Implement Queue Using Stacks](https://leetcode.com/problems/implement-queue-using-stacks/) · [related Java](../../src/main/java/org/chijai/day5/stack/session2/StackQueue.java)<br>[S204 Find the Duplicate Number](https://leetcode.com/problems/find-the-duplicate-number/) · [related Java](../../src/main/java/org/chijai/day10/session2/FractionToRecurringDecimal.java)<br>[S108 Max Value of Equation](https://leetcode.com/problems/max-value-of-equation/) · [related Java](../../src/main/java/org/chijai/day3/session1/SlidingWindowMaximum.java) | [S128 Sqrtx](https://leetcode.com/problems/sqrtx/)<br>[S218 Ipo](https://leetcode.com/problems/ipo/)<br>[S216 Remove K Digits](https://leetcode.com/problems/remove-k-digits/)<br>[V001 3Sum](https://leetcode.com/problems/3sum/)<br>[S210 Max Consecutive Ones](https://leetcode.com/problems/max-consecutive-ones/) | [L12 Pre-Trade Risk Engine](../../../../LLDProjects/pre-trade-risk-engine/README.md) · [Java](../../../../LLDProjects/pre-trade-risk-engine/src/main/java/com/chiranjeev/lld/risk/RiskEngine.java) | [H07 Design ordered venue sessions and recovery](../../../../SystemDesignProjects/exchange-connectivity-platform/README.md) · [Java](../../../../SystemDesignProjects/exchange-connectivity-platform/src/main/java/com/techstudy/connectivity/ExchangeConnectivityPlatform.java) | [J07](SEP_20_30_2026_INTERVIEW_READY_HOURLY_WINS.md) How do you time out and cancel a `CompletableFuture` chain? · [related Java](../../../../SystemDesignProjects/multi-service-aggregator/src/main/java/com/techstudy/aggregator/MultiServiceAggregator.java) (timeout example; cancellation not shown) | HLD |  |
 | 88 | **F** [S188 Delete Operation for Two Strings](https://leetcode.com/problems/delete-operation-for-two-strings/) · [related Java](../../src/main/java/org/chijai/day9/dp/session2/EditDistance.java)<br>[S111 Binary Tree Postorder Traversal](https://leetcode.com/problems/binary-tree-postorder-traversal/) · [related Java](../../src/main/java/org/chijai/day6/trees/session1/BinaryTreeInorderTraversal.java) | [S142 Permutations](https://leetcode.com/problems/permutations/)<br>[S118 Amount of Time for Binary Tree to Be Infected](https://leetcode.com/problems/amount-of-time-for-binary-tree-to-be-infected/)<br>[S242 Design Hit Counter](https://leetcode.com/problems/design-hit-counter/)<br>[S157 Longest Word in Dictionary](https://leetcode.com/problems/longest-word-in-dictionary/)<br>[S184 Distinct Subsequences II](https://leetcode.com/problems/distinct-subsequences-ii/) | [L13 DesignOrderBook](../../../../LLDProjects/DesignOrderBook/README.md) · [Java](../../../../LLDProjects/DesignOrderBook/src/main/java/org/chijai/orderbook/OrderBook.java) | [H08 Design gateway-to-exchange lifecycle](../../../../SystemDesignProjects/electronic-trading-platform/README.md) · [Java](../../../../SystemDesignProjects/electronic-trading-platform/src/main/java/com/techstudy/trading/ElectronicTradingPlatform.java) | [J08](SEP_20_30_2026_INTERVIEW_READY_HOURLY_WINS.md) Name a happens-before relation that makes a cross-thread read safe. · [related Java](../../../../SystemDesignProjects/java-concurrency-lab/src/main/java/dev/interview/concurrency/ConcurrentOrderProcessor.java) (cross-thread state example) | LLD |  |
 
-## Daily score line
+## Completed-sitting score line
 
 Copy this line into a dated note or directly under the latest row you complete. Keep only one repair, and identify the exact failure rather than writing “revise DSA.”
 
