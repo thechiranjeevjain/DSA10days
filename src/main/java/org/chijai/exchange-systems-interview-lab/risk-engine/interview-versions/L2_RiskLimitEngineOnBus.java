@@ -1,4 +1,4 @@
-package org.chijai.exchange
+package org.chijai.exchange;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

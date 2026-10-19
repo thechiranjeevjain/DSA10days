@@ -1,5 +1,8 @@
 # Waiting-for-calls session pipeline + 150-minute mixed benchmark
 
+> **SUPERSEDED AS A DAILY QUEUE:** Use the sole `▶ SESSION` in [V8.6](V8_COMPLETE_HYBRID_12_WEEK_ENGINEERING_CAREER_OS.md). This file is retained only as historical/reference material and creates no quota.
+
+
 > **HISTORICAL SNAPSHOT — do not advance pointers here.** Ordinary daily work uses the [Single-Domain 8-Session Circular Queue](SINGLE_DOMAIN_8_SESSION_CIRCULAR_QUEUE.md); deliberate mixed simulations use [Interview Ready Master Queue V2](INTERVIEW_READY_MASTER_QUEUE_V2.md). This compact file remains a reference for the earlier mixed-benchmark model.
 
 **Historical start:** P01-A1 below. The held mixed row was 01 and was used only where P01-P05 assigned it. This snapshot documents a session-and-packet model; it no longer selects daily work.

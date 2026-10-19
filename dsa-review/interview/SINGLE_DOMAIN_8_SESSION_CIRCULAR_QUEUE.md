@@ -1,3 +1,5 @@
+> **SUPERSEDED AS A DAILY QUEUE:** Use the sole `▶ SESSION` in [V8.6](V8_COMPLETE_HYBRID_12_WEEK_ENGINEERING_CAREER_OS.md). This file is retained only as historical/reference material and creates no quota.
+
 | DAY / WEEK<br>PACE 🟢 7+ · 🟡 5–6 · 🔴 0–4 | DSA FLOOR · 15m<br>4–5 CUES · LEETCODE + LOCAL JAVA | SESSION WORK<br>☐ CORE · 90m REQUIRED<br>◇ BONUS · +90m OPTIONAL |
 | --- | --- | --- |
 | 🏁 **WEEK 1 · DAYS 001–007 · TARGET DAY 007** | **35/263 CUES · 7/60 SESSIONS** | **CORE TO DATE:** DSA 3 · LLD 2 · HLD 1 · Java 1 · Mock 0<br><br>**ACTUAL:** __ sessions · status __<br><br>**CAREER TARGET 2/18 · ACTUAL __ · CALIBRATE:** ___ → ___ |

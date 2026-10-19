@@ -1,8 +1,9 @@
-# Start here — one interview preparation operating system
+# Historical architecture and source map
 
-> **CURRENT ROUTING — do not record work here.** On an ordinary no-call day, follow the sole `▶` day in the one-table [60-Day Circular Queue](SINGLE_DOMAIN_8_SESSION_CIRCULAR_QUEUE.md). Use [Interview Ready Master Queue V2](INTERVIEW_READY_MASTER_QUEUE_V2.md) only for a deliberately scheduled mixed simulation. The [October circuit](OCTOBER_150_MIN_MIXED_INTERVIEW_CIRCUIT.md) and the older P01-P06 material below are historical references, not additional queues.
+> **CURRENT ENTRY POINT:** Use only [V8.6 — Master 60-Session Interview, Engineering and Career Spiral](V8_COMPLETE_HYBRID_12_WEEK_ENGINEERING_CAREER_OS.md). Its sole `▶ SESSION` selects ordinary work and stores the evidence state.
 
-**Current as of 13 October 2026.** Open the 60-day queue whenever study time appears. With 15 minutes, complete only its four-to-five DSA retrieval cues and keep the arrow on that day. With a larger block, complete the 90-minute Core domain; choose before starting whether to add the optional same-domain Ceiling. After evidenced Core, close an unchosen Ceiling with `⊘ CLOSED` and move the arrow to the next table row. Day 60 routes back to Day 1. Missed dates create no debt, and cue retrieval never counts as a full solve.
+> Everything below is retained for provenance and source discovery. Its old queue names, clocks, pointers, and quotas are superseded and must not select work.
+
 
 ## Current routing — first applicable row wins
 
