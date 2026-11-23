@@ -27,7 +27,8 @@ Evidence discipline:
 - **[JD]** means explicitly stated in the supplied role description.
 - **[ROLE-DERIVED]** means relevant because of the JD, not a reported Clear question.
 - **[DESIGN]** means hypothetical; say “I would,” never “Clear uses.”
-- **[ME/VERIFY]** means based on earlier personal rehearsal material; verify against the current resume and memory.
+- **[RESUME-STATED]** means present in the supplied resume; it still does not verify private architecture, metrics, or exact individual scope.
+- **[ME/VERIFY]** means based on earlier personal rehearsal material but not necessarily stated in the resume; verify from memory/evidence or remove it from the spoken bank.
 
 ---
 
@@ -149,6 +150,54 @@ Choose two:
 3. “How does the team define complete ownership from product discovery through production operation?”
 4. “How are compliance-rule changes versioned, tested, and rolled out safely?”
 5. “What distinguishes an excellent SDE3 here after six months?”
+
+## 0.12 Resume-defense activation [RESUME-STATED / VERIFY DEPTH]
+
+The resume is a one-page claim contract. Every noun can become a question and every verb can become: **“What exactly did you do?”** The facts below are resume-stated; the architecture, scale, metrics, and individual contribution must still be recalled truthfully and may not be inferred from the wording.
+
+### Sixty-second chronology
+
+> “I have about eight years in financial technology. I currently work at Nasdaq on Java/Spring Boot pre-trade risk capabilities integrated with matching-engine systems. The latency-sensitive path uses synchronous in-memory checks for exposure, quantity, value, and price deviation, while database work stays off that hot path. My role also includes production issues and customer escalations, quarterly release coordination, and mentoring. Before Nasdaq, I worked at Morgan Stanley on change-risk-assessment tooling: a Java/Spring Boot, Lucene, and Angular application for search, review, and approval of change tickets, including an AngularJS-to-Angular migration. Earlier, I worked on an Alfresco-to-MongoDB comments migration and a real-time Angular pub/sub UI. I am now looking to apply that correctness and ownership experience to a broader customer-facing backend platform.”
+
+Do not add traffic, latency, financial-impact, team-size, or improvement percentages unless you can state the measurement source and disclosure boundary.
+
+### Claim-to-question map
+
+| Resume claim | Expect this first probe | Evidence to have ready |
+|---|---|---|
+| Pre-trade risk integrated with matching engines | Where is the risk check in the order flow? | One safe architecture sketch; protocol and boundary marked `[VERIFY]` |
+| Synchronous in-memory checks; no database on hot path | What state is held, who owns it, and how is it recovered? | State lifecycle, concurrency model, readiness, replay, stale-config policy |
+| Exposure, quantity, value, price-deviation limits | Define each check and its atomic boundary. | Formula/example, reservation/commit semantics, cancel/fill effect, overflow/precision |
+| Java/Spring Boot enhancements and production issues | What exact class/service/change did you own? | One feature and one incident from symptom through prevention |
+| Customer escalations | How did you communicate uncertainty and restore trust? | Timeline, containment, updates, validation, follow-up control |
+| Quarterly releases across branches | What made the release difficult and what did you personally decide? | Dependency map, gates, build issue, go/no-go criterion, rollback/validation |
+| Mentoring and Scrum Champion | What changed because of your intervention? | One engineer outcome and one facilitation decision—not ceremony definitions |
+| Change Risk Assessment tools | Who used them and what decision did the tool support? | Workflow, data ownership, audit/security, failure behavior |
+| Java/Spring Boot/Lucene/Angular application | Why Lucene; how was indexing kept fresh? | Query/index model, consistency, reindex, permissions, operational failure |
+| AngularJS-to-Angular migration | Why migrate and how did you reduce delivery risk? | Strangler/big-bang decision, compatibility, test/rollout, measurable result `[VERIFY]` |
+| Alfresco-to-MongoDB migration and pub/sub chat | Why MongoDB; how did you prove completeness? | Mapping, ordering/duplicates, dual-run/cutover, reconciliation, rollback |
+| Docker, Kubernetes/EKS, message bus, C/C++, Python, SQL | Where did you use each and at what depth? | Production / working / exposure-only classification; never bluff recency |
+
+### Universal cross-question ladder
+
+For every resume bullet, be able to answer in this order:
+
+```text
+What business/user problem existed?
+What was the architecture before the change?
+What exactly did I implement, decide, test, deploy, or operate?
+What did other people already own?
+What invariant could not be violated?
+Where did state live and who could mutate it?
+What concurrency, failure, recovery, and security cases mattered?
+Which alternative did I reject, and under what constraint?
+How did I test and roll out the change?
+What result can I prove, and how was it measured?
+What went wrong or remained imperfect?
+What would I change now?
+```
+
+If a detail is confidential, state the safe abstraction and reasoning. Do not replace it with invented precision.
 
 ---
 
@@ -887,6 +936,170 @@ Use a real incident only:
 ## 5.14 First 90 days [DESIGN]
 
 > “I would first learn the people, customers, product workflows, architecture, incident history, delivery flow, and informal ownership boundaries. I would map the highest customer and operational risks, then deliver one small visible improvement tied to real pain. Only after that evidence would I propose larger architectural or process priorities.”
+
+## 5.15 Resume STAR bank and evidence contract
+
+Prepare these as spoken stories, not essays. Each must fit a 90-second first answer and survive a ten-minute drill-down. Resume text proves only that the area is claimed; fill every bracket from memory, tickets, code, test evidence, release artifacts, or feedback you can truthfully discuss.
+
+| Story | Best questions it can answer | Missing evidence to fill |
+|---|---|---|
+| Negative-exposure/startup defect | hardest problem, debugging, ambiguity, production ownership | exact symptom, your actions, validation, prevention `[VERIFY]` |
+| API protection decision | ownership, trade-off, influence, changing a design | exact customer need, POC scope, chosen limiter, result `[VERIFY]` |
+| Quarterly release | leadership, prioritization, cross-team delivery, risk | branch count/shape, hardest dependency, go/no-go, outcome `[VERIFY]` |
+| Customer escalation | customer focus, incident communication, calm under pressure | impact, update cadence, technical fix, trust-restoring action `[PERSONALIZE]` |
+| CRA search/review/approval feature | end-to-end design, regulated systems, product partnership | your component, users, audit/security boundary, result `[PERSONALIZE]` |
+| AngularJS-to-Angular migration | modernization, technical debt, planning, disagreement | migration strategy, compatibility, rollout, result `[PERSONALIZE]` |
+| Alfresco-to-MongoDB migration | data migration, correctness, recovery | mapping, counts/checksums, cutover, reconciliation, rollback `[PERSONALIZE]` |
+| Mentoring | influence, raising the bar, delegation | engineer starting point, intervention, observable independence `[PERSONALIZE]` |
+| Failure/changed behavior | self-awareness, accountability, learning | a real decision you owned; signal missed; durable behavior change `[PERSONALIZE]` |
+
+STAR is the outer frame; technical reasoning belongs inside `Action`:
+
+```text
+Situation: one sentence of context.
+Task/stakes: the decision, invariant, customer, or deadline at risk.
+Action: “I” verbs, investigation/decision sequence, alternative and reason.
+Result: observable evidence; no invented number.
+Reflection: what changed in the system and in my later behavior.
+```
+
+### Adversarial probes for the Nasdaq risk story
+
+Answer each independently:
+
+1. What is pre-trade risk, and what is the consequence of a false accept versus false reject?
+2. Where does the risk component sit relative to the matching engine? Which direction/protocol is actually true?
+3. Why synchronous? What is the latency budget and timeout/fail-open/fail-closed policy `[VERIFY]`?
+4. What does “no database on the hot path” remove, and what consistency/recovery work does it create?
+5. What are the exact inputs and outputs of exposure, quantity, value, and price-deviation checks?
+6. Is exposure reserved before acceptance, committed later, or derived from events? What happens on reject, cancel, partial fill, bust, and replay `[VERIFY]`?
+7. Who owns mutable state: one thread, partition owner, locks, atomics, or another model? Why?
+8. How are limits/configuration versioned and published? Can an order observe a mixed version?
+9. How does startup know recovered state and configuration are complete before serving traffic?
+10. What prevents duplicate events from double-changing exposure?
+11. What happens when market data is stale or absent for price-deviation checks?
+12. How did you test races, replay, overflow/precision, and latency—not merely happy-path rules?
+13. Which code and production actions were yours, and which belonged to the matching-engine/risk/platform teams?
+14. What result can you safely substantiate? If no public number is available, what evidence proves correctness?
+
+### Adversarial probes for Morgan Stanley work
+
+1. What qualifies a technology change for risk assessment, and who consumes the decision?
+2. What did the CRA application own versus upstream ticket systems and approval authorities?
+3. Why microservices for that scope? What were the service and transaction boundaries?
+4. Why Lucene instead of database full-text search or a managed search product?
+5. What was indexed, how were permissions enforced, and how did an update reach the index?
+6. What happened when the system of record changed but indexing failed? How did you reindex or reconcile?
+7. What exactly did you build in Java/Spring Boot versus Angular?
+8. Why migrate AngularJS, and why the chosen migration strategy? How did both versions coexist `[VERIFY]`?
+9. How did you prove route, behavior, accessibility, and browser compatibility during migration?
+10. For Alfresco-to-MongoDB, how did you map IDs, preserve timestamps/authors, handle malformed comments, and verify counts?
+11. Was migration online or offline? What was the cutover and rollback plan?
+12. In real-time pub/sub chat, how were ordering, duplicates, reconnect, authorization, and retained history handled `[VERIFY]`?
+
+## 5.16 Resume diagrams to draw and defend
+
+These are **rehearsal models**, not employer architecture disclosures. Redraw only the diagram relevant to the question, replace every `[VERIFY]` boundary with the truth, and remove any component that was not actually present.
+
+### Diagram A — pre-trade risk context [REHEARSAL MODEL]
+
+```mermaid
+flowchart LR
+    OF[Order flow] <-->|request / decision<br/>direction + protocol VERIFY| ME[Matching-engine boundary]
+    ME <-->|synchronous risk request VERIFY| R[Pre-trade risk service]
+    R --> C{Exposure / quantity /<br/>value / price deviation}
+    C <--> S[(In-memory risk state)]
+    CP[Control and recovery plane] -->|limits + recovered state<br/>version/readiness VERIFY| S
+    R -->|accept or reject + reason| ME
+    R -.-> T[Metrics / audit / diagnostics]
+```
+
+Narration order: order boundary → synchronous decision → state owner → control/recovery plane → readiness → audit. State plainly that the resume does not disclose the exact protocol, topology, or latency number.
+
+### Diagram B — in-memory state lifecycle [REHEARSAL MODEL]
+
+```mermaid
+stateDiagram-v2
+    [*] --> Loading
+    Loading --> Replaying: configuration/state available
+    Replaying --> Ready: watermark + invariants verified
+    Ready --> Updating: accepted order/event
+    Updating --> Ready: atomic state transition
+    Ready --> Degraded: stale dependency or gap
+    Degraded --> Reconciling
+    Reconciling --> Ready: state proven consistent
+    Ready --> Fenced: authority/readiness lost
+    Fenced --> [*]
+```
+
+Defend: which states were real, who sets readiness, what watermark/completeness proof existed, and whether fail-closed behavior is accurate `[VERIFY]`.
+
+### Diagram C — Change Risk Assessment platform [REHEARSAL MODEL]
+
+```mermaid
+flowchart LR
+    U[Reviewer / approver] --> UI[Angular UI]
+    UI --> API[Java / Spring Boot APIs]
+    API --> W[Search / review / approval workflow]
+    W --> SR[(Change-ticket system of record<br/>VERIFY)]
+    W <--> IX[(Lucene index)]
+    W -.-> AU[Audit / authorization<br/>VERIFY]
+    SR -->|change feed / indexing path VERIFY| IX
+```
+
+Defend: source of truth, index freshness, authorization, audit, reindex, partial failure, and your exact service/UI contribution.
+
+### Diagram D — quarterly release decision flow [REHEARSAL MODEL]
+
+```mermaid
+flowchart TD
+    B[Release branches + dependency versions] --> CI[Build and integration gates]
+    CI -->|failure| TRIAGE[Owner + root cause + release impact]
+    TRIAGE --> CI
+    CI --> VAL[Regression / environment validation]
+    VAL --> GO{Evidence supports release?}
+    GO -->|no| HOLD[Hold, scope down, or remediate]
+    GO -->|yes| DEP[Coordinated deployment]
+    DEP --> OBS[Smoke checks + business/technical signals]
+    OBS -->|material regression| RB[Rollback / recovery plan]
+```
+
+Defend: the actual branch model, decision owner, your authority, evidence used, one concrete build/dependency problem, and the difference between “merged,” “built,” “deployed,” and “validated.”
+
+## 5.17 Skill-keyword truth gate
+
+Before interview day, label every resume skill:
+
+```text
+P = production depth: can explain design, code, failure, test, operation, and trade-off.
+W = working depth: can implement/use it, but did not own the surrounding production design.
+E = exposure: encountered it; should not imply recent hands-on mastery.
+```
+
+Be ready for these direct probes:
+
+- Java: concurrency model, collections, memory, exceptions, profiling, testing, recent language features.
+- Spring Boot: bean/thread safety, transactions, configuration, Actuator/readiness, API errors, testing.
+- Lucene: inverted index, analyzers, refresh/commit, reindex, query behavior, permissions.
+- SQL: joins/windows/indexes/transactions and one schema you used.
+- MongoDB: document/key/index choice, consistency, migration validation, when not to use it.
+- Message bus/pub-sub: delivery, ordering, duplicate, slow consumer, reconnect, observability.
+- Docker/Kubernetes/EKS: image/config/secrets, probes, resources, rollout, logs, failure you diagnosed.
+- Angular/JavaScript: component/state/API boundary, migration/testing, enough depth for your claimed work.
+- Python/C/C++: exactly where used, recency, and level; “listed” is not permission to invent production ownership.
+
+## 5.18 Resume-defense completion gate
+
+Do not call the resume prepared until you can, without notes:
+
+- deliver the chronology in 60 seconds and the Nasdaq project in three minutes;
+- draw and narrate Diagrams A and C in under five minutes each;
+- answer the twelve universal questions for every resume bullet;
+- tell at least six distinct truthful STAR stories, including one failure and one conflict;
+- distinguish personal work, team work, and pre-existing architecture;
+- state one rejected alternative and one present-day improvement for each major project;
+- give evidence without inventing confidential metrics;
+- downgrade a skill honestly when your depth is exposure-only.
 
 ---
 

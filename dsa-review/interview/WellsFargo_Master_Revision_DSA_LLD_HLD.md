@@ -154,6 +154,43 @@ An external timeout creates UNKNOWN until reconciled.
 4. How is hands-on coding balanced with design leadership, mentoring, and cross-team decisions at this level?
 5. What would strong impact in the first six months look like?
 
+## 0.13 Resume-defense activation [RESUME-STATED / VERIFY DEPTH]
+
+Your one-page resume is an interview contract. The statements below are resume-stated, but they do **not** prove private architecture, exact scale, metrics, or the boundary of your individual work. Prepare evidence, not embellishment.
+
+### Sixty-second opening
+
+> “I have about eight years in financial technology. At Nasdaq I build and enhance Java/Spring Boot pre-trade risk capabilities integrated with matching-engine systems. The latency-sensitive path performs synchronous in-memory checks for exposure, quantity, value, and price deviation without a database call on that path. My scope also includes production issues and customer escalations, quarterly release coordination across branches, and mentoring. Earlier at Morgan Stanley I built change-risk-assessment tooling, including a Java/Spring Boot, Lucene, and Angular application for search, review, and approval of change tickets, and led an AngularJS-to-Angular migration. My earliest work included an Alfresco-to-MongoDB comments migration and a real-time Angular pub/sub UI. This role fits because it joins my strongest areas: Java, stateful financial correctness, latency reasoning, production ownership, and technical leadership.”
+
+Never add latency percentiles, order volumes, money protected, team size, or improvement percentages unless you can explain the measurement and disclosure boundary.
+
+### Claim-to-question map
+
+| Resume claim | Immediate probe | Must be able to defend |
+|---|---|---|
+| Risk integrated with matching engines | Put your component in the order lifecycle. | exact boundary/protocol `[VERIFY]`, state owner, failure policy |
+| Synchronous in-memory checks; no hot-path DB | How is state correct after restart? | load/replay/readiness, versioning, stale policy, recovery |
+| Exposure/quantity/value/price-deviation limits | Give concrete formulas and transitions. | reservation/commit, cancel/fill/bust/replay, precision/overflow |
+| Global exchange environments | What varied by venue? | configuration versus code, protocol/semantic differences `[VERIFY]` |
+| Production issues/customer escalations | Walk me through the hardest one. | symptom, hypotheses, evidence, containment, fix, prevention, communication |
+| Quarterly releases | What did “lead” mean? | your authority, branch/dependency problem, gates, validation, outcome |
+| Mentoring/Scrum Champion | What changed because of you? | specific intervention and observed result; not process vocabulary |
+| CRA Java/Spring Boot/Lucene/Angular system | Why that architecture? | workflow, source of truth, search freshness, audit/security, failures |
+| AngularJS-to-Angular migration | Why and how? | migration strategy, tests, coexistence/cutover, result `[VERIFY]` |
+| Alfresco-to-MongoDB migration/pub-sub UI | How did you prove correctness? | identity mapping, ordering/duplicates, reconciliation, rollback |
+| Docker/Kubernetes/EKS/message bus/C/C++/Python/SQL | Where did you use each? | production / working / exposure-only level and honest recency |
+
+### Universal drill-down
+
+```text
+Problem and users → prior architecture → my exact work → others' ownership
+→ invariant and state owner → concurrency/failure/recovery/security
+→ alternative rejected and constraint → tests and rollout
+→ measurable evidence → imperfection/learning → what I would change now.
+```
+
+If confidential, answer at a safe abstraction level. “I cannot share that implementation detail, but the invariant and decision trade-off were …” is stronger than invented precision.
+
 ---
 
 # 1. Hybrid interview route and critical-red-flag gate
@@ -2017,6 +2054,7 @@ Do not say “X is better” without saying better under which workload and cons
 
 ## 10.1 Evidence labels
 
+- `[RESUME-STATED]`: present in the supplied resume; exact depth, architecture, metrics, and personal scope still require truthful verification.
 - `[ME/VERIFY]`: answer only from personal evidence; verify details and metrics.
 - `[DESIGN]`: hypothetical senior response; do not present it as past experience.
 - `[KNOWLEDGE]`: technical explanation.
@@ -2108,6 +2146,264 @@ Asked for an unverifiable/internal metric:
 “I do not want to invent precision or disclose internal data. The measured direction
 was ___; the method and boundary I can discuss are ___.”
 ```
+
+## 10.6 Resume-specific project cross-examination
+
+### Nasdaq pre-trade risk — primary project [ME/VERIFY]
+
+Prepare a three-minute baseline using only truthful details:
+
+```text
+Users and decision protected:
+Where the risk component sits in the order lifecycle:
+Inputs and accept/reject output:
+State held in memory and its owner:
+Exposure / quantity / value / price-deviation semantics:
+Configuration and recovery path:
+What I personally implemented:
+Hardest failure or trade-off:
+Test and release evidence:
+Result I can substantiate:
+What the matching-engine/platform/other teams owned:
+What I would improve now:
+```
+
+Expect these follow-ups:
+
+1. What is the consequence of a false accept versus a false reject?
+2. Is the check before matching, within a matching-engine call, or elsewhere? What is the actual call direction and protocol `[VERIFY]`?
+3. Why is the decision synchronous? What happens if the risk component is slow or unavailable?
+4. What latency target was measured, where was it measured, and did it include coordinated omission, warm-up, and tails `[VERIFY]`?
+5. What exactly does “no database on the hot path” improve, and which durability/consistency problems move elsewhere?
+6. How is state loaded, snapshotted, replayed, reconciled, and proven ready after restart?
+7. Can a risk decision observe a mixed limit/configuration version? How are dynamic updates published?
+8. Who mutates exposure: one owner, multiple threads under a lock, atomics, or another model? What is the full atomic invariant?
+9. Is exposure checked then updated, reserved then committed, or derived from accepted/executed events? Why?
+10. What happens on reject, cancel, replace, partial fill, duplicate event, reconnect, execution bust, and replay?
+11. How are monetary value and price deviation represented? What are the reference price, currency, rounding, overflow, stale-data, and missing-data policies?
+12. How do venue differences enter the system without turning the core into conditionals?
+13. What failure did you personally diagnose? Give the first signal, ranked hypotheses, discriminating evidence, cause, fix, and prevention.
+14. Which class/module/test/release action was yours? Which parts pre-existed or were owned by other teams?
+15. What result can you prove without disclosing confidential data?
+
+### Negative-exposure incident — preferred technical STAR only if true [ME/VERIFY]
+
+```text
+Situation: exposure was intermittently incorrect/negative after startup [VERIFY].
+Stakes: an authoritative risk state could no longer be trusted.
+My task: isolate whether arithmetic, concurrency, duplicate events, or initialization order violated the invariant.
+My action: improve observability; reconstruct the event/config timeline; widen one timing factor;
+           reproduce; identify recovered orders processed before required risk state was ready;
+           move/protect the readiness boundary; replay the original and synthetic sequences.
+Result: [state exact validation and outcome; do not invent a number].
+Learning: correct arithmetic over incomplete state is still an incorrect system.
+```
+
+Cross-question defense:
+
+- Why was the later cancellation able to decrement from zero?
+- Why was this an ordering/readiness defect rather than necessarily a Java data race?
+- What other hypotheses did you eliminate and with what evidence?
+- How did the reproduction preserve semantics rather than create a new bug?
+- What test prevents recurrence: deterministic startup/replay test, invariant assertion, readiness gate, or all applicable `[VERIFY]`?
+- Could the fix deadlock startup or make readiness permanently false? How is failure visible?
+- What exactly did you personally change and validate?
+
+If this is not a real, defensible incident, delete it from your spoken bank and substitute a real production issue.
+
+### Morgan Stanley CRA platform — backup project [ME/VERIFY]
+
+Prepare:
+
+```text
+Who submitted/reviewed/approved a technology change:
+Decision and regulatory/audit stakes:
+System of record and service boundaries:
+Lucene indexing and query path:
+Authorization and audit boundary:
+What I built in Java/Spring Boot:
+What I built in Angular:
+Failure/reconciliation behavior:
+AngularJS migration strategy:
+Evidence/result:
+```
+
+Expect:
+
+1. What makes a change high risk, and did the tool recommend, enforce, or record the decision?
+2. Why microservices? Where were consistency and transaction boundaries?
+3. Why Lucene rather than database search, Elasticsearch/OpenSearch, or a simpler query model?
+4. What analyzer/query behavior mattered? How were fields, tokenization, sorting, and pagination designed?
+5. Was Lucene the source of truth? How did updates reach it, and what did users see while the index lagged?
+6. How did you reindex, reconcile missing documents, and handle schema changes?
+7. How did authorization prevent search results/snippets from leaking restricted tickets?
+8. What audit evidence was retained for review and approval actions?
+9. Why migrate AngularJS? Was the strategy big-bang, route-by-route, component-by-component, or another approach `[VERIFY]`?
+10. How did you test behavioral equivalence, API compatibility, routing, browser support, and rollback?
+11. What exactly did “led” mean: design, planning, implementation, delegation, review, stakeholder decision, deployment?
+12. What measurable maintainability or delivery result can you safely support?
+
+### Earlier migration/pub-sub project — lower-priority backup [ME/VERIFY]
+
+Expect:
+
+- Why move comments from Alfresco to MongoDB, and what was the document/key/index model?
+- How were author, timestamp, thread/reply relationships, attachments, permissions, and malformed records preserved?
+- Was the migration offline, dual-write, or incremental? What was the cutover and rollback plan?
+- Which counts, checksums, samples, or reconciliation queries proved completeness?
+- How did the pub/sub chat handle identity, authorization, ordering, duplicates, reconnect, slow clients, and history?
+- Which parts were yours and which were team/platform capabilities?
+
+## 10.7 STAR coverage bank
+
+One story may answer several behavioral questions, but the bank must contain distinct evidence—not the same incident renamed eight times.
+
+| Story to prepare | Covers | Required proof slot |
+|---|---|---|
+| Negative exposure/startup or another real incident | hardest problem, ambiguity, debugging, prevention | timeline, your diagnostic actions, recurrence control `[VERIFY]` |
+| Customer API protection/gateway-versus-limiter decision | trade-off, influence, changing course, customer need | POC, constraints, final decision, result `[VERIFY]` |
+| Quarterly multi-branch release | leadership, delivery, prioritization, risk communication | exact conflict/build issue, go/no-go, validation, outcome `[VERIFY]` |
+| Customer escalation | customer focus, communication, operational ownership | impact, containment, update cadence, trust-restoring action `[PERSONALIZE]` |
+| CRA feature | end-to-end ownership, regulated judgment, cross-functional work | exact feature, users, audit/security, result `[PERSONALIZE]` |
+| Angular migration | modernization, planning, technical debt, disagreement | migration unit, compatibility, rollout, result `[PERSONALIZE]` |
+| Alfresco/Mongo migration | data correctness, testing, recovery | mapping, reconciliation, cutover, rollback `[PERSONALIZE]` |
+| Mentoring | influence without authority, raising quality | engineer baseline, intervention, later independence `[PERSONALIZE]` |
+| Real failure | accountability, learning, self-correction | your decision, missed signal, consequence, changed behavior `[PERSONALIZE]` |
+| Conflict | senior communication, commitment after disagreement | issue, decision criteria, your position, resolution, relationship `[PERSONALIZE]` |
+
+For each story, rehearse three lengths:
+
+- **30 seconds:** direct outcome and your role.
+- **90 seconds:** `Situation → Stakes → My action/reasoning → Result → Learning`.
+- **10 minutes:** architecture, state, alternatives, failure modes, evidence, and cross-questions.
+
+Do not bury your work in “we.” Use “we” for team context and “I” for the design, code, test, coordination, or decision you personally performed.
+
+## 10.8 Resume diagrams — draw from scratch, then defend
+
+These diagrams are **rehearsal models**, not claims about Nasdaq or Morgan Stanley internal architecture. Replace `[VERIFY]` boundaries with the truth and remove anything that did not exist. In an interview, draw only the diagram needed for the current question.
+
+### Diagram 1 — pre-trade risk context [REHEARSAL MODEL]
+
+```mermaid
+flowchart LR
+    O[Order flow] <-->|direction / protocol VERIFY| M[Matching-engine boundary]
+    M <-->|synchronous decision VERIFY| R[Pre-trade risk]
+    R --> CH{Exposure / quantity /<br/>value / price deviation}
+    CH <--> S[(In-memory state)]
+    CP[Control + recovery plane] -->|limits / recovered state<br/>version + readiness VERIFY| S
+    R -->|accept / reject + reason| M
+    R -.-> OB[Metrics / audit / diagnostics]
+```
+
+Narrate: business decision → latency boundary → state owner → configuration/recovery → readiness → failure policy → observability. State explicitly what the resume does not reveal: exact protocol, topology, latency, volume, and deployment model.
+
+### Diagram 2 — state readiness and recovery [REHEARSAL MODEL]
+
+```mermaid
+stateDiagram-v2
+    [*] --> Loading
+    Loading --> Replaying: required configuration/state loaded
+    Replaying --> Ready: watermark and invariants proven
+    Ready --> Applying: accepted command/event
+    Applying --> Ready: atomic transition complete
+    Ready --> Degraded: gap / stale input / dependency loss
+    Degraded --> Reconciling
+    Reconciling --> Ready: authoritative state proven
+    Ready --> Fenced: authority or readiness lost
+    Fenced --> [*]
+```
+
+Defend which states and transitions were actually implemented. Explain who publishes readiness, what completeness means, how an operator sees failure, and whether the real system fails open or closed `[VERIFY]`.
+
+### Diagram 3 — startup-ordering incident [USE ONLY IF TRUE]
+
+```mermaid
+sequenceDiagram
+    participant C as Config / recovery loader
+    participant R as Risk service
+    participant E as Replayed order stream
+    participant S as Exposure state
+    C->>R: Startup begins
+    E->>R: Recovered live order arrives too early [VERIFY]
+    R-->>S: Increment skipped because state absent [VERIFY]
+    C->>S: Required risk state becomes available
+    E->>R: Later cancel
+    R->>S: Decrement follows normal path
+    S-->>R: Exposure becomes negative
+    Note over C,R: Corrective boundary: do not serve/replay until required state is proven ready
+```
+
+Explain the violated invariant before the code change. If the actual event sequence differs, correct the diagram; never memorize an inaccurate story.
+
+### Diagram 4 — CRA search/review/approval platform [REHEARSAL MODEL]
+
+```mermaid
+flowchart LR
+    U[Reviewer / approver] --> UI[Angular UI]
+    UI --> A[Java / Spring Boot APIs]
+    A --> W[Search / review / approval workflow]
+    W --> SR[(Change-ticket source of truth<br/>VERIFY)]
+    W <--> L[(Lucene index)]
+    W -.-> AU[Authorization + audit<br/>VERIFY]
+    SR -->|index/update path VERIFY| L
+```
+
+Defend: source of truth, index freshness, permissions, audit trail, reindex/reconciliation, service boundaries, and your personal code ownership.
+
+### Diagram 5 — quarterly release ownership [REHEARSAL MODEL]
+
+```mermaid
+flowchart TD
+    BR[Release branches + dependencies] --> CI[Build / integration gates]
+    CI -->|failure| TR[Root cause + owner + release impact]
+    TR --> CI
+    CI --> V[Regression / environment validation]
+    V --> D{Evidence supports go?}
+    D -->|no| H[Hold / remediate / reduce scope]
+    D -->|yes| P[Coordinated deployment]
+    P --> O[Smoke checks + business/technical signals]
+    O -->|material regression| RB[Rollback / recovery]
+```
+
+Defend the actual branch strategy, decision authority, dependency/build incident, evidence, stakeholder communication, and the distinction between merged, built, deployed, and validated.
+
+## 10.9 Resume skill-keyword defense
+
+Mark every listed skill before the interview:
+
+```text
+P = production depth: design + implementation + failure + test + operation + trade-off.
+W = working depth: can implement/use it, but did not own the surrounding production design.
+E = exposure only: encountered it; do not imply current hands-on mastery.
+```
+
+Minimum probes:
+
+- **Java:** JMM/concurrency, collections, memory/GC, exceptions, profiling, tests, modern language features.
+- **Spring/Spring Boot:** bean/thread safety, transactions, configuration, validation/errors, readiness, API tests.
+- **Low latency/in-memory:** latency distribution, warm-up, allocation, state ownership, backpressure, benchmarking, recovery.
+- **Lucene:** inverted index, analyzer, refresh/commit, query/index design, reindex, authorization leakage.
+- **SQL:** joins, window functions, index selection, transactions/isolation, one real schema/query.
+- **MongoDB:** document/key/index model, consistency, migration proof, when a relational database is better.
+- **Message bus/pub-sub:** delivery, ordering, duplication, slow consumers, reconnect, replay, observability.
+- **Docker/Kubernetes/EKS:** image/config/secrets, probes, resources, rollout/rollback, logs, one diagnosed failure.
+- **Angular/JavaScript:** component/API/state boundaries, migration strategy, testing, actual personal depth.
+- **Python/C/C++:** concrete use, recency, and limitations. If exposure-only, say so immediately.
+
+## 10.10 Resume-defense readiness gate
+
+Pass only when, without notes, you can:
+
+- deliver the opening in 60 seconds and the primary project in three minutes;
+- draw Diagrams 1 and 4 in under five minutes each and survive ten minutes of follow-up;
+- answer all fifteen Nasdaq probes and twelve CRA probes without inventing details;
+- tell at least six distinct truthful STAR stories, including a failure, conflict, and mentoring outcome;
+- separate personal contribution, team action, and pre-existing architecture every time;
+- name one rejected alternative and one present-day improvement per major project;
+- explain how each claimed result was measured—or state honestly that no safe number is available;
+- classify every resume skill `P/W/E` and respond at that depth;
+- correct yourself calmly when the interviewer exposes an inaccurate assumption.
 
 ---
 
