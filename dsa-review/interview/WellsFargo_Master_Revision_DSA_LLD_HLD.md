@@ -2,6 +2,8 @@
 
 > **Target:** Senior hands-on Java engineer for electronic-trading and low-latency systems.
 >
+> **HackerRank first.** Use the [eight-hour must-cover guide](WellsFargo_HackerRank_8_Hour_Must_Cover.md) before the online assessment. Return here for the live coding, technical, and managerial rounds.
+>
 > **What this is:** the one priority-ordered Wells Fargo question-and-answer bank, DSA problem-and-solution-reference bank, LLD/HLD design bank, incident/behavioral bank, and interview-performance workbook.
 >
 > **Inline/linked boundary:** everything you must answer, derive, draw, debug, defend, or modify is inline. Open official LeetCode prompts, audited Java solutions, or LLD/HLD project implementations only after your attempt. Linked code is labeled by its actual compile/test status—not assumed runnable.
@@ -199,11 +201,7 @@ This file is deliberately arranged in the order you should study it. Read downwa
 
 ## 1.1 Hybrid company-interview route
 
-The organization combines three useful principles:
-
-1. **Immediate survival first:** opening, project, critical invariants, and answer spines stay at the top.
-2. **Red flags before breadth:** dangerous correctness, trading, latency, and integrity mistakes are repaired before normal study.
-3. **Company-round progression:** the detailed banks then follow the order in which hiring confidence is commonly built.
+The route begins with your opening and project, then follows the technical and managerial rounds.
 
 | Route | Detailed section | Interview signal being tested | Exit condition |
 |---:|---|---|---|
@@ -461,10 +459,10 @@ Use links only **after** a cold answer or blank-screen attempt. Read them in thi
 
 Current audit boundary:
 
-- **TESTED:** the exchange-lab matching-engine module compiles and its four `OrderBookTest` tests pass.
-- **COMPILES:** exchange-lab L0–L4 risk interview versions, `MatchingEngineInterview`, the linked `org.chijai.java` drills, and the linked `org.chijai.trading` drills.
-- **REFERENCE:** the exchange-lab multi-file risk module currently fails compilation because declarations under `risk.*` directories use the parent `org.chijai.exchange` package; study the self-contained L0–L4 ladder until that module is repaired.
-- **REFERENCE:** PTR risk variants compile in their compatible baseline/evolution sets, but the entire folder is not one module because self-contained variants redeclare shared top-level types. Treat them as alternative designs, not one combined build.
+- **REMOVED/STALE:** the earlier untracked `exchange-systems-interview-lab` copies are no longer present in the current tree. Do not quote their former test result or follow stale links as current evidence.
+- **COMPILES:** `PTR/RiskLimitEngine.java` compiles and runs independently. `RiskLimitEngineAsync.java`, `RiskLimitEnginePartitioned.java`, and `RiskLimitEnginePartitionedAsync.java` compile together with that baseline; the partitioned-async file is not standalone because it uses the event/bus declarations from the async evolution.
+- **COMPILES:** `PTR/RiskEngineExtensible.java`, `PTR/MatchingEngine.java` with the baseline risk file, and `PTR/TradingSystemInterview60Min.java` compile in the current 23 November 2026 audit.
+- **REFERENCE:** PTR risk variants compile only in compatible baseline/evolution sets; the entire folder is not one module because self-contained alternatives redeclare shared top-level types. Treat them as alternative designs, not one combined build.
 - **EXCLUDE:** `CashAllocationMarginBreach.java` currently has a stream-lambda type-inference compile error; use the smaller compiling `TreasuryMarginMonitor30Min.java` for the margin-breach drill.
 
 Interview lesson: never collapse “file exists,” “compiles,” “tests pass,” “is deployed,” and “I personally implemented it” into one claim.
@@ -525,7 +523,7 @@ For every problem: clarify → brute force → invariant → code → test → c
 | 39 | **Merge Intervals** · [LeetCode](https://leetcode.com/problems/merge-intervals/) · [IntervalSortByStart.java — `MergeIntervals`](../../src/main/java/org/chijai/day1/Arrays/session4/Intervals/IntervalSortByStart.java)<br>Merge overlaps; clarify touching boundaries. | Sort by start; merge into accumulated end. |
 | 40 | **Peak Exposure Window** · Local trading drill · [PeakExposureSlidingWindow.java](../../src/main/java/org/chijai/trading/PeakExposureSlidingWindow.java)<br>Maximum sum over each contiguous n-event window. | Add entrant, subtract leaver; timestamp mutation uses deque. |
 | 41 | **Moving Average From a Stream** · [LeetCode](https://leetcode.com/problems/moving-average-from-data-stream/) · [MovingAverageFromDataStream.java](../../src/main/java/org/chijai/trading/MovingAverageFromDataStream.java)<br>Expose `next(value)` for fixed capacity. | Queue + running sum; O(1) per value. |
-| 42 | **Position From Executions** · Local trading drill · [RunningTotalsPositionTracking.java](../../src/main/java/org/chijai/trading/RunningTotalsPositionTracking.java)<br>Aggregate signed quantity by account/instrument; deduplicate. | Stable ID once; buy plus, sell minus. |
+| 42 | **Position From Executions** · [RunningTotalsPositionTracking.java](../../src/main/java/org/chijai/trading/RunningTotalsPositionTracking.java)<br>Recreate `calculatePositions` for signed quantity and cost by account. | Transfer exercise: add instrument to the key, a stable execution ID for deduplication, and exact arithmetic. The linked baseline aggregates by account. |
 | 43 | **Stock Price Fluctuation** · [LeetCode](https://leetcode.com/problems/stock-price-fluctuation/) · [StockPriceFluctuation.java](../../src/main/java/org/chijai/trading/StockPriceFluctuation.java)<br>Support corrections plus current/min/max. | Timestamp map + ordered price counts. |
 | 44 | **Trade Aggregation** · Local trading drill · [TradeAggregationProcessing.java](../../src/main/java/org/chijai/trading/TradeAggregationProcessing.java)<br>Aggregate quantity/notional by account in deterministic output order. | Hash aggregate; sort only final groups. |
 | 45 | **Treasury Margin Breach** · Local trading drill · [TreasuryMarginMonitor30Min.java](../../src/main/java/org/chijai/trading/TreasuryMarginMonitor30Min.java)<br>Combine cash events and required margin; return shortfalls. | Aggregate by account, then compare requirement. |
@@ -1085,6 +1083,8 @@ Authenticate sessions and users, authorize account/venue/order actions, protect 
 
 ## 6.0 First-principles derivation and decision discipline
 
+**First rehearsal for the trading rounds.** Recreate signed position aggregation from the coding bank. Then explain the atomic approve-or-rollback boundary in **Pre-trade risk engine** and price then FIFO in **Matching engine**. Use the **Token-bucket rate limiter** as a follow-up drill on refill, locking and time. Each section links the Java starting point.
+
 For every LLD and HLD, derive the design in this order:
 
 ```text
@@ -1162,19 +1162,17 @@ For each: clarify → invariant → model/API → critical flow → concurrency 
 
 ## 6.1 Pre-trade risk engine
 
-**Implementation evidence:** [LLD project](../../../../LLDProjects/pre-trade-risk-engine/README.md)
+**Start with the rule evaluation.** Recreate `evaluate(order, context)` from memory using a rule interface and an explicit decision. The LLDProjects implementation collects violations from rules against supplied context. Then explain where the PTR engine adds the mutable counters, lock and rollback. [LLDProjects RiskEngine.java](../../../../LLDProjects/pre-trade-risk-engine/src/main/java/com/chiranjeev/lld/risk/RiskEngine.java)
 
-**Blank-screen code ladder — all five self-contained files compile:**
+**Blank-screen code ladder — current canonical PTR sources:**
 
-1. [L0 single owner](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L0_RiskLimitEngineSingleOwner.java) — establish the invariant with ordinary owned maps first.
-2. [L1 concurrent shared state](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L1_RiskLimitEngineConcurrent.java) — introduce per-account coordination and explain aggregate atomicity.
-3. [L2 synchronous bus](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L2_RiskLimitEngineOnBus.java) — separate submission from routing without pretending synchronous dispatch creates isolation.
-4. [L3 partition organization](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L3_RiskLimitEnginePartitioned.java) — make the ownership key and partition boundary explicit.
-5. [L4 bounded partition owner](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/interview-versions/L4_RiskLimitEnginePartitionedOwner.java) — add a bounded mailbox and one state owner per partition.
+1. [Foundation + per-group coordination](../../src/main/java/org/chijai/PTR/RiskLimitEngine.java) — establish the aggregate transaction: snapshot, validate every rule, rollback all on breach.
+2. [Bus-integrated evolution](../../src/main/java/org/chijai/PTR/RiskLimitEngineAsync.java) — separate decision publication/routing while defending whether execution is actually asynchronous.
+3. [Partition organization](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitioned.java) — make the ownership key and partition boundary explicit.
+4. [Partitioned asynchronous evolution](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitionedAsync.java) — analyze queue/owner intent, cancel races, routing, exception handling, and backpressure.
+5. [Extensible comparison](../../src/main/java/org/chijai/PTR/RiskEngineExtensible.java) — compare a more pluggable rule/scope design; compile separately because it redeclares shared model types.
 
-**Deeper source map:** [single-owner engine](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/src/main/java/org/chijai/exchange/risk/engine/SingleOwnerRiskEngine.java), [concurrent engine](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/src/main/java/org/chijai/exchange/risk/engine/ConcurrentRiskEngine.java), and [partition-owner engine](../../src/main/java/org/chijai/exchange-systems-interview-lab/risk-engine/src/main/java/org/chijai/exchange/risk/partition/PartitionedOwnerRiskEngine.java) are **REFERENCE pending package repair**, not current runnable evidence.
-
-**PTR evolution comparisons:** [baseline](../../src/main/java/org/chijai/PTR/RiskLimitEngine.java) → [async owner](../../src/main/java/org/chijai/PTR/RiskLimitEngineAsync.java) → [partitioned](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitioned.java) → [partitioned async](../../src/main/java/org/chijai/PTR/RiskLimitEnginePartitionedAsync.java). These compile in compatible baseline/evolution sets. [Extensible variant](../../src/main/java/org/chijai/PTR/RiskEngineExtensible.java) compiles independently and redeclares shared model types, so it is a separate comparison rather than another file in the same build.
+The earlier untracked `exchange-systems-interview-lab` copies are no longer present in the current tree. Use these canonical PTR files; do not retain stale links or claim the removed package as current tested evidence.
 
 ```mermaid
 flowchart LR
@@ -1292,7 +1290,7 @@ stateDiagram-v2
 
 ## 6.5 Order book
 
-**Implementation evidence:** [LLD project](../../../../LLDProjects/DesignOrderBook/README.md) · [TESTED exchange-lab `OrderBook`](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/src/main/java/org/chijai/exchange/matching/OrderBook.java) · [compiling price-time drill](../../src/main/java/org/chijai/java/PriceTimePriority.java) · [compiling backlog-to-book progression](../../src/main/java/org/chijai/trading/NumberOfOrdersInTheBacklog.java)
+**Implementation evidence:** [LLD project](../../../../LLDProjects/DesignOrderBook/README.md) · [compiling PTR comparison](../../src/main/java/org/chijai/PTR/MatchingEngine.java) · [compiling price-time drill](../../src/main/java/org/chijai/java/PriceTimePriority.java) · [compiling backlog-to-book progression](../../src/main/java/org/chijai/trading/NumberOfOrdersInTheBacklog.java)
 
 ```mermaid
 classDiagram
@@ -1333,7 +1331,7 @@ classDiagram
 
 ## 6.6 Matching engine
 
-**Implementation evidence:** [LLD project](../../../../LLDProjects/matching-engine/README.md) · [TESTED exchange-lab book core](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/src/main/java/org/chijai/exchange/matching/OrderBook.java) · [compiling one-file interview version](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/interview-version/MatchingEngineInterview.java) · [compiling PTR comparison](../../src/main/java/org/chijai/PTR/MatchingEngine.java) · [compiling 60-minute integrated rehearsal](../../src/main/java/org/chijai/trading/TradingSystemInterview60Min.java)
+**Start with `submit`.** Draw one tree of price levels for each side and a FIFO queue at each price. Trace a partial fill before reading the matching loop. [LLDProjects MatchingEngine.java](../../../../LLDProjects/matching-engine/src/main/java/com/chiranjeev/lld/matching/MatchingEngine.java) · [PTR comparison](../../src/main/java/org/chijai/PTR/MatchingEngine.java) · [Integrated rehearsal](../../src/main/java/org/chijai/PTR/TradingSystemInterview60Min.java)
 
 ```mermaid
 sequenceDiagram
@@ -1387,7 +1385,7 @@ Start with map + doubly linked list, clear capacity/update semantics, and O(1) o
 
 ## 6.8 In-memory exposure tracker
 
-**Compiling code evidence:** [position/running totals](../../src/main/java/org/chijai/trading/RunningTotalsPositionTracking.java) · [execution deduplication](../../src/main/java/org/chijai/java/ExecutionDeduplication.java) · [integrated 60-minute rehearsal](../../src/main/java/org/chijai/trading/TradingSystemInterview60Min.java)
+**Compiling code evidence:** [position/running totals](../../src/main/java/org/chijai/trading/RunningTotalsPositionTracking.java) · [execution deduplication](../../src/main/java/org/chijai/java/ExecutionDeduplication.java) · [integrated 60-minute rehearsal](../../src/main/java/org/chijai/PTR/TradingSystemInterview60Min.java)
 
 ```mermaid
 sequenceDiagram
@@ -1418,7 +1416,7 @@ sequenceDiagram
 
 ## 6.9 Token-bucket rate limiter
 
-**Implementation evidence:** [LLD project](../../../../LLDProjects/token-bucket-rate-limiter/README.md)
+**Start with one bucket.** Explain why elapsed-time refill and consumption share a lock. Then add a map keyed by client and explain why each bucket still has its own mutation boundary. [Single-bucket Java drill](../../src/main/java/org/chijai/design/lld/DesignTokenBucketRateLimiter.java) · [Per-key LLDProjects adapter](../../../../LLDProjects/token-bucket-rate-limiter/src/main/java/com/example/ratelimiter/InMemoryTokenBucketRateLimiter.java) · [Per-key bucket implementation](../../../../LLDProjects/token-bucket-rate-limiter/src/main/java/com/example/ratelimiter/TokenBucket.java)
 
 ```mermaid
 stateDiagram-v2
@@ -1504,7 +1502,7 @@ Clarify crash after claim, crash after business commit, transaction boundary, co
 
 ## 6.13 Market-data book builder
 
-**Related implementation evidence:** [Order-book project](../../../../LLDProjects/DesignOrderBook/README.md) · [TESTED exchange-lab book core](../../src/main/java/org/chijai/exchange-systems-interview-lab/matching-engine/src/main/java/org/chijai/exchange/matching/OrderBook.java) · [compiling snapshot/incremental drill](../../src/main/java/org/chijai/trading/TradingDSA147To165.java)
+**Related implementation evidence:** [Order-book project](../../../../LLDProjects/DesignOrderBook/README.md) · [compiling PTR comparison](../../src/main/java/org/chijai/PTR/MatchingEngine.java) · [compiling snapshot/incremental drill](../../src/main/java/org/chijai/trading/TradingDSA147To165.java)
 
 ```mermaid
 flowchart LR

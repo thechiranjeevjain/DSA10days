@@ -2,6 +2,7 @@ package org.chijai.PTR;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -65,9 +66,18 @@ class Order {
 
     Order(Account account, String ticker, Side side, long price,
           long quantity) {
-        this.account = account;
-        this.ticker = ticker;
-        this.side = side;
+        this.account = Objects.requireNonNull(account, "account");
+        this.ticker = Objects.requireNonNull(ticker, "ticker");
+        this.side = Objects.requireNonNull(side, "side");
+        if (ticker.isBlank()) {
+            throw new IllegalArgumentException("ticker must not be blank");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("price must be positive");
+        }
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
         this.price = price;
         this.quantity = quantity;
     }
@@ -113,7 +123,10 @@ abstract class AbstractRiskCheck implements RiskCheck {
     private long lastConsumption;
 
     AbstractRiskCheck(String name, long limit) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "name");
+        if (limit < 0) {
+            throw new IllegalArgumentException("limit must not be negative");
+        }
         this.limit = limit;
     }
 
@@ -135,6 +148,11 @@ abstract class AbstractRiskCheck implements RiskCheck {
 
 // ── Concrete checks — each is one class, one override ──────────────────────
 
+/**
+ * Historical interview name retained for compatibility with the evolution
+ * files. Semantically this is a per-ticker signed position-limit check:
+ * BUY adds quantity, SELL subtracts quantity, and absolute position is bounded.
+ */
 class MaxQtyCheck extends AbstractRiskCheck {
     final String ticker;
 
@@ -145,21 +163,43 @@ class MaxQtyCheck extends AbstractRiskCheck {
 
     @Override
     public Result check(Order order, long nowMs, ExposureResults results) {
-        if (order.side != Side.Buy) {
+        if (!order.ticker.equals(ticker)) {
             return Result.PASS;
         }
-        if (consumption + order.quantity > limit) {
+
+        long candidatePosition;
+        try {
+            candidatePosition = Math.addExact(consumption, signedQuantity(order));
+        } catch (ArithmeticException overflow) {
+            results.reject("POSITION OVERFLOW " + this);
+            return Result.BREACH;
+        }
+
+        // Avoid Math.abs(Long.MIN_VALUE), which itself overflows.
+        if (candidatePosition > limit || candidatePosition < -limit) {
             results.reject("POSITION BREACH " + this);
             return Result.BREACH;
         }
-        consumption += order.quantity;
+        consumption = candidatePosition;
         return Result.PASS;
     }
 
     void onCancel(Order order) {
-        if (order.side == Side.Buy && order.ticker.equals(ticker)) {
-            consumption = Math.max(consumption - order.quantity, 0);
+        if (!order.ticker.equals(ticker)) {
+            return;
         }
+        try {
+            // Cancellation reverses the signed contribution of the accepted order.
+            consumption = Math.subtractExact(consumption, signedQuantity(order));
+        } catch (ArithmeticException overflow) {
+            throw new IllegalStateException("position overflow while cancelling " + order, overflow);
+        }
+    }
+
+    private long signedQuantity(Order order) {
+        return order.side == Side.Buy
+                ? order.quantity
+                : Math.negateExact(order.quantity);
     }
 }
 
@@ -189,12 +229,20 @@ class TotalTradedPerTimeCheck extends AbstractRiskCheck {
             windowStartMs = nowMs;
             consumption = 0;
         }
-        long notional = order.price * order.quantity;
-        if (consumption + notional > limit) {
+        long notional;
+        long candidateConsumption;
+        try {
+            notional = Math.multiplyExact(order.price, order.quantity);
+            candidateConsumption = Math.addExact(consumption, notional);
+        } catch (ArithmeticException overflow) {
+            results.reject("NOTIONAL OVERFLOW " + this);
+            return Result.BREACH;
+        }
+        if (candidateConsumption > limit) {
             results.reject("NOTIONAL BREACH " + this);
             return Result.BREACH;
         }
-        consumption += notional;
+        consumption = candidateConsumption;
         return Result.PASS;
     }
 }

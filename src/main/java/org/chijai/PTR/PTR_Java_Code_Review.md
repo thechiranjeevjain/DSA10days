@@ -1,6 +1,6 @@
-# Review of the Five Attached Java Files
+# PTR Java Code Review, Repository Shape, Class Model, and Data Flow
 
-All five source files were compiled together with Java 17 and their demo `main()` methods were executed successfully.
+The primary baseline and its compatible evolution set are compiled with Java 17. `RiskLimitEngine.java` now has focused JUnit coverage for ticker scoping, signed BUY/SELL position, absolute limit enforcement, exact notional arithmetic, cancellation reversal, validation, and group rollback.
 
 That means the review below is about **semantic correctness, concurrency guarantees, interview clarity and design claims**, not basic syntax.
 
@@ -10,11 +10,201 @@ That means the review below is about **semantic correctness, concurrency guarant
 
 | File | Compile/Run | Interview Use | Verdict |
 |---|---|---|---|
-| `RiskLimitEngine.java` | PASS | Primary risk-engine answer | KEEP, fix a few correctness issues |
+| `RiskLimitEngine.java` | PASS + focused tests | Primary risk-engine answer | KEEP; ticker, signed position and overflow fixes implemented |
 | `RiskLimitEngineAsync.java` | PASS | Integration/event-bus follow-up | KEEP, rename/clarify synchronous semantics |
 | `RiskLimitEnginePartitioned.java` | PASS | Partitioning bridge | KEEP, correct the concurrency claims |
 | `RiskLimitEnginePartitionedAsync.java` | PASS | Advanced concurrency follow-up | CONCEPT GOOD, implementation currently violates strict single-owner state |
 | `MatchingEngine.java` | PASS | Separate trading-domain drill | KEEP, fix aggressor/resting-price + market-order behavior |
+
+---
+
+# 0. Repository Decision and Current Module Shape
+
+## Keep two representations for two different jobs
+
+Do **not** mechanically split `RiskLimitEngine.java` and break the interview evolution files that reuse its package-accessible foundation classes. Keep:
+
+```text
+RiskLimitEngine.java
+    one-file, blank-screen, 30–40 minute interview implementation
+
+RiskLimitEngineAsync.java
+RiskLimitEnginePartitioned.java
+RiskLimitEnginePartitionedAsync.java
+    compatible evolution/comparison files
+
+RiskLimitEngineTest.java
+    executable regression evidence for the corrected baseline
+
+PTR_Java_Code_Review.md
+PTR_Risk_Engine_Mermaid_Diagrams.md
+    design, evidence boundary and production-shaped decomposition
+```
+
+For a real deployable module, split by responsibility rather than leaving many package-private top-level classes in one file:
+
+```text
+org.chijai.ptr.risk
+├── model
+│   ├── Account.java
+│   ├── Order.java
+│   ├── Side.java
+│   └── RiskDecision.java
+├── check
+│   ├── RiskCheck.java
+│   ├── PositionLimitCheck.java
+│   ├── NotionalPerSecondCheck.java
+│   └── KillSwitchCheck.java
+├── engine
+│   ├── RiskCheckGroup.java
+│   └── RiskEngine.java
+├── owner
+│   ├── PartitionRouter.java
+│   ├── PartitionEvent.java
+│   └── PartitionWorker.java
+├── config
+│   └── VersionedRiskConfiguration.java
+└── recovery
+    ├── RiskSnapshot.java
+    └── RiskJournal.java
+```
+
+That is a production repository target, not something to reproduce before the core invariant works. The interview file intentionally stays compact; the production shape adds stable public types, immutable decisions/configuration, ownership events, persistence/recovery, metrics and integration tests.
+
+## Exact corrected baseline class diagram
+
+```mermaid
+classDiagram
+    class RiskEngine {
+        #ConcurrentHashMap~Integer, RiskCheckGroup~ groups
+        +register(Account, RiskCheckGroup)
+        +validate(Order, long) ExposureResults
+        +onCancel(Order)
+    }
+
+    class RiskCheckGroup {
+        +List~RiskCheck~ checks
+        +addCheck(RiskCheck)
+        +begin()
+        +check(Order, long, ExposureResults) Result
+        +rollback()
+        +onCancel(Order)
+    }
+
+    class RiskCheck {
+        <<interface>>
+        +check(Order, long, ExposureResults) Result
+        +begin()
+        +rollback()
+    }
+
+    class AbstractRiskCheck {
+        +String name
+        +long limit
+        +long consumption
+        -long lastConsumption
+        +begin()
+        +rollback()
+    }
+
+    class MaxQtyCheck {
+        +String ticker
+        +check(Order, long, ExposureResults) Result
+        +onCancel(Order)
+        -signedQuantity(Order) long
+    }
+
+    class TotalTradedPerTimeCheck {
+        -long windowStartMs
+        -long lastWindowMs
+        +check(Order, long, ExposureResults) Result
+    }
+
+    class KillSwitchCheck {
+        -boolean active
+        +activate()
+        +deactivate()
+        +check(Order, long, ExposureResults) Result
+    }
+
+    class Order {
+        +Account account
+        +String ticker
+        +Side side
+        +long price
+        +long quantity
+    }
+
+    class ExposureResults {
+        +boolean accepted
+        +String reason
+        +reject(String)
+    }
+
+    RiskEngine --> RiskCheckGroup : accountId → group
+    RiskEngine --> Order : validates / cancels
+    RiskEngine --> ExposureResults : returns
+    RiskCheckGroup o-- RiskCheck : transaction of checks
+    RiskCheck <|.. AbstractRiskCheck
+    AbstractRiskCheck <|-- MaxQtyCheck
+    AbstractRiskCheck <|-- TotalTradedPerTimeCheck
+    AbstractRiskCheck <|-- KillSwitchCheck
+```
+
+## Validation data flow
+
+```mermaid
+flowchart TD
+    O[Validated Order] --> G[Lookup group by account id]
+    G -->|missing| NG[Reject: no group]
+    G -->|found| L[Lock RiskCheckGroup]
+    L --> B[begin: snapshot every mutable check]
+    B --> K[Kill switch]
+    K -->|breach| RB[Rollback all]
+    K -->|pass| N[Notional: multiplyExact + addExact]
+    N -->|overflow / limit| RB
+    N -->|pass| T[Ticker filter]
+    T -->|different ticker| OK[Accept and keep mutations]
+    T -->|same ticker| S[BUY +qty / SELL -qty]
+    S --> A[addExact candidate position]
+    A -->|outside -limit..limit| RB
+    A -->|inside limit| C[Commit candidate position]
+    C --> OK
+    RB --> R[Reject with reason]
+```
+
+## Cancellation data flow and remaining limitation
+
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant Engine as RiskEngine
+    participant Group as RiskCheckGroup
+    participant Position as MaxQtyCheck
+
+    Caller->>Engine: onCancel(original accepted order)
+    Engine->>Group: locate and lock account group
+    Group->>Position: onCancel(order)
+    Position->>Position: ignore different ticker
+    Position->>Position: current - signed(original quantity)
+    Position-->>Group: updated signed position
+    Group-->>Caller: complete
+```
+
+The baseline has no order identifier or lifecycle state. It therefore cannot detect duplicate cancel, cancel-before-new, partial cancellation or replay. Production evolution requires stable order identity and an idempotent order-state transition inside the same ownership/transaction boundary.
+
+## Current verification evidence — 23 November 2026
+
+- `RiskLimitEngine.java`: standalone compile and demo execution pass.
+- `RiskLimitEngineTest.java`: seven focused JUnit tests pass in an isolated Maven compilation.
+- Baseline + async: compile pass.
+- Baseline + partitioned: compile pass.
+- Baseline + async + partitioned + partitioned-async: compatible-family compile pass.
+- `RiskEngineExtensible.java`: separate standalone compile pass.
+- Baseline + `MatchingEngine.java`: compile pass.
+- `TradingSystemInterview60Min.java`: separate standalone compile pass.
+
+The repository-wide Maven build is **not** green: a separate production-shaped PTR file currently redeclares several package-level model names, and `CashAllocationMarginBreach.java` has a pre-existing compilation failure. Those unrelated conditions are not evidence against the isolated risk-engine tests, but they must not be hidden or described as a repository-wide passing build.
 
 ---
 
@@ -42,19 +232,9 @@ same account/group      -> compound mutation serialized
 
 The `begin() / rollback()` mechanism also gives a clear group-level invariant: if an earlier check mutated consumption and a later check breaches, prior mutations are restored.
 
-## P0 — MaxQtyCheck does not filter by ticker
+## Fixed — `MaxQtyCheck` is scoped by ticker
 
-The class stores:
-
-```java
-final String ticker;
-```
-
-but `check()` currently only checks side and quantity.
-
-So an order for `MSFT` can consume the `MaxQty[AAPL]` check.
-
-Fix before using this in an interview:
+The check now exits before touching state when the order belongs to another ticker:
 
 ```java
 if (!order.ticker.equals(ticker)) {
@@ -62,48 +242,31 @@ if (!order.ticker.equals(ticker)) {
 }
 ```
 
-Then apply BUY/SELL semantics according to the requirement.
+The regression test sends a large `MSFT` order through an `AAPL` check and verifies that AAPL consumption remains zero.
 
-## P0/P1 — Position semantics are incomplete unless BUY-only was explicitly assumed
+## Fixed — signed BUY/SELL position with an absolute limit
 
-Current behavior:
+The baseline now uses:
 
 ```java
-if (order.side != Side.Buy) {
-    return Result.PASS;
-}
-```
-
-That is not a general "position limit" unless you explicitly define the exercise as "maximum accumulated BUY quantity".
-
-For a signed position model:
-
-```text
 BUY  -> +quantity
 SELL -> -quantity
-check abs(candidatePosition) <= limit
+candidatePosition = exactAdd(currentPosition, signedQuantity)
+accept iff -limit <= candidatePosition <= limit
 ```
 
-If the interviewer only asks "number of buy shares", the existing simplification is fine — but state the assumption.
+The comparison does not call `Math.abs(candidatePosition)` because `Math.abs(Long.MIN_VALUE)` overflows. A breach never commits the candidate. Cancellation subtracts the original signed contribution, so cancelling a BUY reduces the position and cancelling a SELL increases it. The baseline still lacks order identity/deduplication; duplicate cancel protection remains a later-round requirement.
 
-## P1 — Numeric overflow
+## Fixed — exact position and notional arithmetic
 
-Current notional calculation:
+The baseline now uses exact arithmetic for both multiplication and accumulation:
 
 ```java
-long notional = order.price * order.quantity;
+long notional = Math.multiplyExact(order.price, order.quantity);
+long candidate = Math.addExact(consumption, notional);
 ```
 
-and additions can overflow.
-
-For financial code, use:
-
-```java
-Math.multiplyExact(order.price, order.quantity)
-Math.addExact(...)
-```
-
-or explicitly state that input bounds guarantee no overflow.
+An arithmetic overflow becomes an explicit risk breach rather than a wrapped negative value or a silent acceptance. Cancellation overflow is treated as an illegal state because it indicates inconsistent state/event history. The `Order` constructor now rejects null/blank identifiers and non-positive price/quantity.
 
 ## P1 — Config replacement is not serialized with an in-flight order
 
@@ -507,8 +670,8 @@ Do not attempt to reproduce all five files in one interview.
 
 ```text
 1. RiskLimitEngine.java
-   Fix ticker + overflow + explicit side semantics.
-   This is the primary code.
+   Corrected ticker + exact arithmetic + signed position baseline.
+   This is the primary code; recreate it before reading the answer.
 
 2. Explain RiskLimitEngineAsync
    only if asked about event integration.
@@ -532,17 +695,23 @@ But only claim a true **single-owner partition** when orders, cancels, config up
 
 ---
 
-# Minimum Fix Order
+# Fix Status and Remaining Order
 
-Before memorizing these files:
+Implemented and regression-tested in the primary baseline:
 
-1. Fix ticker filtering in `MaxQtyCheck`.
-2. Decide and document BUY/SELL position semantics.
-3. Protect notional arithmetic from overflow.
-4. Correct Level-3a comments about lock domains.
-5. Route all Level-3b mutations through the partition owner queue.
-6. Fix MatchingEngine to match incoming order before resting it.
-7. Make execution price the resting order price.
-8. Do not allow unfilled market orders to rest.
+1. **DONE:** ticker filtering in `MaxQtyCheck`.
+2. **DONE:** signed BUY/SELL position and absolute position limit.
+3. **DONE:** exact position/notional arithmetic and explicit overflow behavior.
+4. **DONE:** positive price/quantity and non-blank ticker validation.
 
-After those changes, the architecture progression becomes coherent and defensible under senior-level drilling.
+Remaining evolution work, kept explicit rather than hidden:
+
+1. Correct Level-3a comments about lock domains.
+2. Route **all** Level-3b mutations through the partition owner queue.
+3. Add stable order identity and idempotent cancel/replay semantics.
+4. Define versioned intraday configuration replacement.
+5. Fix `MatchingEngine` to match the incoming aggressor before resting it.
+6. Make execution price the resting order price.
+7. Do not allow unfilled market orders to rest.
+
+The baseline is now coherent for the primary interview exercise. Do not claim the advanced single-owner or matching-engine files are corrected until their corresponding items are implemented and tested.
